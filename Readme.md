@@ -1,6 +1,12 @@
 
 # node-canvas
 
+ Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
+
+## Authors
+
+  - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
+
 ## TODO
 
    [ ] drawing shapes
