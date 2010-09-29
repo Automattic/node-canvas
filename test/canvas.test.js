@@ -67,7 +67,7 @@ module.exports = {
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
   },
   
-  'test Canvas#clearRect()': function(assert){
+  'test Context2d#clearRect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/clearRect.png';
@@ -80,10 +80,10 @@ module.exports = {
         canvas
       , path
       , 'e21404e97142a76c0c8d14cf0fab400f'
-      , 'Canvas#clearRect() failed');
+      , 'Context2d#clearRect() failed');
   },
   
-  'test Canvas#strokeRect()': function(assert){
+  'test Context2d#strokeRect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/strokeRect.png';
@@ -96,10 +96,10 @@ module.exports = {
         canvas
       , path
       , '1cd349f7d3d2ae5a2bce13ca35dcaa94'
-      , 'Canvas#strokeRect() failed');
+      , 'Context2d#strokeRect() failed');
   },
   
-  'test Canvas#lineTo()': function(assert){
+  'test Context2d#lineTo()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/lineTo.png';
@@ -123,11 +123,11 @@ module.exports = {
         canvas
       , path
       , '44cce447dcb15918c9baf9170f87911f'
-      , 'Canvas#lineTo() failed'
+      , 'Context2d#lineTo() failed'
       );
   },
   
-  'test Canvas#arc()': function(assert){
+  'test Context2d#arc()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/arc.png';
@@ -146,10 +146,10 @@ module.exports = {
         canvas
       , path
       , '3c48a221b24c582f46e39c16678b12dd'
-      , 'Canvas#arc() failed');
+      , 'Context2d#arc() failed');
   },
   
-  'test Canvas#bezierCurveTo()': function(assert){
+  'test Context2d#bezierCurveTo()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/bezierCurveTo.png';
@@ -168,7 +168,24 @@ module.exports = {
         canvas
       , path
       , '5626a53780d77aecc490ec807ee0bc63'
-      , 'Canvas#bezierCurveTo() failed');
+      , 'Context2d#bezierCurveTo() failed');
+  },
+  
+  'test Context2d#rotate()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/rotate.png';
+    
+    ctx.rotate(0.4);
+    ctx.translate(30,0);
+    ctx.rect(0,0,50,50);
+    ctx.stroke();
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'f60ba975e224d6f6a93af0c656d739d5'
+      , 'Context2d#rotate() failed');
   },
   
   'test fill with stroke': function(assert){
@@ -194,7 +211,7 @@ module.exports = {
       , 'fill with stroke failed');
   },
   
-  'test Canvas#rect()': function(assert){
+  'test Context2d#rect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/rect.png';
@@ -208,10 +225,10 @@ module.exports = {
         canvas
       , path
       , '2909bb99d128e3ea1ee839b73dc1a0ed'
-      , 'Canvas#rect() failed');
+      , 'Context2d#rect() failed');
   },
   
-  'test Canvas#fillStyle=': function(assert){
+  'test Context2d#fillStyle=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/fillStyle.png';
@@ -232,10 +249,10 @@ module.exports = {
         canvas
       , path
       , '01632d060ba4702a53862a955382d30d'
-      , 'Canvas#fillStyle= failed');
+      , 'Context2d#fillStyle= failed');
   },
   
-  'test Canvas#lineWidth=': function(assert){
+  'test Context2d#lineWidth=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/lineWidth.png';
@@ -252,10 +269,10 @@ module.exports = {
         canvas
       , path
       , '0bc6f64d58f326ca7ad3ade4426fb90f'
-      , 'Canvas#lineWidth= failed');
+      , 'Context2d#lineWidth= failed');
   },
   
-  'test Canvas#lineCap=': function(assert){
+  'test Context2d#lineCap=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/lineCap.png';
@@ -273,10 +290,10 @@ module.exports = {
         canvas
       , path
       , 'd5b84ea10a3e6df723b702a32329ed43'
-      , 'Canvas#lineCap= failed');
+      , 'Context2d#lineCap= failed');
   },
   
-  'test Canvas#lineJoin=': function(assert){
+  'test Context2d#lineJoin=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/lineJoin.png';
@@ -294,6 +311,6 @@ module.exports = {
         canvas
       , path
       , 'bf97d882a0e99595109fb4f564fa41bf'
-      , 'Canvas#lineJoin= failed');
+      , 'Context2d#lineJoin= failed');
   }
 }
