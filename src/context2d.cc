@@ -13,6 +13,27 @@ using namespace v8;
 using namespace node;
 
 /*
+ * Set RGBA.
+ */
+
+#define RGBA(_,R,G,B,A) \
+  _.r = R; \
+  _.g = G; \
+  _.b = B; \
+  _.a = A; \
+
+/*
+ * Set source RGBA.
+ */
+
+#define SET_SOURCE_RGBA(C) \
+  cairo_set_source_rgba(ctx \
+    , C.r \
+    , C.g \
+    , C.b \
+    , C.a);
+
+/*
  * Rectangle arg assertions.
  */
 
@@ -29,6 +50,24 @@ using namespace node;
   int y = args[1]->Int32Value(); \
   int width = args[2]->Int32Value(); \
   int height = args[3]->Int32Value();
+
+/*
+ * RGBA arg assertions.
+ */
+
+#define RGBA_ARGS \
+  if (!args[0]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("r required"))); \
+  if (!args[1]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("g required"))); \
+  if (!args[2]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("b required"))); \
+  if (!args[3]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("alpha required"))); \
+  int r = args[0]->Int32Value(); \
+  int g = args[1]->Int32Value(); \
+  int b = args[2]->Int32Value(); \
+  double a = args[3]->NumberValue();
 
 /*
  * Initialize Context2d.
@@ -55,6 +94,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
+  NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -78,7 +118,8 @@ Context2d::New(const Arguments &args) {
 Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
-  cairo_set_source_rgba(_context, 0, 0, 0, 1);
+  RGBA(fill,0,0,0,1);
+  RGBA(stroke,0,0,0,1);
 }
 
 /*
@@ -90,30 +131,28 @@ Context2d::~Context2d() {
 }
 
 /*
- * Set fill RGBA, use internally for fillStyle=
+ * Set fill RGBA, used internally for fillStyle=
  */
 
 Handle<Value>
 Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
-
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("r required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("g required")));
-  if (!args[2]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("b required")));
-  if (!args[3]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("alpha required")));
-
+  RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  RGBA(context->fill,r,g,b,a);
+  return Undefined();
+}
 
-  cairo_set_source_rgba(context->getContext()
-    , args[0]->Int32Value()
-    , args[1]->Int32Value()
-    , args[2]->Int32Value()
-    , args[3]->NumberValue());
-  
+/*
+ * Set stroke RGBA, used internally for strokeStyle=
+ */
+
+Handle<Value>
+Context2d::SetStrokeRGBA(const Arguments &args) {
+  HandleScope scope;
+  RGBA_ARGS;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  RGBA(context->stroke,r,g,b,a);
   return Undefined();
 }
 
@@ -182,7 +221,9 @@ Handle<Value>
 Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_fill(context->getContext());
+  cairo_t *ctx = context->getContext();
+  SET_SOURCE_RGBA(context->fill);
+  cairo_fill_preserve(ctx);
   return Undefined();
 }
 
@@ -194,7 +235,9 @@ Handle<Value>
 Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_stroke(context->getContext());
+  cairo_t *ctx = context->getContext();
+  SET_SOURCE_RGBA(context->stroke);
+  cairo_stroke_preserve(ctx);
   return Undefined();
 }
 
@@ -251,6 +294,7 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -266,6 +310,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->stroke);
   cairo_stroke(ctx);
   return Undefined();
 }
@@ -282,6 +327,7 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   return Undefined();

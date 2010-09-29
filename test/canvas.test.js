@@ -171,6 +171,29 @@ module.exports = {
       , 'Canvas#bezierCurveTo() failed');
   },
   
+  'test fill with stroke': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/fillWithStroke.png';
+
+    ctx.beginPath();
+    ctx.arc(75,75,50,0,Math.PI*2,true);
+    ctx.fill();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = 'red';
+    ctx.strokeStyle = 'yellow';
+    ctx.arc(75,75,30,0,Math.PI*2,true);
+    ctx.fill();
+    ctx.stroke();
+
+    assertChecksum(
+        canvas
+      , path
+      , '0437605377cc9840c58cb166fb0b89d4'
+      , 'fill with stroke failed');
+  },
+  
   'test Canvas#fillStyle=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
