@@ -73,6 +73,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
+  NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -108,7 +109,7 @@ Context2d::~Context2d() {
 }
 
 /*
- * Set fill RGBA, use internally for fillStyle=
+ * Set fill RGBA, used internally for fillStyle=
  */
 
 Handle<Value>
@@ -116,9 +117,26 @@ Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->fill.r = r;
+  context->fill.g = g;
+  context->fill.b = b;
+  context->fill.a = a;
+  return Undefined();
+}
 
-  cairo_set_source_rgba(context->getContext(), r, g, b, a);
-  
+/*
+ * Set stroke RGBA, used internally for strokeStyle=
+ */
+
+Handle<Value>
+Context2d::SetStrokeRGBA(const Arguments &args) {
+  HandleScope scope;
+  RGBA_ARGS;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->stroke.r = r;
+  context->stroke.g = g;
+  context->stroke.b = b;
+  context->stroke.a = a;
   return Undefined();
 }
 
@@ -187,7 +205,14 @@ Handle<Value>
 Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_fill(context->getContext());
+  cairo_t *ctx = context->getContext();
+  cairo_set_source_rgba(
+      ctx
+    , context->fill.r
+    , context->fill.g
+    , context->fill.b
+    , context->fill.a);
+  cairo_fill(ctx);
   return Undefined();
 }
 
@@ -199,7 +224,14 @@ Handle<Value>
 Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_stroke(context->getContext());
+  cairo_t *ctx = context->getContext();
+  cairo_set_source_rgba(
+      ctx
+    , context->stroke.r
+    , context->stroke.g
+    , context->stroke.b
+    , context->stroke.a);
+  cairo_stroke(ctx);
   return Undefined();
 }
 
