@@ -257,5 +257,26 @@ module.exports = {
       , path
       , 'd5b84ea10a3e6df723b702a32329ed43'
       , 'Canvas#lineCap= failed');
+  },
+  
+  'test Canvas#lineJoin=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/lineJoin.png';
+
+    ctx.beginPath();
+    ctx.lineWidth = 10.0;
+    ctx.lineJoin = 'round';
+    assert.equal('round', ctx.lineJoin);
+    ctx.moveTo(50, 50);
+    ctx.lineTo(50, 100);
+    ctx.lineTo(80, 120);
+    ctx.stroke();
+
+    assertChecksum(
+        canvas
+      , path
+      , 'bf97d882a0e99595109fb4f564fa41bf'
+      , 'Canvas#lineJoin= failed');
   }
 }
