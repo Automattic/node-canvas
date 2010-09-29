@@ -21,6 +21,8 @@ class Context2d: public node::ObjectWrap {
     rgba_t stroke;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
+    static Handle<Value> Save(const Arguments &args);
+    static Handle<Value> Restore(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);

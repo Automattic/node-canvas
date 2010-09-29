@@ -84,6 +84,8 @@ Context2d::Initialize(Handle<Object> target) {
 
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -303,6 +305,30 @@ Context2d::BezierCurveTo(const Arguments &args) {
     , args[4]->NumberValue()
     , args[5]->NumberValue());
 
+  return Undefined();
+}
+
+/*
+ * Save state.
+ */
+
+Handle<Value>
+Context2d::Save(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_save(context->getContext());
+  return Undefined();
+}
+
+/*
+ * Restore state.
+ */
+
+Handle<Value>
+Context2d::Restore(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_restore(context->getContext());
   return Undefined();
 }
 
