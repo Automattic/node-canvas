@@ -11,6 +11,7 @@
 
      [x] drawing shapes
      [x] line styles
+     [ ] anti aliasing
      [ ] match canvas defaults (not all args are required)
      [ ] list of valid css colors
      [ ] gradients
