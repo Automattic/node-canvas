@@ -88,6 +88,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
   NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -380,6 +381,20 @@ Context2d::Translate(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_translate(context->getContext()
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
+  return Undefined();
+}
+
+/*
+ * Scale transformation.
+ */
+
+Handle<Value>
+Context2d::Scale(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_scale(context->getContext()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0
     , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
   return Undefined();
