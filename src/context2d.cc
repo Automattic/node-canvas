@@ -99,6 +99,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
+  proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -155,6 +156,41 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
 }
 
 /*
+ * Get line join.
+ */
+
+Handle<Value>
+Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_line_join(context->getContext())) {
+    case CAIRO_LINE_JOIN_BEVEL:
+      return String::NewSymbol("bevel");
+    case CAIRO_LINE_JOIN_ROUND:
+      return String::NewSymbol("round");
+    default:
+      return String::NewSymbol("miter");
+  }
+}
+
+/*
+ * Set line join.
+ */
+
+void
+Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  String::AsciiValue type(val);
+  if (0 == strcmp("round", *type)) {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
+  } else if (0 == strcmp("bevel", *type)) {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_BEVEL);
+  } else {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_MITER);
+  }
+}
+
+/*
  * Get line cap.
  */
 
@@ -188,7 +224,6 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
   }
 }
-
 
 /*
  * Set fill RGBA, used internally for fillStyle=
