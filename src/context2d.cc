@@ -472,7 +472,7 @@ Context2d::MoveTo(const Arguments &args) {
 }
 
 /*
- * Fill the rectangle defined by x, y, with and height.
+ * Fill the rectangle defined by x, y, width and height.
  */
 
 Handle<Value>
