@@ -97,6 +97,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
   proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
@@ -133,6 +134,26 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+/*
+ * Get miter limit.
+ */
+
+Handle<Value>
+Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(cairo_get_miter_limit(context->getContext()));
+}
+
+/*
+ * Set miter limit.
+ */
+
+void
+Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_set_miter_limit(context->getContext(), val->NumberValue());
 }
 
 /*
