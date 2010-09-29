@@ -34,7 +34,9 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> StrokeRect(const Arguments &args);
     static Handle<Value> ClearRect(const Arguments &args);
     static Handle<Value> Arc(const Arguments &args);
+    static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineWidth(Local<String> prop, const AccessorInfo &info);
+    static void SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }

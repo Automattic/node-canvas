@@ -8,6 +8,7 @@
 #include "canvas.h"
 #include "context2d.h"
 #include <math.h>
+#include <string.h>
 
 using namespace v8;
 using namespace node;
@@ -97,6 +98,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
+  proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -151,6 +153,42 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_set_line_width(context->getContext(), val->NumberValue());
 }
+
+/*
+ * Get line cap.
+ */
+
+Handle<Value>
+Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_line_cap(context->getContext())) {
+    case CAIRO_LINE_CAP_ROUND:
+      return String::NewSymbol("round");
+    case CAIRO_LINE_CAP_SQUARE:
+      return String::NewSymbol("square");
+    default:
+      return String::NewSymbol("butt");
+  }
+}
+
+/*
+ * Set line cap.
+ */
+
+void
+Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  String::AsciiValue type(val);
+  if (0 == strcmp("round", *type)) {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
+  } else if (0 == strcmp("square", *type)) {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_SQUARE);
+  } else {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
+  }
+}
+
 
 /*
  * Set fill RGBA, used internally for fillStyle=
