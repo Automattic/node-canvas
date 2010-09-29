@@ -11,8 +11,7 @@
 #include "canvas.h"
 
 typedef struct {
-  unsigned char r, g, b;
-  double a;
+  float r, g, b, a;
 } rgba_t;
 
 class Context2d: public node::ObjectWrap {

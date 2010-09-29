@@ -18,9 +18,9 @@ using namespace node;
  */
 
 #define RGBA(_,R,G,B,A) \
-  _.r = R; \
-  _.g = G; \
-  _.b = B; \
+  _.r = R / 255 * 1; \
+  _.g = G / 255 * 1; \
+  _.b = B / 255 * 1; \
   _.a = A; \
 
 /*
@@ -61,10 +61,10 @@ using namespace node;
     return ThrowException(Exception::TypeError(String::New("b required"))); \
   if (!args[3]->IsNumber()) \
     return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  int r = args[0]->Int32Value(); \
-  int g = args[1]->Int32Value(); \
-  int b = args[2]->Int32Value(); \
-  double a = args[3]->NumberValue();
+  float r = args[0]->Int32Value(); \
+  float g = args[1]->Int32Value(); \
+  float b = args[2]->Int32Value(); \
+  float a = args[3]->NumberValue();
 
 /*
  * Initialize Context2d.
