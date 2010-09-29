@@ -31,6 +31,24 @@ using namespace node;
   int height = args[3]->Int32Value();
 
 /*
+ * RGBA arg assertions.
+ */
+
+#define RGBA_ARGS \
+  if (!args[0]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("r required"))); \
+  if (!args[1]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("g required"))); \
+  if (!args[2]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("b required"))); \
+  if (!args[3]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("alpha required"))); \
+  int r = args[0]->Int32Value(); \
+  int g = args[1]->Int32Value(); \
+  int b = args[2]->Int32Value(); \
+  int a = args[3]->NumberValue();
+
+/*
  * Initialize Context2d.
  */
 
@@ -96,23 +114,10 @@ Context2d::~Context2d() {
 Handle<Value>
 Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
-
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("r required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("g required")));
-  if (!args[2]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("b required")));
-  if (!args[3]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("alpha required")));
-
+  RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
-  cairo_set_source_rgba(context->getContext()
-    , args[0]->Int32Value()
-    , args[1]->Int32Value()
-    , args[2]->Int32Value()
-    , args[3]->NumberValue());
+  cairo_set_source_rgba(context->getContext(), r, g, b, a);
   
   return Undefined();
 }
