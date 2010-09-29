@@ -11,15 +11,14 @@
 
      [x] drawing shapes
      [x] line styles
+     [x] list of valid css colors
+     [x] match canvas defaults (mostly, test suite from webkit would be nice)
+     [x] transformations
      [ ] anti aliasing
-     [ ] match canvas defaults (not all args are required)
-     [ ] list of valid css colors
      [ ] gradients
      [ ] Image
      [ ] patterns
      [ ] text
-     [ ] rectangles
-     [ ] transformations
      [ ] compositing
      [ ] PixelArray
      [ ] async saving to disk (png, svg, etc)
