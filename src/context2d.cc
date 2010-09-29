@@ -283,18 +283,12 @@ Handle<Value>
 Context2d::BezierCurveTo(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("cp1x required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("cp1y required")));
-  if (!args[2]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("cp2x required")));
-  if (!args[3]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("cp2y required")));
-  if (!args[4]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("x required")));
-  if (!args[5]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("y required")));
+  if (!args[0]->IsNumber()
+    ||!args[1]->IsNumber()
+    ||!args[2]->IsNumber()
+    ||!args[3]->IsNumber()
+    ||!args[4]->IsNumber()
+    ||!args[5]->IsNumber()) return Undefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_curve_to(context->getContext()
