@@ -23,6 +23,17 @@ using namespace node;
   _.a = A; \
 
 /*
+ * Set source RGBA.
+ */
+
+#define SET_SOURCE_RGBA(C) \
+  cairo_set_source_rgba(ctx \
+    , C.r \
+    , C.g \
+    , C.b \
+    , C.a);
+
+/*
  * Rectangle arg assertions.
  */
 
@@ -211,13 +222,8 @@ Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  cairo_set_source_rgba(
-      ctx
-    , context->fill.r
-    , context->fill.g
-    , context->fill.b
-    , context->fill.a);
-  cairo_fill(ctx);
+  SET_SOURCE_RGBA(context->fill);
+  cairo_fill_preserve(ctx);
   return Undefined();
 }
 
@@ -230,13 +236,8 @@ Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  cairo_set_source_rgba(
-      ctx
-    , context->stroke.r
-    , context->stroke.g
-    , context->stroke.b
-    , context->stroke.a);
-  cairo_stroke(ctx);
+  SET_SOURCE_RGBA(context->stroke);
+  cairo_stroke_preserve(ctx);
   return Undefined();
 }
 
