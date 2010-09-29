@@ -24,6 +24,8 @@
 
 ## Testing
 
+Visual tests utilize md5 checksums in order to assert integrity.
+
 Build:
 
     $ node-waf configure build
