@@ -39,10 +39,10 @@ using namespace node;
  */
 
 #define RECT_ARGS \
-  if (!args[0]->IsNumber()) return Undefined(); \
-  if (!args[1]->IsNumber()) return Undefined(); \
-  if (!args[2]->IsNumber()) return Undefined(); \
-  if (!args[3]->IsNumber()) return Undefined(); \
+  if (!args[0]->IsNumber() \
+    ||!args[1]->IsNumber() \
+    ||!args[2]->IsNumber() \
+    ||!args[3]->IsNumber()) return Undefined(); \
   int x = args[0]->Int32Value(); \
   int y = args[1]->Int32Value(); \
   int width = args[2]->Int32Value(); \
