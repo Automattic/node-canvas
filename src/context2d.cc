@@ -13,6 +13,16 @@ using namespace v8;
 using namespace node;
 
 /*
+ * Set RGBA.
+ */
+
+#define RGBA(_,R,G,B,A) \
+  _.r = R; \
+  _.g = G; \
+  _.b = B; \
+  _.a = A; \
+
+/*
  * Rectangle arg assertions.
  */
 
@@ -97,7 +107,8 @@ Context2d::New(const Arguments &args) {
 Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
-  cairo_set_source_rgba(_context, 0, 0, 0, 1);
+  RGBA(fill,0,0,0,1);
+  RGBA(stroke,0,0,0,1);
 }
 
 /*
@@ -117,10 +128,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->fill.r = r;
-  context->fill.g = g;
-  context->fill.b = b;
-  context->fill.a = a;
+  RGBA(context->fill,r,g,b,a);
   return Undefined();
 }
 
@@ -133,10 +141,7 @@ Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->stroke.r = r;
-  context->stroke.g = g;
-  context->stroke.b = b;
-  context->stroke.a = a;
+  RGBA(context->fill,r,g,b,a);
   return Undefined();
 }
 
