@@ -95,7 +95,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '1cd349f7d3d2ae5a2bce13ca35dcaa94'
+      , '130c5457e19da9d35b46970c2c3e035f'
       , 'Context2d#strokeRect() failed');
   },
   
@@ -122,7 +122,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '44cce447dcb15918c9baf9170f87911f'
+      , '3d500105083716f798cf3de3ef6a4a56'
       , 'Context2d#lineTo() failed'
       );
   },
@@ -145,7 +145,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '3c48a221b24c582f46e39c16678b12dd'
+      , '82997bc57c3941afea72ba571d713160'
       , 'Context2d#arc() failed');
   },
   
@@ -184,7 +184,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , 'f60ba975e224d6f6a93af0c656d739d5'
+      , 'b364d4572f8b4fe03e1290235dcf2e55'
       , 'Context2d#rotate() failed');
   },
   
@@ -207,7 +207,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '0437605377cc9840c58cb166fb0b89d4'
+      , '603b1e1c8a4bc0048c9a0944c83e82f4'
       , 'fill with stroke failed');
   },
   
@@ -224,7 +224,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '2909bb99d128e3ea1ee839b73dc1a0ed'
+      , 'a670979e566eafa07e3938aec9e2b7a3'
       , 'Context2d#rect() failed');
   },
   
