@@ -84,6 +84,11 @@ Context2d::Initialize(Handle<Object> target) {
 
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -125,6 +130,7 @@ Context2d::New(const Arguments &args) {
 Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
+  cairo_set_line_width(_context, 1);
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
 }
@@ -307,6 +313,30 @@ Context2d::BezierCurveTo(const Arguments &args) {
 }
 
 /*
+ * Save state.
+ */
+
+Handle<Value>
+Context2d::Save(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_save(context->getContext());
+  return Undefined();
+}
+
+/*
+ * Restore state.
+ */
+
+Handle<Value>
+Context2d::Restore(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_restore(context->getContext());
+  return Undefined();
+}
+
+/*
  * Creates a new subpath.
  */
 
@@ -327,6 +357,47 @@ Context2d::ClosePath(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_close_path(context->getContext());
+  return Undefined();
+}
+
+/*
+ * Rotate transformation.
+ */
+
+Handle<Value>
+Context2d::Rotate(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_rotate(context->getContext()
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
+  return Undefined();
+}
+
+/*
+ * Translate transformation.
+ */
+
+Handle<Value>
+Context2d::Translate(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_translate(context->getContext()
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
+  return Undefined();
+}
+
+/*
+ * Scale transformation.
+ */
+
+Handle<Value>
+Context2d::Scale(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_scale(context->getContext()
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
   return Undefined();
 }
 
