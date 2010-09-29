@@ -9,18 +9,18 @@
 
 ## TODO
 
-   [ ] drawing shapes
-   [ ] line styles
-   [ ] list of valid css colors
-   [ ] gradients
-   [ ] Image
-   [ ] patterns
-   [ ] text
-   [ ] rectangles
-   [ ] transformations
-   [ ] compositing
-   [ ] PixelArray
-   [ ] async saving to disk (png, svg, etc)
+     [ ] drawing shapes
+     [ ] line styles
+     [ ] list of valid css colors
+     [ ] gradients
+     [ ] Image
+     [ ] patterns
+     [ ] text
+     [ ] rectangles
+     [ ] transformations
+     [ ] compositing
+     [ ] PixelArray
+     [ ] async saving to disk (png, svg, etc)
 
 ## Testing
 
