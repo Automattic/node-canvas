@@ -23,6 +23,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);
     static Handle<Value> Restore(const Arguments &args);
+    static Handle<Value> Rotate(const Arguments &args);
+    static Handle<Value> Translate(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);

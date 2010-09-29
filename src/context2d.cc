@@ -86,6 +86,8 @@ Context2d::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -353,6 +355,44 @@ Context2d::ClosePath(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_close_path(context->getContext());
+  return Undefined();
+}
+
+/*
+ * Rotate transformation.
+ */
+
+Handle<Value>
+Context2d::Rotate(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()) 
+    return ThrowException(Exception::TypeError(String::New("angle required")));
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_rotate(context->getContext(), args[0]->NumberValue());
+
+  return Undefined();
+}
+
+/*
+ * Translate transformation.
+ */
+
+Handle<Value>
+Context2d::Translate(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()) 
+    return ThrowException(Exception::TypeError(String::New("tx required")));
+  if (!args[1]->IsNumber()) 
+    return ThrowException(Exception::TypeError(String::New("ty required")));
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_translate(context->getContext()
+    , args[0]->NumberValue()
+    , args[1]->NumberValue());
+
   return Undefined();
 }
 
