@@ -4,4 +4,4 @@ test.js
 .lock-wscript
 test.png
 test.html
-test/*.png
+test/images/*.png

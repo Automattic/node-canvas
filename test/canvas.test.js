@@ -70,7 +70,7 @@ module.exports = {
   'test Context2d#clearRect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/clearRect.png';
+      , path = __dirname + '/images/clearRect.png';
     
     ctx.fillRect(25,25,100,100);
     ctx.clearRect(45,45,60,60);
@@ -86,7 +86,7 @@ module.exports = {
   'test Context2d#strokeRect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/strokeRect.png';
+      , path = __dirname + '/images/strokeRect.png';
     
     ctx.fillRect(25,25,100,100);
     ctx.clearRect(45,45,60,60);
@@ -102,7 +102,7 @@ module.exports = {
   'test Context2d#lineTo()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/lineTo.png';
+      , path = __dirname + '/images/lineTo.png';
     
     // Filled triangle
     ctx.beginPath();
@@ -130,7 +130,7 @@ module.exports = {
   'test Context2d#arc()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/arc.png';
+      , path = __dirname + '/images/arc.png';
     
     ctx.beginPath();
     ctx.arc(75,75,50,0,Math.PI*2,true); // Outer circle
@@ -152,7 +152,7 @@ module.exports = {
   'test Context2d#bezierCurveTo()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/bezierCurveTo.png';
+      , path = __dirname + '/images/bezierCurveTo.png';
     
     ctx.beginPath();
     ctx.moveTo(75,40);
@@ -174,7 +174,7 @@ module.exports = {
   'test Context2d#rotate()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/rotate.png';
+      , path = __dirname + '/images/rotate.png';
     
     ctx.rotate(0.4);
     ctx.translate(30,0);
@@ -191,7 +191,7 @@ module.exports = {
   'test fill with stroke': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/fillWithStroke.png';
+      , path = __dirname + '/images/fillWithStroke.png';
 
     ctx.beginPath();
     ctx.arc(75,75,50,0,Math.PI*2,true);
@@ -214,7 +214,7 @@ module.exports = {
   'test Context2d#rect()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/rect.png';
+      , path = __dirname + '/images/rect.png';
     
     ctx.rect(5,5,50,50);
     ctx.strokeStyle = 'yellow';
@@ -231,7 +231,7 @@ module.exports = {
   'test Context2d#fillStyle=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/fillStyle.png';
+      , path = __dirname + '/images/fillStyle.png';
     
     ctx.fillStyle = '#000';
     ctx.fillRect(110, 110, 50, 50);
@@ -255,7 +255,7 @@ module.exports = {
   'test Context2d#lineWidth=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/lineWidth.png';
+      , path = __dirname + '/images/lineWidth.png';
 
     ctx.beginPath();
     ctx.lineWidth = 10.0;
@@ -275,7 +275,7 @@ module.exports = {
   'test Context2d#lineCap=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/lineCap.png';
+      , path = __dirname + '/images/lineCap.png';
 
     ctx.beginPath();
     ctx.lineWidth = 10.0;
@@ -296,7 +296,7 @@ module.exports = {
   'test Context2d#lineJoin=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/lineJoin.png';
+      , path = __dirname + '/images/lineJoin.png';
 
     ctx.beginPath();
     ctx.lineWidth = 10.0;
@@ -317,7 +317,7 @@ module.exports = {
   'test Context2d states': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
-      , path = __dirname + '/states.png';
+      , path = __dirname + '/images/states.png';
     
     ctx.arc(5,5,-1)
     ctx.save();
