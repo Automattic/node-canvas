@@ -532,16 +532,11 @@ Handle<Value>
 Context2d::Arc(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("x required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("y required")));
-  if (!args[2]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("radius required")));
-  if (!args[3]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("startAngle required")));
-  if (!args[4]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("endAngle required")));
+  if (!args[0]->IsNumber()
+    ||!args[1]->IsNumber()
+    ||!args[2]->IsNumber()
+    ||!args[3]->IsNumber()
+    ||!args[4]->IsNumber()) return Undefined();
 
   bool anticlockwise = args[5]->BooleanValue();
 
