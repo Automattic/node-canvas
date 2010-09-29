@@ -232,23 +232,23 @@ module.exports = {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/images/fillStyle.png';
-    
-    ctx.fillStyle = '#000';
-    ctx.fillRect(110, 110, 50, 50);
-    assert.equal('rgba(0,0,0,1)', ctx.fillStyle);
 
     ctx.fillStyle = 'rgb(0,55,0)';
     ctx.fillRect(10, 10, 50, 50);
     assert.equal('rgba(0,55,0,1)', ctx.fillStyle);
 
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
     ctx.fillRect(60, 60, 50, 50);
-    assert.equal('rgba(0,0,0,0.5)', ctx.fillStyle);
+    assert.equal('rgba(0,0,0,0.1)', ctx.fillStyle);
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(110, 110, 50, 50);
+    assert.equal('rgba(0,0,0,1)', ctx.fillStyle);
 
     assertChecksum(
         canvas
       , path
-      , '01632d060ba4702a53862a955382d30d'
+      , '804d2494db2eeda204ccbd6d0b48265a'
       , 'Context2d#fillStyle= failed');
   },
   
