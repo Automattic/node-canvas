@@ -216,5 +216,24 @@ module.exports = {
       , path
       , '01632d060ba4702a53862a955382d30d'
       , 'Canvas#fillStyle= failed');
+  },
+  
+  'test Canvas#lineWidth=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/lineWidth.png';
+
+    ctx.beginPath();
+    ctx.lineWidth = 10.0;
+    ctx.moveTo(50, 50);
+    ctx.lineTo(50, 100);
+    ctx.lineTo(80, 120);
+    ctx.stroke();
+
+    assertChecksum(
+        canvas
+      , path
+      , '0bc6f64d58f326ca7ad3ade4426fb90f'
+      , 'Canvas#lineWidth= failed');
   }
 }
