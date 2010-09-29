@@ -33,6 +33,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> FillRect(const Arguments &args);
     static Handle<Value> StrokeRect(const Arguments &args);
     static Handle<Value> ClearRect(const Arguments &args);
+    static Handle<Value> Rect(const Arguments &args);
     static Handle<Value> Arc(const Arguments &args);
     static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);

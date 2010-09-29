@@ -194,6 +194,23 @@ module.exports = {
       , 'fill with stroke failed');
   },
   
+  'test Canvas#rect()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/rect.png';
+    
+    ctx.rect(5,5,50,50);
+    ctx.strokeStyle = 'yellow';
+    ctx.fill();
+    ctx.stroke();
+    
+    assertChecksum(
+        canvas
+      , path
+      , '2909bb99d128e3ea1ee839b73dc1a0ed'
+      , 'Canvas#rect() failed');
+  },
+  
   'test Canvas#fillStyle=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')

@@ -89,6 +89,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
+  NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
   NODE_SET_PROTOTYPE_METHOD(t, "bezierCurveTo", BezierCurveTo);
@@ -446,6 +447,19 @@ Context2d::ClearRect(const Arguments &args) {
   SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
+  return Undefined();
+}
+
+/*
+ * Adds a rectangle subpath.
+ */
+
+Handle<Value>
+Context2d::Rect(const Arguments &args) {
+  HandleScope scope;
+  RECT_ARGS;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_rectangle(context->getContext(), x, y, width, height);
   return Undefined();
 }
 
