@@ -294,6 +294,7 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -309,6 +310,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->stroke);
   cairo_stroke(ctx);
   return Undefined();
 }
@@ -325,6 +327,7 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_rectangle(ctx, x, y, width, height);
+  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   return Undefined();
