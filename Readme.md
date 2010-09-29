@@ -16,6 +16,16 @@
    [ ] PixelArray
    [ ] async saving to disk (png, svg, etc)
 
+## Testing
+
+Build:
+
+    $ node-waf configure build
+
+Test:
+
+    $ make test
+
 ## License 
 
 (The MIT License)
