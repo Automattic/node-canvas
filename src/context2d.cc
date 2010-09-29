@@ -141,7 +141,7 @@ Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->fill,r,g,b,a);
+  RGBA(context->stroke,r,g,b,a);
   return Undefined();
 }
 
