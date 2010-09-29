@@ -8,6 +8,7 @@
 #include "canvas.h"
 #include "context2d.h"
 #include <math.h>
+#include <string.h>
 
 using namespace v8;
 using namespace node;
@@ -82,6 +83,7 @@ Context2d::Initialize(Handle<Object> target) {
   t->SetClassName(String::NewSymbol("Context2d"));
 
   // Prototype
+  Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -95,6 +97,10 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
+  proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
+  proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
+  proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -128,6 +134,116 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+/*
+ * Get miter limit.
+ */
+
+Handle<Value>
+Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(cairo_get_miter_limit(context->getContext()));
+}
+
+/*
+ * Set miter limit.
+ */
+
+void
+Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_set_miter_limit(context->getContext(), val->NumberValue());
+}
+
+/*
+ * Get line width.
+ */
+
+Handle<Value>
+Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(cairo_get_line_width(context->getContext()));
+}
+
+/*
+ * Set line width.
+ */
+
+void
+Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_set_line_width(context->getContext(), val->NumberValue());
+}
+
+/*
+ * Get line join.
+ */
+
+Handle<Value>
+Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_line_join(context->getContext())) {
+    case CAIRO_LINE_JOIN_BEVEL:
+      return String::NewSymbol("bevel");
+    case CAIRO_LINE_JOIN_ROUND:
+      return String::NewSymbol("round");
+    default:
+      return String::NewSymbol("miter");
+  }
+}
+
+/*
+ * Set line join.
+ */
+
+void
+Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  String::AsciiValue type(val);
+  if (0 == strcmp("round", *type)) {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
+  } else if (0 == strcmp("bevel", *type)) {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_BEVEL);
+  } else {
+    cairo_set_line_join(ctx, CAIRO_LINE_JOIN_MITER);
+  }
+}
+
+/*
+ * Get line cap.
+ */
+
+Handle<Value>
+Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_line_cap(context->getContext())) {
+    case CAIRO_LINE_CAP_ROUND:
+      return String::NewSymbol("round");
+    case CAIRO_LINE_CAP_SQUARE:
+      return String::NewSymbol("square");
+    default:
+      return String::NewSymbol("butt");
+  }
+}
+
+/*
+ * Set line cap.
+ */
+
+void
+Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  String::AsciiValue type(val);
+  if (0 == strcmp("round", *type)) {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
+  } else if (0 == strcmp("square", *type)) {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_SQUARE);
+  } else {
+    cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
+  }
 }
 
 /*
