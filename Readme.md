@@ -11,7 +11,7 @@
 
    [ ] drawing shapes
    [ ] line styles
-   [ ] fix colors
+   [ ] list of valid css colors
    [ ] gradients
    [ ] Image
    [ ] patterns
