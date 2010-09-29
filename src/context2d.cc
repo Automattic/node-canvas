@@ -67,7 +67,7 @@ using namespace node;
   int r = args[0]->Int32Value(); \
   int g = args[1]->Int32Value(); \
   int b = args[2]->Int32Value(); \
-  int a = args[3]->NumberValue();
+  double a = args[3]->NumberValue();
 
 /*
  * Initialize Context2d.
