@@ -365,13 +365,9 @@ Context2d::ClosePath(const Arguments &args) {
 Handle<Value>
 Context2d::Rotate(const Arguments &args) {
   HandleScope scope;
-
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("angle required")));
-
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_rotate(context->getContext(), args[0]->NumberValue());
-
+  cairo_rotate(context->getContext()
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
   return Undefined();
 }
 
@@ -382,17 +378,10 @@ Context2d::Rotate(const Arguments &args) {
 Handle<Value>
 Context2d::Translate(const Arguments &args) {
   HandleScope scope;
-
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("tx required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("ty required")));
-
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_translate(context->getContext()
-    , args[0]->NumberValue()
-    , args[1]->NumberValue());
-
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
   return Undefined();
 }
 
