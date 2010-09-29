@@ -130,6 +130,7 @@ Context2d::New(const Arguments &args) {
 Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
+  cairo_set_line_width(_context, 1);
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
 }
