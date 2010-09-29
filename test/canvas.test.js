@@ -225,6 +225,7 @@ module.exports = {
 
     ctx.beginPath();
     ctx.lineWidth = 10.0;
+    assert.equal(10, ctx.lineWidth);
     ctx.moveTo(50, 50);
     ctx.lineTo(50, 100);
     ctx.lineTo(80, 120);
@@ -235,5 +236,26 @@ module.exports = {
       , path
       , '0bc6f64d58f326ca7ad3ade4426fb90f'
       , 'Canvas#lineWidth= failed');
+  },
+  
+  'test Canvas#lineCap=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/lineCap.png';
+
+    ctx.beginPath();
+    ctx.lineWidth = 10.0;
+    ctx.lineCap = 'round';
+    assert.equal('round', ctx.lineCap);
+    ctx.moveTo(50, 50);
+    ctx.lineTo(50, 100);
+    ctx.lineTo(80, 120);
+    ctx.stroke();
+
+    assertChecksum(
+        canvas
+      , path
+      , 'd5b84ea10a3e6df723b702a32329ed43'
+      , 'Canvas#lineCap= failed');
   }
 }
