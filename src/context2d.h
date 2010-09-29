@@ -11,8 +11,7 @@
 #include "canvas.h"
 
 typedef struct {
-  unsigned char r, g, b;
-  double a;
+  float r, g, b, a;
 } rgba_t;
 
 class Context2d: public node::ObjectWrap {
@@ -26,6 +25,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> Rotate(const Arguments &args);
     static Handle<Value> Translate(const Arguments &args);
     static Handle<Value> Scale(const Arguments &args);
+    static Handle<Value> Transform(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);

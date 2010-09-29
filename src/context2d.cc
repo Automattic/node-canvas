@@ -18,9 +18,9 @@ using namespace node;
  */
 
 #define RGBA(_,R,G,B,A) \
-  _.r = R; \
-  _.g = G; \
-  _.b = B; \
+  _.r = R / 255 * 1; \
+  _.g = G / 255 * 1; \
+  _.b = B / 255 * 1; \
   _.a = A; \
 
 /*
@@ -61,10 +61,10 @@ using namespace node;
     return ThrowException(Exception::TypeError(String::New("b required"))); \
   if (!args[3]->IsNumber()) \
     return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  int r = args[0]->Int32Value(); \
-  int g = args[1]->Int32Value(); \
-  int b = args[2]->Int32Value(); \
-  double a = args[3]->NumberValue();
+  float r = args[0]->Int32Value(); \
+  float g = args[1]->Int32Value(); \
+  float b = args[2]->Int32Value(); \
+  float a = args[3]->NumberValue();
 
 /*
  * Initialize Context2d.
@@ -84,6 +84,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
   NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(t, "transform", Transform);
   NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
@@ -360,6 +361,29 @@ Context2d::Rotate(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_rotate(context->getContext()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
+  return Undefined();
+}
+
+/*
+ * Transform.
+ */
+
+Handle<Value>
+Context2d::Transform(const Arguments &args) {
+  HandleScope scope;
+
+  cairo_matrix_t matrix;
+  cairo_matrix_init(&matrix
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0
+    , args[2]->IsNumber() ? args[2]->NumberValue() : 0
+    , args[3]->IsNumber() ? args[3]->NumberValue() : 0
+    , args[4]->IsNumber() ? args[4]->NumberValue() : 0
+    , args[5]->IsNumber() ? args[5]->NumberValue() : 0);
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_transform(context->getContext(), &matrix);
+  
   return Undefined();
 }
 
