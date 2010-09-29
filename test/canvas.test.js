@@ -312,5 +312,32 @@ module.exports = {
       , path
       , 'bf97d882a0e99595109fb4f564fa41bf'
       , 'Context2d#lineJoin= failed');
+  },
+  
+  'test Context2d states': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/states.png';
+    
+    ctx.arc(5,5,-1)
+    ctx.save();
+    ctx.rect(50, 50, 100, 100);
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.save();
+    ctx.translate(50,50);
+    ctx.scale(.5,.5);
+    ctx.strokeRect(51, 51, 100, 100);
+
+    ctx.restore();
+    ctx.translate(95,95);
+    ctx.fillRect(0,0,10,10);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'fc8bbf2cf6ae2d85fcf526103200e844'
+      , 'Context2d#save() / resetore() failed');
   }
 }
