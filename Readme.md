@@ -9,7 +9,7 @@
 
 ## TODO
 
-     [ ] drawing shapes
+     [x] drawing shapes
      [ ] line styles
      [ ] list of valid css colors
      [ ] gradients
