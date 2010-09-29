@@ -82,6 +82,7 @@ Context2d::Initialize(Handle<Object> target) {
   t->SetClassName(String::NewSymbol("Context2d"));
 
   // Prototype
+  Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -95,6 +96,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   target->Set(String::NewSymbol("Context2d"), t->GetFunction());
 }
 
@@ -128,6 +130,26 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+/*
+ * Get line width.
+ */
+
+Handle<Value>
+Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(cairo_get_line_width(context->getContext()));
+}
+
+/*
+ * Set line width.
+ */
+
+void
+Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_set_line_width(context->getContext(), val->NumberValue());
 }
 
 /*
