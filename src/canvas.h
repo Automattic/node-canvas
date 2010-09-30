@@ -21,8 +21,6 @@ class Canvas: public node::ObjectWrap {
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> SavePNG(const Arguments &args);
     inline cairo_surface_t *getSurface(){ return _surface; }
-
-  protected:
     Canvas(int width, int height);
 
   private:
