@@ -188,6 +188,8 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
       return String::NewSymbol("destination-out");
     case CAIRO_OPERATOR_DEST_OVER:
       return String::NewSymbol("destination-over");
+    case CAIRO_OPERATOR_ADD:
+      return String::NewSymbol("lighter");
     default:
       return String::NewSymbol("source-over");
   }
@@ -204,6 +206,8 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   String::AsciiValue type(val->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
+  }else if (0 == strcmp("lighter", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
   }else if (0 == strcmp("source-atop", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
   } else if (0 == strcmp("source-in", *type)) {
