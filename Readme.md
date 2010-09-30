@@ -14,6 +14,7 @@
      [x] list of valid css colors
      [x] match canvas defaults (mostly, test suite from webkit would be nice)
      [x] transformations
+     [ ] make sure constructor names match
      [ ] anti aliasing
      [ ] gradients
      [ ] Image
