@@ -15,6 +15,7 @@ Gradient::Initialize(Handle<Object> target) {
   t->InstanceTemplate()->SetInternalFieldCount(1);
   t->SetClassName(String::NewSymbol("CanvasGradient"));
 
+  NODE_SET_PROTOTYPE_METHOD(t, "addColorStopRGBA", AddColorStopRGBA);
   target->Set(String::NewSymbol("CanvasGradient"), t->GetFunction());
 }
 
@@ -49,12 +50,23 @@ Gradient::New(const Arguments &args) {
   return ThrowException(Exception::TypeError(String::New("invalid arguments")));
 }
 
+Handle<Value>
+Gradient::AddColorStopRGBA(const Arguments &args) {
+  HandleScope scope;
+  if (!args[0]->IsNumber()) \
+    return ThrowException(Exception::TypeError(String::New("offset required"))); \
+  RGBA_ARGS(1);
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
+  cairo_pattern_add_color_stop_rgba(grad->getPattern(), args[0]->NumberValue(), r, g, b, a);
+  return Undefined();
+}
+
 Gradient::Gradient(double x0, double y0, double x1, double y1):
   _x0(x0), _y0(y0), _x1(x1), _y1(y1) {
-  _grad = cairo_pattern_create_linear(x0, y0, x1, y1);
+  _pattern = cairo_pattern_create_linear(x0, y0, x1, y1);
 }
 
 Gradient::Gradient(double x0, double y0, double r0, double x1, double y1, double r1):
   _x0(x0), _y0(y0), _x1(x1), _y1(y1), _r0(r0), _r1(r1) {
-  _grad = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
+  _pattern = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
 }

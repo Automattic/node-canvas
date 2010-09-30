@@ -49,24 +49,6 @@ using namespace node;
   int height = args[3]->Int32Value();
 
 /*
- * RGBA arg assertions.
- */
-
-#define RGBA_ARGS \
-  if (!args[0]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("r required"))); \
-  if (!args[1]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("g required"))); \
-  if (!args[2]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("b required"))); \
-  if (!args[3]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  float r = args[0]->Int32Value(); \
-  float g = args[1]->Int32Value(); \
-  float b = args[2]->Int32Value(); \
-  float a = args[3]->NumberValue();
-
-/*
  * Initialize Context2d.
  */
 
@@ -344,7 +326,7 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
 Handle<Value>
 Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS;
+  RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   RGBA(context->fill,r,g,b,a);
   return Undefined();
@@ -357,7 +339,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
 Handle<Value>
 Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS;
+  RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   RGBA(context->stroke,r,g,b,a);
   return Undefined();
