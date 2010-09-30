@@ -32,7 +32,7 @@ using namespace node;
     , C.r \
     , C.g \
     , C.b \
-    , C.a);
+    , context->globalAlpha == -1 ? C.a : context->globalAlpha);
 
 /*
  * Rectangle arg assertions.
@@ -129,7 +129,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
-  globalAlpha = NULL;
+  globalAlpha = -1;
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
 }
