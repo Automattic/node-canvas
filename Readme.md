@@ -15,7 +15,7 @@
      [x] match canvas defaults (mostly, test suite from webkit would be nice)
      [x] transformations
      [x] gradients
-     [ ] make sure constructor names match
+     [x] make sure constructor names match
      [ ] anti aliasing
      [ ] Image
      [ ] patterns

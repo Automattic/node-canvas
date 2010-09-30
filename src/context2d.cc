@@ -65,7 +65,7 @@ Context2d::Initialize(Handle<Object> target) {
   // Constructor
   Local<FunctionTemplate> t = FunctionTemplate::New(Context2d::New);
   t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("Context2d"));
+  t->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
 
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
@@ -97,7 +97,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
   proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
-  target->Set(String::NewSymbol("Context2d"), t->GetFunction());
+  target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
 }
 
 /*
