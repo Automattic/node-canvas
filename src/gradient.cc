@@ -57,7 +57,10 @@ Gradient::AddColorStopRGBA(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("offset required"))); \
   RGBA_ARGS(1);
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
-  cairo_pattern_add_color_stop_rgba(grad->getPattern(), args[0]->NumberValue(), r, g, b, a);
+  cairo_pattern_add_color_stop_rgba(
+      grad->getPattern()
+    , args[0]->NumberValue()
+    , r, g, b, a);
   return Undefined();
 }
 
