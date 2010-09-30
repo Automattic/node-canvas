@@ -360,5 +360,33 @@ module.exports = {
       , path
       , 'd8365233f2beb420ba18ff78dc6d7405'
       , 'Context2d#globalAlpha= failed');
+  },
+  
+  'test Context2d#createLinearGradient()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/linearGradients.png';
+    
+    var lingrad = ctx.createLinearGradient(0,0,0,150);
+    lingrad.addColorStop(0, '#00ABEB');
+    lingrad.addColorStop(0.5, '#fff');
+    lingrad.addColorStop(0.5, '#26C000');
+    lingrad.addColorStop(1, '#fff');
+
+    var lingrad2 = ctx.createLinearGradient(0,50,0,95);
+    lingrad2.addColorStop(0.5, '#000');
+    lingrad2.addColorStop(1, 'rgba(0,0,0,0)');
+
+    ctx.fillStyle = lingrad;
+    ctx.strokeStyle = lingrad2;
+
+    ctx.fillRect(10,10,130,130);
+    ctx.strokeRect(50,50,50,50);
+   
+    assertChecksum(
+        canvas
+      , path
+      , '55f80d7d33000904ca366e0cfe363079'
+      , 'Context2d#createLinearGradient() failed');
   }
 }
