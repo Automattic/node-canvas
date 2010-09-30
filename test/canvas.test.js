@@ -339,5 +339,26 @@ module.exports = {
       , path
       , 'fc8bbf2cf6ae2d85fcf526103200e844'
       , 'Context2d#save() / resetore() failed');
+  },
+  
+  'test Context2d#globalAlpha=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/globalAlpha.png';
+
+    ctx.fillRect(0,0,50,50);
+    ctx.translate(15,15);
+    ctx.globalAlpha = 0.6;
+    assert.equal(0.6, ctx.globalAlpha.toFixed(1));
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0,0,20,20);
+    ctx.fillStyle = 'yellow';
+    ctx.fillRect(0,0,10,10);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'd8365233f2beb420ba18ff78dc6d7405'
+      , 'Context2d#globalAlpha= failed');
   }
 }
