@@ -100,6 +100,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
@@ -158,6 +159,26 @@ Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->globalAlpha = val->NumberValue();
+}
+
+/*
+ * Get global composite operation.
+ */
+
+Handle<Value>
+Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(context->globalAlpha);
+}
+
+/*
+ * Set global composite operation.
+ */
+
+void
+Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->globalAlpha = val->NumberValue();
 }
