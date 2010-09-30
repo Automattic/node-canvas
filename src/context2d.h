@@ -18,6 +18,7 @@ class Context2d: public node::ObjectWrap {
   public:
     rgba_t fill;
     rgba_t stroke;
+    float globalAlpha;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);
@@ -40,10 +41,12 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> ClearRect(const Arguments &args);
     static Handle<Value> Rect(const Arguments &args);
     static Handle<Value> Arc(const Arguments &args);
+    static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineJoin(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineWidth(Local<String> prop, const AccessorInfo &info);
+    static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info);

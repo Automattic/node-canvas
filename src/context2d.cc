@@ -100,6 +100,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
@@ -128,6 +129,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
+  globalAlpha = NULL;
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
 }
@@ -138,6 +140,26 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+/*
+ * Get global alpha.
+ */
+
+Handle<Value>
+Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(context->globalAlpha);
+}
+
+/*
+ * Set global alpha.
+ */
+
+void
+Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->globalAlpha = val->NumberValue();
 }
 
 /*
