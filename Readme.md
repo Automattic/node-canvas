@@ -21,7 +21,7 @@
      [ ] text
      [ ] compositing
      [ ] PixelArray
-     [ ] async saving to disk (png, svg, etc)
+     [ ] data urls
 
 ## Testing
 
