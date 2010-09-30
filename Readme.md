@@ -16,11 +16,10 @@
      [x] transformations
      [x] gradients
      [x] make sure constructor names match
-     [ ] anti aliasing
+     [x] compositing
      [ ] Image
      [ ] patterns
      [ ] text
-     [ ] compositing
      [ ] PixelArray
      [ ] data urls
 
