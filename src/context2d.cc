@@ -100,6 +100,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
@@ -160,6 +161,66 @@ void
 Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->globalAlpha = val->NumberValue();
+}
+
+/*
+ * Get global composite operation.
+ */
+
+Handle<Value>
+Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  switch (cairo_get_operator(ctx)) {
+    case CAIRO_OPERATOR_ATOP:
+      return String::NewSymbol("source-atop");
+    case CAIRO_OPERATOR_IN:
+      return String::NewSymbol("source-in");
+    case CAIRO_OPERATOR_OUT:
+      return String::NewSymbol("source-out");
+    case CAIRO_OPERATOR_XOR:
+      return String::NewSymbol("xor");
+    case CAIRO_OPERATOR_DEST_ATOP:
+      return String::NewSymbol("destination-atop");
+    case CAIRO_OPERATOR_DEST_IN:
+      return String::NewSymbol("destination-in");
+    case CAIRO_OPERATOR_DEST_OUT:
+      return String::NewSymbol("destination-out");
+    case CAIRO_OPERATOR_DEST_OVER:
+      return String::NewSymbol("destination-over");
+    default:
+      return String::NewSymbol("source-over");
+  }
+}
+
+/*
+ * Set global composite operation.
+ */
+
+void
+Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  String::AsciiValue type(val->ToString());
+  if (0 == strcmp("xor", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
+  }else if (0 == strcmp("source-atop", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
+  } else if (0 == strcmp("source-in", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_IN);
+  } else if (0 == strcmp("source-out", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OUT);
+  } else if (0 == strcmp("destination-atop", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_ATOP);
+  } else if (0 == strcmp("destination-in", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  } else if (0 == strcmp("destination-out", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  } else if (0 == strcmp("destination-over", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  } else {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
+  }
 }
 
 /*
@@ -227,7 +288,7 @@ void
 Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->getContext();
-  String::AsciiValue type(val);
+  String::AsciiValue type(val->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -262,7 +323,7 @@ void
 Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->getContext();
-  String::AsciiValue type(val);
+  String::AsciiValue type(val->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
