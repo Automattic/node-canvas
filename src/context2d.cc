@@ -24,6 +24,12 @@ using namespace node;
   _.b = B / 255 * 1; \
   _.a = A; \
 
+#define SET_SOURCE(C) \
+  if (C##Pattern) \
+    cairo_set_source(ctx, C##Pattern); \
+  else \
+    SET_SOURCE_RGBA(C)
+
 /*
  * Set source RGBA.
  */
@@ -81,9 +87,10 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
-  NODE_SET_PROTOTYPE_METHOD(t, "setSource", SetSource);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  NODE_SET_PROTOTYPE_METHOD(t, "setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(t, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
@@ -114,6 +121,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
+  fillPattern = strokePattern = NULL;
   globalAlpha = -1;
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
@@ -322,16 +330,30 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
 }
 
 /*
- * Set source pattern, used internally for fillStyle=
+ * Set fill pattern, used internally for fillStyle=
  */
 
 Handle<Value>
-Context2d::SetSource(const Arguments &args) {
+Context2d::SetFillPattern(const Arguments &args) {
   HandleScope scope;
   // TODO: HasInstance / error handling
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
-  cairo_set_source(context->getContext(), grad->getPattern());
+  context->fillPattern = grad->getPattern();
+  return Undefined();
+}
+
+/*
+ * Set stroke pattern, used internally for strokeStyle=
+ */
+
+Handle<Value>
+Context2d::SetStrokePattern(const Arguments &args) {
+  HandleScope scope;
+  // TODO: HasInstance / error handling
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  context->strokePattern = grad->getPattern();
   return Undefined();
 }
 
@@ -509,7 +531,7 @@ Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE_RGBA(context->fill);
+  SET_SOURCE(context->fill);
   cairo_fill_preserve(ctx);
   return Undefined();
 }
@@ -523,7 +545,7 @@ Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE_RGBA(context->stroke);
+  SET_SOURCE(context->stroke);
   cairo_stroke_preserve(ctx);
   return Undefined();
 }
@@ -581,7 +603,7 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->fill);
+  SET_SOURCE(context->fill);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -597,7 +619,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->stroke);
+  SET_SOURCE(context->stroke);
   cairo_stroke(ctx);
   return Undefined();
 }
@@ -614,7 +636,6 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   return Undefined();

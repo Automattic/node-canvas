@@ -9,6 +9,7 @@
 #define __NODE_CONTEXT2D_H__
 
 #include "canvas.h"
+#include "gradient.h"
 
 typedef struct {
   float r, g, b, a;
@@ -18,6 +19,8 @@ class Context2d: public node::ObjectWrap {
   public:
     rgba_t fill;
     rgba_t stroke;
+    cairo_pattern_t *fillPattern;
+    cairo_pattern_t *strokePattern;
     float globalAlpha;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
@@ -34,6 +37,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> SetSource(const Arguments &args);
     static Handle<Value> SetFillRGBA(const Arguments &args);
     static Handle<Value> SetStrokeRGBA(const Arguments &args);
+    static Handle<Value> SetFillPattern(const Arguments &args);
+    static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> BezierCurveTo(const Arguments &args);
     static Handle<Value> LineTo(const Arguments &args);
     static Handle<Value> MoveTo(const Arguments &args);
