@@ -5,10 +5,11 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
-#include "context2d.h"
 #include <math.h>
 #include <string.h>
+#include "canvas.h"
+#include "context2d.h"
+#include "gradient.h"
 
 using namespace v8;
 using namespace node;
@@ -22,6 +23,12 @@ using namespace node;
   _.g = G / 255 * 1; \
   _.b = B / 255 * 1; \
   _.a = A; \
+
+#define SET_SOURCE(C) \
+  if (C##Pattern) \
+    cairo_set_source(ctx, C##Pattern); \
+  else \
+    SET_SOURCE_RGBA(C)
 
 /*
  * Set source RGBA.
@@ -47,24 +54,6 @@ using namespace node;
   int y = args[1]->Int32Value(); \
   int width = args[2]->Int32Value(); \
   int height = args[3]->Int32Value();
-
-/*
- * RGBA arg assertions.
- */
-
-#define RGBA_ARGS \
-  if (!args[0]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("r required"))); \
-  if (!args[1]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("g required"))); \
-  if (!args[2]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("b required"))); \
-  if (!args[3]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  float r = args[0]->Int32Value(); \
-  float g = args[1]->Int32Value(); \
-  float b = args[2]->Int32Value(); \
-  float a = args[3]->NumberValue();
 
 /*
  * Initialize Context2d.
@@ -100,6 +89,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
+  NODE_SET_PROTOTYPE_METHOD(t, "setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(t, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
@@ -130,6 +121,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
+  fillPattern = strokePattern = NULL;
   globalAlpha = -1;
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
@@ -338,13 +330,41 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
 }
 
 /*
+ * Set fill pattern, used internally for fillStyle=
+ */
+
+Handle<Value>
+Context2d::SetFillPattern(const Arguments &args) {
+  HandleScope scope;
+  // TODO: HasInstance / error handling
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  context->fillPattern = grad->getPattern();
+  return Undefined();
+}
+
+/*
+ * Set stroke pattern, used internally for strokeStyle=
+ */
+
+Handle<Value>
+Context2d::SetStrokePattern(const Arguments &args) {
+  HandleScope scope;
+  // TODO: HasInstance / error handling
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  context->strokePattern = grad->getPattern();
+  return Undefined();
+}
+
+/*
  * Set fill RGBA, used internally for fillStyle=
  */
 
 Handle<Value>
 Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS;
+  RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   RGBA(context->fill,r,g,b,a);
   return Undefined();
@@ -357,7 +377,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
 Handle<Value>
 Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS;
+  RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   RGBA(context->stroke,r,g,b,a);
   return Undefined();
@@ -511,7 +531,7 @@ Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE_RGBA(context->fill);
+  SET_SOURCE(context->fill);
   cairo_fill_preserve(ctx);
   return Undefined();
 }
@@ -525,7 +545,7 @@ Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE_RGBA(context->stroke);
+  SET_SOURCE(context->stroke);
   cairo_stroke_preserve(ctx);
   return Undefined();
 }
@@ -583,7 +603,7 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->fill);
+  SET_SOURCE(context->fill);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -599,7 +619,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->stroke);
+  SET_SOURCE(context->stroke);
   cairo_stroke(ctx);
   return Undefined();
 }
@@ -616,7 +636,6 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->fill);
   cairo_fill(ctx);
   cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   return Undefined();

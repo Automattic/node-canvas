@@ -37,7 +37,7 @@ Canvas::New(const Arguments &args) {
   if (!args[1]->IsNumber()) 
     return ThrowException(Exception::TypeError(String::New("height required")));
 
-  Canvas *canvas = new Canvas(args[0]->Uint32Value(), args[1]->Uint32Value());
+  Canvas *canvas = new Canvas(args[0]->Int32Value(), args[1]->Int32Value());
   canvas->Wrap(args.This());
   return args.This();
 }
