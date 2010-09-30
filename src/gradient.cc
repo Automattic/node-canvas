@@ -60,7 +60,10 @@ Gradient::AddColorStopRGBA(const Arguments &args) {
   cairo_pattern_add_color_stop_rgba(
       grad->getPattern()
     , args[0]->NumberValue()
-    , r, g, b, a);
+    , r / 255 * 1
+    , g / 255 * 1
+    , b / 255 * 1
+    , a);
   return Undefined();
 }
 

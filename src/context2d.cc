@@ -5,10 +5,11 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
-#include "context2d.h"
 #include <math.h>
 #include <string.h>
+#include "canvas.h"
+#include "context2d.h"
+#include "gradient.h"
 
 using namespace v8;
 using namespace node;
@@ -80,6 +81,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(t, "setSource", SetSource);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
@@ -317,6 +319,20 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
   } else {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
   }
+}
+
+/*
+ * Set source pattern, used internally for fillStyle=
+ */
+
+Handle<Value>
+Context2d::SetSource(const Arguments &args) {
+  HandleScope scope;
+  // TODO: HasInstance / error handling
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  cairo_set_source(context->getContext(), grad->getPattern());
+  return Undefined();
 }
 
 /*
