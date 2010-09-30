@@ -217,9 +217,9 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   } else if (0 == strcmp("destination-atop", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_ATOP);
   } else if (0 == strcmp("destination-in", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_IN);
   } else if (0 == strcmp("destination-out", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
   } else if (0 == strcmp("destination-over", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
   } else {
