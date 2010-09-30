@@ -349,6 +349,7 @@ module.exports = {
     ctx.fillRect(0,0,50,50);
     ctx.translate(15,15);
     ctx.globalAlpha = 0.6;
+    assert.equal(0.6, ctx.globalAlpha.toFixed(1));
     ctx.fillStyle = 'red';
     ctx.fillRect(0,0,20,20);
     ctx.fillStyle = 'yellow';
