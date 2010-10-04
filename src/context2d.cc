@@ -24,6 +24,10 @@ using namespace node;
   _.b = B / 255 * 1; \
   _.a = A; \
 
+/*
+ * Set source.
+ */
+
 #define SET_SOURCE(C) \
   if (C##Pattern) \
     cairo_set_source(ctx, C##Pattern); \
@@ -151,8 +155,11 @@ Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->globalAlpha = val->NumberValue();
+  double n = val->NumberValue();
+  if (n >= 0 && n <= 1) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    context->globalAlpha = n;
+  }
 }
 
 /*
