@@ -431,5 +431,30 @@ module.exports = {
       , path
       , 'd078f5993eb962a5b3fdde5ca0864179'
       , 'Context2d#createRadialGradient() failed');
+  },
+  
+  'test invalid {fill,stroke}Style': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/invalidStyle.png';
+    
+    ctx.fillStyle = 'red';
+    ctx.strokeStyle = 'yellow';
+    ctx.rect(50,50,50,50);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = 'asdf';
+    ctx.strokeStyle = 'asdf';
+    ctx.rect(100,80,15,15);
+    ctx.fill();
+    ctx.stroke();
+    
+    assertChecksum(
+        canvas
+      , path
+      , '2ba95ccadd5c38949a5ea493dbc78e08'
+      , 'Context2d invalid fillStyle did not retain previous value');
+    
   }
 }
