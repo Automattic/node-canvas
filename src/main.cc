@@ -1,6 +1,6 @@
 
 //
-// node-canvas.cc
+// main.cc
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
