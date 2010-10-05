@@ -31,6 +31,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> Scale(const Arguments &args);
     static Handle<Value> Transform(const Arguments &args);
     static Handle<Value> ResetTransform(const Arguments &args);
+    static Handle<Value> IsPointInPath(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
     static Handle<Value> Clip(const Arguments &args);

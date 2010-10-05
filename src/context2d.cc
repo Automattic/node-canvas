@@ -79,6 +79,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
   NODE_SET_PROTOTYPE_METHOD(t, "transform", Transform);
   NODE_SET_PROTOTYPE_METHOD(t, "resetTransform", ResetTransform);
+  NODE_SET_PROTOTYPE_METHOD(t, "isPointInPath", IsPointInPath);
   NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
   NODE_SET_PROTOTYPE_METHOD(t, "clip", Clip);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
@@ -342,6 +343,19 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
   } else {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_BUTT);
   }
+}
+
+Handle<Value>
+Context2d::IsPointInPath(const Arguments &args) {
+  HandleScope scope;
+  if (args[0]->IsNumber() && args[1]->IsNumber()) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+    cairo_t *ctx = context->getContext();
+    double x = args[0]->NumberValue()
+         , y = args[1]->NumberValue();
+    return Boolean::New(cairo_in_fill(ctx, x, y));
+  }
+  return False();
 }
 
 /*
