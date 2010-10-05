@@ -242,8 +242,11 @@ Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_set_miter_limit(context->getContext(), val->NumberValue());
+  double n = val->NumberValue();
+  if (n > 0) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    cairo_set_miter_limit(context->getContext(), n);
+  }
 }
 
 /*
