@@ -80,6 +80,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "transform", Transform);
   NODE_SET_PROTOTYPE_METHOD(t, "resetTransform", ResetTransform);
   NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
+  NODE_SET_PROTOTYPE_METHOD(t, "clip", Clip);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
@@ -549,7 +550,20 @@ Context2d::Scale(const Arguments &args) {
 }
 
 /*
- * Fill the shape.
+ * Use path as clipping region.
+ */
+
+Handle<Value>
+Context2d::Clip(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  cairo_clip_preserve(ctx);
+  return Undefined();
+}
+
+/*
+ * Fill the path.
  */
 
 Handle<Value>
@@ -563,7 +577,7 @@ Context2d::Fill(const Arguments &args) {
 }
 
 /*
- * Stroke the shape.
+ * Stroke the path.
  */
 
 Handle<Value>
