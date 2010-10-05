@@ -613,6 +613,7 @@ Handle<Value>
 Context2d::FillRect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
+  if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
@@ -629,6 +630,7 @@ Handle<Value>
 Context2d::StrokeRect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
+  if (0 == width && 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
@@ -645,6 +647,7 @@ Handle<Value>
 Context2d::ClearRect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
+  if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
