@@ -78,6 +78,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
   NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
   NODE_SET_PROTOTYPE_METHOD(t, "transform", Transform);
+  NODE_SET_PROTOTYPE_METHOD(t, "resetTransform", ResetTransform);
   NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
@@ -485,7 +486,7 @@ Context2d::Rotate(const Arguments &args) {
 }
 
 /*
- * Transform.
+ * Modify the CTM.
  */
 
 Handle<Value>
@@ -504,6 +505,18 @@ Context2d::Transform(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_transform(context->getContext(), &matrix);
   
+  return Undefined();
+}
+
+/*
+ * Reset the CTM, used internally by setTransform().
+ */
+
+Handle<Value>
+Context2d::ResetTransform(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_identity_matrix(context->getContext());
   return Undefined();
 }
 
