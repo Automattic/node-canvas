@@ -260,6 +260,12 @@ module.exports = {
     ctx.beginPath();
     ctx.lineWidth = 10.0;
     assert.equal(10, ctx.lineWidth);
+    // ctx.lineWidth = Infinity;
+    assert.equal(10, ctx.lineWidth);
+    ctx.lineWidth = -5;
+    assert.equal(10, ctx.lineWidth);
+    ctx.lineWidth = 0;
+    assert.equal(10, ctx.lineWidth);
     ctx.moveTo(50, 50);
     ctx.lineTo(50, 100);
     ctx.lineTo(80, 120);
