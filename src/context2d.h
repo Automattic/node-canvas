@@ -33,6 +33,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> ResetTransform(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
+    static Handle<Value> Clip(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);
     static Handle<Value> Stroke(const Arguments &args);
     static Handle<Value> SetSource(const Arguments &args);
