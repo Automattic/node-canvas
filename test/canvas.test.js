@@ -462,5 +462,23 @@ module.exports = {
       , '2ba95ccadd5c38949a5ea493dbc78e08'
       , 'Context2d invalid fillStyle did not retain previous value');
     
+  },
+  
+  'test Context2d#clip()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/clip.png';
+    
+    ctx.arc(50,50,50,0,Math.PI * 2);
+    ctx.stroke();
+    ctx.clip();
+    ctx.fillStyle = 'rgba(0,0,0,.5)';
+    ctx.fillRect(0,0,100,100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , '6199442d05718481ac5ccd034239f6f1'
+      , 'Context2d#clip() failed');
   }
 }
