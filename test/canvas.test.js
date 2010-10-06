@@ -480,5 +480,24 @@ module.exports = {
       , path
       , '6199442d05718481ac5ccd034239f6f1'
       , 'Context2d#clip() failed');
+  },
+  
+  'test Context2d#isPointInPath()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    ctx.rect(5,5,100,100);
+    ctx.rect(50,100,10,10);
+    assert.ok(ctx.isPointInPath(10,10));
+    assert.ok(ctx.isPointInPath(10,50));
+    assert.ok(ctx.isPointInPath(100,100));
+    assert.ok(ctx.isPointInPath(105,105));
+    assert.ok(!ctx.isPointInPath(106,105));
+    assert.ok(!ctx.isPointInPath(150,150));
+
+    assert.ok(ctx.isPointInPath(50,110));
+    assert.ok(ctx.isPointInPath(60,110));
+    assert.ok(!ctx.isPointInPath(70,110));
+    assert.ok(!ctx.isPointInPath(50,120));
   }
 }

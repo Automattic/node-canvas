@@ -345,6 +345,10 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
   }
 }
 
+/*
+ * Check if the given point is within the current path.
+ */
+
 Handle<Value>
 Context2d::IsPointInPath(const Arguments &args) {
   HandleScope scope;
