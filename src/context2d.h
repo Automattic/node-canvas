@@ -11,8 +11,12 @@
 #include "canvas.h"
 #include "gradient.h"
 
+/*
+ * RGBA struct used to retain values of fill/stroke.
+ */
+
 typedef struct {
-  float r, g, b, a;
+  double r, g, b, a;
 } rgba_t;
 
 class Context2d: public node::ObjectWrap {

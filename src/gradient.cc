@@ -8,6 +8,10 @@
 #include "canvas.h"
 #include "gradient.h"
 
+/*
+ * Initialie CanvasGradient.
+ */
+
 void
 Gradient::Initialize(Handle<Object> target) {
   HandleScope scope;
@@ -19,9 +23,15 @@ Gradient::Initialize(Handle<Object> target) {
   target->Set(String::NewSymbol("CanvasGradient"), t->GetFunction());
 }
 
+/*
+ * Initialize a new CanvasGradient.
+ */
+
 Handle<Value>
 Gradient::New(const Arguments &args) {
   HandleScope scope;
+
+  // TODO: separate concerns / validate args
 
   // Linear
   if (4 == args.Length()) {
@@ -50,6 +60,10 @@ Gradient::New(const Arguments &args) {
   return ThrowException(Exception::TypeError(String::New("invalid arguments")));
 }
 
+/*
+ * Add RGBA color stop.
+ */
+
 Handle<Value>
 Gradient::AddColorStopRGBA(const Arguments &args) {
   HandleScope scope;
@@ -67,10 +81,18 @@ Gradient::AddColorStopRGBA(const Arguments &args) {
   return Undefined();
 }
 
+/*
+ * Initialize linear gradient.
+ */
+
 Gradient::Gradient(double x0, double y0, double x1, double y1):
   _x0(x0), _y0(y0), _x1(x1), _y1(y1) {
   _pattern = cairo_pattern_create_linear(x0, y0, x1, y1);
 }
+
+/*
+ * Initialize radial gradient.
+ */
 
 Gradient::Gradient(double x0, double y0, double r0, double x1, double y1, double r1):
   _x0(x0), _y0(y0), _x1(x1), _y1(y1), _r0(r0), _r1(r1) {
