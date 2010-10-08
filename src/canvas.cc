@@ -5,10 +5,12 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include <string.h>
 #include "canvas.h"
+#include <string.h>
+#include <node_buffer.h>
 
 using namespace v8;
+using namespace node;
 
 /*
  * Initialize Canvas.
@@ -45,22 +47,19 @@ Canvas::New(const Arguments &args) {
 }
 
 typedef struct {
-  unsigned char *pos;
-  unsigned char *end;
   Handle<Function> fn;
 } closure_t;
 
 static cairo_status_t
 writeToBuffer(void *c, const uint8_t *data, unsigned len) {
-  printf("bytes %d\n", len);
   closure_t *closure = (closure_t *) c;
-  if (closure->pos + len > closure->end)
-    return CAIRO_STATUS_WRITE_ERROR;
-  memcpy(closure->pos, data, len);
   Handle<Value> argv[1];
-  argv[0] = String::New("test");
-  closure->fn.Call(Context::GetCurrent()->Global(), 1, argv);
-  closure->pos += len;
+  Buffer *buf = Buffer::New(len);
+  memcpy(buf->data(), data, len);
+  argv[0] = buf->handle_;
+  closure->fn->Call(Context::GetCurrent()->Global(), 1, argv);
+  // TODO: CAIRO_STATUS_NO_MEMORY
+  // TODO: pass len
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -76,9 +75,6 @@ Canvas::StreamPNG(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("function required")));
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
-  uint8_t data[64 * 1024];
-  closure.pos = data;
-  closure.end = data + sizeof(data);
   closure.fn = Handle<Function>::Cast(args[0]); // TODO: leakage?
   cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
   return Undefined();
