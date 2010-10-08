@@ -7,22 +7,6 @@
 
   - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
 
-## TODO
-
-     [x] drawing shapes
-     [x] line styles
-     [x] list of valid css colors
-     [x] match canvas defaults (mostly, test suite from webkit would be nice)
-     [x] transformations
-     [x] gradients
-     [x] make sure constructor names match
-     [x] compositing
-     [ ] Image
-     [ ] patterns
-     [ ] text
-     [ ] PixelArray
-     [ ] data urls
-
 ## Testing
 
 Visual tests utilize md5 checksums in order to assert integrity.
