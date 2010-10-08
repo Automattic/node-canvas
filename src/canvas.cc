@@ -53,14 +53,14 @@ typedef struct {
 static cairo_status_t
 writeToBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  Handle<Value> argv[1];
+  Handle<Value> argv[2];
   Buffer *buf = Buffer::New(len);
   memcpy(buf->data(), data, len);
   argv[0] = buf->handle_;
-  closure->fn->Call(Context::GetCurrent()->Global(), 1, argv);
+  argv[1] = Integer::New(len);
+  closure->fn->Call(Context::GetCurrent()->Global(), 2, argv);
   // TODO: CAIRO_STATUS_NO_MEMORY
-  // TODO: pass len
-  // TODO: event emitter
+  // TODO: leak
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -73,10 +73,10 @@ Canvas::StreamPNG(const Arguments &args) {
   HandleScope scope;
   // TODO: error handling
   if (!args[0]->IsFunction())
-    return ThrowException(Exception::TypeError(String::New("function required")));
+    return ThrowException(Exception::TypeError(String::New("callback function required")));
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
-  closure.fn = Handle<Function>::Cast(args[0]); // TODO: leakage?
+  closure.fn = Handle<Function>::Cast(args[0]);
   cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
   return Undefined();
 }
