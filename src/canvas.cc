@@ -60,6 +60,7 @@ writeToBuffer(void *c, const uint8_t *data, unsigned len) {
   closure->fn->Call(Context::GetCurrent()->Global(), 1, argv);
   // TODO: CAIRO_STATUS_NO_MEMORY
   // TODO: pass len
+  // TODO: event emitter
   return CAIRO_STATUS_SUCCESS;
 }
 
