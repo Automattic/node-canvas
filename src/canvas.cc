@@ -13,6 +13,14 @@ using namespace v8;
 using namespace node;
 
 /*
+ * PNG stream closure.
+ */
+
+typedef struct {
+  Handle<Function> fn;
+} closure_t;
+
+/*
  * Initialize Canvas.
  */
 
@@ -46,9 +54,9 @@ Canvas::New(const Arguments &args) {
   return args.This();
 }
 
-typedef struct {
-  Handle<Function> fn;
-} closure_t;
+/*
+ * Canvas::StreamPNG callback/
+ */
 
 static cairo_status_t
 writeToBuffer(void *c, const uint8_t *data, unsigned len) {
