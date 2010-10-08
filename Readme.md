@@ -35,6 +35,10 @@ Test:
 
     $ make test
 
+## References
+
+  - [test suite](http://philip.html5.org/tests/canvas/suite/tests/results.html)
+
 ## License 
 
 (The MIT License)
