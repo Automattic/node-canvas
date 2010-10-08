@@ -72,6 +72,7 @@ Handle<Value>
 Canvas::StreamPNG(const Arguments &args) {
   HandleScope scope;
   // TODO: error handling
+  // TODO: nonblocking
   if (!args[0]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());

@@ -14,6 +14,10 @@ function hash(val) {
 
 function assertChecksum(canvas, path, checksum, msg) {
   canvas.savePNG(path);
+  assertChecksumOf(canvas, path, checksum, msg);
+}
+
+function assertChecksumOf(canvas, path, checksum, msg) {
   fs.readFile(path, function(err, buf){
     assert.equal(hash(buf), checksum, msg);  
   });
@@ -499,5 +503,47 @@ module.exports = {
     assert.ok(ctx.isPointInPath(60,110));
     assert.ok(!ctx.isPointInPath(70,110));
     assert.ok(!ctx.isPointInPath(50,120));
+  },
+  
+  'test PNGStream': function(assert, beforeExit){
+    var canvas = new Canvas(320, 320)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/pngstream.png'
+      , called = 0;
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.strokeRect(0,0,320,320);
+    
+    ctx.fillStyle = 'rgba(0,0,0,0.02)';
+    var steps = 200;
+    while (steps--) {
+      ctx.fillRect(
+          160 - (steps / 2)
+        , 160 - (steps / 2)
+        , steps
+        , steps
+        );
+    }
+    
+    var out = fs.createWriteStream(path)
+      , stream = canvas.createPNGStream();
+
+    out.on('close', function(){
+      assertChecksumOf(
+          canvas
+        , path
+        , '04f2e1b4338de2d7451194cba7d29970'
+        , 'PNGStream failed');
+    });
+
+    stream.on('data', function(chunk){ out.write(chunk); });
+    stream.on('end', function(){
+      ++called;
+      out.end();
+    });
+
+    beforeExit(function(){
+      assert.equal(1, called);
+    });
   }
 }
