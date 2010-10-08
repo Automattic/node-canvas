@@ -55,7 +55,7 @@ Canvas::New(const Arguments &args) {
 }
 
 /*
- * Canvas::StreamPNG callback/
+ * Canvas::StreamPNG callback.
  */
 
 static cairo_status_t
