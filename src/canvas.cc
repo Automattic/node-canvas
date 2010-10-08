@@ -78,6 +78,10 @@ Canvas::StreamPNG(const Arguments &args) {
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
   cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
+  Handle<Value> argv[2];
+  argv[0] = Null();
+  argv[1] = Integer::New(0);
+  closure.fn->Call(Context::GetCurrent()->Global(), 2, argv);
   return Undefined();
 }
 
