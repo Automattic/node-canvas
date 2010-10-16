@@ -105,6 +105,8 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
   proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
+  proto->SetAccessor(String::NewSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
+  proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
 }
 
@@ -228,6 +230,46 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   } else {
     cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   }
+}
+
+/*
+ * Get shadow offset x.
+ */
+
+Handle<Value>
+Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(context->shadowOffsetX);
+}
+
+/*
+ * Set shadow offset x.
+ */
+
+void
+Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->shadowOffsetX = val->NumberValue();
+}
+
+/*
+ * Get shadow offset y.
+ */
+
+Handle<Value>
+Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(context->shadowOffsetY);
+}
+
+/*
+ * Set shadow offset y.
+ */
+
+void
+Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->shadowOffsetY = val->NumberValue();
 }
 
 /*
