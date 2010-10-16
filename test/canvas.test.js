@@ -69,11 +69,11 @@ module.exports = {
     ctx.fillStyle = '#FFF';
     assert.equal('#ffffff', ctx.fillStyle);
 
-    ctx.fillStyle = 'rgba(128, 200, 128, 255)';
-    assert.equal('#80c880ff', ctx.fillStyle);
+    ctx.fillStyle = 'rgba(128, 200, 128, 1)';
+    assert.equal('#80c880', ctx.fillStyle);
 
     ctx.fillStyle = 'rgba(128,80,0,0.5)';
-    assert.equal('rgba(128, 80, 9, 0.5)', ctx.fillStyle);
+    assert.equal('rgba(128, 80, 0, 0.5)', ctx.fillStyle);
   },
   
   'test Canvas#getContext("2d")': function(assert){
@@ -256,15 +256,12 @@ module.exports = {
 
     ctx.fillStyle = 'rgb(0,55,0)';
     ctx.fillRect(10, 10, 50, 50);
-    assert.equal('rgba(0,55,0,1)', ctx.fillStyle);
 
     ctx.fillStyle = 'rgba(0,0,0,0.1)';
     ctx.fillRect(60, 60, 50, 50);
-    assert.equal('rgba(0,0,0,0.1)', ctx.fillStyle);
 
     ctx.fillStyle = '#000';
     ctx.fillRect(110, 110, 50, 50);
-    assert.equal('rgba(0,0,0,1)', ctx.fillStyle);
 
     assertChecksum(
         canvas
