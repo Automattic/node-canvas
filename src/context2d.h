@@ -24,6 +24,7 @@ class Context2d: public node::ObjectWrap {
     rgba_t fill;
     rgba_t stroke;
     rgba_t shadow;
+    double shadowBlur;
     double shadowOffsetX;
     double shadowOffsetY;
     cairo_pattern_t *fillPattern;
@@ -66,6 +67,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetLineWidth(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowOffsetX(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowOffsetY(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowBlur(Local<String> prop, const AccessorInfo &info);
     static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info);
@@ -74,6 +76,7 @@ class Context2d: public node::ObjectWrap {
     static void SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
 

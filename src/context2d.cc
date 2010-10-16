@@ -107,6 +107,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
   proto->SetAccessor(String::NewSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
   proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
+  proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
 }
 
@@ -132,6 +133,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
   fillPattern = strokePattern = NULL;
+  shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   globalAlpha = -1;
   RGBA(fill,0,0,0,1);
   RGBA(stroke,0,0,0,1);
@@ -270,6 +272,29 @@ void
 Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->shadowOffsetY = val->NumberValue();
+}
+
+/*
+ * Get shadow blur.
+ */
+
+Handle<Value>
+Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Number::New(context->shadowBlur);
+}
+
+/*
+ * Set shadow blur.
+ */
+
+void
+Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  double n = val->NumberValue();
+  if (n > 0) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    context->shadowBlur = n;
+  }
 }
 
 /*
