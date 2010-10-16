@@ -59,6 +59,23 @@ module.exports = {
     assert.eql([0,0,0,1], Canvas.parseColor('black'));
   },
   
+  'test color serialization': function(){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#FFFFFF';
+    assert.equal('#ffffff', ctx.fillStyle);
+
+    ctx.fillStyle = '#FFF';
+    assert.equal('#ffffff', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgba(128, 200, 128, 255)';
+    assert.equal('#80c880ff', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgba(128,80,0,0.5)';
+    assert.equal('rgba(128, 80, 9, 0.5)', ctx.fillStyle);
+  },
+  
   'test Canvas#getContext("2d")': function(assert){
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');
