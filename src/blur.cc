@@ -25,13 +25,12 @@
 #include <math.h>
 #include <stdint.h>
 #include <cairo.h>
+#include "canvas.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
-/* Performs a simple 2D Gaussian blur of radius @radius on surface @surface. */
 void
-blur_image_surface (cairo_surface_t *surface, int radius)
-{
+Canvas::blur(cairo_surface_t *surface, int radius) {
     cairo_surface_t *tmp;
     int width, height;
     int src_stride, dst_stride;
@@ -136,6 +135,6 @@ blur_image_surface (cairo_surface_t *surface, int radius)
 	}
     }
 
-    cairo_surface_destroy (tmp);
-    cairo_surface_mark_dirty (surface);
+  cairo_surface_destroy (tmp);
+  cairo_surface_mark_dirty (surface);
 }

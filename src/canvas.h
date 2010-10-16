@@ -40,6 +40,7 @@ class Canvas: public node::ObjectWrap {
     static Handle<Value> SavePNG(const Arguments &args);
     static Handle<Value> StreamPNG(const Arguments &args);
     inline cairo_surface_t *getSurface(){ return _surface; }
+    static void blur(cairo_surface_t *surface, int radius);
     Canvas(int width, int height);
 
   private:
