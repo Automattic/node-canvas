@@ -63,17 +63,19 @@ module.exports = {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#FFFFFF';
-    assert.equal('#ffffff', ctx.fillStyle);
+    ['fillStyle', 'strokeStyle', 'shadowColor'].forEach(function(prop){
+      ctx[prop] = '#FFFFFF';
+      assert.equal('#ffffff', ctx[prop], prop + ' #FFFFFF -> #ffffff, got ' + ctx[prop]);
 
-    ctx.fillStyle = '#FFF';
-    assert.equal('#ffffff', ctx.fillStyle);
+      ctx[prop] = '#FFF';
+      assert.equal('#ffffff', ctx[prop], prop + ' #FFF -> #ffffff, got ' + ctx[prop]);
 
-    ctx.fillStyle = 'rgba(128, 200, 128, 1)';
-    assert.equal('#80c880', ctx.fillStyle);
+      ctx[prop] = 'rgba(128, 200, 128, 1)';
+      assert.equal('#80c880', ctx[prop], prop + ' rgba(128, 200, 128, 1) -> #80c880, got ' + ctx[prop]);
 
-    ctx.fillStyle = 'rgba(128,80,0,0.5)';
-    assert.equal('rgba(128, 80, 0, 0.5)', ctx.fillStyle);
+      ctx[prop] = 'rgba(128,80,0,0.5)';
+      assert.equal('rgba(128, 80, 0, 0.5)', ctx[prop], prop + ' rgba(128,80,0,0.5) -> rgba(128, 80, 0, 0.5), got ' + ctx[prop]);
+    });
   },
   
   'test Canvas#getContext("2d")': function(assert){
