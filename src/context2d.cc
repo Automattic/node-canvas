@@ -94,6 +94,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(t, "setShadowRGBA", SetShadowRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillPattern", SetFillPattern);
@@ -387,6 +388,19 @@ Context2d::SetStrokePattern(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
   context->strokePattern = grad->getPattern();
+  return Undefined();
+}
+
+/*
+ * Set shadow RGBA, used internally for shadowColor=
+ */
+
+Handle<Value>
+Context2d::SetShadowRGBA(const Arguments &args) {
+  HandleScope scope;
+  RGBA_ARGS(0);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  RGBA(context->shadow,r,g,b,a);
   return Undefined();
 }
 

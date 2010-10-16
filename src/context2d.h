@@ -23,6 +23,7 @@ class Context2d: public node::ObjectWrap {
   public:
     rgba_t fill;
     rgba_t stroke;
+    rgba_t shadow;
     cairo_pattern_t *fillPattern;
     cairo_pattern_t *strokePattern;
     float globalAlpha;
@@ -44,6 +45,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> SetSource(const Arguments &args);
     static Handle<Value> SetFillRGBA(const Arguments &args);
     static Handle<Value> SetStrokeRGBA(const Arguments &args);
+    static Handle<Value> SetShadowRGBA(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
     static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> BezierCurveTo(const Arguments &args);
