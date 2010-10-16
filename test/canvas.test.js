@@ -47,9 +47,6 @@ module.exports = {
     assert.equal(null, Canvas.parseColor('rgba(2554,165 , 0 ,.6)'));
     assert.equal(null, Canvas.parseColor('rgba()'));
 
-    // hsl()
-    assert.equal([]);
-
     // hex
     assert.eql([165,89,89,1], Canvas.parseColor('#A55959'));
     assert.eql([255,255,255,1], Canvas.parseColor('#FFFFFF'));
