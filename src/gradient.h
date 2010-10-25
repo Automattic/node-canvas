@@ -22,6 +22,7 @@ class Gradient: public node::ObjectWrap {
     inline cairo_pattern_t *getPattern(){ return _pattern; }
 
   private:
+    ~Gradient();
     double _x0, _y0, _x1, _y1, _r0, _r1;
     cairo_pattern_t *_pattern;
 };

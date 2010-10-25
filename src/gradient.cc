@@ -98,3 +98,11 @@ Gradient::Gradient(double x0, double y0, double r0, double x1, double y1, double
   _x0(x0), _y0(y0), _x1(x1), _y1(y1), _r0(r0), _r1(r1) {
   _pattern = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
 }
+
+/*
+ * Destroy the pattern.
+ */
+
+Gradient::~Gradient() {
+  cairo_pattern_destroy(_pattern);
+}
