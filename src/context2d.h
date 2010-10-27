@@ -20,7 +20,10 @@ typedef struct {
 } rgba_t;
 
 /*
- * State struct used in conjunction with Save()/Restore().
+ * State struct.
+ *
+ * Used in conjunction with Save() / Restore() since
+ * cairo's gstate maintains only a single source pattern at a time.
  */
 
 typedef struct {
