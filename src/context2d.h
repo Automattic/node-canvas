@@ -31,6 +31,7 @@ typedef struct {
   rgba_t stroke;
   cairo_pattern_t *fillPattern;
   cairo_pattern_t *strokePattern;
+  float globalAlpha;
 } canvas_state_t;
 
 class Context2d: public node::ObjectWrap {
@@ -42,7 +43,6 @@ class Context2d: public node::ObjectWrap {
     double shadowBlur;
     double shadowOffsetX;
     double shadowOffsetY;
-    float globalAlpha;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);

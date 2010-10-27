@@ -43,7 +43,7 @@ using namespace node;
     , _.r \
     , _.g \
     , _.b \
-    , context->globalAlpha == -1 ? _.a : context->globalAlpha);
+    , context->state->globalAlpha == -1 ? _.a : context->state->globalAlpha);
 
 /*
  * Rectangle arg assertions.
@@ -133,8 +133,8 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
-  globalAlpha = -1;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->globalAlpha = -1;
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
@@ -177,7 +177,7 @@ Context2d::restoreState() {
 Handle<Value>
 Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->globalAlpha);
+  return Number::New(context->state->globalAlpha);
 }
 
 /*
@@ -189,7 +189,7 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorIn
   double n = val->NumberValue();
   if (n >= 0 && n <= 1) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-    context->globalAlpha = n;
+    context->state->globalAlpha = n;
   }
 }
 
