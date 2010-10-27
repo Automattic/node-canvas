@@ -61,14 +61,11 @@ Canvas::New(const Arguments &args) {
 static cairo_status_t
 writeToBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  Handle<Value> argv[2];
   Buffer *buf = Buffer::New(len);
   memcpy(buf->data(), data, len);
-  argv[0] = buf->handle_;
-  argv[1] = Integer::New(len);
-  closure->fn->Call(Context::GetCurrent()->Global(), 2, argv);
+  Handle<Value> argv[3] = { Null(), buf->handle_, Integer::New(len) };
+  closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   // TODO: CAIRO_STATUS_NO_MEMORY
-  // TODO: leak
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -79,16 +76,20 @@ writeToBuffer(void *c, const uint8_t *data, unsigned len) {
 Handle<Value>
 Canvas::StreamPNG(const Arguments &args) {
   HandleScope scope;
-  // TODO: error handling
-  // TODO: nonblocking
+  // TODO: async
   if (!args[0]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
   cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
-  Handle<Value> argv[2] = { Null(), Integer::New(0) };
-  closure.fn->Call(Context::GetCurrent()->Global(), 2, argv);
+  if (status) {
+    Handle<Value> argv[1] = { Canvas::Error(status) };
+    closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
+  } else {
+    Handle<Value> argv[3] = { Null(), Null(), Integer::New(0) };
+    closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
+  }
   return Undefined();
 }
 
