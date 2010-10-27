@@ -134,7 +134,10 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   cairo_set_line_width(_context, 1);
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   globalAlpha = -1;
-  pushState();
+  state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->fillPattern = state->strokePattern = NULL;
+  RGBA(state->fill,0,0,0,1);
+  RGBA(state->stroke,0,0,0,1);
 }
 
 /*
@@ -146,11 +149,17 @@ Context2d::~Context2d() {
 }
 
 void
-Context2d::pushState() {
-  states[stateno = 0] = state = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  state->fillPattern = state->strokePattern = NULL;
-  RGBA(state->fill,0,0,0,1);
-  RGBA(state->stroke,0,0,0,1);
+Context2d::saveState() {
+  printf("state %d -> %d\n", stateno, stateno + 1);
+  states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  memcpy(states[stateno], state, sizeof(canvas_state_t));
+  state = states[stateno];
+}
+
+void
+Context2d::restoreState() {
+  printf("state %d -> %d\n", stateno, stateno - 1);
+  state = states[--stateno];
 }
 
 /*

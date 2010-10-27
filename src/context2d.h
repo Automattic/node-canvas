@@ -90,7 +90,8 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
-    void pushState();
+    void saveState();
+    void restoreState();
 
   protected:
     Context2d(Canvas *canvas);
