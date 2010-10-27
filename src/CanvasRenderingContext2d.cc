@@ -450,7 +450,7 @@ Context2d::IsPointInPath(const Arguments &args) {
     cairo_t *ctx = context->getContext();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
-    return Boolean::New(cairo_in_fill(ctx, x, y));
+    return Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y));
   }
   return False();
 }
