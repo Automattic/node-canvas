@@ -148,17 +148,25 @@ Context2d::~Context2d() {
   cairo_destroy(_context);
 }
 
+/*
+ * Save the current state.
+ */
+
 void
 Context2d::saveState() {
-  printf("state %d -> %d\n", stateno, stateno + 1);
+  if (stateno == CANVAS_MAX_STATES) return;
   states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   memcpy(states[stateno], state, sizeof(canvas_state_t));
   state = states[stateno];
 }
 
+/*
+ * Restore state.
+ */
+
 void
 Context2d::restoreState() {
-  printf("state %d -> %d\n", stateno, stateno - 1);
+  if (0 == stateno) return;
   state = states[--stateno];
 }
 
@@ -548,6 +556,7 @@ Context2d::Save(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_save(context->getContext());
+  context->saveState();
   return Undefined();
 }
 
@@ -560,6 +569,7 @@ Context2d::Restore(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_restore(context->getContext());
+  context->restoreState();
   return Undefined();
 }
 

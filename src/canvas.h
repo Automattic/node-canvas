@@ -13,6 +13,17 @@
 #include <node_object_wrap.h>
 #include <cairo.h>
 
+using namespace v8;
+
+/*
+ * Maxmimum states per context.
+ * TODO: remove/resize
+ */
+
+#ifndef CANVAS_MAX_STATES
+#define CANVAS_MAX_STATES 64
+#endif
+
 /*
  * RGBA arg assertions.
  */
@@ -31,7 +42,9 @@
   float b = args[N+2]->Int32Value(); \
   float a = args[N+3]->NumberValue();
 
-using namespace v8;
+/*
+ * Canvas.
+ */
 
 class Canvas: public node::ObjectWrap {
   public:

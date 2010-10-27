@@ -20,7 +20,7 @@ typedef struct {
 } rgba_t;
 
 /*
- * State struct.
+ * State struct used in conjunction with Save()/Restore().
  */
 
 typedef struct {
@@ -32,9 +32,8 @@ typedef struct {
 
 class Context2d: public node::ObjectWrap {
   public:
-    // TODO: resize
     short stateno;
-    canvas_state_t *states[64];
+    canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     rgba_t shadow;
     double shadowBlur;
