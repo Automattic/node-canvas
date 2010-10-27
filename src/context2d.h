@@ -33,6 +33,7 @@ typedef struct {
 class Context2d: public node::ObjectWrap {
   public:
     // TODO: resize
+    short stateno;
     canvas_state_t *states[64];
     canvas_state_t *state;
     rgba_t shadow;
@@ -89,6 +90,7 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
+    void pushState();
 
   protected:
     Context2d(Canvas *canvas);

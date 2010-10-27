@@ -132,12 +132,9 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
-  state = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  state->fillPattern = state->strokePattern = NULL;
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   globalAlpha = -1;
-  RGBA(state->fill,0,0,0,1);
-  RGBA(state->stroke,0,0,0,1);
+  pushState();
 }
 
 /*
@@ -146,6 +143,14 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+void
+Context2d::pushState() {
+  states[stateno = 0] = state = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->fillPattern = state->strokePattern = NULL;
+  RGBA(state->fill,0,0,0,1);
+  RGBA(state->stroke,0,0,0,1);
 }
 
 /*
