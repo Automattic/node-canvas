@@ -43,7 +43,9 @@ using namespace node;
     , _.r \
     , _.g \
     , _.b \
-    , context->state->globalAlpha == -1 ? _.a : context->state->globalAlpha);
+    , context->state->globalAlpha == -1 \
+      ? _.a \
+      : context->state->globalAlpha);
 
 /*
  * Rectangle arg assertions.
