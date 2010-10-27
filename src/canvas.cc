@@ -81,8 +81,11 @@ Canvas::StreamPNG(const Arguments &args) {
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
+  TryCatch try_catch;
   cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
-  if (status) {
+  if (try_catch.HasCaught()) {
+    return try_catch.ReThrow();
+  } else if (status) {
     Handle<Value> argv[1] = { Canvas::Error(status) };
     closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
