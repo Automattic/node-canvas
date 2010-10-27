@@ -78,11 +78,14 @@ Canvas::StreamPNG(const Arguments &args) {
   // TODO: async
   if (!args[0]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
+
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
+
   TryCatch try_catch;
   cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
+
   if (try_catch.HasCaught()) {
     return try_catch.ReThrow();
   } else if (status) {
@@ -133,6 +136,8 @@ Canvas::SavePNG(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("path required")));
 
   String::Utf8Value path(args[0]->ToString());
-  cairo_surface_write_to_png(canvas->getSurface(), *path);
+  cairo_status_t status = cairo_surface_write_to_png(canvas->getSurface(), *path);
+  if (status) return Canvas::Error(status);
+
   return Undefined();
 }
