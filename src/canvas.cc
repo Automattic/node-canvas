@@ -65,7 +65,6 @@ writeToBuffer(void *c, const uint8_t *data, unsigned len) {
   memcpy(buf->data(), data, len);
   Handle<Value> argv[3] = { Null(), buf->handle_, Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
-  // TODO: CAIRO_STATUS_NO_MEMORY
   return CAIRO_STATUS_SUCCESS;
 }
 
