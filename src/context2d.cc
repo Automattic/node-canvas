@@ -28,22 +28,22 @@ using namespace node;
  * Set source.
  */
 
-#define SET_SOURCE(C) \
-  if (C##Pattern) \
-    cairo_set_source(ctx, C##Pattern); \
+#define SET_SOURCE(_) \
+  if (_##Pattern) \
+    cairo_set_source(ctx, _##Pattern); \
   else \
-    SET_SOURCE_RGBA(C)
+    SET_SOURCE_RGBA(_)
 
 /*
  * Set source RGBA.
  */
 
-#define SET_SOURCE_RGBA(C) \
+#define SET_SOURCE_RGBA(_) \
   cairo_set_source_rgba(ctx \
-    , C.r \
-    , C.g \
-    , C.b \
-    , context->globalAlpha == -1 ? C.a : context->globalAlpha);
+    , _.r \
+    , _.g \
+    , _.b \
+    , context->globalAlpha == -1 ? _.a : context->globalAlpha);
 
 /*
  * Rectangle arg assertions.
@@ -132,11 +132,12 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
-  fillPattern = strokePattern = NULL;
+  state = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->fillPattern = state->strokePattern = NULL;
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   globalAlpha = -1;
-  RGBA(fill,0,0,0,1);
-  RGBA(stroke,0,0,0,1);
+  RGBA(state->fill,0,0,0,1);
+  RGBA(state->stroke,0,0,0,1);
 }
 
 /*
@@ -440,7 +441,7 @@ Context2d::SetFillPattern(const Arguments &args) {
   // TODO: HasInstance / error handling
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
-  context->fillPattern = grad->getPattern();
+  context->state->fillPattern = grad->getPattern();
   return Undefined();
 }
 
@@ -454,7 +455,7 @@ Context2d::SetStrokePattern(const Arguments &args) {
   // TODO: HasInstance / error handling
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
-  context->strokePattern = grad->getPattern();
+  context->state->strokePattern = grad->getPattern();
   return Undefined();
 }
 
@@ -480,7 +481,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->fill,r,g,b,a);
+  RGBA(context->state->fill,r,g,b,a);
   return Undefined();
 }
 
@@ -493,7 +494,7 @@ Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->stroke,r,g,b,a);
+  RGBA(context->state->stroke,r,g,b,a);
   return Undefined();
 }
 
@@ -670,7 +671,7 @@ Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->fill);
+  SET_SOURCE(context->state->fill);
   cairo_fill_preserve(ctx);
   return Undefined();
 }
@@ -684,7 +685,7 @@ Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->stroke);
+  SET_SOURCE(context->state->stroke);
   cairo_stroke_preserve(ctx);
   return Undefined();
 }
@@ -743,7 +744,7 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->fill);
+  SET_SOURCE(context->state->fill);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -760,7 +761,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->stroke);
+  SET_SOURCE(context->state->stroke);
   cairo_stroke(ctx);
   return Undefined();
 }

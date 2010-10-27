@@ -19,16 +19,26 @@ typedef struct {
   double r, g, b, a;
 } rgba_t;
 
+/*
+ * State struct.
+ */
+
+typedef struct {
+  rgba_t fill;
+  rgba_t stroke;
+  cairo_pattern_t *fillPattern;
+  cairo_pattern_t *strokePattern;
+} canvas_state_t;
+
 class Context2d: public node::ObjectWrap {
   public:
-    rgba_t fill;
-    rgba_t stroke;
+    // TODO: resize
+    canvas_state_t *states[64];
+    canvas_state_t *state;
     rgba_t shadow;
     double shadowBlur;
     double shadowOffsetX;
     double shadowOffsetY;
-    cairo_pattern_t *fillPattern;
-    cairo_pattern_t *strokePattern;
     float globalAlpha;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
