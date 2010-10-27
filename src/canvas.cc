@@ -86,10 +86,8 @@ Canvas::StreamPNG(const Arguments &args) {
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
-  cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
-  Handle<Value> argv[2];
-  argv[0] = Null();
-  argv[1] = Integer::New(0);
+  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
+  Handle<Value> argv[2] = { Null(), Integer::New(0) };
   closure.fn->Call(Context::GetCurrent()->Global(), 2, argv);
   return Undefined();
 }
@@ -108,6 +106,15 @@ Canvas::Canvas(int width, int height): ObjectWrap() {
 
 Canvas::~Canvas() {
   cairo_surface_destroy(_surface);
+}
+
+/*
+ * Construct an Error from the given cairo status.
+ */
+
+Handle<Value>
+Canvas::Error(cairo_status_t status) {
+  return Exception::Error(String::New(cairo_status_to_string(status)));
 }
 
 /*
