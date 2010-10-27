@@ -5,9 +5,9 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
-#include "context2d.h"
-#include "gradient.h"
+#include "Canvas.h"
+#include "CanvasGradient.h"
+#include "CanvasRenderingContext2d.h"
 
 extern "C" void
 init (Handle<Object> target) {

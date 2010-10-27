@@ -8,8 +8,8 @@
 #ifndef __NODE_CONTEXT2D_H__
 #define __NODE_CONTEXT2D_H__
 
-#include "canvas.h"
-#include "gradient.h"
+#include "Canvas.h"
+#include "CanvasGradient.h"
 
 /*
  * RGBA struct used to retain values of fill/stroke.

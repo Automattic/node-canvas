@@ -7,9 +7,9 @@
 
 #include <math.h>
 #include <string.h>
-#include "canvas.h"
-#include "context2d.h"
-#include "gradient.h"
+#include "Canvas.h"
+#include "CanvasRenderingContext2d.h"
+#include "CanvasGradient.h"
 
 using namespace v8;
 using namespace node;

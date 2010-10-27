@@ -5,8 +5,8 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
-#include "gradient.h"
+#include "Canvas.h"
+#include "CanvasGradient.h"
 
 /*
  * Initialie CanvasGradient.
