@@ -8,8 +8,9 @@ var Canvas = require('../lib/canvas')
   , ctx = canvas.getContext('2d')
   , fs = require('fs');
 
-
 function render(level){
+  ctx.fillStyle = getPointColour(122,122);
+  ctx.fillRect(0,0,240,240);
   renderLevel(level,81,0);
 }
 
