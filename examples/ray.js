@@ -77,6 +77,6 @@ ctx.translate(243,0);
 render(3);    
 ctx.translate(243,0);
 render(1);
-console.log('Rendered in %d seconds', (new Date - start) / 1000);
+console.log('Rendered in %s seconds', (new Date - start) / 1000);
 
 canvas.savePNG(__dirname + "/ray.png");
