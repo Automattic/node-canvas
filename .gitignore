@@ -1,8 +1,6 @@
 build
 .DS_Store
-test.js
 .lock-wscript
-test.png
-test.html
 test/images/*.png
 examples/*.png
+testing
