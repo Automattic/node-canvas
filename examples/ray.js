@@ -4,7 +4,7 @@
  */
 
 var Canvas = require('../lib/canvas')
-  , canvas = new Canvas(1150, 230) 
+  , canvas = new Canvas(243 * 4, 243) 
   , ctx = canvas.getContext('2d')
   , fs = require('fs');
 
@@ -70,14 +70,12 @@ function getPointColour(x,y){
 }
 
 var start = new Date;
-render(15);
-ctx.translate(230,0);
 render(10);
-ctx.translate(230,0);
+ctx.translate(243,0);
 render(6);    
-ctx.translate(230,0);
+ctx.translate(243,0);
 render(3);    
-ctx.translate(230,0);
+ctx.translate(243,0);
 render(1);
 console.log('Rendered in %d seconds', (new Date - start) / 1000);
 
