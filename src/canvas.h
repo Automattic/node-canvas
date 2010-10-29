@@ -37,10 +37,10 @@ using namespace v8;
     return ThrowException(Exception::TypeError(String::New("b required"))); \
   if (!args[N+3]->IsNumber()) \
     return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  float r = args[N]->Int32Value(); \
-  float g = args[N+1]->Int32Value(); \
-  float b = args[N+2]->Int32Value(); \
-  float a = args[N+3]->NumberValue();
+  double r = args[N]->Int32Value(); \
+  double g = args[N+1]->Int32Value(); \
+  double b = args[N+2]->Int32Value(); \
+  double a = args[N+3]->NumberValue();
 
 /*
  * Canvas.
