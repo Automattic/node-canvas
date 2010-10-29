@@ -550,7 +550,11 @@ module.exports = {
     assert.ok(!ctx.isPointInPath(50,120));
   },
   
-  'test #toDataURL()': function(assert){
+  'test Canvas#toBuffer()': function(assert){
+    assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
+  },
+  
+  'test Canvas#toDataURL()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
