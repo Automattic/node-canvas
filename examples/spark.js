@@ -18,23 +18,25 @@ Object.defineProperty(Array.prototype, 'max', {
   }
 });
 
-function spark(ctx, color, data) {
+function spark(ctx, data) {
   var len = data.length
     , pad = 1
     , width = ctx.canvas.width
     , height = ctx.canvas.height
     , barWidth = width / len
     , max = data.max;
-  ctx.fillStyle = color;
+  ctx.fillStyle = 'rgba(0,0,255,0.5)';
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 1;
   data.forEach(function(n, i){
-    ctx.fillRect(
-        i * barWidth + pad
-      , height
-      , barWidth - pad
-      , -(height * (n / max)));
+    var x = i * barWidth + pad
+      , y = height * (n / max)
+    ctx.lineTo(x, height - y);
+    ctx.fillRect(x, height, barWidth - pad, -y);
   });
+  ctx.stroke();
 }
 
-spark(ctx, 'blue', [1,2,4,5,10,4,2,5,4,3,3,2]);
+spark(ctx, [1,2,4,5,10,4,2,5,4,3,3,2]);
 
 canvas.savePNG(__dirname + "/spark.png");
