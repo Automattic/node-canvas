@@ -91,6 +91,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
   NODE_SET_PROTOTYPE_METHOD(t, "bezierCurveTo", BezierCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(t, "quadraticCurveTo", QuadraticCurveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
@@ -543,6 +544,39 @@ Context2d::BezierCurveTo(const Arguments &args) {
     , args[3]->NumberValue()
     , args[4]->NumberValue()
     , args[5]->NumberValue());
+
+  return Undefined();
+}
+
+/*
+ * Quadratic curve approximation from libsvg-cairo.
+ */
+
+Handle<Value>
+Context2d::QuadraticCurveTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()
+    ||!args[1]->IsNumber()
+    ||!args[2]->IsNumber()
+    ||!args[3]->IsNumber()) return Undefined();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+
+  double x, y
+    , x1 = args[0]->NumberValue()
+    , y1 = args[1]->NumberValue()
+    , x2 = args[2]->NumberValue()
+    , y2 = args[3]->NumberValue();
+
+  cairo_get_current_point(ctx, &x, &y);
+
+  cairo_curve_to(ctx
+    , x  + 2.0 / 3.0 * (x1 - x),  y  + 2.0 / 3.0 * (y1 - y)
+    , x2 + 2.0 / 3.0 * (x1 - x2), y2 + 2.0 / 3.0 * (y1 - y2)
+    , x2
+    , y2);
 
   return Undefined();
 }
