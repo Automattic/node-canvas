@@ -43,9 +43,7 @@ using namespace node;
     , _.r \
     , _.g \
     , _.b \
-    , context->state->globalAlpha == -1 \
-      ? _.a \
-      : context->state->globalAlpha);
+    , _.a * context->state->globalAlpha);
 
 /*
  * Rectangle arg assertions.
@@ -136,7 +134,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   cairo_set_line_width(_context, 1);
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  state->globalAlpha = -1;
+  state->globalAlpha = 1;
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
