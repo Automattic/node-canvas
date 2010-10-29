@@ -194,6 +194,28 @@ module.exports = {
       , 'Context2d#bezierCurveTo() failed');
   },
   
+  'test Context2d#quadraticCurveTo()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/quadraticCurveTo.png';
+    
+    ctx.beginPath();
+    ctx.moveTo(75,25);
+    ctx.quadraticCurveTo(25,25,25,62.5);
+    ctx.quadraticCurveTo(25,100,50,100);
+    ctx.quadraticCurveTo(50,120,30,125);
+    ctx.quadraticCurveTo(60,120,65,100);
+    ctx.quadraticCurveTo(125,100,125,62.5);
+    ctx.quadraticCurveTo(125,25,75,25);
+    ctx.stroke();
+
+    assertChecksum(
+        canvas
+      , path
+      , '4995ce059b78d8b78652d9f6d2d1a6f2'
+      , 'Context2d#quadraticCurveTo() failed');
+  },
+  
   'test Context2d#rotate()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
