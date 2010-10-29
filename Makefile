@@ -3,4 +3,7 @@ test:
 	@./support/expresso/bin/expresso \
 		-I lib
 
-.PHONY: test
+benchmark:
+	@node examples/benchmark.js
+
+.PHONY: test benchmark
