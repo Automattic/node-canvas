@@ -11,12 +11,32 @@ var times = 10000;
 
 console.log('\n  \x1b[33m%s\x1b[0m times\n', times);
 
-function bm(label, fn) {
+function bm(label, overrideTimes, fn) {
   var start = new Date
     , n = times;
-  while (n--) fn();
-  var duration = (new Date - start) / 1000;
-  console.log('  - \x1b[33m%s\x1b[0m %ss', label, duration);
+
+  if ('function' == typeof overrideTimes) {
+    fn = overrideTimes;
+  } else {
+    n = overrideTimes;
+    label += ' (' + n + ' times)';
+  }
+
+  var pending = n;
+
+  function done(){
+    var duration = (new Date - start) / 1000;
+    console.log('  - \x1b[33m%s\x1b[0m %ss', label, duration);
+  }
+
+  if (fn.length) {
+    while (n--) fn(function(){
+      --pending || done();
+    });
+  } else {
+    while (n--) fn();
+    done();
+  }
 }
 
 bm('lineTo()', function(){
@@ -43,4 +63,12 @@ bm('linear gradients', function(){
   ctx.fillRect(10,10,130,130);
 });
 
-console.log();
+bm('PNGStream', 200, function(done){
+  var stream = canvas.createPNGStream();
+  stream.on('data', function(chunk){
+    // whatever
+  });
+  stream.on('end', function(){
+    done();
+  });
+});
