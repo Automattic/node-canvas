@@ -401,19 +401,21 @@ module.exports = {
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/images/globalAlpha.png';
 
-    ctx.fillRect(0,0,50,50);
-    ctx.translate(15,15);
-    ctx.globalAlpha = 0.6;
-    assert.equal(0.6, ctx.globalAlpha.toFixed(1));
-    ctx.fillStyle = 'red';
-    ctx.fillRect(0,0,20,20);
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(0,0,10,10);
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.strokeRect(0,0,50,50);
+
+    ctx.globalAlpha = 0.8;
+    ctx.fillRect(20,20,20,20);
+
+    ctx.fillStyle = 'black';
+    ctx.globalAlpha = 1;
+    ctx.fillRect(25,25,10,10);
     
     assertChecksum(
         canvas
       , path
-      , 'd8365233f2beb420ba18ff78dc6d7405'
+      , 'feb3e3c4bc6aac5c9e46f9b71b4504c6'
       , 'Context2d#globalAlpha= failed');
   },
   
