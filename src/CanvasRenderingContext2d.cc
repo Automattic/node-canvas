@@ -801,10 +801,11 @@ Context2d::ClearRect(const Arguments &args) {
   if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
+  cairo_save(ctx);
   cairo_rectangle(ctx, x, y, width, height);
+  cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_fill(ctx);
-  cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
+  cairo_restore(ctx);
   return Undefined();
 }
 
