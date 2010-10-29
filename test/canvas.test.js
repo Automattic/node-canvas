@@ -550,6 +550,41 @@ module.exports = {
     assert.ok(!ctx.isPointInPath(50,120));
   },
   
+  'test Canvas#toBuffer()': function(assert){
+    assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
+  },
+  
+  'test Canvas#toDataURL()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    ctx.fillRect(0,0,100,100);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(100,0,100,100);
+
+    var str = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYA'
+      + 'AACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAABbElEQVR4nO3TQQ0AMQwDwVz5c+4x2'
+      + 'G/zmEFgydpvZu6whjN2Oa8HwGYCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEA'
+      + 'gCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSA'
+      + 'QCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBI'
+      + 'BAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEg'
+      + 'EAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQ'
+      + 'CAKBIBAIAoEgEAgCgSAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+      + 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAhX5bnALGvZc/ggA'
+      + 'AAABJRU5ErkJggg==';
+    
+    assert.equal(str, canvas.toDataURL(), 'Canvas#toDataURL() failed');
+    assert.equal(str, canvas.toDataURL('image/png'), 'Canvas#toDataURL() failed');
+    
+    var err;
+    try {
+      canvas.toDataURL('image/jpeg');
+    } catch (e) {
+      err = e;
+    }
+    assert.equal('currently only image/png is supported', err.message);
+  },
+  
   'test PNGStream': function(assert, beforeExit){
     var canvas = new Canvas(320, 320)
       , ctx = canvas.getContext('2d')
