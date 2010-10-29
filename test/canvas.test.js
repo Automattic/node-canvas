@@ -570,6 +570,15 @@ module.exports = {
       + 'AAABJRU5ErkJggg==';
     
     assert.equal(str, canvas.toDataURL(), 'Canvas#toDataURL() failed');
+    assert.equal(str, canvas.toDataURL('image/png'), 'Canvas#toDataURL() failed');
+    
+    var err;
+    try {
+      canvas.toDataURL('image/jpeg');
+    } catch (e) {
+      err = e;
+    }
+    assert.equal('currently only image/png is supported', err.message);
   },
   
   'test PNGStream': function(assert, beforeExit){
