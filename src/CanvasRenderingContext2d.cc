@@ -731,8 +731,8 @@ Context2d::LineTo(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_line_to(context->getContext()
-    , args[0]->Int32Value()
-    , args[1]->Int32Value());
+    , args[0]->NumberValue()
+    , args[1]->NumberValue());
 
   return Undefined();
 }
@@ -752,8 +752,8 @@ Context2d::MoveTo(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_move_to(context->getContext()
-    , args[0]->Int32Value()
-    , args[1]->Int32Value());
+    , args[0]->NumberValue()
+    , args[1]->NumberValue());
 
   return Undefined();
 }
