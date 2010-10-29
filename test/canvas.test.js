@@ -145,7 +145,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , '3d500105083716f798cf3de3ef6a4a56'
+      , 'eb265249dc3d0fc7dc2008d2f5b905fa'
       , 'Context2d#lineTo() failed'
       );
   },
