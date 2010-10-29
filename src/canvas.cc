@@ -50,6 +50,8 @@ Canvas::New(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("height required")));
 
   Canvas *canvas = new Canvas(args[0]->Int32Value(), args[1]->Int32Value());
+  args.This()->Set(String::NewSymbol("width"), args[0]);
+  args.This()->Set(String::NewSymbol("height"), args[1]);
   canvas->Wrap(args.This());
   return args.This();
 }
