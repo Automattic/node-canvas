@@ -63,7 +63,7 @@ bm('linear gradients', function(){
   ctx.fillRect(10,10,130,130);
 });
 
-bm('PNGStream', 200, function(done){
+bm('PNGStream', 250, function(done){
   var stream = canvas.createPNGStream();
   stream.on('data', function(chunk){
     // whatever
