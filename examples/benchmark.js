@@ -72,7 +72,7 @@ bm('toDataURL()', 250, function(){
 });
 
 bm('PNGStream', 250, function(done){
-  var stream = canvas.createPNGStream();
+  var stream = canvas.createSyncPNGStream();
   stream.on('data', function(chunk){
     // whatever
   });
