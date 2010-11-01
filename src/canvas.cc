@@ -31,7 +31,7 @@ Canvas::Initialize(Handle<Object> target) {
   t->InstanceTemplate()->SetInternalFieldCount(1);
   t->SetClassName(String::NewSymbol("Canvas"));
 
-  NODE_SET_PROTOTYPE_METHOD(t, "streamPNG", StreamPNG);
+  NODE_SET_PROTOTYPE_METHOD(t, "streamPNGSync", StreamPNGSync);
   NODE_SET_PROTOTYPE_METHOD(t, "savePNG", SavePNG);
   target->Set(String::NewSymbol("Canvas"), t->GetFunction());
 }
@@ -71,11 +71,11 @@ writeToBuffer(void *c, const uint8_t *data, unsigned len) {
 }
 
 /*
- * Return a node Buffer containing PNG data.
+ * Stream PNG data synchronously.
  */
 
 Handle<Value>
-Canvas::StreamPNG(const Arguments &args) {
+Canvas::StreamPNGSync(const Arguments &args) {
   HandleScope scope;
   // TODO: async
   if (!args[0]->IsFunction())

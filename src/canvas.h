@@ -51,7 +51,7 @@ class Canvas: public node::ObjectWrap {
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> SavePNG(const Arguments &args);
-    static Handle<Value> StreamPNG(const Arguments &args);
+    static Handle<Value> StreamPNGSync(const Arguments &args);
     static Handle<Value> Error(cairo_status_t status);
     inline cairo_surface_t *getSurface(){ return _surface; }
     static void blur(cairo_surface_t *surface, int radius);

@@ -630,7 +630,7 @@ module.exports = {
     }
     
     var out = fs.createWriteStream(path)
-      , stream = canvas.createPNGStream();
+      , stream = canvas.createSyncPNGStream();
 
     out.on('close', function(){
       assertChecksumOf(
