@@ -75,6 +75,7 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->width = val->Uint32Value();
+    canvas->resetSurface();
   }
 }
 
@@ -97,6 +98,7 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->height = val->Uint32Value();
+    canvas->resetSurface();
   }
 }
 

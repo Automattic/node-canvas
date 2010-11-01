@@ -62,10 +62,10 @@ class Canvas: public node::ObjectWrap {
     inline cairo_surface_t *getSurface(){ return _surface; }
     static void blur(cairo_surface_t *surface, int radius);
     Canvas(int width, int height);
+    void resetSurface();
 
   private:
     ~Canvas();
-    void resetSurface();
     cairo_surface_t *_surface;
 };
 
