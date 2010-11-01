@@ -63,6 +63,16 @@ module.exports = {
     var tests = [
         '20px Arial'
       , { size: 20, unit: 'px', family: 'Arial' }
+      , '20pt Arial'
+      , { size: 20, unit: 'pt', family: 'Arial' }
+      , '20px serif'
+      , { size: 20, unit: 'px', family: 'serif' }
+      , '20px sans-serif'
+      , { size: 20, unit: 'px', family: 'sans-serif' }
+      , '20px monospace'
+      , { size: 20, unit: 'px', family: 'monospace' }
+      , '50px Arial, sans-serif'
+      , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
     ];
 
     for (var i = 0, len = tests.length; i < len; ++i) {
