@@ -31,8 +31,11 @@ Canvas::Initialize(Handle<Object> target) {
   t->InstanceTemplate()->SetInternalFieldCount(1);
   t->SetClassName(String::NewSymbol("Canvas"));
 
+  Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "streamPNGSync", StreamPNGSync);
   NODE_SET_PROTOTYPE_METHOD(t, "savePNG", SavePNG);
+  proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
+  proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), t->GetFunction());
 }
 
@@ -48,10 +51,53 @@ Canvas::New(const Arguments &args) {
 
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-
   Canvas *canvas = new Canvas(width, height);
   canvas->Wrap(args.This());
   return args.This();
+}
+
+/*
+ * Get width.
+ */
+
+Handle<Value>
+Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+  return Number::New(canvas->width);
+}
+
+/*
+ * Set width.
+ */
+
+void
+Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsNumber()) {
+    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+    canvas->width = val->Uint32Value();
+  }
+}
+
+/*
+ * Get height.
+ */
+
+Handle<Value>
+Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+  return Number::New(canvas->height);
+}
+
+/*
+ * Set height.
+ */
+
+void
+Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsNumber()) {
+    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+    canvas->height = val->Uint32Value();
+  }
 }
 
 /*

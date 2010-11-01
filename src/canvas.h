@@ -52,10 +52,10 @@ class Canvas: public node::ObjectWrap {
     int height;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
-    static Handle<Value> SetHeight(const Arguments &args);
-    static Handle<Value> GetHeight(const Arguments &args);
-    static Handle<Value> SetWidth(const Arguments &args);
-    static Handle<Value> GetWidth(const Arguments &args);
+    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
+    static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static Handle<Value> SavePNG(const Arguments &args);
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Handle<Value> Error(cairo_status_t status);
