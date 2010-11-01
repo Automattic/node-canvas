@@ -73,6 +73,12 @@ module.exports = {
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , '50px Helvetica ,  Arial, sans-serif'
+      , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
+      , '50px "Helvetica Nueue", sans-serif'
+      , { size: 50, unit: 'px', family: '"Helvetica Nueue", sans-serif' }
+      , '50px "Helvetica Nueue", "foo bar baz" , sans-serif'
+      , { size: 50, unit: 'px', family: '"Helvetica Nueue", "foo bar baz" , sans-serif' }
     ];
 
     for (var i = 0, len = tests.length; i < len; ++i) {
