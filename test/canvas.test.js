@@ -60,9 +60,16 @@ module.exports = {
   },
   
   'test .parseFont()': function(assert){
-    assert.eql(
-        { size: '20', unit: 'px', family: 'Arial' }
-      , Canvas.parseFont('20px Arial'));
+    var tests = [
+        '20px Arial'
+      , { size: 20, unit: 'px', family: 'Arial' }
+    ];
+
+    for (var i = 0, len = tests.length; i < len; ++i) {
+      var str = tests[i++]
+        , obj = tests[i];
+      assert.eql(obj, Canvas.parseFont(str));
+    }
   },
   
   'test color serialization': function(){
