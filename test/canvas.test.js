@@ -352,6 +352,15 @@ module.exports = {
       , 'Context2d#rect() failed');
   },
   
+  'test Context2d#font=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+    
+    assert.equal('10px sans-serif', ctx.font);
+    ctx.font = '15px Arial, sans-serif';
+    assert.equal('15px Arial, sans-serif', ctx.font);
+  },
+  
   'test Context2d#fillStyle=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
