@@ -97,6 +97,22 @@ module.exports = {
     assert.equal(50, canvas.height);
   },
   
+  'test Canvas#{width,height}= re-surface': function(assert){
+    var canvas = new Canvas(200, 200)
+      , path = __dirname + '/images/dimensionResurface.png';
+    
+    canvas.width = 50;
+    canvas.height = 90;
+    var ctx = canvas.getContext('2d');
+    ctx.fillRect(0,0,50,50);
+
+    assertChecksum(
+        canvas
+      , path
+      , '3ee668a413ca0409f60728e7f2224886'
+      , 'Canvas#{width,height}= re-surface failed');
+  },
+  
   'test Canvas#getContext("invalid")': function(assert){
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
   },
