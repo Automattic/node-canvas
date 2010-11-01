@@ -66,6 +66,10 @@ module.exports = {
       , { size: 20, unit: 'px', family: 'Arial' }
       , '20pt Arial'
       , { size: 20, unit: 'pt', family: 'Arial' }
+      , '20% Arial'
+      , { size: 20, unit: '%', family: 'Arial' }
+      , '20mm Arial'
+      , { size: 20, unit: 'mm', family: 'Arial' }
       , '20px serif'
       , { size: 20, unit: 'px', family: 'serif' }
       , '20px sans-serif'
