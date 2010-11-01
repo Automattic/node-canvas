@@ -412,7 +412,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , 'fc8bbf2cf6ae2d85fcf526103200e844'
+      , '65a027e653ea817747ba73053d48272a'
       , 'Context2d#save() / restore() failed');
   },
   

@@ -801,6 +801,7 @@ Context2d::FillRect(const Arguments &args) {
   if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+  cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE(context->state->fill);
   cairo_fill(ctx);
@@ -818,6 +819,7 @@ Context2d::StrokeRect(const Arguments &args) {
   if (0 == width && 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+  cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE(context->state->stroke);
   cairo_stroke(ctx);
