@@ -5,6 +5,7 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(200, 200)
+  , largeCanvas = new Canvas(1000, 1000)
   , ctx = canvas.getContext('2d');
 
 var times = 10000;
@@ -63,16 +64,24 @@ bm('linear gradients', function(){
   ctx.fillRect(10,10,130,130);
 });
 
-bm('toBuffer()', 250, function(){
+bm('toBuffer() 200x200', 50, function(){
   canvas.toBuffer();
 });
 
-bm('toDataURL()', 250, function(){
+bm('toBuffer() 1000x1000', 50, function(){
+  largeCanvas.toBuffer();
+});
+
+bm('toDataURL() 200x200', 50, function(){
   canvas.toDataURL();
 });
 
-bm('PNGStream', 250, function(done){
-  var stream = canvas.createSyncPNGStream();
+bm('toDataURL() 1000x1000', 50, function(){
+  largeCanvas.toDataURL();
+});
+
+bm('PNGStream 1000x1000', 50, function(done){
+  var stream = largeCanvas.createSyncPNGStream();
   stream.on('data', function(chunk){
     // whatever
   });
