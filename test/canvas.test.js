@@ -79,12 +79,23 @@ module.exports = {
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", sans-serif' }
       , '50px "Helvetica Nueue", "foo bar baz" , sans-serif'
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", "foo bar baz" , sans-serif' }
+      , 'italic 20px Arial'
+      , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
+      , 'oblique 20px Arial'
+      , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
+      , 'normal 20px Arial'
+      , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
     ];
 
     for (var i = 0, len = tests.length; i < len; ++i) {
       var str = tests[i++]
-        , obj = tests[i];
-      assert.eql(obj, Canvas.parseFont(str));
+        , obj = tests[i]
+        , got = Canvas.parseFont(str);
+      if (!obj.style) obj.style = undefined;
+      assert.eql(obj, got, ''
+        + '\n   from: ' + JSON.stringify(str)
+        + '\n   got: ' + JSON.stringify(got) 
+        + '\n   expected: ' + JSON.stringify(obj));
     }
   },
   
