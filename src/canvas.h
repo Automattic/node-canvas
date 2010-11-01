@@ -48,8 +48,14 @@ using namespace v8;
 
 class Canvas: public node::ObjectWrap {
   public:
+    int width;
+    int height;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
+    static Handle<Value> SetHeight(const Arguments &args);
+    static Handle<Value> GetHeight(const Arguments &args);
+    static Handle<Value> SetWidth(const Arguments &args);
+    static Handle<Value> GetWidth(const Arguments &args);
     static Handle<Value> SavePNG(const Arguments &args);
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Handle<Value> Error(cairo_status_t status);
@@ -59,6 +65,7 @@ class Canvas: public node::ObjectWrap {
 
   private:
     ~Canvas();
+    void resetSurface();
     cairo_surface_t *_surface;
 };
 

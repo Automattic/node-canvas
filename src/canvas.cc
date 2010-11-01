@@ -43,15 +43,13 @@ Canvas::Initialize(Handle<Object> target) {
 Handle<Value>
 Canvas::New(const Arguments &args) {
   HandleScope scope;
+  int width = 0
+    , height = 0;
 
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("width required")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("height required")));
+  if (args[0]->IsNumber()) width = args[0]->Uint32Value();
+  if (args[1]->IsNumber()) height = args[1]->Uint32Value();
 
-  Canvas *canvas = new Canvas(args[0]->Int32Value(), args[1]->Int32Value());
-  args.This()->Set(String::NewSymbol("width"), args[0]);
-  args.This()->Set(String::NewSymbol("height"), args[1]);
+  Canvas *canvas = new Canvas(width, height);
   canvas->Wrap(args.This());
   return args.This();
 }
@@ -104,8 +102,10 @@ Canvas::StreamPNGSync(const Arguments &args) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int width, int height): ObjectWrap() {
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+Canvas::Canvas(int w, int h): ObjectWrap() {
+  width = w;
+  height = h;
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
 }
 
 /*
@@ -114,6 +114,16 @@ Canvas::Canvas(int width, int height): ObjectWrap() {
 
 Canvas::~Canvas() {
   cairo_surface_destroy(_surface);
+}
+
+/*
+ * Re-alloc the surface, destroying the previous.
+ */
+
+void
+Canvas::resetSurface() {
+  cairo_surface_destroy(_surface);
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 }
 
 /*
