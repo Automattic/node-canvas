@@ -6,6 +6,7 @@
 var Canvas = require('canvas')
   , assert = require('assert')
   , crypto = require('crypto')
+  , sys = require('sys')
   , fs = require('fs');
 
 function hash(val) {
@@ -85,17 +86,24 @@ module.exports = {
       , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
       , 'normal 20px Arial'
       , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
+      , '800 20px Arial'
+      , { size: 20, unit: 'px', weight: '800', family: 'Arial' }
+      , 'bolder 20px Arial'
+      , { size: 20, unit: 'px', weight: 'bolder', family: 'Arial' }
+      , 'lighter 20px Arial'
+      , { size: 20, unit: 'px', weight: 'lighter', family: 'Arial' }
     ];
 
     for (var i = 0, len = tests.length; i < len; ++i) {
       var str = tests[i++]
         , obj = tests[i]
         , got = Canvas.parseFont(str);
-      if (!obj.style) obj.style = undefined;
+      if (!obj.style) obj.style = 'normal';
+      if (!obj.weight) obj.weight = 'normal';
       assert.eql(obj, got, ''
-        + '\n   from: ' + JSON.stringify(str)
-        + '\n   got: ' + JSON.stringify(got) 
-        + '\n   expected: ' + JSON.stringify(obj));
+        + '\n   from: ' + sys.inspect(str)
+        + '\n   got:\n' + sys.inspect(got) 
+        + '\n   expected:\n' + sys.inspect(obj));
     }
   },
   
