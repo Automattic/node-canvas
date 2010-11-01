@@ -86,6 +86,12 @@ module.exports = {
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
   },
   
+  'test Canvas#{width,height}': function(assert){
+    var canvas = new Canvas(100, 200);
+    assert.equal(100, canvas.width);
+    assert.equal(200, canvas.height);
+  },
+  
   'test Canvas#getContext("invalid")': function(assert){
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
   },
