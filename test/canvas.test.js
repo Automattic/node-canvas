@@ -59,6 +59,12 @@ module.exports = {
     assert.eql([0,0,0,1], Canvas.parseColor('black'));
   },
   
+  'test .parseFont()': function(assert){
+    assert.eql(
+        { size: '20', unit: 'px', family: 'Arial' }
+      , Canvas.parseFont('20px Arial'));
+  },
+  
   'test color serialization': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
