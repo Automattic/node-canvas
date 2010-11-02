@@ -20,7 +20,7 @@ function assertChecksum(canvas, path, checksum, msg) {
 
 function assertChecksumOf(canvas, path, checksum, msg) {
   fs.readFile(path, function(err, buf){
-    assert.equal(hash(buf), checksum, msg);  
+    assert.equal(hash(buf), checksum, msg + ' \n   path: ' + path);  
   });
 }
 
