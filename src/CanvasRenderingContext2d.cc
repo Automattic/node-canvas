@@ -815,6 +815,9 @@ Context2d::SetFont(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
 
+  // Size
+  cairo_set_font_size(ctx, size);
+
   // Style
   cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
   if (0 == strcmp("italic", *style)) slant = CAIRO_FONT_SLANT_ITALIC;
@@ -845,7 +848,6 @@ Context2d::FillText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_text_extents_t te;
-  cairo_set_font_size(ctx, 20); // TODO: relative
   cairo_move_to(ctx, x, y);
   cairo_show_text(ctx, *str);
 
