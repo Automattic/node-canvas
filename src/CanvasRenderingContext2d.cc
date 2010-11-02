@@ -804,8 +804,14 @@ Context2d::MoveTo(const Arguments &args) {
 Handle<Value>
 Context2d::SetFont(const Arguments &args) {
   HandleScope scope;
-  // TODO: optimize; match cairo constants
-  
+
+  // Ignore invalid args
+  if (!args[0]->IsString()
+    || !args[1]->IsString()
+    || !args[2]->IsNumber()
+    || !args[3]->IsString()
+    || !args[4]->IsString()) return Undefined();
+
   String::AsciiValue weight(args[0]);
   String::AsciiValue style(args[1]);
   double size = args[2]->NumberValue();
@@ -819,10 +825,20 @@ Context2d::SetFont(const Arguments &args) {
   cairo_set_font_size(ctx, size);
 
   // Style
-  cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
-  if (0 == strcmp("italic", *style)) slant = CAIRO_FONT_SLANT_ITALIC;
+  cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
+  if (0 == strcmp("italic", *style)) {
+    s = CAIRO_FONT_SLANT_ITALIC;
+  } else if (0 == strcmp("oblique", *style)) {
+    s = CAIRO_FONT_SLANT_OBLIQUE;
+  }
 
-  cairo_select_font_face(ctx, *family, slant, CAIRO_FONT_WEIGHT_BOLD);
+  // Weight
+  cairo_font_weight_t w = CAIRO_FONT_WEIGHT_NORMAL;
+  if (0 == strcmp("bold", *weight)) {
+    w = CAIRO_FONT_WEIGHT_BOLD;
+  }
+
+  cairo_select_font_face(ctx, *family, s, w);
   
   return Undefined();
 }
@@ -836,9 +852,9 @@ Context2d::FillText(const Arguments &args) {
   HandleScope scope;
 
   // Ignore when args are not present
-  if (!args[0]->IsString()) return Undefined();
-  if (!args[1]->IsNumber()) return Undefined();
-  if (!args[2]->IsNumber()) return Undefined();
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
 
   String::Utf8Value str(args[0]);
 
