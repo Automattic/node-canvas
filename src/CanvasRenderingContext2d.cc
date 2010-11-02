@@ -797,7 +797,26 @@ Context2d::MoveTo(const Arguments &args) {
 
 Handle<Value>
 Context2d::FillText(const Arguments &args) {
-  
+  HandleScope scope;
+
+  // Ignore when args are not present
+  if (!args[0]->IsString()) return Undefined();
+  if (!args[1]->IsNumber()) return Undefined();
+  if (!args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+
+  double x = args[1]->NumberValue()
+    , y = args[2]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  cairo_text_extents_t te;
+  cairo_select_font_face(ctx, "Helvetica", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size(ctx, 20); // TODO: relative
+  cairo_move_to(ctx, x, y);
+  cairo_show_text(ctx, *str);
+
   return Undefined();
 }
 
