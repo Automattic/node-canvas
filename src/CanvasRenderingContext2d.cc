@@ -140,7 +140,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->globalAlpha = 1;
-  state->textAlignment -1;
+  state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
