@@ -662,6 +662,32 @@ module.exports = {
     assert.ok(!ctx.isPointInPath(50,120));
   },
   
+  'test Context2d#fillText()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/fillText.png';
+    
+      ctx.font = 'italic 12px Helvetica';
+
+      ctx.strokeRect(0,0,200,200);
+      ctx.lineTo(0,100);
+      ctx.lineTo(200,100);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineTo(100,0);
+      ctx.lineTo(100,200);
+      ctx.stroke();
+
+      ctx.fillText("Testing :)", 100, 100);
+
+      assertChecksum(
+          canvas
+        , path
+        , '8a1f08023332a424e079b3d6ddfccc56'
+        , 'Context2d#fillText() failed');
+  },
+  
   'test Canvas#toBuffer()': function(assert){
     assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
   },
