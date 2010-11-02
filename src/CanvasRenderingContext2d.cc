@@ -88,6 +88,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(t, "strokeText", StrokeText);
   NODE_SET_PROTOTYPE_METHOD(t, "fillText", FillText);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
@@ -840,6 +841,33 @@ Context2d::SetFont(const Arguments &args) {
 
   cairo_select_font_face(ctx, *family, s, w);
   
+  return Undefined();
+}
+
+/*
+ * Stroke text at x, y.
+ */
+
+Handle<Value>
+Context2d::StrokeText(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore when args are not present
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+
+  double x = args[1]->NumberValue()
+    , y = args[2]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  cairo_text_extents_t te;
+  cairo_move_to(ctx, x, y);
+  cairo_show_text(ctx, *str);
+
   return Undefined();
 }
 
