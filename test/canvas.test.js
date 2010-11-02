@@ -20,7 +20,7 @@ function assertChecksum(canvas, path, checksum, msg) {
 
 function assertChecksumOf(canvas, path, checksum, msg) {
   fs.readFile(path, function(err, buf){
-    assert.equal(hash(buf), checksum, msg);  
+    assert.equal(hash(buf), checksum, msg + ' \n   path: ' + path);  
   });
 }
 
@@ -78,6 +78,8 @@ module.exports = {
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , 'bold italic 50px Arial, sans-serif'
+      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial, sans-serif' }
       , '50px Helvetica ,  Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
       , '50px "Helvetica Nueue", sans-serif'
@@ -90,6 +92,8 @@ module.exports = {
       , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
       , 'normal 20px Arial'
       , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
+      , '300 20px Arial'
+      , { size: 20, unit: 'px', weight: '300', family: 'Arial' }
       , '800 20px Arial'
       , { size: 20, unit: 'px', weight: '800', family: 'Arial' }
       , 'bolder 20px Arial'
@@ -350,6 +354,15 @@ module.exports = {
       , path
       , 'a670979e566eafa07e3938aec9e2b7a3'
       , 'Context2d#rect() failed');
+  },
+  
+  'test Context2d#font=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+    
+    assert.equal('10px sans-serif', ctx.font);
+    ctx.font = '15px Arial, sans-serif';
+    assert.equal('15px Arial, sans-serif', ctx.font);
   },
   
   'test Context2d#fillStyle=': function(assert){
@@ -651,6 +664,87 @@ module.exports = {
     assert.ok(ctx.isPointInPath(60,110));
     assert.ok(!ctx.isPointInPath(70,110));
     assert.ok(!ctx.isPointInPath(50,120));
+  },
+  
+  'test Context2d#fillText()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/fillText.png';
+    
+      ctx.font = 'italic 12px Helvetica';
+
+      ctx.strokeRect(0,0,200,200);
+      ctx.lineTo(0,100);
+      ctx.lineTo(200,100);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineTo(100,0);
+      ctx.lineTo(100,200);
+      ctx.stroke();
+
+      ctx.fillText("Testing :)", 100, 100);
+
+      assertChecksum(
+          canvas
+        , path
+        , '8a1f08023332a424e079b3d6ddfccc56'
+        , 'Context2d#fillText() failed');
+  },
+  
+  'test Context2d#fillText() transformations': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/fillText-transformations.png';
+
+    ctx.font = 'bold 12px Helvetica';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.rotate(0.2);
+    ctx.fillText("foo", 150, 100);
+    ctx.font = 'normal 30px Impact';
+    ctx.fillText("bar", 50, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'f3879c6cc72916153dc309e2bf49dd0a'
+      , 'Context2d#fillText() transformations failed');    
+  },
+  
+  'test Context2d#strokeText()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/strokeText.png';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'red';
+    ctx.font = 'normal 50px Impact';
+    ctx.strokeText("bar", 100, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'e5f6d8a3c57e1454c4c79358a32f1c2c'
+      , 'Context2d#strokeText()');    
   },
   
   'test Canvas#toBuffer()': function(assert){

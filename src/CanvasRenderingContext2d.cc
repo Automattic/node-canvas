@@ -88,6 +88,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(t, "strokeText", StrokeText);
+  NODE_SET_PROTOTYPE_METHOD(t, "fillText", FillText);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
   NODE_SET_PROTOTYPE_METHOD(t, "bezierCurveTo", BezierCurveTo);
@@ -95,6 +97,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(t, "setFont", SetFont);
   NODE_SET_PROTOTYPE_METHOD(t, "setShadowRGBA", SetShadowRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
@@ -786,6 +789,111 @@ Context2d::MoveTo(const Arguments &args) {
   cairo_move_to(context->getContext()
     , args[0]->NumberValue()
     , args[1]->NumberValue());
+
+  return Undefined();
+}
+
+/*
+ * Set font:
+ *   - weight
+ *   - style
+ *   - size
+ *   - unit
+ *   - family
+ */
+
+Handle<Value>
+Context2d::SetFont(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore invalid args
+  if (!args[0]->IsString()
+    || !args[1]->IsString()
+    || !args[2]->IsNumber()
+    || !args[3]->IsString()
+    || !args[4]->IsString()) return Undefined();
+
+  String::AsciiValue weight(args[0]);
+  String::AsciiValue style(args[1]);
+  double size = args[2]->NumberValue();
+  String::AsciiValue unit(args[3]);
+  String::AsciiValue family(args[4]);
+  
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+
+  // Size
+  cairo_set_font_size(ctx, size);
+
+  // Style
+  cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
+  if (0 == strcmp("italic", *style)) {
+    s = CAIRO_FONT_SLANT_ITALIC;
+  } else if (0 == strcmp("oblique", *style)) {
+    s = CAIRO_FONT_SLANT_OBLIQUE;
+  }
+
+  // Weight
+  cairo_font_weight_t w = CAIRO_FONT_WEIGHT_NORMAL;
+  if (0 == strcmp("bold", *weight)) {
+    w = CAIRO_FONT_WEIGHT_BOLD;
+  }
+
+  cairo_select_font_face(ctx, *family, s, w);
+  
+  return Undefined();
+}
+
+/*
+ * Stroke text at x, y.
+ */
+
+Handle<Value>
+Context2d::StrokeText(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore when args are not present
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+
+  double x = args[1]->NumberValue()
+    , y = args[2]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  cairo_text_extents_t te;
+  cairo_move_to(ctx, x, y);
+  cairo_text_path(ctx, *str);
+
+  return Undefined();
+}
+
+/*
+ * Fill text at x, y.
+ */
+
+Handle<Value>
+Context2d::FillText(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore when args are not present
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+
+  double x = args[1]->NumberValue()
+    , y = args[2]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  cairo_text_extents_t te;
+  cairo_move_to(ctx, x, y);
+  cairo_show_text(ctx, *str);
 
   return Undefined();
 }
