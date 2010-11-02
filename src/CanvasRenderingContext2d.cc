@@ -60,6 +60,19 @@ using namespace node;
   int height = args[3]->Int32Value();
 
 /*
+ * Text baselines.
+ */
+
+enum {
+    TEXT_BASELINE_ALPHABETIC
+  , TEXT_BASELINE_TOP
+  , TEXT_BASELINE_BOTTOM
+  , TEXT_BASELINE_MIDDLE
+  , TEXT_BASELINE_IDEOGRAPHIC
+  , TEXT_BASELINE_HANGING
+};
+
+/*
  * Initialize Context2d.
  */
 
@@ -88,6 +101,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(t, "setTextBaseline", SetTextBaseline);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextAlignment", SetTextAlignment);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextPath", SetTextPath);
   NODE_SET_PROTOTYPE_METHOD(t, "measureText", MeasureText);
@@ -869,6 +883,21 @@ Context2d::MeasureText(const Arguments &args) {
 }
 
 /*
+ * Set text baseline.
+ */
+
+Handle<Value>
+Context2d::SetTextBaseline(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsInt32()) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->textBaseline = args[0]->Int32Value();
+
+  return Undefined();
+}
+
+/*
  * Set text alignment. -1 0 1
  */
 
@@ -882,7 +911,6 @@ Context2d::SetTextAlignment(const Arguments &args) {
 
   return Undefined();
 }
-
 
 /*
  * Set text path at x, y.
@@ -918,6 +946,21 @@ Context2d::SetTextPath(const Arguments &args) {
     // right
     case 1:
       x -= te.width + te.x_bearing;
+      break;
+  }
+
+  // Baseline approx
+  // TODO:
+  switch (context->state->textBaseline) {
+    case TEXT_BASELINE_TOP:
+    case TEXT_BASELINE_HANGING:
+      y += te.height;
+      break;
+    case TEXT_BASELINE_MIDDLE:
+      y += te.height / 2;
+      break;
+    case TEXT_BASELINE_BOTTOM:
+      y -= te.height / 2;
       break;
   }
 

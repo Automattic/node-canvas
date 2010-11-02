@@ -33,6 +33,7 @@ typedef struct {
   cairo_pattern_t *strokePattern;
   float globalAlpha;
   short textAlignment;
+  short textBaseline;
 } canvas_state_t;
 
 class Context2d: public node::ObjectWrap {
@@ -65,6 +66,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> SetShadowRGBA(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
     static Handle<Value> SetStrokePattern(const Arguments &args);
+    static Handle<Value> SetTextBaseline(const Arguments &args);
     static Handle<Value> SetTextAlignment(const Arguments &args);
     static Handle<Value> SetTextPath(const Arguments &args);
     static Handle<Value> MeasureText(const Arguments &args);
