@@ -89,6 +89,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextPath", SetTextPath);
+  NODE_SET_PROTOTYPE_METHOD(t, "measureText", MeasureText);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
   NODE_SET_PROTOTYPE_METHOD(t, "bezierCurveTo", BezierCurveTo);
@@ -841,6 +842,28 @@ Context2d::SetFont(const Arguments &args) {
   cairo_select_font_face(ctx, *family, s, w);
   
   return Undefined();
+}
+
+/*
+ * Return the given text extents.
+ */
+
+Handle<Value>
+Context2d::MeasureText(const Arguments &args) {
+  HandleScope scope;
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+
+  String::Utf8Value str(args[0]->ToString());
+  Local<Object> obj = Object::New();
+
+  cairo_text_extents_t te;
+  cairo_text_extents(ctx, *str, &te);
+  obj->Set(String::New("width"), Number::New(te.width));
+  obj->Set(String::New("height"), Number::New(te.height));
+
+  return scope.Close(obj);
 }
 
 /*

@@ -65,6 +65,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> SetFillPattern(const Arguments &args);
     static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> SetTextPath(const Arguments &args);
+    static Handle<Value> MeasureText(const Arguments &args);
     static Handle<Value> BezierCurveTo(const Arguments &args);
     static Handle<Value> QuadraticCurveTo(const Arguments &args);
     static Handle<Value> LineTo(const Arguments &args);

@@ -747,6 +747,16 @@ module.exports = {
       , 'Context2d#strokeText()');    
   },
   
+  'test Context2d#measureText()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+    
+    ctx.font = 'normal 40px Impact';
+    assert.eql({ width: 111, height: 32 }, ctx.measureText('Wahoo'));
+    assert.eql(ctx.measureText(123), ctx.measureText('123'));
+    assert.eql(ctx.measureText(), ctx.measureText('undefined'));
+  },
+  
   'test Canvas#toBuffer()': function(assert){
     assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
   },
