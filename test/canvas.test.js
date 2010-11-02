@@ -747,6 +747,32 @@ module.exports = {
       , 'Context2d#strokeText()');    
   },
   
+  'test Context2d#textAlign= left': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/textAlign-left.png';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.font = 'normal 20px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText("Wahoo", 100, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'cde33254c5c6de39e1a549edcb23d93e'
+      , 'Context2d#textAlign= left failed');
+  },
+  
   'test Context2d#measureText()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
