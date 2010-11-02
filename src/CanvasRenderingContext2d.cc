@@ -96,6 +96,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
   NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(t, "setFont", SetFont);
   NODE_SET_PROTOTYPE_METHOD(t, "setShadowRGBA", SetShadowRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
   NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
@@ -788,6 +789,35 @@ Context2d::MoveTo(const Arguments &args) {
     , args[0]->NumberValue()
     , args[1]->NumberValue());
 
+  return Undefined();
+}
+
+/*
+ * Set font:
+ *   - weight
+ *   - style
+ *   - size
+ *   - unit
+ *   - family
+ */
+
+Handle<Value>
+Context2d::SetFont(const Arguments &args) {
+  HandleScope scope;
+  // TODO: optimize; match cairo constants
+  
+  String::AsciiValue weight(args[0]);
+  String::AsciiValue style(args[1]);
+  double size = args[2]->NumberValue();
+  String::AsciiValue unit(args[3]);
+  String::AsciiValue family(args[4]);
+  
+  printf("weight: %s\n", *weight);
+  printf("style: %s\n", *style);
+  printf("size: %d\n", (int) size);
+  printf("unit: %s\n", *unit);
+  printf("family: %s\n", *family);
+  
   return Undefined();
 }
 
