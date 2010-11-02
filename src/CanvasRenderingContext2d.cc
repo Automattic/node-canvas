@@ -812,11 +812,14 @@ Context2d::SetFont(const Arguments &args) {
   String::AsciiValue unit(args[3]);
   String::AsciiValue family(args[4]);
   
-  printf("weight: %s\n", *weight);
-  printf("style: %s\n", *style);
-  printf("size: %d\n", (int) size);
-  printf("unit: %s\n", *unit);
-  printf("family: %s\n", *family);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+
+  // Style
+  cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
+  if (0 == strcmp("italic", *style)) slant = CAIRO_FONT_SLANT_ITALIC;
+
+  cairo_select_font_face(ctx, *family, slant, CAIRO_FONT_WEIGHT_BOLD);
   
   return Undefined();
 }
@@ -842,7 +845,6 @@ Context2d::FillText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_text_extents_t te;
-  cairo_select_font_face(ctx, "Helvetica", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size(ctx, 20); // TODO: relative
   cairo_move_to(ctx, x, y);
   cairo_show_text(ctx, *str);
