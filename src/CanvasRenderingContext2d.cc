@@ -88,6 +88,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(t, "setTextAlignment", SetTextAlignment);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextPath", SetTextPath);
   NODE_SET_PROTOTYPE_METHOD(t, "measureText", MeasureText);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
@@ -139,6 +140,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->globalAlpha = 1;
+  state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
@@ -867,6 +869,22 @@ Context2d::MeasureText(const Arguments &args) {
 }
 
 /*
+ * Set text alignment. -1 0 1
+ */
+
+Handle<Value>
+Context2d::SetTextAlignment(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsInt32()) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->textAlignment = args[0]->Int32Value();
+
+  return Undefined();
+}
+
+
+/*
  * Set text path at x, y.
  */
 
@@ -886,7 +904,23 @@ Context2d::SetTextPath(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+
+  // Text extents
   cairo_text_extents_t te;
+  cairo_text_extents(ctx, *str, &te);
+
+  // Alignment
+  switch (context->state->textAlignment) {
+    // center
+    case 0:
+      x -= te.width / 2 + te.x_bearing;
+      break;
+    // right
+    case 1:
+      x -= te.width + te.x_bearing;
+      break;
+  }
+
   cairo_move_to(ctx, x, y);
   cairo_text_path(ctx, *str);
 
