@@ -721,6 +721,32 @@ module.exports = {
       , 'Context2d#fillText() transformations failed');    
   },
   
+  'test Context2d#strokeText()': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/strokeText.png';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'red';
+    ctx.font = 'normal 50px Impact';
+    ctx.strokeText("bar", 100, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'e5f6d8a3c57e1454c4c79358a32f1c2c'
+      , 'Context2d#strokeText()');    
+  },
+  
   'test Canvas#toBuffer()': function(assert){
     assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
   },
