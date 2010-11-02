@@ -78,6 +78,8 @@ module.exports = {
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , 'bold italic 50px Arial, sans-serif'
+      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial, sans-serif' }
       , '50px Helvetica ,  Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
       , '50px "Helvetica Nueue", sans-serif'
@@ -90,6 +92,8 @@ module.exports = {
       , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
       , 'normal 20px Arial'
       , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
+      , '300 20px Arial'
+      , { size: 20, unit: 'px', weight: '300', family: 'Arial' }
       , '800 20px Arial'
       , { size: 20, unit: 'px', weight: '800', family: 'Arial' }
       , 'bolder 20px Arial'
