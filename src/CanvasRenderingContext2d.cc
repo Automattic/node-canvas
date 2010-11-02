@@ -949,6 +949,21 @@ Context2d::SetTextPath(const Arguments &args) {
       break;
   }
 
+  // Baseline approx
+  // TODO:
+  switch (context->state->textBaseline) {
+    case TEXT_BASELINE_TOP:
+    case TEXT_BASELINE_HANGING:
+      y += te.height;
+      break;
+    case TEXT_BASELINE_MIDDLE:
+      y += te.height / 2;
+      break;
+    case TEXT_BASELINE_BOTTOM:
+      y -= te.height / 2;
+      break;
+  }
+
   cairo_move_to(ctx, x, y);
   cairo_text_path(ctx, *str);
 
