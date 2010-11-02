@@ -747,6 +747,21 @@ module.exports = {
       , 'Context2d#strokeText()');    
   },
   
+  'test Context2d#textAlign': function(assert){
+    var canvas = new Canvas(200,200)
+      , ctx = canvas.getContext('2d');
+
+    assert.equal('start', ctx.textAlign);
+    ctx.textAlign = 'center';
+    assert.equal('center', ctx.textAlign);
+    ctx.textAlign = 'right';
+    assert.equal('right', ctx.textAlign);
+    ctx.textAlign = 'end';
+    assert.equal('end', ctx.textAlign);
+    ctx.textAlign = 'fail';
+    assert.equal('end', ctx.textAlign);
+  },
+  
   'test Context2d#textAlign= right': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d')
