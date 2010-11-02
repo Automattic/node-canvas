@@ -866,7 +866,7 @@ Context2d::StrokeText(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_text_extents_t te;
   cairo_move_to(ctx, x, y);
-  cairo_show_text(ctx, *str);
+  cairo_text_path(ctx, *str);
 
   return Undefined();
 }
