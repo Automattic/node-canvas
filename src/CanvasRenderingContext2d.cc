@@ -904,7 +904,23 @@ Context2d::SetTextPath(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+
+  // Text extents
   cairo_text_extents_t te;
+  cairo_text_extents(ctx, *str, &te);
+
+  // Alignment
+  switch (context->state->textAlignment) {
+    // center
+    case 0:
+      x -= te.width / 2 + te.x_bearing;
+      break;
+    // right
+    case 1:
+      x -= te.width + te.x_bearing;
+      break;
+  }
+
   cairo_move_to(ctx, x, y);
   cairo_text_path(ctx, *str);
 
