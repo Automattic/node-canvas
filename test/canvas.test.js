@@ -688,6 +688,35 @@ module.exports = {
         , 'Context2d#fillText() failed');
   },
   
+  'test Context2d#fillText() transformations': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/fillText-transformations.png';
+
+    ctx.font = 'bold 12px Helvetica';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.rotate(0.2);
+    ctx.fillText("foo", 150, 100);
+    ctx.font = 'normal 30px Impact';
+    ctx.fillText("bar", 50, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , 'f3879c6cc72916153dc309e2bf49dd0a'
+      , 'Context2d#fillText() transformations failed');    
+  },
+  
   'test Canvas#toBuffer()': function(assert){
     assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
   },
