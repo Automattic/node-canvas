@@ -688,7 +688,7 @@ module.exports = {
       assertChecksum(
           canvas
         , path
-        , '8a1f08023332a424e079b3d6ddfccc56'
+        , 'caf25acad0f08442e24ec988f07851e7'
         , 'Context2d#fillText() failed');
   },
   
@@ -717,7 +717,7 @@ module.exports = {
     assertChecksum(
         canvas
       , path
-      , 'f3879c6cc72916153dc309e2bf49dd0a'
+      , '362ac73a55a79a93f20b9ad697a104c8'
       , 'Context2d#fillText() transformations failed');    
   },
   
