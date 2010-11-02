@@ -773,6 +773,32 @@ module.exports = {
       , 'Context2d#textAlign= left failed');
   },
   
+  'test Context2d#textAlign= center': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d')
+      , path = __dirname + '/images/textAlign-center.png';
+
+    ctx.strokeRect(0,0,200,200);
+    ctx.lineTo(0,100);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineTo(100,0);
+    ctx.lineTo(100,200);
+    ctx.stroke();
+
+    ctx.font = 'normal 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText("Wahoo", 100, 100);
+    
+    assertChecksum(
+        canvas
+      , path
+      , '31b217e572ce2d78f11c1ecf21713579'
+      , 'Context2d#textAlign= center failed');
+  },
+  
   'test Context2d#measureText()': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
