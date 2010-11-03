@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(320, 320)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 // Create gradients
 var lingrad = ctx.createLinearGradient(0,0,0,150);
@@ -26,4 +27,9 @@ ctx.strokeStyle = lingrad2;
 ctx.fillRect(10,10,130,130);
 ctx.strokeRect(50,50,50,50);
 
-canvas.savePNG(__dirname + '/gradients.png');
+var out = fs.createWriteStream(__dirname + '/gradients.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
