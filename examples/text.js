@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(200, 200)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 ctx.globalAlpha = .2;
 
@@ -32,4 +33,9 @@ ctx.strokeText("Wahoo", 50, 100);
 ctx.fillStyle = '#000';
 ctx.fillText("Wahoo", 49, 99);
 
-canvas.savePNG(__dirname + '/text.png');
+var out = fs.createWriteStream(__dirname + '/text.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
