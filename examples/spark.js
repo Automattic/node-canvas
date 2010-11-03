@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(40, 15)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 Object.defineProperty(Array.prototype, 'max', {
   get: function(){
@@ -39,4 +40,9 @@ function spark(ctx, data) {
 
 spark(ctx, [1,2,4,5,10,4,2,5,4,3,3,2]);
 
-canvas.savePNG(__dirname + "/spark.png");
+var out = fs.createWriteStream(__dirname + '/spark.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
