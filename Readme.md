@@ -7,6 +7,10 @@
 
   - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
 
+## Contribute
+
+ Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
+
 ## Testing
 
 Visual tests utilize md5 checksums in order to assert integrity.
