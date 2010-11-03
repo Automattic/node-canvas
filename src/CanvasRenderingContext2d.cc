@@ -97,6 +97,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "clip", Clip);
   NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
   NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
+  NODE_SET_PROTOTYPE_METHOD(t, "fillText", FillText);
+  NODE_SET_PROTOTYPE_METHOD(t, "strokeText", StrokeText);
   NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
   NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
@@ -764,6 +766,32 @@ Context2d::Stroke(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   SET_SOURCE(context->state->stroke);
   cairo_stroke_preserve(ctx);
+  return Undefined();
+}
+
+/*
+ * Fill text at (x, y).
+ */
+
+Handle<Value>
+Context2d::FillText(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  SET_SOURCE(context->state->fill);
+  return Undefined();
+}
+
+/*
+ * Stroke text at (x ,y).
+ */
+
+Handle<Value>
+Context2d::StrokeText(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->getContext();
+  SET_SOURCE(context->state->fill);
   return Undefined();
 }
 

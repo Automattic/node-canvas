@@ -60,6 +60,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> Clip(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);
     static Handle<Value> Stroke(const Arguments &args);
+    static Handle<Value> FillText(const Arguments &args);
+    static Handle<Value> StrokeText(const Arguments &args);
     static Handle<Value> SetFont(const Arguments &args);
     static Handle<Value> SetFillRGBA(const Arguments &args);
     static Handle<Value> SetStrokeRGBA(const Arguments &args);
