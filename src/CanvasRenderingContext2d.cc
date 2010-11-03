@@ -877,7 +877,6 @@ Context2d::MeasureText(const Arguments &args) {
   cairo_text_extents_t te;
   cairo_text_extents(ctx, *str, &te);
   obj->Set(String::New("width"), Number::New(te.width));
-  obj->Set(String::New("height"), Number::New(te.height));
 
   return scope.Close(obj);
 }
