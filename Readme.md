@@ -7,6 +7,54 @@
 
   - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
 
+## Installation
+
+    $ npm install canvas
+
+## Example
+
+    var Canvas = require('canvas')
+      , canvas = new Canvas(200,200)
+      , ctx = canvas.getContext('2d');
+    
+    
+      ctx.font = '30px Impact';
+      ctx.rotate(.1);
+      ctx.fillText("Awesome!", 50, 100);
+    
+      var te = ctx.measureText('Awesome!');
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath();
+      ctx.lineTo(50, 102);
+      ctx.lineTo(50 + te.width, 102);
+      ctx.stroke();
+      
+      console.log('<img src="' + canvas.toDataURL() + '" />');
+
+## Non-Standard API
+
+ Due to interfacing with existing node internals such as I/O node-canvas includes a non-standard API which is shown below.
+
+### Canvas#createPNGStream()
+
+  To create a `PNGStream` simple call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
+  
+    var fs = require('fs')
+      , out = fs.createWriteStream(__dirname + '/text.png')
+      , stream = canvas.createPNGStream();
+
+    stream.on('data', function(chunk){
+      out.write(chunk);
+    });
+    
+    stream.on('end', function(){
+      console.log('saved png');
+    });
+
+### Canvas#toBuffer()
+
+  A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
+
 ## Contribute
 
  Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
@@ -22,10 +70,6 @@ Build:
 Test:
 
     $ make test
-
-## References
-
-  - [test suite](http://philip.html5.org/tests/canvas/suite/tests/results.html)
 
 ## License 
 
