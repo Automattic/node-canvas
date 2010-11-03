@@ -1,6 +1,6 @@
 
 //
-// gradient.h
+// CanvasGradient.h
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
@@ -8,7 +8,7 @@
 #ifndef __NODE_GRADIENT_H__
 #define __NODE_GRADIENT_H__
 
-#include "canvas.h"
+#include "Canvas.h"
 
 using namespace v8;
 

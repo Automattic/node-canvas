@@ -1,11 +1,11 @@
 
 //
-// canvas.cc
+// Canvas.cc
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
+#include "Canvas.h"
 #include <string.h>
 #include <node_buffer.h>
 

@@ -1,6 +1,6 @@
 
 //
-// context2d.h
+// CanvasRenderingContext2d.h
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //

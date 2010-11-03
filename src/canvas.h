@@ -1,6 +1,6 @@
 
 //
-// canvas.h
+// Canvas.h
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //

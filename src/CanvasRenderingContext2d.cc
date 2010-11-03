@@ -1,6 +1,6 @@
 
 //
-// context2d.cc
+// CanvasRenderingContext2d.cc
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //

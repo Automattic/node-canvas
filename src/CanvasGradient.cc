@@ -1,6 +1,6 @@
 
 //
-// gradient.cc
+// Gradient.cc
 //
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
