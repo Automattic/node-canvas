@@ -32,8 +32,4 @@ ctx.strokeText("Wahoo", 50, 100);
 ctx.fillStyle = '#000';
 ctx.fillText("Wahoo", 49, 99);
 
-var te = ctx.measureText('Wahoo');
-ctx.strokeStyle = 'red';
-ctx.strokeRect(50, 100 - te.height, te.width, te.height);
-
 canvas.savePNG(__dirname + '/text.png');
