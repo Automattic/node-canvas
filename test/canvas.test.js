@@ -845,7 +845,7 @@ module.exports = {
       , ctx = canvas.getContext('2d');
     
     ctx.font = 'normal 40px Impact';
-    assert.eql({ width: 111, height: 32 }, ctx.measureText('Wahoo'));
+    assert.eql({ width: 111 }, ctx.measureText('Wahoo'));
     assert.eql(ctx.measureText(123), ctx.measureText('123'));
     assert.eql(ctx.measureText(), ctx.measureText('undefined'));
   },
