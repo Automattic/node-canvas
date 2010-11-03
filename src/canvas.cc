@@ -123,7 +123,7 @@ writeToBuffer(void *c, const uint8_t *data, unsigned len) {
 Handle<Value>
 Canvas::StreamPNGSync(const Arguments &args) {
   HandleScope scope;
-  // TODO: async
+  // TODO: async as well
   if (!args[0]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
 
