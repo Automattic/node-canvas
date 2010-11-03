@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(320, 320)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 function getX(angle) {
   return -Math.sin(angle + Math.PI);
@@ -104,4 +105,9 @@ function clock(ctx){
 
 clock(ctx);
 
-canvas.savePNG(__dirname + "/clock.png");
+var out = fs.createWriteStream(__dirname + '/clock.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});

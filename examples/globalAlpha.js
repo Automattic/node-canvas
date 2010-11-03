@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(150, 150)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 ctx.fillStyle = '#FD0';
 ctx.fillRect(0,0,75,75);
@@ -27,4 +28,9 @@ for (i=0;i<7;i++){
     ctx.fill();
 }
 
-canvas.savePNG(__dirname + '/globalAlpha.png');
+var out = fs.createWriteStream(__dirname + '/globalAlpha.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
