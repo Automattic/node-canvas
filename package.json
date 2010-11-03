@@ -1,11 +1,11 @@
-{   "name": "canvas"
-  , "description": "node canvas implementation backed by Cairo"
-  , "version": "0.0.1"
-  , "author": "TJ Holowaychuk <tj@vision-media.ca>"
-  , "keywords": ["canvas", "graphics"]
-  , "main": "./lib/canvas.js"
-  , "scripts": {
-    "preinstall": "node-waf configure build"
-  }
-  , "engines": { "node": ">= 0.2.0" }
+{ "name": "canvas"
+ , "description":  "Canvas graphics API backed by Cairo"
+ , "version":  "0.0.1"
+ , "author": "TJ Holowaychuk <tj@learnboost.com>"
+ , "keywords": ["canvas", "graphic", "graphics"]
+ , "scripts": {
+   "preinstall": "node-waf configure build"
+ }
+ , "engines": { "node": ">= 0.2.0" }
+ , "main": "./lib/canvas.js"
 }
