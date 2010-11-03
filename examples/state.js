@@ -5,7 +5,8 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(150, 150)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , fs = require('fs');
 
 ctx.fillRect(0,0,150,150);   // Draw a rectangle with default settings
 ctx.save();                  // Save the default state
@@ -24,4 +25,9 @@ ctx.fillRect(45,45,60,60);   // Draw a rectangle with restored settings
 ctx.restore();               // Restore original state
 ctx.fillRect(60,60,30,30);   // Draw a rectangle with restored settings
 
-canvas.savePNG(__dirname + "/state.png");
+var out = fs.createWriteStream(__dirname + '/state.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
