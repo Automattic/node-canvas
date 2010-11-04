@@ -101,6 +101,8 @@ class Context2d: public node::ObjectWrap {
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
     void setTextPath(const char *str, double x, double y);
+    void savePath();
+    void restorePath();
     void saveState();
     void restoreState();
 
@@ -111,6 +113,7 @@ class Context2d: public node::ObjectWrap {
     ~Context2d();
     Canvas *_canvas;
     cairo_t *_context;
+    cairo_path_t *_path;
 };
 
 #endif
