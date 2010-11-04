@@ -786,8 +786,20 @@ Context2d::FillText(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+
+  // Save path
+  cairo_save(ctx);
+  cairo_path_t *path = cairo_copy_path_flat(ctx);
+  cairo_new_path(ctx);
+
+  // Text path
   context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->fill);
+
+  // Restore path
+  cairo_restore(ctx);
+  cairo_append_path(ctx, path);
+
   return Undefined();
 }
 
@@ -809,8 +821,19 @@ Context2d::StrokeText(const Arguments &args) {
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+  // Save path
+  cairo_save(ctx);
+  cairo_path_t *path = cairo_copy_path_flat(ctx);
+  cairo_new_path(ctx);
+
+  // Text path
   context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->stroke);
+
+  // Restore path
+  cairo_restore(ctx);
+  cairo_append_path(ctx, path);
+
   return Undefined();
 }
 
