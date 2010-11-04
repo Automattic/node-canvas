@@ -11,7 +11,7 @@ var args = process.argv.slice(2)
     ? parseInt(args[0], 10)
     : 3000;
 
-var images = fs.readdirSync(__dirname + '/images').slice(1);
+var images = fs.readdirSync(__dirname + '/images').slice(1).sort();
 
 function ul(items) {
   var buf = '<ul>';
