@@ -77,6 +77,14 @@ Test:
 
     $ make test
 
+There is also a test image server which can be used for visual test verification:
+
+    $ node test/server.js
+
+or provide a port:
+
+    $ sudo node test/server.js 80
+
 ## License 
 
 (The MIT License)
