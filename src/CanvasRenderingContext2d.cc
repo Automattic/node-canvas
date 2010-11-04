@@ -795,6 +795,7 @@ Context2d::FillText(const Arguments &args) {
   // Text path
   context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->fill);
+  cairo_fill(ctx);
 
   // Restore path
   cairo_restore(ctx);
@@ -829,6 +830,7 @@ Context2d::StrokeText(const Arguments &args) {
   // Text path
   context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->stroke);
+  cairo_stroke(ctx);
 
   // Restore path
   cairo_restore(ctx);
