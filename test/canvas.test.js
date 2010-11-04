@@ -29,6 +29,10 @@ module.exports = {
     assert.match(Canvas.version, /^\d+\.\d+\.\d+$/);
   },
   
+  'test .cairoVersion': function(assert){
+    assert.match(Canvas.cairoVersion, /^\d+\.\d+\.\d+$/);
+  },
+  
   'test .parseColor()': function(assert){
     assert.equal(null, Canvas.parseColor());
     assert.equal(null, Canvas.parseColor(''));

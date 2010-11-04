@@ -11,6 +11,8 @@
 
     $ npm install canvas
 
+If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) first using the package manager available to you, or building from source.
+
 ## Example
 
     var Canvas = require('canvas')
