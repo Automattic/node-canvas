@@ -17,6 +17,7 @@ function ul(items) {
   var buf = '<ul>';
   for (var i = 0, len = items.length; i < len; ++i) {
     var item = items[i];
+    if ('.gitignore' == item) continue;
     buf += '<li>'
         + '<a href="/' + item + '">' + item + '</a><br />'
         + '<img src="/' + item + '" style="border: 1 px solid #eee"/>';

@@ -77,7 +77,7 @@ Test:
 
     $ make test
 
-There is also a test image server which can be used for visual test verification:
+There is also a test image server which can be used for visual test verification, as rendering may vary slightly from platform to platform.
 
     $ node test/server.js
 
