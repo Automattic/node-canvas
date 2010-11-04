@@ -67,17 +67,19 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Testing
 
-Visual tests utilize md5 checksums in order to assert integrity.
+If you have not previously, init git submodules:
 
-Build:
+    $ git submodule update --init
+
+Build node-canvas:
 
     $ node-waf configure build
 
-Test:
+Unit tests:
 
     $ make test
 
-There is also a test image server which can be used for visual test verification, as rendering may vary slightly from platform to platform.
+Visual tests:
 
     $ node test/server.js
 
