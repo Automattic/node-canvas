@@ -12,15 +12,20 @@ function create(type) {
 function runTests() {
   var table = get('tests');
   for (var name in tests) {
-    var canvas = create('canvas')
+    var fn = tests[name]
+      , canvas = create('canvas')
       , tr = create('tr')
-      , tds = [create('td'), create('td')];
+      , tds = [create('td'), create('td'), create('td')]
+      , src = create('pre');
+    src.innerText = fn.toString();
     canvas.width = 200;
     canvas.height = 200;
     canvas.title = name;
     tds[1].appendChild(canvas);
+    tds[2].appendChild(src);
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);
+    tr.appendChild(tds[2]);
     table.appendChild(tr);
     runTest(name, canvas, tds[0]);
   }
