@@ -1,5 +1,12 @@
 
-window.onload = runTests;
+window.onload = function(){
+  runTests();
+  get('run').addEventListener('click', runTests, false);
+};
+
+document.addEventListener('keypress', function(event){
+  if (114 == event.charCode) runTests();
+}, false);
 
 function get(id) {
   return document.getElementById(id);
@@ -9,8 +16,15 @@ function create(type) {
   return document.createElement(type);
 }
 
-function runTests() {
+function clearTests() {
   var table = get('tests');
+  table.removeChild(table.children[1]);
+}
+
+function runTests() {
+  clearTests();
+  var table = get('tests')
+    , tbody = create('tbody');
   for (var name in tests) {
     var fn = tests[name]
       , canvas = create('canvas')
@@ -26,7 +40,8 @@ function runTests() {
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);
     tr.appendChild(tds[2]);
-    table.appendChild(tr);
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
     runTest(name, canvas, tds[0]);
   }
 }
