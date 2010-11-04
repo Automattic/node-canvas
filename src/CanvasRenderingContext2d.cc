@@ -192,6 +192,27 @@ Context2d::restoreState() {
 }
 
 /*
+ * Save flat path.
+ */
+
+void
+Context2d::savePath() {
+  cairo_save(_context);
+  _path = cairo_copy_path_flat(_context);
+  cairo_new_path(_context);
+}
+
+/*
+ * Restore flat path.
+ */
+
+void
+Context2d::restorePath() {
+  cairo_restore(_context);
+  cairo_append_path(_context, _path);
+}
+
+/*
  * Get global alpha.
  */
 
@@ -787,19 +808,11 @@ Context2d::FillText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
 
-  // Save path
-  cairo_save(ctx);
-  cairo_path_t *path = cairo_copy_path_flat(ctx);
-  cairo_new_path(ctx);
-
-  // Text path
+  context->savePath();
   context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->fill);
   cairo_fill(ctx);
-
-  // Restore path
-  cairo_restore(ctx);
-  cairo_append_path(ctx, path);
+  context->restorePath();
 
   return Undefined();
 }
@@ -832,18 +845,9 @@ Context2d::StrokeText(const Arguments &args) {
   return Undefined();
 }
 
-void
-Context2d::savePath() {
-  cairo_save(_context);
-  _path = cairo_copy_path_flat(_context);
-  cairo_new_path(_context);
-}
-
-void
-Context2d::restorePath() {
-  cairo_restore(_context);
-  cairo_append_path(_context, _path);
-}
+/*
+ * Set text path for the given string at (x, y).
+ */
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
