@@ -270,6 +270,7 @@ tests['fillText()'] = function(ctx){
 };
 
 tests['fillText() transformations'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.font = 'bold 12px Helvetica';
 
   ctx.strokeRect(0,0,200,200);
@@ -289,6 +290,7 @@ tests['fillText() transformations'] = function(ctx){
 };
 
 tests['strokeText()'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -305,6 +307,7 @@ tests['strokeText()'] = function(ctx){
 };
 
 tests['textAlign right'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -317,10 +320,11 @@ tests['textAlign right'] = function(ctx){
 
   ctx.font = 'normal 20px Arial';
   ctx.textAlign = 'right';
-  ctx.fillText("Wahoo", 100, 100);
+  ctx.fillText("right", 100, 100);
 };
 
 tests['textAlign left'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -333,10 +337,11 @@ tests['textAlign left'] = function(ctx){
 
   ctx.font = 'normal 20px Arial';
   ctx.textAlign = 'left';
-  ctx.fillText("Wahoo", 100, 100);
+  ctx.fillText("left", 100, 100);
 };
 
 tests['textAlign center'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -349,10 +354,11 @@ tests['textAlign center'] = function(ctx){
 
   ctx.font = 'normal 20px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText("Wahoo", 100, 100);
+  ctx.fillText("center", 100, 100);
 };
 
 tests['textBaseline alphabetic'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -365,6 +371,7 @@ tests['textBaseline alphabetic'] = function(ctx){
 };
 
 tests['textBaseline top'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -377,6 +384,7 @@ tests['textBaseline top'] = function(ctx){
 };
 
 tests['textBaseline hanging'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -389,6 +397,7 @@ tests['textBaseline hanging'] = function(ctx){
 };
 
 tests['textBaseline bottom'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
@@ -401,6 +410,7 @@ tests['textBaseline bottom'] = function(ctx){
 };
 
 tests['textBaseline ideographic'] = function(ctx){
+  ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
   ctx.lineTo(200,100);
