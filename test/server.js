@@ -6,6 +6,11 @@
 var http = require('http')
   , fs = require('fs');
 
+var args = process.argv.slice(2)
+  , port = args.length
+    ? parseInt(args[0], 10)
+    : 3000;
+
 var images = fs.readdirSync(__dirname + '/images').slice(1);
 
 function ul(items) {
@@ -40,5 +45,5 @@ http.createServer(function(req, res){
         }
       });
   }
-}).listen(3000);
-console.log('Test image server started on port 3000');
+}).listen(port);
+console.log('Test image server started on port ' + port);
