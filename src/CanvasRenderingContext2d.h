@@ -70,7 +70,6 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> SetTextBaseline(const Arguments &args);
     static Handle<Value> SetTextAlignment(const Arguments &args);
-    static Handle<Value> SetTextPath(const Arguments &args);
     static Handle<Value> MeasureText(const Arguments &args);
     static Handle<Value> BezierCurveTo(const Arguments &args);
     static Handle<Value> QuadraticCurveTo(const Arguments &args);
@@ -101,6 +100,7 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
+    void setTextPath(const char *str, double x, double y);
     void saveState();
     void restoreState();
 

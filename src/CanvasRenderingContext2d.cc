@@ -54,10 +54,10 @@ using namespace node;
     ||!args[1]->IsNumber() \
     ||!args[2]->IsNumber() \
     ||!args[3]->IsNumber()) return Undefined(); \
-  int x = args[0]->Int32Value(); \
-  int y = args[1]->Int32Value(); \
-  int width = args[2]->Int32Value(); \
-  int height = args[3]->Int32Value();
+  double x = args[0]->Int32Value(); \
+  double y = args[1]->Int32Value(); \
+  double width = args[2]->Int32Value(); \
+  double height = args[3]->Int32Value();
 
 /*
  * Text baselines.
@@ -105,7 +105,6 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextBaseline", SetTextBaseline);
   NODE_SET_PROTOTYPE_METHOD(t, "setTextAlignment", SetTextAlignment);
-  NODE_SET_PROTOTYPE_METHOD(t, "setTextPath", SetTextPath);
   NODE_SET_PROTOTYPE_METHOD(t, "measureText", MeasureText);
   NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
@@ -776,8 +775,18 @@ Context2d::Stroke(const Arguments &args) {
 Handle<Value>
 Context2d::FillText(const Arguments &args) {
   HandleScope scope;
+
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+  double x = args[1]->NumberValue();
+  double y = args[2]->NumberValue();
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
+  context->setTextPath(*str, x, y);
   SET_SOURCE(context->state->fill);
   return Undefined();
 }
@@ -789,10 +798,57 @@ Context2d::FillText(const Arguments &args) {
 Handle<Value>
 Context2d::StrokeText(const Arguments &args) {
   HandleScope scope;
+  
+  if (!args[0]->IsString()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]);
+  double x = args[1]->NumberValue();
+  double y = args[2]->NumberValue();
+  
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->fill);
+  context->setTextPath(*str, x, y);
+  SET_SOURCE(context->state->stroke);
   return Undefined();
+}
+
+void
+Context2d::setTextPath(const char *str, double x, double y) {
+  // Text extents
+  cairo_text_extents_t te;
+  cairo_text_extents(_context, str, &te);
+
+  // Alignment
+  switch (state->textAlignment) {
+    // center
+    case 0:
+      x -= te.width / 2 + te.x_bearing;
+      break;
+    // right
+    case 1:
+      x -= te.width + te.x_bearing;
+      break;
+  }
+
+  // Baseline approx
+  // TODO:
+  switch (state->textBaseline) {
+    case TEXT_BASELINE_TOP:
+    case TEXT_BASELINE_HANGING:
+      y += te.height;
+      break;
+    case TEXT_BASELINE_MIDDLE:
+      y += te.height / 2;
+      break;
+    case TEXT_BASELINE_BOTTOM:
+      y -= te.height / 2;
+      break;
+  }
+
+  cairo_move_to(_context, x, y);
+  cairo_text_path(_context, str);
 }
 
 /*
@@ -935,64 +991,6 @@ Context2d::SetTextAlignment(const Arguments &args) {
   if (!args[0]->IsInt32()) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->textAlignment = args[0]->Int32Value();
-
-  return Undefined();
-}
-
-/*
- * Set text path at x, y.
- */
-
-Handle<Value>
-Context2d::SetTextPath(const Arguments &args) {
-  HandleScope scope;
-
-  // Ignore when args are not present
-  if (!args[0]->IsString()
-    || !args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
-
-  String::Utf8Value str(args[0]);
-
-  double x = args[1]->NumberValue()
-    , y = args[2]->NumberValue();
-
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
-
-  // Text extents
-  cairo_text_extents_t te;
-  cairo_text_extents(ctx, *str, &te);
-
-  // Alignment
-  switch (context->state->textAlignment) {
-    // center
-    case 0:
-      x -= te.width / 2 + te.x_bearing;
-      break;
-    // right
-    case 1:
-      x -= te.width + te.x_bearing;
-      break;
-  }
-
-  // Baseline approx
-  // TODO:
-  switch (context->state->textBaseline) {
-    case TEXT_BASELINE_TOP:
-    case TEXT_BASELINE_HANGING:
-      y += te.height;
-      break;
-    case TEXT_BASELINE_MIDDLE:
-      y += te.height / 2;
-      break;
-    case TEXT_BASELINE_BOTTOM:
-      y -= te.height / 2;
-      break;
-  }
-
-  cairo_move_to(ctx, x, y);
-  cairo_text_path(ctx, *str);
 
   return Undefined();
 }
