@@ -11,6 +11,13 @@ em {
 a {
   color: #00C5F7;
 }
+canvas, img {
+  padding: 5px;
+  border: 1px solid #eee;
+}
 #primary {
   width: 600px;
+}
+#tests {
+  margin-top: 35px;
 }
