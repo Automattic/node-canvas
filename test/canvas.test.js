@@ -671,24 +671,22 @@ module.exports = {
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/images/fillText.png';
     
-      ctx.font = 'italic 12px Helvetica';
+      ctx.font = '30px Impact';
+      ctx.rotate(.1);
+      ctx.lineTo(10,10);
+      ctx.fillText("Awesome!", 50, 100);
 
-      ctx.strokeRect(0,0,200,200);
-      ctx.lineTo(0,100);
-      ctx.lineTo(200,100);
+      var te = ctx.measureText('Awesome!');
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineTo(50, 102);
+      ctx.lineTo(50 + te.width, 102);
       ctx.stroke();
-
-      ctx.beginPath();
-      ctx.lineTo(100,0);
-      ctx.lineTo(100,200);
-      ctx.stroke();
-
-      ctx.fillText("Testing :)", 100, 100);
 
       assertChecksum(
           canvas
         , path
-        , 'caf25acad0f08442e24ec988f07851e7'
+        , 'fb861fe5eb634a556bc37f9571d4a779'
         , 'Context2d#fillText() failed');
   },
   
