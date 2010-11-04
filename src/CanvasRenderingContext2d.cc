@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 #include "Canvas.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
