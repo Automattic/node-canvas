@@ -17,6 +17,7 @@ function runTests() {
       , tds = [create('td'), create('td')];
     canvas.width = 200;
     canvas.height = 200;
+    canvas.title = name;
     tds[1].appendChild(canvas);
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);
@@ -36,7 +37,7 @@ function runTest(name, canvas, dest) {
     } else if (res.data) {
       var img = create('image');
       img.src = res.data;
-      img.alt = name;
+      img.alt = img.title = name;
       dest.appendChild(img);
     }
   });
