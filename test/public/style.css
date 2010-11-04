@@ -1,0 +1,16 @@
+body {
+  padding: 40px 50px;
+  font: 13px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+p {
+  margin: 5px;
+}
+em {
+  color: #00C5F7;
+}
+a {
+  color: #00C5F7;
+}
+#primary {
+  width: 600px;
+}
