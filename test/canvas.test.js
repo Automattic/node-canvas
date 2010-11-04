@@ -20,7 +20,10 @@ function assertChecksum(canvas, path, checksum, msg) {
 
 function assertChecksumOf(canvas, path, checksum, msg) {
   fs.readFile(path, function(err, buf){
-    assert.equal(hash(buf), checksum, msg + ' \n   path: ' + path);  
+    var got = hash(buf);
+    assert.equal(got, checksum, msg
+      + ' \n   path: ' + path
+      + ' \n   md5: ' + got);  
   });
 }
 
@@ -675,7 +678,7 @@ module.exports = {
       , ctx = canvas.getContext('2d')
       , path = __dirname + '/images/fillText.png';
     
-      ctx.font = '30px Impact';
+      ctx.font = '30px Arial';
       ctx.rotate(.1);
       ctx.lineTo(10,10);
       ctx.fillText("Awesome!", 50, 100);
@@ -690,7 +693,7 @@ module.exports = {
       assertChecksum(
           canvas
         , path
-        , 'fb861fe5eb634a556bc37f9571d4a779'
+        , '8e3632b45c8a6c64d9e7c669f32c7cab'
         , 'Context2d#fillText() failed');
   },
   
@@ -713,13 +716,13 @@ module.exports = {
 
     ctx.rotate(0.2);
     ctx.fillText("foo", 150, 100);
-    ctx.font = 'normal 30px Impact';
+    ctx.font = 'normal 30px Arial';
     ctx.fillText("bar", 50, 100);
     
     assertChecksum(
         canvas
       , path
-      , '362ac73a55a79a93f20b9ad697a104c8'
+      , '8be28247027694c04dc7381e6294c53b'
       , 'Context2d#fillText() transformations failed');    
   },
   
@@ -739,13 +742,13 @@ module.exports = {
     ctx.stroke();
 
     ctx.strokeStyle = 'red';
-    ctx.font = 'normal 50px Impact';
+    ctx.font = 'normal 50px Arial';
     ctx.strokeText("bar", 100, 100);
     
     assertChecksum(
         canvas
       , path
-      , 'e5f6d8a3c57e1454c4c79358a32f1c2c'
+      , '423833c443bc49b6aa445831737fd600'
       , 'Context2d#strokeText()');    
   },
   
@@ -846,8 +849,8 @@ module.exports = {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
     
-    ctx.font = 'normal 40px Impact';
-    assert.eql({ width: 111 }, ctx.measureText('Wahoo'));
+    ctx.font = 'normal 40px Arial';
+    assert.eql({ width: 126 }, ctx.measureText('Wahoo'));
     assert.eql(ctx.measureText(123), ctx.measureText('123'));
     assert.eql(ctx.measureText(), ctx.measureText('undefined'));
   },
