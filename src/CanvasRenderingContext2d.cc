@@ -197,7 +197,6 @@ Context2d::restoreState() {
 
 void
 Context2d::savePath() {
-  cairo_save(_context);
   _path = cairo_copy_path_flat(_context);
   cairo_new_path(_context);
 }
@@ -208,7 +207,6 @@ Context2d::savePath() {
 
 void
 Context2d::restorePath() {
-  cairo_restore(_context);
   cairo_append_path(_context, _path);
 }
 
