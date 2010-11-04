@@ -13,27 +13,25 @@ var args = process.argv.slice(2)
 
 var images = fs.readdirSync(__dirname + '/images').sort();
 
-function ul(items) {
-  var buf = '<ul>';
-  for (var i = 0, len = items.length; i < len; ++i) {
-    var item = items[i];
-    if ('.gitignore' == item) continue;
-    buf += '<li>'
-        + '<a href="/' + item + '">' + item + '</a><br />'
-        + '<img src="/' + item + '" style="border: 1 px solid #eee"/>';
-        + '</li>';
-  }
-  return buf + '</ul>';
+function list(images) {
+  return '<table><tr><td></td><td>Test</td><td>Reference</td></tr>' + images.map(function(path, i){
+    if ('.gitignore' == path) return '';
+    return '<tr>'
+      + '<td>' + i + '</td>'
+      + '<td><img src="/images/' + path + '" style="border: 1px solid #eee; margin-right: 5px"/></td>' 
+      + '<td><img src="/references/' + path + '" style="border: 1px solid #eee"/></td>' 
+      + '</tr>';
+  }).join('') + '</table>';
 }
 
 http.createServer(function(req, res){
   switch (req.url) {
     case '/':
       res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(ul(images));
+      res.end(list(images));
       break;
     default:
-      fs.readFile(__dirname + '/images' + req.url, function(err, buf){
+      fs.readFile(__dirname + '/' + req.url, function(err, buf){
         if (err || !buf) {
           res.writeHead(404, { 'Content-Type': 'text/html' });
           res.end('<p>Not Found</p>');
