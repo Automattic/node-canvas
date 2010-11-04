@@ -1,0 +1,23 @@
+body {
+  padding: 40px 50px;
+  font: 13px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+p {
+  margin: 5px;
+}
+em {
+  color: #00C5F7;
+}
+a {
+  color: #00C5F7;
+}
+canvas, img {
+  padding: 5px;
+  border: 1px solid #eee;
+}
+#primary {
+  width: 600px;
+}
+#tests {
+  margin-top: 35px;
+}

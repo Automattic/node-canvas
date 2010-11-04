@@ -1,3 +1,9 @@
 [submodule "support/expresso"]
 	path = support/expresso
 	url = git://github.com/visionmedia/expresso.git
+[submodule "support/express"]
+	path = support/express
+	url = git://github.com/visionmedia/express.git
+[submodule "support/jade"]
+	path = support/jade
+	url = git://github.com/visionmedia/jade.git
