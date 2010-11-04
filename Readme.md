@@ -59,6 +59,10 @@
 
  Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
 
+## Examples
+
+ Examples are placed in _./examples_, be sure to check them out! most produce a png image of the same name, and others such as _live-clock.js_ launch an http server to be viewed in the browser.
+
 ## Testing
 
 Visual tests utilize md5 checksums in order to assert integrity.
