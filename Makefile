@@ -4,7 +4,10 @@ test:
 		-I lib \
 		test/*.test.js
 
+test-server:
+	@node test/server.js
+
 benchmark:
 	@node examples/benchmark.js
 
-.PHONY: test benchmark
+.PHONY: test test-server benchmark

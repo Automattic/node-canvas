@@ -81,7 +81,7 @@ Unit tests:
 
 Visual tests:
 
-    $ node test/server.js
+    $ make test-server
 
 ## License 
 
