@@ -83,10 +83,6 @@ Visual tests:
 
     $ node test/server.js
 
-or provide a port:
-
-    $ sudo node test/server.js 80
-
 ## License 
 
 (The MIT License)

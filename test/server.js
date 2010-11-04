@@ -3,46 +3,28 @@
  * Module dependencies.
  */
 
-var http = require('http')
-  , fs = require('fs');
+var express = require('../support/express')
+  , jade = require('../support/jade')
+  , app = express.createServer();
 
-var args = process.argv.slice(2)
-  , port = args.length
-    ? parseInt(args[0], 10)
-    : 3000;
+// Config
 
-var images = fs.readdirSync(__dirname + '/images').sort();
+app.register('.jade', jade);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
 
-function list(images) {
-  return '<table><tr><td></td><td>Test</td><td>Reference</td></tr>' + images.map(function(path, i){
-    if ('.gitignore' == path) return '';
-    return '<tr>'
-      + '<td>' + i + '</td>'
-      + '<td><img src="/images/' + path + '" style="border: 1px solid #eee; margin-right: 5px"/></td>' 
-      + '<td><img src="/references/' + path + '" style="border: 1px solid #eee"/></td>' 
-      + '</tr>';
-  }).join('') + '</table>';
-}
+// Middleware
 
-http.createServer(function(req, res){
-  switch (req.url) {
-    case '/':
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(list(images));
-      break;
-    default:
-      fs.readFile(__dirname + '/' + req.url, function(err, buf){
-        if (err || !buf) {
-          res.writeHead(404, { 'Content-Type': 'text/html' });
-          res.end('<p>Not Found</p>');
-        } else {
-          res.writeHead(200, {
-              'Content-Type': 'image/png'
-            , 'Content-Length': buf.length
-          });
-          res.end(buf);
-        }
-      });
-  }
-}).listen(port);
-console.log('Test image server started on port ' + port);
+app.use(express.favicon());
+app.use(express.logger({ format: '\x1b[90m:remote-addr\x1b[0m - \x1b[33m:method\x1b[0m :url :status \x1b[90m:response-timems\x1b[0m' }));
+app.use(app.router);
+app.use(express.errorHandler({ showStack: true }));
+
+// Routes
+
+app.get('/', function(req, res){
+  res.render('tests');
+});
+
+app.listen(3000);
+console.log('Test server listening on port %d', app.address().port);
