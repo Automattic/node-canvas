@@ -87,7 +87,7 @@ Visual tests:
 
 Tested with:
 
-  - node 0.2.3
+  - node 0.2.4
   - cairo 1.8.6
 
 ## License 
