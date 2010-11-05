@@ -57,6 +57,10 @@ If not previously installed, you will want to install the [cairo graphics librar
 
   A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
 
+## Benchmarks
+
+ Although node-canvas is extremely now, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
+
 ## Contribute
 
  Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
