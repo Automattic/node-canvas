@@ -83,6 +83,13 @@ Visual tests:
 
     $ make test-server
 
+## Versions
+
+Tested with:
+
+  - node 0.2.3
+  - cairo 1.8.6
+
 ## License 
 
 (The MIT License)
