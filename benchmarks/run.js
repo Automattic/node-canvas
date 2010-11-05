@@ -75,6 +75,10 @@ bm('toBuffer() 200x200', 50, function(){
   canvas.toBuffer();
 });
 
+bm('toBuffer().toString("base64") 200x200', 50, function(){
+  canvas.toBuffer().toString('base64');
+});
+
 bm('toDataURL() 200x200', 50, function(){
   canvas.toDataURL();
 });
@@ -110,6 +114,14 @@ bm('o3 fillRect()', function(){
 
 bm('o3 strokeRect()', function(){
   o3ctx.strokeRect(50, 50, 100, 100);
+});
+
+bm('pngBuffer() 200x200', 50, function(){
+  o3ctx.pngBuffer();
+});
+
+bm('pngBuffer().toBase64() 200x200', 50, function(){
+  o3ctx.pngBuffer().toBase64();
 });
 
 console.log();
