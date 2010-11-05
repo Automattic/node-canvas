@@ -206,7 +206,6 @@ tests['lineJoin'] = function(ctx){
 };
 
 tests['states'] = function(ctx){
-  ctx.arc(5,5,-1)
   ctx.save();
   ctx.rect(50, 50, 100, 100);
   ctx.stroke();
