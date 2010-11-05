@@ -59,7 +59,7 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Benchmarks
 
- Although node-canvas is extremely now, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
+ Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
 
 ## Contribute
 
