@@ -4,8 +4,10 @@
  */
 
 var Canvas = require('../lib/canvas')
+  , canvasFactory = require('./node-o3-canvas/lib/o3-canvas')
   , canvas = new Canvas(200, 200)
-  , ctx = canvas.getContext('2d');
+  , ctx = canvas.getContext('2d')
+  , o3ctx = canvasFactory(200,200,'argb');
 
 var times = 10000;
 
@@ -67,20 +69,12 @@ bm('toBuffer() 200x200', 50, function(){
   canvas.toBuffer();
 });
 
-bm('toBuffer() 1000x1000', 50, function(){
-  largeCanvas.toBuffer();
-});
-
 bm('toDataURL() 200x200', 50, function(){
   canvas.toDataURL();
 });
 
-bm('toDataURL() 1000x1000', 50, function(){
-  largeCanvas.toDataURL();
-});
-
-bm('PNGStream 1000x1000', 50, function(done){
-  var stream = largeCanvas.createSyncPNGStream();
+bm('PNGStream 200x200', 50, function(done){
+  var stream = canvas.createSyncPNGStream();
   stream.on('data', function(chunk){
     // whatever
   });
