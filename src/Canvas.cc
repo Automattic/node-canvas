@@ -75,7 +75,7 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->width = val->Uint32Value();
-    canvas->resetSurface();
+    canvas->resurface();
   }
 }
 
@@ -98,7 +98,7 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->height = val->Uint32Value();
-    canvas->resetSurface();
+    canvas->resurface();
   }
 }
 
@@ -169,7 +169,7 @@ Canvas::~Canvas() {
  */
 
 void
-Canvas::resetSurface() {
+Canvas::resurface() {
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 }
