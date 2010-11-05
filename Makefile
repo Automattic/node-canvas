@@ -8,6 +8,6 @@ test-server:
 	@node test/server.js
 
 benchmark:
-	@node examples/benchmark.js
+	@node benchmarks/run.js
 
 .PHONY: test test-server benchmark

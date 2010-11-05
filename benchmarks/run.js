@@ -5,7 +5,6 @@
 
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(200, 200)
-  , largeCanvas = new Canvas(1000, 1000)
   , ctx = canvas.getContext('2d');
 
 var times = 10000;
