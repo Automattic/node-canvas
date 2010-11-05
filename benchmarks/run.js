@@ -41,11 +41,17 @@ function bm(label, overrideTimes, fn) {
   }
 }
 
+// node-canvas
+
 bm('lineTo()', function(){
   ctx.lineTo(0, 50);
 });
 
-bm('fillStyle=', function(){
+bm('fillStyle= hex', function(){
+  ctx.fillStyle = '#FFCCAA';
+});
+
+bm('fillStyle= rgba()', function(){
   ctx.fillStyle = 'rgba(0,255,80,1)';
 });
 
@@ -73,12 +79,37 @@ bm('toDataURL() 200x200', 50, function(){
   canvas.toDataURL();
 });
 
-bm('PNGStream 200x200', 50, function(done){
-  var stream = canvas.createSyncPNGStream();
-  stream.on('data', function(chunk){
-    // whatever
-  });
-  stream.on('end', function(){
-    done();
-  });
+// bm('PNGStream 200x200', 50, function(done){
+//   var stream = canvas.createSyncPNGStream();
+//   stream.on('data', function(chunk){
+//     // whatever
+//   });
+//   stream.on('end', function(){
+//     done();
+//   });
+// });
+
+// node-o3-canvas
+console.log('\n  node-o3-canvas\n');
+
+bm('o3 lineTo()', function(){
+  o3ctx.lineTo(0, 50);
 });
+
+bm('o3 fillStyle= hex', function(){
+  o3ctx.fillStyle = '#FFCCAA';
+});
+
+bm('o3 fillStyle= rgba()', function(){
+  o3ctx.fillStyle = 'rgba(0,255,80,1)';
+});
+
+bm('o3 fillRect()', function(){
+  o3ctx.fillRect(50, 50, 100, 100);
+});
+
+bm('o3 strokeRect()', function(){
+  o3ctx.strokeRect(50, 50, 100, 100);
+});
+
+console.log();
