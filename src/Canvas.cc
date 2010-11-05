@@ -33,7 +33,6 @@ Canvas::Initialize(Handle<Object> target) {
 
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "streamPNGSync", StreamPNGSync);
-  NODE_SET_PROTOTYPE_METHOD(t, "savePNG", SavePNG);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), t->GetFunction());
@@ -181,23 +180,4 @@ Canvas::resurface() {
 Handle<Value>
 Canvas::Error(cairo_status_t status) {
   return Exception::Error(String::New(cairo_status_to_string(status)));
-}
-
-/*
- * Save a PNG at the given path.
- */
-
-Handle<Value>
-Canvas::SavePNG(const Arguments &args) {
-  HandleScope scope;
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  
-  if (!args[0]->IsString())
-    return ThrowException(Exception::TypeError(String::New("path required")));
-
-  String::Utf8Value path(args[0]->ToString());
-  cairo_status_t status = cairo_surface_write_to_png(canvas->getSurface(), *path);
-  if (status) return Canvas::Error(status);
-
-  return Undefined();
 }
