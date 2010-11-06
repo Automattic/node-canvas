@@ -764,6 +764,8 @@ tests['globalCompositeOperation lighter'] = function(ctx){
 };
 
 tests['shadowBlur'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -788,6 +790,8 @@ tests['shadowBlur'] = function(ctx){
 };
 
 tests['shadowColor'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -812,6 +816,8 @@ tests['shadowColor'] = function(ctx){
 };
 
 tests['shadowOffset{X,Y}'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -838,6 +844,8 @@ tests['shadowOffset{X,Y}'] = function(ctx){
 };
 
 tests['shadowOffset{X,Y} large'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -864,6 +872,8 @@ tests['shadowOffset{X,Y} large'] = function(ctx){
 };
 
 tests['shadowOffset{X,Y} negative'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -890,6 +900,8 @@ tests['shadowOffset{X,Y} negative'] = function(ctx){
 };
 
 tests['shadowBlur values'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -916,6 +928,8 @@ tests['shadowBlur values'] = function(ctx){
 };
 
 tests['shadowBlur strokeRect()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
   ctx.stroke();
@@ -937,4 +951,6 @@ tests['shadowBlur strokeRect()'] = function(ctx){
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
 };
