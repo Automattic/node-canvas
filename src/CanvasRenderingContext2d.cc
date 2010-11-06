@@ -153,8 +153,8 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
-  shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->shadowBlur = state->shadowOffsetX = state->shadowOffsetY = 0;
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
@@ -305,7 +305,7 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
 Handle<Value>
 Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowOffsetX);
+  return Number::New(context->state->shadowOffsetX);
 }
 
 /*
@@ -315,7 +315,7 @@ Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->shadowOffsetX = val->NumberValue();
+  context->state->shadowOffsetX = val->NumberValue();
 }
 
 /*
@@ -325,7 +325,7 @@ Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const Accessor
 Handle<Value>
 Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowOffsetY);
+  return Number::New(context->state->shadowOffsetY);
 }
 
 /*
@@ -335,7 +335,7 @@ Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->shadowOffsetY = val->NumberValue();
+  context->state->shadowOffsetY = val->NumberValue();
 }
 
 /*
@@ -345,7 +345,7 @@ Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const Accessor
 Handle<Value>
 Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowBlur);
+  return Number::New(context->state->shadowBlur);
 }
 
 /*
@@ -357,7 +357,7 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-    context->shadowBlur = n;
+    context->state->shadowBlur = n;
   }
 }
 
@@ -531,7 +531,7 @@ Context2d::SetShadowRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->shadow,r,g,b,a);
+  RGBA(context->state->shadow,r,g,b,a);
   return Undefined();
 }
 

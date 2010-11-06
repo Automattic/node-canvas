@@ -34,6 +34,10 @@ typedef struct {
   float globalAlpha;
   short textAlignment;
   short textBaseline;
+  rgba_t shadow;
+  double shadowBlur;
+  double shadowOffsetX;
+  double shadowOffsetY;
 } canvas_state_t;
 
 class Context2d: public node::ObjectWrap {
@@ -41,10 +45,6 @@ class Context2d: public node::ObjectWrap {
     short stateno;
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
-    rgba_t shadow;
-    double shadowBlur;
-    double shadowOffsetX;
-    double shadowOffsetY;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);
