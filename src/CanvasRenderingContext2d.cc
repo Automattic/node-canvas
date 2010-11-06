@@ -1050,9 +1050,6 @@ Context2d::FillRect(const Arguments &args) {
   }
 
   cairo_save(ctx);
-  cairo_rectangle(ctx, x, y, width, height);
-  context->savePath();
-
   cairo_translate(
       ctx
     , context->state->shadowOffsetX
@@ -1064,7 +1061,7 @@ Context2d::FillRect(const Arguments &args) {
   Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
 
   cairo_restore(ctx);
-  context->restorePath();
+  cairo_rectangle(ctx, x, y, width, height);
   cairo_fill(ctx);
   return Undefined();
 }
@@ -1081,9 +1078,29 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
+  
+  if (!context->hasShadow()) {
+    cairo_rectangle(ctx, x, y, width, height);
+    SET_SOURCE(context->state->stroke);
+    cairo_stroke(ctx);
+    return Undefined();
+  }
+
+  cairo_save(ctx);
+  cairo_translate(
+      ctx
+    , context->state->shadowOffsetX
+    , context->state->shadowOffsetY);
+
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->state->stroke);
+  SET_SOURCE_RGBA(context->state->shadow);
   cairo_stroke(ctx);
+  Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+
+  cairo_restore(ctx);
+  cairo_rectangle(ctx, x, y, width, height);
+  cairo_stroke(ctx);
+
   return Undefined();
 }
 
