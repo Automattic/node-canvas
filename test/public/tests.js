@@ -902,3 +902,27 @@ tests['shadowBlur values'] = function(ctx){
   ctx.lineTo(100,180);
   ctx.stroke();
 };
+
+tests['shadowBlur strokeRect()'] = function(ctx){
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.strokeRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+};
