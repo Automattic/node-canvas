@@ -47,8 +47,10 @@ function runTests() {
 }
 
 function runTest(name, canvas, dest) {
-  var fn = tests[name];
+  var fn = tests[name]
+    , start = new Date;
   fn(canvas.getContext('2d'));
+  canvas.title += ' (rendered in ' + (new Date - start) + 'ms)';
   renderOnServer(name, canvas, function(res){
     if (res.error) {
       var p = create('p');
@@ -57,7 +59,7 @@ function runTest(name, canvas, dest) {
     } else if (res.data) {
       var img = create('image');
       img.src = res.data;
-      img.alt = img.title = name;
+      img.alt = img.title = name + ' (rendered in ' + res.duration + 'ms)';
       dest.appendChild(img);
     }
   });
