@@ -160,6 +160,7 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
+  RGBA(state->shadow,0,0,0,0);
 }
 
 /*
