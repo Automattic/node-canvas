@@ -1043,6 +1043,7 @@ Context2d::FillRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
 
+  printf("%d\n", context->hasShadow());
   if (!context->hasShadow()) {
     cairo_rectangle(ctx, x, y, width, height);
     SET_SOURCE(context->state->fill);
@@ -1177,14 +1178,9 @@ Context2d::Arc(const Arguments &args) {
 
 /*
  * Check if the context has a drawable shadow.
- * 
- * The spec states we mush have an alpha > 0,
- * as well as either x or y offset, however most
- * implementations render with offsets of 0 so
- * we will only take alpha into consideration.
  */
 
 bool
 Context2d::hasShadow() {
-  return state->shadow.a;
+  return state->shadow.a && state->shadowBlur;
 }
