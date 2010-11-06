@@ -356,7 +356,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   double n = val->NumberValue();
-  if (n > 0) {
+  if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
   }
@@ -1043,7 +1043,6 @@ Context2d::FillRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
 
-  printf("%d\n", context->hasShadow());
   if (!context->hasShadow()) {
     cairo_rectangle(ctx, x, y, width, height);
     SET_SOURCE(context->state->fill);
