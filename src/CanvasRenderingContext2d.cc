@@ -1041,8 +1041,33 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
+
+  cairo_rectangle(ctx, x, y, width, height);
+  context->savePath();
+
+  if (!context->hasShadow()) {
+    cairo_rectangle(ctx, x, y, width, height);
+    SET_SOURCE(context->state->fill);
+    cairo_fill(ctx);
+    return Undefined();
+  }
+
+  cairo_translate(
+      ctx
+    , context->state->shadowOffsetX
+    , context->state->shadowOffsetY);
+
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE(context->state->fill);
+  cairo_fill(ctx);
+  Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+
+  cairo_translate(
+      ctx
+    , -context->state->shadowOffsetX
+    , -context->state->shadowOffsetY);
+  
+  context->restorePath();
   cairo_fill(ctx);
   return Undefined();
 }
@@ -1133,4 +1158,18 @@ Context2d::Arc(const Arguments &args) {
   }
 
   return Undefined();
+}
+
+/*
+ * Check if the context has a drawable shadow.
+ * 
+ * The spec states we mush have an alpha > 0,
+ * as well as either x or y offset, however most
+ * implementations render with offsets of 0 so
+ * we will only take alpha into consideration.
+ */
+
+bool
+Context2d::hasShadow() {
+  return state->shadow.a;
 }

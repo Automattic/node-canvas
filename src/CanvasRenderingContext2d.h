@@ -100,6 +100,7 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
+    bool hasShadow();
     void setTextPath(const char *str, double x, double y);
     void savePath();
     void restorePath();
