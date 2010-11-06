@@ -762,3 +762,25 @@ tests['globalCompositeOperation lighter'] = function(ctx){
   ctx.arc(80,80,50,0,Math.PI * 2);
   ctx.fill();
 };
+
+tests['shadowBlur'] = function(ctx){
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+};
