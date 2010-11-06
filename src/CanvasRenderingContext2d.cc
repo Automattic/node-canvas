@@ -1042,9 +1042,6 @@ Context2d::FillRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
 
-  cairo_rectangle(ctx, x, y, width, height);
-  context->savePath();
-
   if (!context->hasShadow()) {
     cairo_rectangle(ctx, x, y, width, height);
     SET_SOURCE(context->state->fill);
@@ -1053,6 +1050,9 @@ Context2d::FillRect(const Arguments &args) {
   }
 
   cairo_save(ctx);
+  cairo_rectangle(ctx, x, y, width, height);
+  context->savePath();
+
   cairo_translate(
       ctx
     , context->state->shadowOffsetX
