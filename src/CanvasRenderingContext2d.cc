@@ -172,6 +172,26 @@ Context2d::~Context2d() {
 }
 
 /*
+ * Save cairo / canvas state.
+ */
+
+void
+Context2d::save() {
+  cairo_save(_context);
+  saveState();
+}
+
+/*
+ * Restore cairo / canvas state.
+ */
+
+void
+Context2d::restore() {
+  cairo_restore(_context);
+  restoreState();
+}
+
+/*
  * Save the current state.
  */
 
@@ -630,8 +650,7 @@ Handle<Value>
 Context2d::Save(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_save(context->getContext());
-  context->saveState();
+  context->save();
   return Undefined();
 }
 
@@ -643,8 +662,7 @@ Handle<Value>
 Context2d::Restore(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_restore(context->getContext());
-  context->restoreState();
+  context->restore();
   return Undefined();
 }
 
@@ -1082,7 +1100,7 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
-  
+
   if (!context->hasShadow()) {
     cairo_rectangle(ctx, x, y, width, height);
     SET_SOURCE(context->state->stroke);

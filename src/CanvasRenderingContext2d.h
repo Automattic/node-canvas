@@ -104,6 +104,8 @@ class Context2d: public node::ObjectWrap {
     void setTextPath(const char *str, double x, double y);
     void savePath();
     void restorePath();
+    void save();
+    void restore();
     void saveState();
     void restoreState();
 
