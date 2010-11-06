@@ -473,3 +473,75 @@ tests['globalCompositeOperation source-over'] = function(ctx){
   ctx.arc(80,80,50,0,Math.PI * 2);
   ctx.fill();
 };
+
+tests['globalCompositeOperation source-in'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation source-out'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'source-out';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation destination-in'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation destination-out'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation destination-atop'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'destination-atop';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation xor'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'xor';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation copy'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'copy';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation lighter'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
