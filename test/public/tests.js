@@ -464,3 +464,12 @@ tests['integration 1'] = function(ctx){
   ctx.fill();
   ctx.stroke();
 };
+
+tests['globalCompositeOperation source-over'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
