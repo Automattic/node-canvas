@@ -95,6 +95,54 @@ tests['rotate()'] = function(ctx){
   ctx.stroke();
 };
 
+tests['rotate() 2'] = function(ctx){
+  ctx.translate(75,75);
+
+  for (var i=1;i<6;i++){ // Loop through rings (from inside to out)
+    ctx.save();
+    ctx.fillStyle = 'rgb('+(51*i)+','+(255-51*i)+',255)';
+
+    for (var j=0;j<i*6;j++){ // draw individual dots
+      ctx.rotate(Math.PI*2/(i*6));
+      ctx.beginPath();
+      ctx.arc(0,i*12.5,5,0,Math.PI*2,true);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+};
+
+tests['translate()'] = function(ctx){
+  ctx.fillRect(0,0,300,300);
+  for (var i=0;i<3;i++) {
+    for (var j=0;j<3;j++) {
+      ctx.save();
+      ctx.strokeStyle = "#9CFF00";
+      ctx.translate(50+j*100,50+i*100);
+      drawSpirograph(ctx,20*(j+2)/(j+1),-8*(i+3)/(i+1),10);
+      ctx.restore();
+    }
+  }
+  function drawSpirograph(ctx,R,r,O){
+    var x1 = R-O;
+    var y1 = 0;
+    var i  = 1;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    do {
+      if (i>20000) break;
+      var x2 = (R+r)*Math.cos(i*Math.PI/72) - (r+O)*Math.cos(((R+r)/r)*(i*Math.PI/72))
+      var y2 = (R+r)*Math.sin(i*Math.PI/72) - (r+O)*Math.sin(((R+r)/r)*(i*Math.PI/72))
+      ctx.lineTo(x2,y2);
+      x1 = x2;
+      y1 = y2;
+      i++;
+    } while (x2 != R-O && y2 != 0 );
+    ctx.stroke();
+  }
+};
+
 tests['rect()'] = function(ctx){
   ctx.rect(5,5,50,50);
   ctx.strokeStyle = 'yellow';
@@ -257,6 +305,21 @@ tests['line caps'] = function(ctx){
     ctx.beginPath();
     ctx.moveTo(25+i*50,10);
     ctx.lineTo(25+i*50,140);
+    ctx.stroke();
+  }
+};
+
+tests['line join'] = function(ctx){
+  var lineJoin = ['round','bevel','miter'];
+  ctx.lineWidth = 10;
+  for (var i=0;i<lineJoin.length;i++){
+    ctx.lineJoin = lineJoin[i];
+    ctx.beginPath();
+    ctx.moveTo(-5,5+i*40);
+    ctx.lineTo(35,45+i*40);
+    ctx.lineTo(75,5+i*40);
+    ctx.lineTo(115,45+i*40);
+    ctx.lineTo(155,5+i*40);
     ctx.stroke();
   }
 };
