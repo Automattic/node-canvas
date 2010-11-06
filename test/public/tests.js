@@ -831,6 +831,54 @@ tests['shadowOffset{X,Y}'] = function(ctx){
   ctx.stroke();
 };
 
+tests['shadowOffset{X,Y} large'] = function(ctx){
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+};
+
+tests['shadowOffset{X,Y} negative'] = function(ctx){
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = -10;
+  ctx.shadowOffsetY = -10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+};
+
 tests['shadowBlur values'] = function(ctx){
   ctx.lineTo(20,5);
   ctx.lineTo(100,5);
