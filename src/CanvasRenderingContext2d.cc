@@ -1052,21 +1052,18 @@ Context2d::FillRect(const Arguments &args) {
     return Undefined();
   }
 
+  cairo_save(ctx);
   cairo_translate(
       ctx
     , context->state->shadowOffsetX
     , context->state->shadowOffsetY);
 
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->state->fill);
+  SET_SOURCE_RGBA(context->state->shadow);
   cairo_fill(ctx);
   Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
 
-  cairo_translate(
-      ctx
-    , -context->state->shadowOffsetX
-    , -context->state->shadowOffsetY);
-  
+  cairo_restore(ctx);
   context->restorePath();
   cairo_fill(ctx);
   return Undefined();
