@@ -802,7 +802,27 @@ Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->stroke);
+
+  if (!context->hasShadow()) {
+    SET_SOURCE(context->state->stroke);
+    cairo_stroke_preserve(ctx);
+    return Undefined();
+  }
+
+  cairo_save(ctx);
+  cairo_translate(
+      ctx
+    , context->state->shadowOffsetX
+    , context->state->shadowOffsetY);
+
+  SET_SOURCE_RGBA(context->state->shadow);
+  cairo_stroke_preserve(ctx);
+
+  if (context->state->shadowBlur) {
+    Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+  }
+
+  cairo_restore(ctx);
   cairo_stroke_preserve(ctx);
   return Undefined();
 }
