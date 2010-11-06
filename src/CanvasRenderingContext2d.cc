@@ -1059,7 +1059,10 @@ Context2d::FillRect(const Arguments &args) {
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE_RGBA(context->state->shadow);
   cairo_fill(ctx);
-  Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+
+  if (context->state->shadowBlur) {
+    Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+  }
 
   cairo_restore(ctx);
   cairo_rectangle(ctx, x, y, width, height);
@@ -1096,7 +1099,10 @@ Context2d::StrokeRect(const Arguments &args) {
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE_RGBA(context->state->shadow);
   cairo_stroke(ctx);
-  Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+
+  if (context->state->shadowBlur) {
+    Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+  }
 
   cairo_restore(ctx);
   cairo_rectangle(ctx, x, y, width, height);
@@ -1181,5 +1187,6 @@ Context2d::Arc(const Arguments &args) {
 
 bool
 Context2d::hasShadow() {
-  return state->shadow.a && state->shadowBlur;
+  return state->shadow.a
+    && (state->shadowBlur || state->shadowOffsetX || state->shadowOffsetX);
 }
