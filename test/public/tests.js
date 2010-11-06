@@ -175,14 +175,13 @@ tests['globalAlpha'] = function(ctx){
 };
 
 tests['fillStyle'] = function(ctx){
-  ctx.fillStyle = 'rgb(0,55,0)';
-  ctx.fillRect(10, 10, 50, 50);
-
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fillRect(60, 60, 50, 50);
-
-  ctx.fillStyle = '#000';
-  ctx.fillRect(110, 110, 50, 50);
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+                       Math.floor(255-42.5*j) + ',0)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
 };
 
 tests['fill with stroke'] = function(ctx){
@@ -441,50 +440,6 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.textBaseline = 'ideographic';
   ctx.textAlign = 'center';
   ctx.fillText("ideographic", 100, 100);
-};
-
-tests['integration 1'] = function(ctx){
-  ctx.fillStyle = '#eee';
-	ctx.fillRect(0,0,300,300);
-
-	ctx.fillStyle = "rgba(0,0,200,0.5)";
-	ctx.strokeStyle= "rgba(100,100,100,0.5)";
-	var n = Date.now()/1000;
-	var xs = 10, ys = 10, cx = xs/2, cy=ys/2, xd = 300/xs, yd = 300/ys;
-	for(var xt = 0; xt<300; xt+=xd){
-		for(var yt = 0; yt<300; yt+=yd){
-		  ctx.moveTo(xt,0);ctx.lineTo(xt,300);
-		  ctx.moveTo(0,yt);ctx.lineTo(300,yt);
-		}
-	}
-	ctx.stroke();
-	ctx.strokeWidth = 5;
-	ctx.strokeStyle = "rgba(0,0,0,0.5)";
-  ctx.fillStyle= "rgba(0,174,239,0.8)";
-  ctx.beginPath();
-  ctx.moveTo(0,300);
-  for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 100+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(242,0,144,0.7)"; n = n+2;
-  for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 150+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(255,254,0,0.7)"; n = n+4;
-  for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 200+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
-  ctx.fill();
-  ctx.stroke();
 };
 
 tests['globalCompositeOperation source-over'] = function(ctx){
