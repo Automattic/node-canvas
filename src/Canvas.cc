@@ -8,6 +8,7 @@
 #include "Canvas.h"
 #include <string.h>
 #include <node_buffer.h>
+#include <node_version.h>
 
 using namespace v8;
 using namespace node;
@@ -109,7 +110,11 @@ static cairo_status_t
 writeToBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   Buffer *buf = Buffer::New(len);
+#if NODE_VERSION_AT_LEAST(0,3,0)
+  memcpy(Buffer::Data(buf->handle_), data, len);
+#else
   memcpy(buf->data(), data, len);
+#endif
   Handle<Value> argv[3] = { Null(), buf->handle_, Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;

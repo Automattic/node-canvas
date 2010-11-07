@@ -6,6 +6,6 @@
  , "scripts": {
    "preinstall": "node-waf configure build"
  }
- , "engines": { "node": ">= 0.2.3 < 0.3.0" }
+ , "engines": { "node": ">= 0.3.0" }
  , "main": "./lib/canvas.js"
 }
