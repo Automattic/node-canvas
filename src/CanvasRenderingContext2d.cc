@@ -951,13 +951,19 @@ Context2d::SetFont(const Arguments &args) {
   String::AsciiValue style(args[1]);
   double size = args[2]->NumberValue();
   String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
+  String::AsciiValue _family(args[4]);
+  const char *family = *_family;
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
 
   // Size
   cairo_set_font_size(ctx, size);
+
+  // Family
+  if (0 == strcmp("sans-serif", family)) {
+    family = "Arial";
+  }
 
   // Style
   cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
@@ -973,7 +979,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_select_font_face(ctx, *family, s, w);
+  cairo_select_font_face(ctx, family, s, w);
   
   return Undefined();
 }
