@@ -776,9 +776,7 @@ Handle<Value>
 Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->fill);
-  cairo_fill_preserve(ctx);
+  context->fill(true);
   return Undefined();
 }
 
@@ -790,20 +788,7 @@ Handle<Value>
 Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->stroke);
-
-  if (!context->hasShadow()) {
-    cairo_stroke_preserve(ctx);
-    return Undefined();
-  }
-
-  context->shadowStart();
-  cairo_stroke_preserve(ctx);
-
-  context->shadowApply();
-  cairo_stroke_preserve(ctx);
-
+  context->stroke(true);
   return Undefined();
 }
 
@@ -1157,7 +1142,7 @@ Context2d::Arc(const Arguments &args) {
  */
 
 void
-Context2d::fill() {
+Context2d::fill(bool preserve) {
   setSourceRGBA(state->fill);
   hasShadow()
     ? shadow(cairo_fill)
@@ -1169,7 +1154,7 @@ Context2d::fill() {
  */
 
 void
-Context2d::stroke() {
+Context2d::stroke(bool preserve) {
   setSourceRGBA(state->stroke);
   hasShadow()
     ? shadow(cairo_stroke)

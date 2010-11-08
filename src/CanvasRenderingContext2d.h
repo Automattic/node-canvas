@@ -110,8 +110,8 @@ class Context2d: public node::ObjectWrap {
     void restorePath();
     void saveState();
     void restoreState();
-    void fill();
-    void stroke();
+    void fill(bool preserve = false);
+    void stroke(bool preserve = false);
     void save();
     void restore();
 
