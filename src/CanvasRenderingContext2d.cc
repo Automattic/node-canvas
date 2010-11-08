@@ -719,6 +719,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->fillPattern = NULL;
   RGBA(context->state->fill,r,g,b,a);
   return Undefined();
 }
@@ -732,6 +733,7 @@ Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->strokePattern = NULL;
   RGBA(context->state->stroke,r,g,b,a);
   return Undefined();
 }
