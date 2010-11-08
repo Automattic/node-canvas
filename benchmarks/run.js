@@ -12,7 +12,6 @@ var Canvas = require('../lib/canvas')
   , o3ctxLarge = canvasFactory(1000,1000,'argb');
 
 var times = 10000;
-
 console.log('\n  \x1b[33m%s\x1b[0m times\n', times);
 
 function bm(label, overrideTimes, fn) {
@@ -47,6 +46,10 @@ function bm(label, overrideTimes, fn) {
 
 bm('lineTo()', function(){
   ctx.lineTo(0, 50);
+});
+
+bm('arc()', function(){
+  ctx.arc(75,75,50,0,Math.PI*2,true);
 });
 
 bm('fillStyle= hex', function(){
@@ -89,6 +92,18 @@ bm('toDataURL() 200x200', 50, function(){
   canvas.toDataURL();
 });
 
+bm('moveTo() / arc() / stroke()', function(){
+  ctx.beginPath();
+  ctx.arc(75,75,50,0,Math.PI*2,true); // Outer circle
+  ctx.moveTo(110,75);
+  ctx.arc(75,75,35,0,Math.PI,false);   // Mouth
+  ctx.moveTo(65,65);
+  ctx.arc(60,65,5,0,Math.PI*2,true);  // Left eye
+  ctx.moveTo(95,65);
+  ctx.arc(90,65,5,0,Math.PI*2,true);  // Right eye
+  ctx.stroke();
+});
+
 // bm('PNGStream 200x200', 50, function(done){
 //   var stream = canvas.createSyncPNGStream();
 //   stream.on('data', function(chunk){
@@ -102,23 +117,27 @@ bm('toDataURL() 200x200', 50, function(){
 // node-o3-canvas
 console.log('\n  node-o3-canvas\n');
 
-bm('o3 lineTo()', function(){
+bm('lineTo()', function(){
   o3ctx.lineTo(0, 50);
 });
 
-bm('o3 fillStyle= hex', function(){
+bm('arc()', function(){
+  o3ctx.arc(75,75,50,0,Math.PI*2,true);
+});
+
+bm('fillStyle= hex', function(){
   o3ctx.fillStyle = '#FFCCAA';
 });
 
-bm('o3 fillStyle= rgba()', function(){
+bm('fillStyle= rgba()', function(){
   o3ctx.fillStyle = 'rgba(0,255,80,1)';
 });
 
-bm('o3 fillRect()', function(){
+bm('fillRect()', function(){
   o3ctx.fillRect(50, 50, 100, 100);
 });
 
-bm('o3 strokeRect()', function(){
+bm('strokeRect()', function(){
   o3ctx.strokeRect(50, 50, 100, 100);
 });
 
@@ -132,6 +151,18 @@ bm('pngBuffer() 1000x1000', 50, function(){
 
 bm('pngBuffer().toBase64() 200x200', 50, function(){
   o3ctx.pngBuffer().toBase64();
+});
+
+bm('moveTo() / arc() / stroke()', function(){
+  o3ctx.beginPath();
+  o3ctx.arc(75,75,50,0,Math.PI*2,true); // Outer circle
+  o3ctx.moveTo(110,75);
+  o3ctx.arc(75,75,35,0,Math.PI,false);   // Mouth
+  o3ctx.moveTo(65,65);
+  o3ctx.arc(60,65,5,0,Math.PI*2,true);  // Left eye
+  o3ctx.moveTo(95,65);
+  o3ctx.arc(90,65,5,0,Math.PI*2,true);  // Right eye
+  o3ctx.stroke();
 });
 
 console.log();
