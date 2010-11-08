@@ -1070,7 +1070,6 @@ Context2d::FillRect(const Arguments &args) {
 
   context->shadowStart();
   cairo_rectangle(ctx, x, y, width, height);
-  context->setSourceRGBA(context->state->shadow);
   cairo_fill(ctx);
 
   context->shadowApply();
@@ -1219,6 +1218,7 @@ Context2d::shadowStart() {
     , state->shadowOffsetX
     , state->shadowOffsetY);
   cairo_push_group(_context);
+  setSourceRGBA(state->shadow);
 }
 
 /*
