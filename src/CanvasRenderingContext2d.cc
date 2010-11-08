@@ -1077,22 +1077,8 @@ Context2d::StrokeRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
-
-  if (!context->hasShadow()) {
-    cairo_rectangle(ctx, x, y, width, height);
-    SET_SOURCE(context->state->stroke);
-    cairo_stroke(ctx);
-    return Undefined();
-  }
-
-  context->shadowStart();
   cairo_rectangle(ctx, x, y, width, height);
-  cairo_stroke(ctx);
-
-  context->shadowApply();
-  cairo_rectangle(ctx, x, y, width, height);
-  cairo_stroke(ctx);
-
+  context->stroke();
   return Undefined();
 }
 
