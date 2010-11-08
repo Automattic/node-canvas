@@ -34,6 +34,10 @@ typedef struct {
   float globalAlpha;
   short textAlignment;
   short textBaseline;
+  rgba_t shadow;
+  double shadowBlur;
+  double shadowOffsetX;
+  double shadowOffsetY;
 } canvas_state_t;
 
 class Context2d: public node::ObjectWrap {
@@ -41,10 +45,6 @@ class Context2d: public node::ObjectWrap {
     short stateno;
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
-    rgba_t shadow;
-    double shadowBlur;
-    double shadowOffsetX;
-    double shadowOffsetY;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);
@@ -100,11 +100,21 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
+    inline bool hasShadow();
+    void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);
+    void blur(cairo_surface_t *surface, int radius);
+    void shadow(void (fn)(cairo_t *cr));
+    void shadowStart();
+    void shadowApply();
     void savePath();
     void restorePath();
     void saveState();
     void restoreState();
+    void fill(bool preserve = false);
+    void stroke(bool preserve = false);
+    void save();
+    void restore();
 
   protected:
     Context2d(Canvas *canvas);

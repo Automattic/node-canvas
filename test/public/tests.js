@@ -918,3 +918,270 @@ tests['globalCompositeOperation lighter'] = function(ctx){
   ctx.arc(80,80,50,0,Math.PI * 2);
   ctx.fill();
 };
+
+tests['shadowBlur'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowColor'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y}'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y} large'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y} negative'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = -10;
+  ctx.shadowOffsetY = -10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowBlur values'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowBlur strokeRect()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.strokeRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadowBlur fill()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.rect(20,20,100,100);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadowBlur stroke()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.rect(20,20,100,100);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadowBlur globalAlpha'] = function(ctx){
+  ctx.lineTo(0,0);
+  ctx.lineTo(50,0);
+  ctx.lineTo(50,150);
+  ctx.stroke();
+
+  ctx.lineWidth = 5;
+  ctx.globalAlpha = 0.3;
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+
+  ctx.lineTo(0,150);
+  ctx.stroke();
+};
