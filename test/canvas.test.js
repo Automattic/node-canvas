@@ -76,6 +76,8 @@ module.exports = {
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", sans-serif' }
       , '50px "Helvetica Nueue", "foo bar baz" , sans-serif'
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", "foo bar baz" , sans-serif' }
+      , "50px 'Helvetica Nueue'"
+      , { size: 50, unit: 'px', family: "'Helvetica Nueue'" }
       , 'italic 20px Arial'
       , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
       , 'oblique 20px Arial'
