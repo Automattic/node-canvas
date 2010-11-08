@@ -1179,6 +1179,18 @@ Context2d::fill() {
 }
 
 /*
+ * Stroke and apply shadow.
+ */
+
+void
+Context2d::stroke() {
+  setSourceRGBA(state->stroke);
+  hasShadow()
+    ? shadow(cairo_stroke)
+    : cairo_stroke(_context);
+}
+
+/*
  * Apply shadow with the given draw fn.
  */
 
