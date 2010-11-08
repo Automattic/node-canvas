@@ -1068,24 +1068,14 @@ Context2d::FillRect(const Arguments &args) {
     return Undefined();
   }
 
-  cairo_save(ctx);
-  cairo_translate(
-      ctx
-    , context->state->shadowOffsetX
-    , context->state->shadowOffsetY);
+  context->shadowStart();
 
-  cairo_push_group(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE_RGBA(context->state->shadow);
   cairo_fill(ctx);
 
-  if (context->state->shadowBlur) {
-    Canvas::blur(cairo_get_group_target(ctx), context->state->shadowBlur);
-  }
-  cairo_pop_group_to_source(ctx);
-  cairo_paint(ctx);
+  context->shadowApply();
 
-  cairo_restore(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   cairo_fill(ctx);
   return Undefined();
@@ -1203,6 +1193,34 @@ Context2d::Arc(const Arguments &args) {
   }
 
   return Undefined();
+}
+
+/*
+ * Start shadow context.
+ */
+
+void
+Context2d::shadowStart() {
+  cairo_save(_context);
+  cairo_translate(
+      _context
+    , state->shadowOffsetX
+    , state->shadowOffsetY);
+  cairo_push_group(_context);
+}
+
+/*
+ * Apply shadow.
+ */
+
+void
+Context2d::shadowApply() {
+  if (state->shadowBlur) {
+    Canvas::blur(cairo_get_group_target(_context), state->shadowBlur);
+  }
+  cairo_pop_group_to_source(_context);
+  cairo_paint(_context);
+  cairo_restore(_context);
 }
 
 /*

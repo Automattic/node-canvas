@@ -102,6 +102,8 @@ class Context2d: public node::ObjectWrap {
     inline Canvas *getCanvas(){ return _canvas; }
     inline bool hasShadow();
     void setTextPath(const char *str, double x, double y);
+    void shadowStart();
+    void shadowApply();
     void savePath();
     void restorePath();
     void save();
