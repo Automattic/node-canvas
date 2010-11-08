@@ -329,7 +329,6 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
-  unsigned char* dst = (unsigned char*)malloc(width*height*4);
   unsigned* precalc = 
       (unsigned*)malloc(width*height*sizeof(unsigned));
   unsigned char* src = cairo_image_surface_get_data( surface );
@@ -340,8 +339,6 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // three iterations is good enough to pass for a gaussian.
   const int MAX_ITERATIONS = 3; 
   int iteration;
-
-  memcpy( dst, src, width*height*4 );
 
   for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
       for( channel = 0; channel < 4; channel++ ) {
@@ -364,7 +361,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
           }
 
           // blur step.
-          pix = dst + (int)radius * width * 4 + (int)radius * 4 + channel;
+          pix = src + (int)radius * width * 4 + (int)radius * 4 + channel;
           for (y=radius;y<height-radius;y++) {
               for (x=radius;x<width-radius;x++) {
                   int l = x < radius ? 0 : x - radius;
@@ -379,10 +376,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
               pix += (int)radius * 2 * 4;
           }
       }
-      memcpy( src, dst, width*height*4 );
   }
-
-  free( dst );
   free( precalc );
 }
 
