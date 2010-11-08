@@ -1075,6 +1075,7 @@ Context2d::FillRect(const Arguments &args) {
   context->shadowApply();
   cairo_rectangle(ctx, x, y, width, height);
   cairo_fill(ctx);
+
   return Undefined();
 }
 
@@ -1098,24 +1099,11 @@ Context2d::StrokeRect(const Arguments &args) {
     return Undefined();
   }
 
-  cairo_save(ctx);
-  cairo_translate(
-      ctx
-    , context->state->shadowOffsetX
-    , context->state->shadowOffsetY);
-
-  cairo_push_group(ctx);
+  context->shadowStart();
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->state->shadow);
   cairo_stroke(ctx);
 
-  if (context->state->shadowBlur) {
-    Canvas::blur(cairo_get_group_target(ctx), context->state->shadowBlur);
-  }
-  cairo_pop_group_to_source(ctx);
-  cairo_paint(ctx);
-
-  cairo_restore(ctx);
+  context->shadowApply();
   cairo_rectangle(ctx, x, y, width, height);
   cairo_stroke(ctx);
 
