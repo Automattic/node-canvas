@@ -951,8 +951,7 @@ Context2d::SetFont(const Arguments &args) {
   String::AsciiValue style(args[1]);
   double size = args[2]->NumberValue();
   String::AsciiValue unit(args[3]);
-  String::AsciiValue _family(args[4]);
-  const char *family = *_family;
+  const char *family = *String::AsciiValue(args[4]);
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
