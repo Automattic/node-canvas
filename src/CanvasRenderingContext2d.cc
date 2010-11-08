@@ -792,7 +792,18 @@ Context2d::Stroke(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   SET_SOURCE(context->state->stroke);
+
+  if (!context->hasShadow()) {
+    cairo_stroke_preserve(ctx);
+    return Undefined();
+  }
+
+  context->shadowStart();
   cairo_stroke_preserve(ctx);
+
+  context->shadowApply();
+  cairo_stroke_preserve(ctx);
+
   return Undefined();
 }
 
@@ -1049,22 +1060,8 @@ Context2d::FillRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
-
-  if (!context->hasShadow()) {
-    cairo_rectangle(ctx, x, y, width, height);
-    SET_SOURCE(context->state->fill);
-    cairo_fill(ctx);
-    return Undefined();
-  }
-
-  context->shadowStart();
   cairo_rectangle(ctx, x, y, width, height);
-  cairo_fill(ctx);
-
-  context->shadowApply();
-  cairo_rectangle(ctx, x, y, width, height);
-  cairo_fill(ctx);
-
+  context->fill();
   return Undefined();
 }
 
@@ -1170,6 +1167,58 @@ Context2d::Arc(const Arguments &args) {
 }
 
 /*
+ * Fill and apply shadow.
+ */
+
+void
+Context2d::fill() {
+  setSourceRGBA(state->fill);
+  hasShadow()
+    ? shadow(cairo_fill)
+    : cairo_fill(_context);
+}
+
+/*
+ * Apply shadow with the given draw fn.
+ */
+
+void
+Context2d::shadow(void (fn)(cairo_t *cr)) {
+  cairo_path_t *path = cairo_copy_path_flat(_context);
+  cairo_save(_context);
+
+  // Offset
+  cairo_translate(
+      _context
+    , state->shadowOffsetX
+    , state->shadowOffsetY);
+
+  // Apply shadow
+  cairo_push_group(_context);
+  cairo_new_path(_context);
+  cairo_append_path(_context, path);
+  setSourceRGBA(state->shadow);
+  fn(_context);
+
+  // No need to invoke blur if shadowBlur is 0
+  if (state->shadowBlur) {
+    Canvas::blur(cairo_get_group_target(_context), state->shadowBlur);
+  }
+
+  // Paint the shadow
+  cairo_pop_group_to_source(_context);
+  cairo_paint(_context);
+
+  // Restore state
+  cairo_restore(_context);
+  cairo_new_path(_context);
+  cairo_append_path(_context, path);
+  fn(_context);
+
+  cairo_path_destroy(path);
+}
+
+/*
  * Set source RGBA.
  */
 
@@ -1189,6 +1238,7 @@ Context2d::setSourceRGBA(rgba_t color) {
 
 void
 Context2d::shadowStart() {
+  savePath();
   cairo_save(_context);
   cairo_translate(
       _context
@@ -1196,6 +1246,7 @@ Context2d::shadowStart() {
     , state->shadowOffsetY);
   cairo_push_group(_context);
   setSourceRGBA(state->shadow);
+  restorePath();
 }
 
 /*
@@ -1204,12 +1255,14 @@ Context2d::shadowStart() {
 
 void
 Context2d::shadowApply() {
+  savePath();
   if (state->shadowBlur) {
     Canvas::blur(cairo_get_group_target(_context), state->shadowBlur);
   }
   cairo_pop_group_to_source(_context);
   cairo_paint(_context);
   cairo_restore(_context);
+  restorePath();
 }
 
 /*

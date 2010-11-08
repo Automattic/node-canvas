@@ -103,14 +103,17 @@ class Context2d: public node::ObjectWrap {
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);
+    void shadow(void (fn)(cairo_t *cr));
     void shadowStart();
     void shadowApply();
     void savePath();
     void restorePath();
-    void save();
-    void restore();
     void saveState();
     void restoreState();
+    void fill();
+    void stroke();
+    void save();
+    void restore();
 
   protected:
     Context2d(Canvas *canvas);
