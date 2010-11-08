@@ -1231,7 +1231,7 @@ tests['shadow integration'] = function(ctx){
 
   // skyblue box
   ctx.fillStyle = "skyblue";
-  ctx.fillRect(105,100+50, 100,100);
+  ctx.fillRect(105,101, 100,100);
 
   // radial grad oval
   ctx.beginPath();
@@ -1241,7 +1241,7 @@ tests['shadow integration'] = function(ctx){
 
   // gold oval
   ctx.beginPath();
-  ctx.arc(50, 150+50, 50, 0, Math.PI*2, false);
+  ctx.arc(50, 151, 50, 0, Math.PI*2, false);
   ctx.fillStyle = "gold";
   ctx.fill();
 
