@@ -1244,29 +1244,4 @@ tests['shadow integration'] = function(ctx){
   ctx.arc(50, 151, 50, 0, Math.PI*2, false);
   ctx.fillStyle = "gold";
   ctx.fill();
-
-  // lines
-  ctx.beginPath();
-  ctx.moveTo(150, 0);
-  ctx.lineTo(0, 150);
-  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(200, 0);
-  ctx.lineTo(0, 200);
-  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(250, 0);
-  ctx.lineTo(0, 250);
-  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(300, 0);
-  ctx.lineTo(0, 300);
-  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
-  ctx.stroke();
 };
