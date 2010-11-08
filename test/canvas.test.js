@@ -56,6 +56,8 @@ module.exports = {
       , { size: 20, unit: 'px', family: 'Arial' }
       , '20pt Arial'
       , { size: 20, unit: 'pt', family: 'Arial' }
+      , '20.5pt Arial'
+      , { size: 20.5, unit: 'pt', family: 'Arial' }
       , '20% Arial'
       , { size: 20, unit: '%', family: 'Arial' }
       , '20mm Arial'
@@ -76,6 +78,8 @@ module.exports = {
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", sans-serif' }
       , '50px "Helvetica Nueue", "foo bar baz" , sans-serif'
       , { size: 50, unit: 'px', family: '"Helvetica Nueue", "foo bar baz" , sans-serif' }
+      , "50px 'Helvetica Nueue'"
+      , { size: 50, unit: 'px', family: "'Helvetica Nueue'" }
       , 'italic 20px Arial'
       , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
       , 'oblique 20px Arial'

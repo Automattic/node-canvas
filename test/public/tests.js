@@ -682,6 +682,162 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.fillText("ideographic", 100, 100);
 };
 
+tests['font size px'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 14px Arial", 100, 100);
+};
+
+tests['font size pt'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 14pt Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 14pt Arial", 100, 100);
+};
+
+tests['font size mm'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 3mm Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 3mm Arial", 100, 100);
+};
+
+tests['font size cm'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 0.6cm Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 0.6cm Arial", 100, 100);
+};
+
+tests['font weight bold'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("bold 14px Arial", 100, 100);
+};
+
+tests['font weight lighter'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'lighter 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("lighter 14px Arial", 100, 100);
+};
+
+tests['font weight lighter italic'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'lighter italic 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("lighter italic 14px Arial", 100, 100);
+};
+
+tests['font weight 200'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '200 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("200 14px Arial", 100, 100);
+};
+
+tests['font weight 800'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '800 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("800 14px Arial", 100, 100);
+};
+
+tests['font family serif'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px serif", 100, 100);
+};
+
+tests['font family sans-serif'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px sans-serif", 100, 100);
+};
+
+tests['font family Impact'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '18px Impact';
+  ctx.textAlign = 'center';
+  ctx.fillText("18px Impact", 100, 100);
+};
+
+tests['font family invalid'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px Foo, Invalid, Impact, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px Invalid, Impact", 100, 100);
+};
+
 tests['globalCompositeOperation source-over'] = function(ctx){
   ctx.fillStyle = 'blue';
   ctx.fillRect(0,0,100,100);
@@ -760,5 +916,332 @@ tests['globalCompositeOperation lighter'] = function(ctx){
   ctx.globalCompositeOperation = 'lighter';
   ctx.fillStyle = 'red';
   ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['shadowBlur'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowColor'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y}'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y} large'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowOffset{X,Y} negative'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = -10;
+  ctx.shadowOffsetY = -10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadowBlur values'] = function(ctx){
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
+tests['shadow strokeRect()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.strokeRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadow fill()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.rect(20,20,100,100);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadow stroke()'] = function(ctx){
+  ctx.strokeRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.rect(20,20,100,100);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.strokeRect(150,150,20,20);
+};
+
+tests['shadow globalAlpha'] = function(ctx){
+  ctx.lineTo(0,0);
+  ctx.lineTo(50,0);
+  ctx.lineTo(50,150);
+  ctx.stroke();
+
+  ctx.lineWidth = 5;
+  ctx.globalAlpha = 0.3;
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+
+  ctx.lineTo(0,150);
+  ctx.stroke();
+};
+
+tests['shadow fillText()'] = function(ctx){
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+  ctx.textAlign = 'center';
+  ctx.font = '35px Arial';
+  ctx.fillText("Shadow", 100, 100);
+};
+
+tests['shadow strokeText()'] = function(ctx){
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+  ctx.textAlign = 'center';
+  ctx.font = '35px Arial';
+  ctx.strokeText("Shadow", 100, 100);
+};
+
+tests['shadow integration'] = function(ctx){
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.shadowColor = '#eee';
+  ctx.lineWidth = 3;
+
+  var grad1 = ctx.createLinearGradient(105,0, 200,100);
+  grad1.addColorStop(0,    'yellow');
+  grad1.addColorStop(0.25, 'red');
+  grad1.addColorStop(0.75, 'blue');
+  grad1.addColorStop(1,    'limegreen');
+
+  var grad2 = ctx.createRadialGradient(50,50,10,50,50,50);
+  grad2.addColorStop(0,    'yellow');
+  grad2.addColorStop(0.25, 'red');
+  grad2.addColorStop(0.75, 'blue');
+  grad2.addColorStop(1,    'limegreen');
+
+  // linear grad box
+  ctx.fillStyle = grad1;
+  ctx.fillRect(105,0, 100,100);
+
+  // skyblue box
+  ctx.fillStyle = "skyblue";
+  ctx.fillRect(105,101, 100,100);
+
+  // radial grad oval
+  ctx.beginPath();
+  ctx.arc(50, 50, 50, 0, Math.PI*2, false);
+  ctx.fillStyle = grad2;
+  ctx.fill();
+
+  // gold oval
+  ctx.beginPath();
+  ctx.arc(50, 151, 50, 0, Math.PI*2, false);
+  ctx.fillStyle = "gold";
   ctx.fill();
 };

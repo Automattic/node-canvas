@@ -26,27 +26,6 @@ using namespace node;
   _.a = A; \
 
 /*
- * Set source.
- */
-
-#define SET_SOURCE(_) \
-  if (_##Pattern) \
-    cairo_set_source(ctx, _##Pattern); \
-  else \
-    SET_SOURCE_RGBA(_)
-
-/*
- * Set source RGBA.
- */
-
-#define SET_SOURCE_RGBA(_) \
-  cairo_set_source_rgba(ctx \
-    , _.r \
-    , _.g \
-    , _.b \
-    , _.a * context->state->globalAlpha);
-
-/*
  * Rectangle arg assertions.
  */
 
@@ -153,13 +132,14 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
-  shadowBlur = shadowOffsetX = shadowOffsetY = 0;
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  state->shadowBlur = state->shadowOffsetX = state->shadowOffsetY = 0;
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
   RGBA(state->fill,0,0,0,1);
   RGBA(state->stroke,0,0,0,1);
+  RGBA(state->shadow,0,0,0,0);
 }
 
 /*
@@ -168,6 +148,26 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
 
 Context2d::~Context2d() {
   cairo_destroy(_context);
+}
+
+/*
+ * Save cairo / canvas state.
+ */
+
+void
+Context2d::save() {
+  cairo_save(_context);
+  saveState();
+}
+
+/*
+ * Restore cairo / canvas state.
+ */
+
+void
+Context2d::restore() {
+  cairo_restore(_context);
+  restoreState();
 }
 
 /*
@@ -209,6 +209,181 @@ Context2d::savePath() {
 void
 Context2d::restorePath() {
   cairo_append_path(_context, _path);
+}
+
+/*
+ * Fill and apply shadow.
+ */
+
+void
+Context2d::fill(bool preserve) {
+  state->fillPattern
+    ? cairo_set_source(_context, state->fillPattern)
+    : setSourceRGBA(state->fill);
+
+  if (preserve) {
+    hasShadow()
+      ? shadow(cairo_fill_preserve)
+      : cairo_fill_preserve(_context);
+  } else {
+    hasShadow()
+      ? shadow(cairo_fill)
+      : cairo_fill(_context);
+  }
+}
+
+/*
+ * Stroke and apply shadow.
+ */
+
+void
+Context2d::stroke(bool preserve) {
+  state->strokePattern
+    ? cairo_set_source(_context, state->strokePattern)
+    : setSourceRGBA(state->stroke);
+
+  if (preserve) {
+    hasShadow()
+      ? shadow(cairo_stroke_preserve)
+      : cairo_stroke_preserve(_context);
+  } else {
+    hasShadow()
+      ? shadow(cairo_stroke)
+      : cairo_stroke(_context);
+  }
+}
+
+/*
+ * Apply shadow with the given draw fn.
+ */
+
+void
+Context2d::shadow(void (fn)(cairo_t *cr)) {
+  cairo_path_t *path = cairo_copy_path_flat(_context);
+  cairo_save(_context);
+
+  // Offset
+  cairo_translate(
+      _context
+    , state->shadowOffsetX
+    , state->shadowOffsetY);
+
+  // Apply shadow
+  cairo_push_group(_context);
+  cairo_new_path(_context);
+  cairo_append_path(_context, path);
+  setSourceRGBA(state->shadow);
+  fn(_context);
+
+  // No need to invoke blur if shadowBlur is 0
+  if (state->shadowBlur) {
+    blur(cairo_get_group_target(_context), state->shadowBlur);
+  }
+
+  // Paint the shadow
+  cairo_pop_group_to_source(_context);
+  cairo_paint(_context);
+
+  // Restore state
+  cairo_restore(_context);
+  cairo_new_path(_context);
+  cairo_append_path(_context, path);
+  fn(_context);
+
+  cairo_path_destroy(path);
+}
+
+/*
+ * Set source RGBA.
+ */
+
+void
+Context2d::setSourceRGBA(rgba_t color) {
+  cairo_set_source_rgba(
+      _context
+    , color.r
+    , color.g
+    , color.b
+    , color.a * state->globalAlpha);
+}
+
+/*
+ * Check if the context has a drawable shadow.
+ */
+
+bool
+Context2d::hasShadow() {
+  return state->shadow.a
+    && (state->shadowBlur || state->shadowOffsetX || state->shadowOffsetX);
+}
+
+/*
+ * Blur the given surface with the given radius.
+ */
+
+void
+Context2d::blur(cairo_surface_t *surface, int radius) {
+  // Steve Hanov, 2009
+  // Released into the public domain.
+  --radius;
+  // get width, height
+  int width = cairo_image_surface_get_width( surface );
+  int height = cairo_image_surface_get_height( surface );
+  unsigned char* dst = (unsigned char*)malloc(width*height*4);
+  unsigned* precalc = 
+      (unsigned*)malloc(width*height*sizeof(unsigned));
+  unsigned char* src = cairo_image_surface_get_data( surface );
+  double mul=1.f/((radius*2)*(radius*2));
+  int channel;
+  
+  // The number of times to perform the averaging. According to wikipedia,
+  // three iterations is good enough to pass for a gaussian.
+  const int MAX_ITERATIONS = 3; 
+  int iteration;
+
+  memcpy( dst, src, width*height*4 );
+
+  for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
+      for( channel = 0; channel < 4; channel++ ) {
+          int x,y;
+
+          // precomputation step.
+          unsigned char* pix = src;
+          unsigned* pre = precalc;
+
+          pix += channel;
+          for (y=0;y<height;y++) {
+              for (x=0;x<width;x++) {
+                  int tot=pix[0];
+                  if (x>0) tot+=pre[-1];
+                  if (y>0) tot+=pre[-width];
+                  if (x>0 && y>0) tot-=pre[-width-1];
+                  *pre++=tot;
+                  pix += 4;
+              }
+          }
+
+          // blur step.
+          pix = dst + (int)radius * width * 4 + (int)radius * 4 + channel;
+          for (y=radius;y<height-radius;y++) {
+              for (x=radius;x<width-radius;x++) {
+                  int l = x < radius ? 0 : x - radius;
+                  int t = y < radius ? 0 : y - radius;
+                  int r = x + radius >= width ? width - 1 : x + radius;
+                  int b = y + radius >= height ? height - 1 : y + radius;
+                  int tot = precalc[r+b*width] + precalc[l+t*width] - 
+                      precalc[l+b*width] - precalc[r+t*width];
+                  *pix=(unsigned char)(tot*mul);
+                  pix += 4;
+              }
+              pix += (int)radius * 2 * 4;
+          }
+      }
+      memcpy( src, dst, width*height*4 );
+  }
+
+  free( dst );
+  free( precalc );
 }
 
 /*
@@ -305,7 +480,7 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
 Handle<Value>
 Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowOffsetX);
+  return Number::New(context->state->shadowOffsetX);
 }
 
 /*
@@ -315,7 +490,7 @@ Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->shadowOffsetX = val->NumberValue();
+  context->state->shadowOffsetX = val->NumberValue();
 }
 
 /*
@@ -325,7 +500,7 @@ Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const Accessor
 Handle<Value>
 Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowOffsetY);
+  return Number::New(context->state->shadowOffsetY);
 }
 
 /*
@@ -335,7 +510,7 @@ Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->shadowOffsetY = val->NumberValue();
+  context->state->shadowOffsetY = val->NumberValue();
 }
 
 /*
@@ -345,7 +520,7 @@ Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const Accessor
 Handle<Value>
 Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->shadowBlur);
+  return Number::New(context->state->shadowBlur);
 }
 
 /*
@@ -355,9 +530,9 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   double n = val->NumberValue();
-  if (n > 0) {
+  if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-    context->shadowBlur = n;
+    context->state->shadowBlur = n;
   }
 }
 
@@ -531,7 +706,7 @@ Context2d::SetShadowRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->shadow,r,g,b,a);
+  RGBA(context->state->shadow,r,g,b,a);
   return Undefined();
 }
 
@@ -544,6 +719,7 @@ Context2d::SetFillRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->fillPattern = NULL;
   RGBA(context->state->fill,r,g,b,a);
   return Undefined();
 }
@@ -557,6 +733,7 @@ Context2d::SetStrokeRGBA(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->strokePattern = NULL;
   RGBA(context->state->stroke,r,g,b,a);
   return Undefined();
 }
@@ -629,8 +806,7 @@ Handle<Value>
 Context2d::Save(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_save(context->getContext());
-  context->saveState();
+  context->save();
   return Undefined();
 }
 
@@ -642,8 +818,7 @@ Handle<Value>
 Context2d::Restore(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_restore(context->getContext());
-  context->restoreState();
+  context->restore();
   return Undefined();
 }
 
@@ -768,9 +943,7 @@ Handle<Value>
 Context2d::Fill(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->fill);
-  cairo_fill_preserve(ctx);
+  context->fill(true);
   return Undefined();
 }
 
@@ -782,9 +955,7 @@ Handle<Value>
 Context2d::Stroke(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
-  SET_SOURCE(context->state->stroke);
-  cairo_stroke_preserve(ctx);
+  context->stroke(true);
   return Undefined();
 }
 
@@ -809,8 +980,7 @@ Context2d::FillText(const Arguments &args) {
 
   context->savePath();
   context->setTextPath(*str, x, y);
-  SET_SOURCE(context->state->fill);
-  cairo_fill(ctx);
+  context->fill();
   context->restorePath();
 
   return Undefined();
@@ -837,8 +1007,7 @@ Context2d::StrokeText(const Arguments &args) {
 
   context->savePath();
   context->setTextPath(*str, x, y);
-  SET_SOURCE(context->state->stroke);
-  cairo_stroke(ctx);
+  context->stroke();
   context->restorePath();
 
   return Undefined();
@@ -951,13 +1120,18 @@ Context2d::SetFont(const Arguments &args) {
   String::AsciiValue style(args[1]);
   double size = args[2]->NumberValue();
   String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
+  const char *family = *String::AsciiValue(args[4]);
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->getContext();
 
   // Size
   cairo_set_font_size(ctx, size);
+
+  // Family
+  if (0 == strcmp("sans-serif", family)) {
+    family = "Arial";
+  }
 
   // Style
   cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
@@ -973,7 +1147,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_select_font_face(ctx, *family, s, w);
+  cairo_select_font_face(ctx, family, s, w);
   
   return Undefined();
 }
@@ -1042,8 +1216,7 @@ Context2d::FillRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->state->fill);
-  cairo_fill(ctx);
+  context->fill();
   return Undefined();
 }
 
@@ -1060,8 +1233,7 @@ Context2d::StrokeRect(const Arguments &args) {
   cairo_t *ctx = context->getContext();
   cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE(context->state->stroke);
-  cairo_stroke(ctx);
+  context->stroke();
   return Undefined();
 }
 

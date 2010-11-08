@@ -35,9 +35,10 @@ app.post('/render', function(req, res, next){
     , width = req.body.width
     , height = req.body.height
     , canvas = new Canvas(width, height)
-    , ctx = canvas.getContext('2d');
+    , ctx = canvas.getContext('2d')
+    , start = new Date;
   fn(ctx);
-  res.send({ data: canvas.toDataURL() });
+  res.send({ data: canvas.toDataURL(), duration: new Date - start });
 });
 
 app.listen(3000);

@@ -13,6 +13,10 @@
 
 If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.8.6_ first using the package manager available to you, or building from source.
 
+## Screencasts
+
+  - [Introduction](http://screenr.com/CTk)
+
 ## Example
 
     var Canvas = require('canvas')

@@ -6,8 +6,10 @@
 var Canvas = require('../lib/canvas')
   , canvasFactory = require('./node-o3-canvas/lib/o3-canvas')
   , canvas = new Canvas(200, 200)
+  , largeCanvas = new Canvas(1000, 1000)
   , ctx = canvas.getContext('2d')
-  , o3ctx = canvasFactory(200,200,'argb');
+  , o3ctx = canvasFactory(200,200,'argb')
+  , o3ctxLarge = canvasFactory(1000,1000,'argb');
 
 var times = 10000;
 
@@ -75,6 +77,10 @@ bm('toBuffer() 200x200', 50, function(){
   canvas.toBuffer();
 });
 
+bm('toBuffer() 1000x1000', 50, function(){
+  largeCanvas.toBuffer();
+});
+
 bm('toBuffer().toString("base64") 200x200', 50, function(){
   canvas.toBuffer().toString('base64');
 });
@@ -118,6 +124,10 @@ bm('o3 strokeRect()', function(){
 
 bm('pngBuffer() 200x200', 50, function(){
   o3ctx.pngBuffer();
+});
+
+bm('pngBuffer() 1000x1000', 50, function(){
+  o3ctxLarge.pngBuffer();
 });
 
 bm('pngBuffer().toBase64() 200x200', 50, function(){
