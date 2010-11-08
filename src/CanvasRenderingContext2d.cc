@@ -312,39 +312,6 @@ Context2d::setSourceRGBA(rgba_t color) {
 }
 
 /*
- * Start shadow context.
- */
-
-void
-Context2d::shadowStart() {
-  savePath();
-  cairo_save(_context);
-  cairo_translate(
-      _context
-    , state->shadowOffsetX
-    , state->shadowOffsetY);
-  cairo_push_group(_context);
-  setSourceRGBA(state->shadow);
-  restorePath();
-}
-
-/*
- * Apply shadow.
- */
-
-void
-Context2d::shadowApply() {
-  savePath();
-  if (state->shadowBlur) {
-    blur(cairo_get_group_target(_context), state->shadowBlur);
-  }
-  cairo_pop_group_to_source(_context);
-  cairo_paint(_context);
-  cairo_restore(_context);
-  restorePath();
-}
-
-/*
  * Check if the context has a drawable shadow.
  */
 
