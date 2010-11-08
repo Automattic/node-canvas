@@ -1186,12 +1186,22 @@ tests['shadow globalAlpha'] = function(ctx){
   ctx.stroke();
 };
 
-tests['shadow text'] = function(ctx){
+tests['shadow fillText()'] = function(ctx){
   ctx.shadowColor = '#00c';
   ctx.shadowBlur = 2;
   ctx.shadowOffsetX = 8;
   ctx.shadowOffsetY = 8;
   ctx.textAlign = 'center';
-  ctx.font = '20px Arial';
+  ctx.font = '35px Arial';
   ctx.fillText("Shadow", 100, 100);
+};
+
+tests['shadow strokeText()'] = function(ctx){
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+  ctx.textAlign = 'center';
+  ctx.font = '35px Arial';
+  ctx.strokeText("Shadow", 100, 100);
 };
