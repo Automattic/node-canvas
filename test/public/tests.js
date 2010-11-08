@@ -1083,7 +1083,7 @@ tests['shadowBlur values'] = function(ctx){
   ctx.fillRect(150,150,20,20);
 };
 
-tests['shadowBlur strokeRect()'] = function(ctx){
+tests['shadow strokeRect()'] = function(ctx){
   ctx.strokeRect(150,10,20,20);
 
   ctx.lineTo(20,5);
@@ -1111,7 +1111,7 @@ tests['shadowBlur strokeRect()'] = function(ctx){
   ctx.strokeRect(150,150,20,20);
 };
 
-tests['shadowBlur fill()'] = function(ctx){
+tests['shadow fill()'] = function(ctx){
   ctx.strokeRect(150,10,20,20);
 
   ctx.lineTo(20,5);
@@ -1140,7 +1140,7 @@ tests['shadowBlur fill()'] = function(ctx){
   ctx.strokeRect(150,150,20,20);
 };
 
-tests['shadowBlur stroke()'] = function(ctx){
+tests['shadow stroke()'] = function(ctx){
   ctx.strokeRect(150,10,20,20);
 
   ctx.lineTo(20,5);
@@ -1169,7 +1169,7 @@ tests['shadowBlur stroke()'] = function(ctx){
   ctx.strokeRect(150,150,20,20);
 };
 
-tests['shadowBlur globalAlpha'] = function(ctx){
+tests['shadow globalAlpha'] = function(ctx){
   ctx.lineTo(0,0);
   ctx.lineTo(50,0);
   ctx.lineTo(50,150);
@@ -1184,4 +1184,14 @@ tests['shadowBlur globalAlpha'] = function(ctx){
 
   ctx.lineTo(0,150);
   ctx.stroke();
+};
+
+tests['shadow text'] = function(ctx){
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+  ctx.textAlign = 'center';
+  ctx.font = '20px Arial';
+  ctx.fillText("Shadow", 100, 100);
 };
