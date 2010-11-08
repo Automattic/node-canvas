@@ -1205,3 +1205,68 @@ tests['shadow strokeText()'] = function(ctx){
   ctx.font = '35px Arial';
   ctx.strokeText("Shadow", 100, 100);
 };
+
+tests['shadow integration'] = function(ctx){
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.shadowColor = '#eee';
+  ctx.lineWidth = 3;
+
+  var grad1 = ctx.createLinearGradient(105,0, 200,100);
+  grad1.addColorStop(0,    'yellow');
+  grad1.addColorStop(0.25, 'red');
+  grad1.addColorStop(0.75, 'blue');
+  grad1.addColorStop(1,    'limegreen');
+
+  var grad2 = ctx.createRadialGradient(50,50,10,50,50,50);
+  grad2.addColorStop(0,    'yellow');
+  grad2.addColorStop(0.25, 'red');
+  grad2.addColorStop(0.75, 'blue');
+  grad2.addColorStop(1,    'limegreen');
+
+  // linear grad box
+  ctx.fillStyle = grad1;
+  ctx.fillRect(105,0, 100,100);
+
+  // skyblue box
+  ctx.fillStyle = "skyblue";
+  ctx.fillRect(105,100+50, 100,100);
+
+  // radial grad oval
+  ctx.beginPath();
+  ctx.arc(50, 50, 50, 0, Math.PI*2, false);
+  ctx.fillStyle = grad2;
+  ctx.fill();
+
+  // gold oval
+  ctx.beginPath();
+  ctx.arc(50, 150+50, 50, 0, Math.PI*2, false);
+  ctx.fillStyle = "gold";
+  ctx.fill();
+
+  // lines
+  ctx.beginPath();
+  ctx.moveTo(150, 0);
+  ctx.lineTo(0, 150);
+  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(200, 0);
+  ctx.lineTo(0, 200);
+  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(250, 0);
+  ctx.lineTo(0, 250);
+  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(300, 0);
+  ctx.lineTo(0, 300);
+  ctx.strokeStyle = "rgba(12%,34%,56%,0.4)";
+  ctx.stroke();
+};
