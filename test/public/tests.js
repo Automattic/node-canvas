@@ -1012,3 +1012,20 @@ tests['shadowBlur stroke()'] = function(ctx){
   
   ctx.strokeRect(150,150,20,20);
 };
+
+tests['shadowBlur globalAlpha'] = function(ctx){
+  ctx.lineTo(0,0);
+  ctx.lineTo(50,0);
+  ctx.lineTo(50,150);
+  ctx.stroke();
+
+  ctx.lineWidth = 5;
+  ctx.globalAlpha = 0.3;
+  ctx.shadowColor = '#00c';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
+
+  ctx.lineTo(0,150);
+  ctx.stroke();
+};

@@ -1144,9 +1144,15 @@ Context2d::Arc(const Arguments &args) {
 void
 Context2d::fill(bool preserve) {
   setSourceRGBA(state->fill);
-  hasShadow()
-    ? shadow(cairo_fill)
-    : cairo_fill(_context);
+  if (preserve) {
+    hasShadow()
+      ? shadow(cairo_fill_preserve)
+      : cairo_fill_preserve(_context);
+  } else {
+    hasShadow()
+      ? shadow(cairo_fill)
+      : cairo_fill(_context);
+  }
 }
 
 /*
@@ -1156,9 +1162,15 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   setSourceRGBA(state->stroke);
-  hasShadow()
-    ? shadow(cairo_stroke)
-    : cairo_stroke(_context);
+  if (preserve) {
+    hasShadow()
+      ? shadow(cairo_stroke_preserve)
+      : cairo_stroke_preserve(_context);
+  } else {
+    hasShadow()
+      ? shadow(cairo_stroke)
+      : cairo_stroke(_context);
+  }
 }
 
 /*
