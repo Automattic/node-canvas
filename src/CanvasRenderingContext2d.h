@@ -101,6 +101,7 @@ class Context2d: public node::ObjectWrap {
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
     inline bool hasShadow();
+    void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);
     void shadowStart();
     void shadowApply();

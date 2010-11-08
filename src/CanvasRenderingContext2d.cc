@@ -1069,13 +1069,11 @@ Context2d::FillRect(const Arguments &args) {
   }
 
   context->shadowStart();
-
   cairo_rectangle(ctx, x, y, width, height);
-  SET_SOURCE_RGBA(context->state->shadow);
+  context->setSourceRGBA(context->state->shadow);
   cairo_fill(ctx);
 
   context->shadowApply();
-
   cairo_rectangle(ctx, x, y, width, height);
   cairo_fill(ctx);
   return Undefined();
@@ -1193,6 +1191,20 @@ Context2d::Arc(const Arguments &args) {
   }
 
   return Undefined();
+}
+
+/*
+ * Set source RGBA.
+ */
+
+void
+Context2d::setSourceRGBA(rgba_t color) {
+  cairo_set_source_rgba(
+      _context
+    , color.r
+    , color.g
+    , color.b
+    , color.a * state->globalAlpha);
 }
 
 /*
