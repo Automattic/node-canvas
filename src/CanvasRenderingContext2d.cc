@@ -33,18 +33,7 @@ using namespace node;
   if (_##Pattern) \
     cairo_set_source(ctx, _##Pattern); \
   else \
-    SET_SOURCE_RGBA(_)
-
-/*
- * Set source RGBA.
- */
-
-#define SET_SOURCE_RGBA(_) \
-  cairo_set_source_rgba(ctx \
-    , _.r \
-    , _.g \
-    , _.b \
-    , _.a * context->state->globalAlpha);
+    context->setSourceRGBA(_)
 
 /*
  * Rectangle arg assertions.
