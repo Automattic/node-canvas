@@ -1117,13 +1117,16 @@ Context2d::StrokeRect(const Arguments &args) {
     , context->state->shadowOffsetX
     , context->state->shadowOffsetY);
 
+  cairo_push_group(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   SET_SOURCE_RGBA(context->state->shadow);
   cairo_stroke(ctx);
 
   if (context->state->shadowBlur) {
-    //Canvas::blur(context->getCanvas()->getSurface(), context->state->shadowBlur);
+    Canvas::blur(cairo_get_group_target(ctx), context->state->shadowBlur);
   }
+  cairo_pop_group_to_source(ctx);
+  cairo_paint(ctx);
 
   cairo_restore(ctx);
   cairo_rectangle(ctx, x, y, width, height);
