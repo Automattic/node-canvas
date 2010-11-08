@@ -26,16 +26,6 @@ using namespace node;
   _.a = A; \
 
 /*
- * Set source.
- */
-
-#define SET_SOURCE(_) \
-  if (_##Pattern) \
-    cairo_set_source(ctx, _##Pattern); \
-  else \
-    context->setSourceRGBA(_)
-
-/*
  * Rectangle arg assertions.
  */
 
@@ -227,7 +217,10 @@ Context2d::restorePath() {
 
 void
 Context2d::fill(bool preserve) {
-  setSourceRGBA(state->fill);
+  state->fillPattern
+    ? cairo_set_source(_context, state->fillPattern)
+    : setSourceRGBA(state->fill);
+
   if (preserve) {
     hasShadow()
       ? shadow(cairo_fill_preserve)
@@ -245,7 +238,10 @@ Context2d::fill(bool preserve) {
 
 void
 Context2d::stroke(bool preserve) {
-  setSourceRGBA(state->stroke);
+  state->strokePattern
+    ? cairo_set_source(_context, state->strokePattern)
+    : setSourceRGBA(state->stroke);
+
   if (preserve) {
     hasShadow()
       ? shadow(cairo_stroke_preserve)
