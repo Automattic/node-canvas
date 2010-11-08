@@ -682,6 +682,162 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.fillText("ideographic", 100, 100);
 };
 
+tests['font size px'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 14px Arial", 100, 100);
+};
+
+tests['font size pt'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 14pt Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 14pt Arial", 100, 100);
+};
+
+tests['font size mm'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 3mm Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 3mm Arial", 100, 100);
+};
+
+tests['font size cm'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 0.6cm Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("normal 0.6cm Arial", 100, 100);
+};
+
+tests['font weight bold'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("bold 14px Arial", 100, 100);
+};
+
+tests['font weight lighter'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'lighter 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("lighter 14px Arial", 100, 100);
+};
+
+tests['font weight lighter italic'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'lighter italic 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("lighter italic 14px Arial", 100, 100);
+};
+
+tests['font weight 200'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '200 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("200 14px Arial", 100, 100);
+};
+
+tests['font weight 800'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '800 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText("800 14px Arial", 100, 100);
+};
+
+tests['font family serif'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px serif", 100, 100);
+};
+
+tests['font family sans-serif'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px sans-serif", 100, 100);
+};
+
+tests['font family Impact'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '18px Impact';
+  ctx.textAlign = 'center';
+  ctx.fillText("18px Impact", 100, 100);
+};
+
+tests['font family invalid'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = '14px Foo, Invalid, Impact, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText("14px Invalid, Impact", 100, 100);
+};
+
 tests['globalCompositeOperation source-over'] = function(ctx){
   ctx.fillStyle = 'blue';
   ctx.fillRect(0,0,100,100);
