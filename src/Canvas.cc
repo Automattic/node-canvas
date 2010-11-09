@@ -217,7 +217,7 @@ static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   HandleScope scope;
   closure_t *closure = (closure_t *) c;
-  Buffer *buf = Buffer::New(len);
+  Local<Buffer> buf = Buffer::New(len);
 #if NODE_VERSION_AT_LEAST(0,3,0)
   memcpy(Buffer::Data(buf->handle_), data, len);
 #else
