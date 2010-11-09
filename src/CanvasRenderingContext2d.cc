@@ -971,7 +971,6 @@ Context2d::FillText(const Arguments &args) {
   double y = args[2]->NumberValue();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
 
   context->savePath();
   context->setTextPath(*str, x, y);
@@ -998,7 +997,6 @@ Context2d::StrokeText(const Arguments &args) {
   double y = args[2]->NumberValue();
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
 
   context->savePath();
   context->setTextPath(*str, x, y);
