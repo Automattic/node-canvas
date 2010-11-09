@@ -11,7 +11,7 @@
 
     $ npm install canvas
 
-If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.8.6_ first using the package manager available to you, or building from source. Also click to view [end to end installation on mac osx](http://cairographics.org/end_to_end_build_for_mac_os_x/).
+If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.8.6_ first using the package manager available to you, or building from source.
 
 ## Screencasts
 
