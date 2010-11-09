@@ -6,6 +6,7 @@
 //
 
 #include "Canvas.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <node_buffer.h>
@@ -116,13 +117,14 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
 static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  // TODO: mem handling
   if (closure->len) {
     closure->data = (uint8_t *) realloc(closure->data, closure->len + len);
+    if (NULL == closure->data) return CAIRO_STATUS_NO_MEMORY;
     memcpy(closure->data + closure->len, data, len);
     closure->len += len;
   } else {
     closure->data = (uint8_t *) malloc(len);
+    if (NULL == closure->data) return CAIRO_STATUS_NO_MEMORY;
     memcpy(closure->data, data, len);
     closure->len += len;
   }
