@@ -919,6 +919,15 @@ tests['globalCompositeOperation lighter'] = function(ctx){
   ctx.fill();
 };
 
+tests['globalCompositeOperation darker'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'darker';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
 tests['shadowBlur'] = function(ctx){
   ctx.fillRect(150,10,20,20);
 

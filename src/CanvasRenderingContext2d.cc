@@ -448,7 +448,9 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   }else if (0 == strcmp("lighter", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
+    cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
+  }else if (0 == strcmp("darker", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
   }else if (0 == strcmp("source-atop", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
   } else if (0 == strcmp("source-in", *type)) {
