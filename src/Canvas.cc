@@ -140,7 +140,7 @@ EIO_ToBuffer(eio_req *req) {
       closure->canvas->getSurface()
     , toBuffer
     , closure);
-  
+
   return 0;
 }
 
@@ -153,7 +153,6 @@ EIO_AfterToBuffer(eio_req *req) {
   HandleScope scope;
   closure_t *closure = (closure_t *) req->data;
   ev_unref(EV_DEFAULT_UC);
-  // TODO: Unref();
 
   if (closure->status) {
     Handle<Value> argv[1] = { Canvas::Error(closure->status) };
