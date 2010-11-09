@@ -155,12 +155,12 @@ EIO_AfterToBuffer(eio_req *req) {
   ev_unref(EV_DEFAULT_UC);
 
   if (closure->status) {
-    Handle<Value> argv[1] = { Canvas::Error(closure->status) };
+    Local<Value> argv[1] = { Canvas::Error(closure->status) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
     Buffer *buf = Buffer::New(closure->len);
     memcpy(buf->data(), closure->data, closure->len);
-    Handle<Value> argv[2] = { Null(), buf->handle_ };
+    Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
   }
 
@@ -215,14 +215,18 @@ Canvas::ToBuffer(const Arguments &args) {
 
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
+  HandleScope scope;
   closure_t *closure = (closure_t *) c;
-  Buffer *buf = Buffer::New(len);
+  Local<Buffer> buf = Buffer::New(len);
 #if NODE_VERSION_AT_LEAST(0,3,0)
   memcpy(Buffer::Data(buf->handle_), data, len);
 #else
   memcpy(buf->data(), data, len);
 #endif
-  Handle<Value> argv[3] = { Null(), buf->handle_, Integer::New(len) };
+  Local<Value> argv[3] = {
+      Local<Value>::New(Null())
+    , Local<Value>::New(buf->handle_)
+    , Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
@@ -248,10 +252,13 @@ Canvas::StreamPNGSync(const Arguments &args) {
   if (try_catch.HasCaught()) {
     return try_catch.ReThrow();
   } else if (status) {
-    Handle<Value> argv[1] = { Canvas::Error(status) };
+    Local<Value> argv[1] = { Canvas::Error(status) };
     closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
-    Handle<Value> argv[3] = { Null(), Null(), Integer::New(0) };
+    Local<Value> argv[3] = {
+        Local<Value>::New(Null())
+      , Local<Value>::New(Null())
+      , Integer::New(0) };
     closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
   }
   return Undefined();
@@ -289,7 +296,7 @@ Canvas::resurface() {
  * Construct an Error from the given cairo status.
  */
 
-Handle<Value>
+Local<Value>
 Canvas::Error(cairo_status_t status) {
   return Exception::Error(String::New(cairo_status_to_string(status)));
 }
