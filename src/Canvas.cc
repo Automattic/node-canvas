@@ -119,12 +119,12 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   if (closure->len) {
     closure->data = (uint8_t *) realloc(closure->data, closure->len + len);
-    if (NULL == closure->data) return CAIRO_STATUS_NO_MEMORY;
+    if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
     memcpy(closure->data + closure->len, data, len);
     closure->len += len;
   } else {
     closure->data = (uint8_t *) malloc(len);
-    if (NULL == closure->data) return CAIRO_STATUS_NO_MEMORY;
+    if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
     memcpy(closure->data, data, len);
     closure->len += len;
   }
