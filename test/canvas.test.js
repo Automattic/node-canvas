@@ -174,6 +174,23 @@ module.exports = {
     assert.equal(10, ctx.lineWidth);
   },
   
+  'test Context2d#antiAlias=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    assert.equal('default', ctx.antialias);
+    ctx.antialias = 'none';
+    assert.equal('none', ctx.antialias);
+    ctx.antialias = 'gray';
+    assert.equal('gray', ctx.antialias);
+    ctx.antialias = 'subpixel';
+    assert.equal('subpixel', ctx.antialias);
+    ctx.antialias = 'invalid';
+    assert.equal('subpixel', ctx.antialias);
+    ctx.antialias = 1;
+    assert.equal('subpixel', ctx.antialias);
+  },
+  
   'test Context2d#lineCap=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');

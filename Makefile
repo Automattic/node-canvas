@@ -3,7 +3,7 @@
 build/default/canvas.node: src/*.cc
 	node-waf configure build
 
-test:
+test: build/default/canvas.node
 	@./support/expresso/bin/expresso \
 		-I lib \
 		test/*.test.js

@@ -108,6 +108,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
   proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
+  proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
 }
 
@@ -571,6 +572,49 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
   }
+}
+
+/*
+ * Get current antialiasing setting.
+ */
+
+Handle<Value>
+Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_antialias(context->getContext())) {
+    case CAIRO_ANTIALIAS_NONE:
+      return String::NewSymbol("none");
+    case CAIRO_ANTIALIAS_GRAY:
+      return String::NewSymbol("gray");
+    case CAIRO_ANTIALIAS_SUBPIXEL:
+      return String::NewSymbol("subpixel");
+    default:
+      return String::NewSymbol("default");
+  }
+}
+
+/*
+ * Set antialiasing.
+ */
+
+void
+Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  String::AsciiValue str(val->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  cairo_antialias_t a;
+  if (0 == strcmp("none", *str)) {
+    a = CAIRO_ANTIALIAS_NONE;
+  } else if (0 == strcmp("default", *str)) {
+    a = CAIRO_ANTIALIAS_DEFAULT;
+  } else if (0 == strcmp("gray", *str)) {
+    a = CAIRO_ANTIALIAS_GRAY;
+  } else if (0 == strcmp("subpixel", *str)) {
+    a = CAIRO_ANTIALIAS_SUBPIXEL;
+  } else {
+    a = cairo_get_antialias(ctx);
+  }
+  cairo_set_antialias(ctx, a);
 }
 
 /*
