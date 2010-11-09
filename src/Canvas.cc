@@ -22,6 +22,8 @@ typedef struct {
   Handle<Function> fn;
   unsigned len;
   uint8_t *data;
+  Canvas *canvas;
+  cairo_status_t status;
 } closure_t;
 
 /*
@@ -126,6 +128,53 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   return CAIRO_STATUS_SUCCESS;
 }
 
+/*
+ * EIO toBuffer callback.
+ */
+
+static int
+EIO_ToBuffer(eio_req *req) {
+  closure_t *closure = (closure_t *) req->data;
+
+  closure->status = cairo_surface_write_to_png_stream(
+      closure->canvas->getSurface()
+    , toBuffer
+    , closure);
+  
+  return 0;
+}
+
+/*
+ * EIO after toBuffer callback.
+ */
+
+static int
+EIO_AfterToBuffer(eio_req *req) {
+  HandleScope scope;
+  closure_t *closure = (closure_t *) req->data;
+  ev_unref(EV_DEFAULT_UC);
+  // TODO: Unref();
+
+  if (closure->status) {
+    Handle<Value> argv[1] = { Canvas::Error(closure->status) };
+    closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
+  } else {
+    Buffer *buf = Buffer::New(closure->len);
+    memcpy(buf->data(), closure->data, closure->len);
+    Handle<Value> argv[2] = { Null(), buf->handle_ };
+    closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
+  }
+
+  closure->pfn.Dispose();
+  delete closure;
+  return 0;
+}
+
+/*
+ * Convert PNG data to a node::Buffer, async when a 
+ * callback function is passed.
+ */
+
 Handle<Value>
 Canvas::ToBuffer(const Arguments &args) {
   HandleScope scope;
@@ -135,8 +184,12 @@ Canvas::ToBuffer(const Arguments &args) {
   if (args[0]->IsFunction()) {
     closure_t *closure = new closure_t;
     closure->len = 0;
+    closure->canvas = canvas;
     // TODO: only one callback fn in closure
-    closure->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    canvas->Ref();
+    closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
+    ev_ref(EV_DEFAULT_UC);
     return Undefined();
   } else {
     closure_t closure;
