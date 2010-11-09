@@ -1,6 +1,6 @@
 
 
-build/default/canvas.node:
+build/default/canvas.node: src/*.cc
 	node-waf configure build
 
 test:
