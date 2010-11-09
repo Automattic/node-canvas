@@ -15,6 +15,12 @@
 using namespace v8;
 using namespace node;
 
+#if NODE_VERSION_AT_LEAST(0,3,0)
+#define BUFFER_DATA(buf) Buffer::Data(buf->handle_)
+#else
+#define BUFFER_DATA(buf) buf->data()
+#endif
+
 /*
  * PNG stream closure.
  */
@@ -162,7 +168,7 @@ EIO_AfterToBuffer(eio_req *req) {
     closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
     Buffer *buf = Buffer::New(closure->len);
-    memcpy(buf->data(), closure->data, closure->len);
+    memcpy(BUFFER_DATA(buf), closure->data, closure->len);
     Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
   }
@@ -207,7 +213,7 @@ Canvas::ToBuffer(const Arguments &args) {
       return ThrowException(Canvas::Error(status));
     } else {
       Buffer *buf = Buffer::New(closure.len);
-      memcpy(buf->data(), closure.data, closure.len);
+      memcpy(BUFFER_DATA(buf), closure.data, closure.len);
       return buf->handle_;
     }
   }
@@ -222,11 +228,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
   HandleScope scope;
   closure_t *closure = (closure_t *) c;
   Local<Buffer> buf = Buffer::New(len);
-#if NODE_VERSION_AT_LEAST(0,3,0)
-  memcpy(Buffer::Data(buf->handle_), data, len);
-#else
-  memcpy(buf->data(), data, len);
-#endif
+  memcpy(BUFFER_DATA(buf), data, len);
   Local<Value> argv[3] = {
       Local<Value>::New(Null())
     , Local<Value>::New(buf->handle_)
