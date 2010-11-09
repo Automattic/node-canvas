@@ -10,9 +10,11 @@ def set_options(opt):
 def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')
+  conf.env.append_value('CPPFLAGS', '-DNDEBUG')
   conf.check_cfg(package='cairo', mandatory=1, args='--cflags --libs')
-  conf.env.append_value('CCFLAGS', ['-O3', '-Wall'])
-  conf.env.append_value('CXXFLAGS', ['-O3', '-Wall'])
+  flags = ['-O3', '-Wall']
+  conf.env.append_value('CCFLAGS', flags)
+  conf.env.append_value('CXXFLAGS', flags)
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
