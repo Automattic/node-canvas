@@ -91,7 +91,7 @@ or specify the mime type:
 
 ### Global Composite Operations
 
- In addition to those specified and commonly implemented by browsers, the following have been addded:
+ In addition to those specified and commonly implemented by browsers, the following have been added:
 
   - multiply
   - screen
