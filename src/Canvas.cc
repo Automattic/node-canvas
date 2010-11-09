@@ -215,6 +215,7 @@ Canvas::ToBuffer(const Arguments &args) {
 
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
+  HandleScope scope;
   closure_t *closure = (closure_t *) c;
   Buffer *buf = Buffer::New(len);
 #if NODE_VERSION_AT_LEAST(0,3,0)
@@ -222,7 +223,10 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 #else
   memcpy(buf->data(), data, len);
 #endif
-  Handle<Value> argv[3] = { Null(), buf->handle_, Integer::New(len) };
+  Local<Value> argv[3] = {
+      Local<Value>::New(Null())
+    , Local<Value>::New(buf->handle_)
+    , Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
