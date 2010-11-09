@@ -61,13 +61,32 @@ If not previously installed, you will want to install the [cairo graphics librar
 
   A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
 
-### Canvas#toBuffer(function)
+
+    canvas.toBuffer();
+
+### Canvas#toBuffer(callback)
 
   Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
 
-### Canvas#toDataURL(function)
+
+    canvas.toBuffer(function(err, buf){
+    
+    });
+
+### Canvas#toDataURL(callback)
 
   Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
+  
+  
+    canvas.toDataURL(function(err, str){
+      
+    });
+
+or specify the mime type:
+
+    canvas.toDataURL('image/png', function(err, str){
+      
+    });
 
 ## Benchmarks
 
