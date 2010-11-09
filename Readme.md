@@ -64,7 +64,7 @@ If not previously installed, you will want to install the [cairo graphics librar
 
     canvas.toBuffer();
 
-### Canvas#toBuffer(callback)
+### Canvas#toBuffer() async
 
   Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
 
@@ -73,7 +73,7 @@ If not previously installed, you will want to install the [cairo graphics librar
     
     });
 
-### Canvas#toDataURL(callback)
+### Canvas#toDataURL() async
 
   Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
   
