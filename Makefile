@@ -1,4 +1,8 @@
 
+
+build/default/canvas.node:
+	node-waf configure build
+
 test:
 	@./support/expresso/bin/expresso \
 		-I lib \

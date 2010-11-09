@@ -35,7 +35,7 @@ typedef struct {
   short textAlignment;
   short textBaseline;
   rgba_t shadow;
-  double shadowBlur;
+  int shadowBlur;
   double shadowOffsetX;
   double shadowOffsetY;
 } canvas_state_t;

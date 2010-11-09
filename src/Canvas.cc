@@ -6,6 +6,7 @@
 //
 
 #include "Canvas.h"
+#include <stdlib.h>
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>

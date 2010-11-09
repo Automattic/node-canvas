@@ -523,7 +523,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  double n = val->NumberValue();
+  int n = val->Uint32Value();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
