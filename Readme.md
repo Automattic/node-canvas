@@ -11,7 +11,7 @@
 
     $ npm install canvas
 
-If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.8.6_ first using the package manager available to you, or building from source.
+If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.10.0_ first using the package manager available to you, or [building from source](https://github.com/LearnBoost/node-canvas/wiki/_pages).
 
 ## Screencasts
 
@@ -39,7 +39,8 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Non-Standard API
 
- Due to interfacing with existing node internals such as I/O node-canvas includes a non-standard API which is shown below.
+
+ node-canvas extends the canvas API to provide interfacing with node, for example streaming PNG data, converting to a `Buffer` instance, etc. Among the interfacing API, in some cases the drawing API has been extended for SSJS image manipulation / creation usage, however keep in mind these additions may fail to render properly within browsers.
 
 ### Canvas#createPNGStream()
 
@@ -87,6 +88,29 @@ or specify the mime type:
     canvas.toDataURL('image/png', function(err, str){
       
     });
+
+### Global Composite Operations
+
+ In addition to those specified and commonly implemented by browsers, the following have been added:
+
+  - multiply
+  - screen
+  - overlay
+  - hard-light
+  - soft-light
+  - hsl-hue
+  - hsl-saturation
+  - hsl-color
+  - hsl-luminosity
+
+## Anti-Aliasing
+
+ Set anti-aliasing mode:
+ 
+ - default
+ - none
+ - gray
+ - subpixel
 
 ## Benchmarks
 

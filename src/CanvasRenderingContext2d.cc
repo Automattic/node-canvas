@@ -108,6 +108,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
   proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
+  proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
 }
 
@@ -429,8 +430,29 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
       return String::NewSymbol("destination-out");
     case CAIRO_OPERATOR_DEST_OVER:
       return String::NewSymbol("destination-over");
-    case CAIRO_OPERATOR_ADD:
+    case CAIRO_OPERATOR_LIGHTEN:
       return String::NewSymbol("lighter");
+    case CAIRO_OPERATOR_DARKEN:
+      return String::NewSymbol("darkler");
+    // Non-standard
+    case CAIRO_OPERATOR_MULTIPLY:
+      return String::NewSymbol("multiply");
+    case CAIRO_OPERATOR_SCREEN:
+      return String::NewSymbol("screen");
+    case CAIRO_OPERATOR_OVERLAY:
+      return String::NewSymbol("overlay");
+    case CAIRO_OPERATOR_HARD_LIGHT:
+      return String::NewSymbol("hard-light");
+    case CAIRO_OPERATOR_SOFT_LIGHT:
+      return String::NewSymbol("soft-light");
+    case CAIRO_OPERATOR_HSL_HUE:
+      return String::NewSymbol("hsl-hue");
+    case CAIRO_OPERATOR_HSL_SATURATION:
+      return String::NewSymbol("hsl-saturation");
+    case CAIRO_OPERATOR_HSL_COLOR:
+      return String::NewSymbol("hsl-color");
+    case CAIRO_OPERATOR_HSL_LUMINOSITY:
+      return String::NewSymbol("hsl-luminosity");
     default:
       return String::NewSymbol("source-over");
   }
@@ -448,7 +470,9 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   }else if (0 == strcmp("lighter", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
+    cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
+  }else if (0 == strcmp("darker", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
   }else if (0 == strcmp("source-atop", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
   } else if (0 == strcmp("source-in", *type)) {
@@ -463,6 +487,25 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
   } else if (0 == strcmp("destination-over", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  // Non-standard
+  } else if (0 == strcmp("multiply", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_MULTIPLY);
+  } else if (0 == strcmp("screen", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SCREEN);
+  } else if (0 == strcmp("overlay", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OVERLAY);
+  } else if (0 == strcmp("hard-light", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HARD_LIGHT);
+  } else if (0 == strcmp("soft-light", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SOFT_LIGHT);
+  } else if (0 == strcmp("hsl-hue", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_HUE);
+  } else if (0 == strcmp("hsl-saturation", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_SATURATION);
+  } else if (0 == strcmp("hsl-color", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
+  } else if (0 == strcmp("hsl-luminosity", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
   } else {
     cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   }
@@ -529,6 +572,49 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
   }
+}
+
+/*
+ * Get current antialiasing setting.
+ */
+
+Handle<Value>
+Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (cairo_get_antialias(context->getContext())) {
+    case CAIRO_ANTIALIAS_NONE:
+      return String::NewSymbol("none");
+    case CAIRO_ANTIALIAS_GRAY:
+      return String::NewSymbol("gray");
+    case CAIRO_ANTIALIAS_SUBPIXEL:
+      return String::NewSymbol("subpixel");
+    default:
+      return String::NewSymbol("default");
+  }
+}
+
+/*
+ * Set antialiasing.
+ */
+
+void
+Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  String::AsciiValue str(val->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->getContext();
+  cairo_antialias_t a;
+  if (0 == strcmp("none", *str)) {
+    a = CAIRO_ANTIALIAS_NONE;
+  } else if (0 == strcmp("default", *str)) {
+    a = CAIRO_ANTIALIAS_DEFAULT;
+  } else if (0 == strcmp("gray", *str)) {
+    a = CAIRO_ANTIALIAS_GRAY;
+  } else if (0 == strcmp("subpixel", *str)) {
+    a = CAIRO_ANTIALIAS_SUBPIXEL;
+  } else {
+    a = cairo_get_antialias(ctx);
+  }
+  cairo_set_antialias(ctx, a);
 }
 
 /*

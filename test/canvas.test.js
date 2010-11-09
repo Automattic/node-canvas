@@ -125,6 +125,12 @@ module.exports = {
 
       ctx[prop] = 'rgba(128,80,0,0.5)';
       assert.equal('rgba(128, 80, 0, 0.5)', ctx[prop], prop + ' rgba(128,80,0,0.5) -> rgba(128, 80, 0, 0.5), got ' + ctx[prop]);
+
+      if ('shadowColor' == prop) return;
+
+      var grad = ctx.createLinearGradient(0,0,0,150);
+      ctx[prop] = grad;
+      assert.strictEqual(grad, ctx[prop], prop + ' pattern getter failed');
     });
   },
   
@@ -172,6 +178,23 @@ module.exports = {
     assert.equal(10, ctx.lineWidth);
     ctx.lineWidth = 0;
     assert.equal(10, ctx.lineWidth);
+  },
+  
+  'test Context2d#antiAlias=': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    assert.equal('default', ctx.antialias);
+    ctx.antialias = 'none';
+    assert.equal('none', ctx.antialias);
+    ctx.antialias = 'gray';
+    assert.equal('gray', ctx.antialias);
+    ctx.antialias = 'subpixel';
+    assert.equal('subpixel', ctx.antialias);
+    ctx.antialias = 'invalid';
+    assert.equal('subpixel', ctx.antialias);
+    ctx.antialias = 1;
+    assert.equal('subpixel', ctx.antialias);
   },
   
   'test Context2d#lineCap=': function(assert){

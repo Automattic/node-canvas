@@ -89,6 +89,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetShadowOffsetX(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowOffsetY(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowBlur(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetAntiAlias(Local<String> prop, const AccessorInfo &info);
     static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info);
@@ -98,6 +99,7 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_t *getContext(){ return _context; }
     inline Canvas *getCanvas(){ return _canvas; }
     inline bool hasShadow();
