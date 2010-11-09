@@ -166,7 +166,8 @@ EIO_AfterToBuffer(eio_req *req) {
   }
 
   closure->pfn.Dispose();
-  delete closure;
+  free(closure->data);
+  free(closure);
   return 0;
 }
 
@@ -182,7 +183,7 @@ Canvas::ToBuffer(const Arguments &args) {
 
   // Async
   if (args[0]->IsFunction()) {
-    closure_t *closure = new closure_t;
+    closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
     closure->len = 0;
     closure->canvas = canvas;
     // TODO: only one callback fn in closure
