@@ -1,4 +1,11 @@
 
+0.0.3 / 2010-11-09 
+==================
+
+  * Added async `toDataURL()` support
+  * Added async `toBuffer()` support
+  * Removed buffer utils
+
 0.0.2 / 2010-11-08 
 ==================
 
