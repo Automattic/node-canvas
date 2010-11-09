@@ -237,7 +237,17 @@ module.exports = {
   },
   
   'test Canvas#toBuffer()': function(assert){
-    assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
+    var buf = new Canvas(200,200).toBuffer();
+    assert.equal('PNG', buf.slice(1,4).toString());
+    assert.length(buf, 252);
+  },
+  
+  'test Canvas#toBuffer() async': function(assert, done){
+    new Canvas(200, 200).toBuffer(function(err, buf){
+      assert.ok(!err);
+      assert.equal('PNG', buf.slice(1,4).toString());
+      assert.length(buf, 252);
+    });
   },
   
   'test Canvas#toDataURL()': function(assert){
