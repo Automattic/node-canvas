@@ -1,4 +1,8 @@
 
+
+build/default/canvas.node: src/*.cc
+	node-waf configure build
+
 test:
 	@./support/expresso/bin/expresso \
 		-I lib \
@@ -10,4 +14,7 @@ test-server:
 benchmark:
 	@node benchmarks/run.js
 
-.PHONY: test test-server benchmark
+clean:
+	node-waf distclean
+
+.PHONY: test test-server benchmark clean

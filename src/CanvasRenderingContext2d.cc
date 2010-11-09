@@ -133,7 +133,8 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  state->shadowBlur = state->shadowOffsetX = state->shadowOffsetY = 0;
+  state->shadowBlur = 0;
+  state->shadowOffsetX = state->shadowOffsetY = 0;
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
@@ -329,7 +330,6 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
-  unsigned char* dst = (unsigned char*)malloc(width*height*4);
   unsigned* precalc = 
       (unsigned*)malloc(width*height*sizeof(unsigned));
   unsigned char* src = cairo_image_surface_get_data( surface );
@@ -340,8 +340,6 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // three iterations is good enough to pass for a gaussian.
   const int MAX_ITERATIONS = 3; 
   int iteration;
-
-  memcpy( dst, src, width*height*4 );
 
   for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
       for( channel = 0; channel < 4; channel++ ) {
@@ -364,7 +362,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
           }
 
           // blur step.
-          pix = dst + (int)radius * width * 4 + (int)radius * 4 + channel;
+          pix = src + (int)radius * width * 4 + (int)radius * 4 + channel;
           for (y=radius;y<height-radius;y++) {
               for (x=radius;x<width-radius;x++) {
                   int l = x < radius ? 0 : x - radius;
@@ -379,10 +377,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
               pix += (int)radius * 2 * 4;
           }
       }
-      memcpy( src, dst, width*height*4 );
   }
-
-  free( dst );
   free( precalc );
 }
 
@@ -529,7 +524,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  double n = val->NumberValue();
+  int n = val->Uint32Value();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
@@ -976,7 +971,6 @@ Context2d::FillText(const Arguments &args) {
   double y = args[2]->NumberValue();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
 
   context->savePath();
   context->setTextPath(*str, x, y);
@@ -1003,7 +997,6 @@ Context2d::StrokeText(const Arguments &args) {
   double y = args[2]->NumberValue();
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
 
   context->savePath();
   context->setTextPath(*str, x, y);

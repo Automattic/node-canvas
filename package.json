@@ -1,11 +1,11 @@
 { "name": "canvas"
  , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "0.0.1"
+ , "version":  "0.0.4"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics"]
  , "scripts": {
    "preinstall": "node-waf configure build"
  }
- , "engines": { "node": ">= 0.3.0" }
+ , "engines": { "node": ">= 0.2.3" }
  , "main": "./lib/canvas.js"
 }

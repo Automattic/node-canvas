@@ -237,7 +237,15 @@ module.exports = {
   },
   
   'test Canvas#toBuffer()': function(assert){
-    assert.ok(Buffer.isBuffer(new Canvas(200, 200).toBuffer()), 'Canvas#toBuffer() failed');
+    var buf = new Canvas(200,200).toBuffer();
+    assert.equal('PNG', buf.slice(1,4).toString());
+  },
+  
+  'test Canvas#toBuffer() async': function(assert){
+    new Canvas(200, 200).toBuffer(function(err, buf){
+      assert.ok(!err);
+      assert.equal('PNG', buf.slice(1,4).toString());
+    });
   },
   
   'test Canvas#toDataURL()': function(assert){
@@ -247,21 +255,10 @@ module.exports = {
     ctx.fillRect(0,0,100,100);
     ctx.fillStyle = 'red';
     ctx.fillRect(100,0,100,100);
+    
+    assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
+    assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
 
-    var str = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYA'
-      + 'AACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAABbElEQVR4nO3TQQ0AMQwDwVz5c+4x2'
-      + 'G/zmEFgydpvZu6whjN2Oa8HwGYCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEA'
-      + 'gCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSA'
-      + 'QCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBI'
-      + 'BAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEg'
-      + 'EAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQCAKBIBAIAoEgEAgCgSAQ'
-      + 'CAKBIBAIAoEgEAgCgSAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-      + 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAhX5bnALGvZc/ggA'
-      + 'AAABJRU5ErkJggg==';
-    
-    assert.equal(str, canvas.toDataURL(), 'Canvas#toDataURL() failed');
-    assert.equal(str, canvas.toDataURL('image/png'), 'Canvas#toDataURL() failed');
-    
     var err;
     try {
       canvas.toDataURL('image/jpeg');
@@ -269,5 +266,19 @@ module.exports = {
       err = e;
     }
     assert.equal('currently only image/png is supported', err.message);
+  },
+  
+  'test Canvas#toDataURL() async': function(assert){
+    new Canvas(200,200).toDataURL(function(err, str){
+      assert.ok(!err);
+      assert.ok(0 == str.indexOf('data:image/png;base64,'));
+    });
+  },
+  
+  'test Canvas#toDataURL() async with type': function(assert){
+    new Canvas(200,200).toDataURL('image/png', function(err, str){
+      assert.ok(!err);
+      assert.ok(0 == str.indexOf('data:image/png;base64,'));
+    });
   }
 }

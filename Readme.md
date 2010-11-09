@@ -61,6 +61,33 @@ If not previously installed, you will want to install the [cairo graphics librar
 
   A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
 
+
+    canvas.toBuffer();
+
+### Canvas#toBuffer() async
+
+  Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
+
+
+    canvas.toBuffer(function(err, buf){
+    
+    });
+
+### Canvas#toDataURL() async
+
+  Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
+  
+  
+    canvas.toDataURL(function(err, str){
+      
+    });
+
+or specify the mime type:
+
+    canvas.toDataURL('image/png', function(err, str){
+      
+    });
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.

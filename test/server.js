@@ -37,9 +37,14 @@ app.post('/render', function(req, res, next){
     , canvas = new Canvas(width, height)
     , ctx = canvas.getContext('2d')
     , start = new Date;
+
   fn(ctx);
-  res.send({ data: canvas.toDataURL(), duration: new Date - start });
+  var duration = new Date - start;
+
+  canvas.toDataURL(function(err, str){
+    res.send({ data: str, duration: duration });
+  });
 });
 
-app.listen(3000);
+app.listen(parseInt(process.argv[2] || '3000', 10));
 console.log('Test server listening on port %d', app.address().port);

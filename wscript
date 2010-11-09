@@ -11,8 +11,8 @@ def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')
   conf.check_cfg(package='cairo', mandatory=1, args='--cflags --libs')
-  conf.env.append_value('CCFLAGS', ['-O3'])
-  conf.env.append_value('CXXFLAGS', ['-O3'])
+  conf.env.append_value('CCFLAGS', ['-O3', '-Wall'])
+  conf.env.append_value('CXXFLAGS', ['-O3', '-Wall'])
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
