@@ -10,4 +10,7 @@ test-server:
 benchmark:
 	@node benchmarks/run.js
 
-.PHONY: test test-server benchmark
+clean:
+	node-waf distclean
+
+.PHONY: test test-server benchmark clean
