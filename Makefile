@@ -1,14 +1,15 @@
 
+ADDON = build/default/canvas.node
 
-build/default/canvas.node: src/*.cc
+$(ADDON): src/*.cc
 	node-waf configure build
 
-test: build/default/canvas.node
+test: $(ADDON)
 	@./support/expresso/bin/expresso \
 		-I lib \
 		test/*.test.js
 
-test-server:
+test-server: $(ADDON)
 	@node test/server.js
 
 benchmark:

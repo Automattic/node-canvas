@@ -1102,6 +1102,9 @@ Context2d::setTextPath(const char *str, double x, double y) {
   cairo_text_extents_t te;
   cairo_text_extents(_context, str, &te);
 
+  cairo_font_extents_t fe;
+  cairo_font_extents(_context, &fe);
+
   // Alignment
   switch (state->textAlignment) {
     // center
