@@ -33,6 +33,7 @@ Canvas::Initialize(Handle<Object> target) {
   t->SetClassName(String::NewSymbol("Canvas"));
 
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(t, "streamPNGSync", StreamPNGSync);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
@@ -100,6 +101,13 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
     canvas->height = val->Uint32Value();
     canvas->resurface();
   }
+}
+
+Handle<Value>
+Canvas::ToBuffer(const Arguments &args) {
+  HandleScope scope;
+  
+  return Undefined();
 }
 
 /*
