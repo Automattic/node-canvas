@@ -928,6 +928,110 @@ tests['globalCompositeOperation darker'] = function(ctx){
   ctx.fill();
 };
 
+tests['globalCompositeOperation multiply'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'multiply';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation screen'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'screen';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation overlay'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'overlay';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation hard-light'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'hard-light';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation hsl-hue'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'hsl-hue';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation hsl-saturation'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'hsl-saturation';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation hsl-color'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'hsl-color';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
+tests['globalCompositeOperation hsl-luminosity'] = function(ctx){
+  ctx.fillStyle = 'rgba(0,0,255,0.6)';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'hsl-luminosity';
+  var grad = ctx.createRadialGradient(80,80,5,60,60,60);
+  grad.addColorStop(0, 'yellow');
+  grad.addColorStop(0.2, 'red');
+  grad.addColorStop(1, 'black');
+  ctx.fillStyle = grad;
+  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.fill();
+};
+
 tests['shadowBlur'] = function(ctx){
   ctx.fillRect(150,10,20,20);
 

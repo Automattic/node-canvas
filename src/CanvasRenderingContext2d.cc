@@ -429,8 +429,29 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
       return String::NewSymbol("destination-out");
     case CAIRO_OPERATOR_DEST_OVER:
       return String::NewSymbol("destination-over");
-    case CAIRO_OPERATOR_ADD:
+    case CAIRO_OPERATOR_LIGHTEN:
       return String::NewSymbol("lighter");
+    case CAIRO_OPERATOR_DARKEN:
+      return String::NewSymbol("darkler");
+    // Non-standard
+    case CAIRO_OPERATOR_MULTIPLY:
+      return String::NewSymbol("multiply");
+    case CAIRO_OPERATOR_SCREEN:
+      return String::NewSymbol("screen");
+    case CAIRO_OPERATOR_OVERLAY:
+      return String::NewSymbol("overlay");
+    case CAIRO_OPERATOR_HARD_LIGHT:
+      return String::NewSymbol("hard-light");
+    case CAIRO_OPERATOR_SOFT_LIGHT:
+      return String::NewSymbol("soft-light");
+    case CAIRO_OPERATOR_HSL_HUE:
+      return String::NewSymbol("hsl-hue");
+    case CAIRO_OPERATOR_HSL_SATURATION:
+      return String::NewSymbol("hsl-saturation");
+    case CAIRO_OPERATOR_HSL_COLOR:
+      return String::NewSymbol("hsl-color");
+    case CAIRO_OPERATOR_HSL_LUMINOSITY:
+      return String::NewSymbol("hsl-luminosity");
     default:
       return String::NewSymbol("source-over");
   }
@@ -465,6 +486,25 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
   } else if (0 == strcmp("destination-over", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  // Non-standard
+  } else if (0 == strcmp("multiply", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_MULTIPLY);
+  } else if (0 == strcmp("screen", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SCREEN);
+  } else if (0 == strcmp("overlay", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OVERLAY);
+  } else if (0 == strcmp("hard-light", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HARD_LIGHT);
+  } else if (0 == strcmp("soft-light", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SOFT_LIGHT);
+  } else if (0 == strcmp("hsl-hue", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_HUE);
+  } else if (0 == strcmp("hsl-saturation", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_SATURATION);
+  } else if (0 == strcmp("hsl-color", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
+  } else if (0 == strcmp("hsl-luminosity", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
   } else {
     cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   }

@@ -39,7 +39,8 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Non-Standard API
 
- Due to interfacing with existing node internals such as I/O node-canvas includes a non-standard API which is shown below.
+
+ node-canvas extends the canvas API to provide interfacing with node, for example streaming PNG data, converting to a `Buffer` instance, etc. Among the interfacing API, in some cases the drawing API has been extended for SSJS image manipulation / creation usage, however keep in mind these additions may fail to render properly within browsers.
 
 ### Canvas#createPNGStream()
 
@@ -87,6 +88,20 @@ or specify the mime type:
     canvas.toDataURL('image/png', function(err, str){
       
     });
+
+### Global Composite Operations
+
+ In addition to those specified and commonly implemented by browsers, the following have been addded:
+
+  - multiply
+  - screen
+  - overlay
+  - hard-light
+  - soft-light
+  - hsl-hue
+  - hsl-saturation
+  - hsl-color
+  - hsl-luminosity
 
 ## Benchmarks
 
