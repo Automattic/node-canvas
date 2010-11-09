@@ -15,6 +15,10 @@
 using namespace v8;
 using namespace node;
 
+/*
+ * Buffer data pointer access.
+ */
+
 #if NODE_VERSION_AT_LEAST(0,3,0)
 #define BUFFER_DATA(buf) Buffer::Data(buf->handle_)
 #else
