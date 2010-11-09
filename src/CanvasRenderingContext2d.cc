@@ -133,7 +133,8 @@ Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _context = cairo_create(canvas->getSurface());
   cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  state->shadowBlur = state->shadowOffsetX = state->shadowOffsetY = 0;
+  state->shadowBlur = 0;
+  state->shadowOffsetX = state->shadowOffsetY = 0;
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
