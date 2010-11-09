@@ -46,5 +46,5 @@ app.post('/render', function(req, res, next){
   });
 });
 
-app.listen(3000);
+app.listen(parseInt(process.argv[2] || '3000', 10));
 console.log('Test server listening on port %d', app.address().port);
