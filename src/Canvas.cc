@@ -18,6 +18,7 @@ using namespace node;
  */
 
 typedef struct {
+  Persistent<Function> pfn;
   Handle<Function> fn;
   unsigned len;
   uint8_t *data;
@@ -128,12 +129,16 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
 Handle<Value>
 Canvas::ToBuffer(const Arguments &args) {
   HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
 
   // Async
   if (args[0]->IsFunction()) {
-    
+    closure_t *closure = new closure_t;
+    closure->len = 0;
+    // TODO: only one callback fn in closure
+    closure->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    return Undefined();
   } else {
-    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
     closure_t closure;
     closure.len = 0;
 
@@ -150,8 +155,6 @@ Canvas::ToBuffer(const Arguments &args) {
       return buf->handle_;
     }
   }
-  
-  return Undefined();
 }
 
 /*
