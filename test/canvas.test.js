@@ -125,6 +125,12 @@ module.exports = {
 
       ctx[prop] = 'rgba(128,80,0,0.5)';
       assert.equal('rgba(128, 80, 0, 0.5)', ctx[prop], prop + ' rgba(128,80,0,0.5) -> rgba(128, 80, 0, 0.5), got ' + ctx[prop]);
+
+      if ('shadowColor' == prop) return;
+
+      var grad = ctx.createLinearGradient(0,0,0,150);
+      ctx[prop] = grad;
+      assert.strictEqual(grad, ctx[prop], prop + ' pattern getter failed');
     });
   },
   
