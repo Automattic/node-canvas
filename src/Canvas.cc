@@ -19,6 +19,8 @@ using namespace node;
 
 typedef struct {
   Handle<Function> fn;
+  unsigned len;
+  uint8_t *data;
 } closure_t;
 
 /*
@@ -103,9 +105,51 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
   }
 }
 
+/*
+ * Canvas::ToBuffer callback.
+ */
+
+static cairo_status_t
+toBuffer(void *c, const uint8_t *data, unsigned len) {
+  closure_t *closure = (closure_t *) c;
+  // TODO: mem handling
+  if (closure->len) {
+    closure->data = (uint8_t *) realloc(closure->data, closure->len + len);
+    memcpy(closure->data + closure->len, data, len);
+    closure->len += len;
+  } else {
+    closure->data = (uint8_t *) malloc(len);
+    memcpy(closure->data, data, len);
+    closure->len += len;
+  }
+  return CAIRO_STATUS_SUCCESS;
+}
+
 Handle<Value>
 Canvas::ToBuffer(const Arguments &args) {
   HandleScope scope;
+
+  // Async
+  if (args[0]->IsFunction()) {
+    
+  } else {
+    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+    closure_t closure;
+    closure.len = 0;
+
+    TryCatch try_catch;
+    cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), toBuffer, &closure);
+
+    if (try_catch.HasCaught()) {
+      return try_catch.ReThrow();
+    } else if (status) {
+      return ThrowException(Canvas::Error(status));
+    } else {
+      Buffer *buf = Buffer::New(closure.len);
+      memcpy(buf->data(), closure.data, closure.len);
+      return buf->handle_;
+    }
+  }
   
   return Undefined();
 }
@@ -115,7 +159,7 @@ Canvas::ToBuffer(const Arguments &args) {
  */
 
 static cairo_status_t
-writeToBuffer(void *c, const uint8_t *data, unsigned len) {
+streamPNG(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   Buffer *buf = Buffer::New(len);
 #if NODE_VERSION_AT_LEAST(0,3,0)
@@ -144,7 +188,7 @@ Canvas::StreamPNGSync(const Arguments &args) {
   closure.fn = Handle<Function>::Cast(args[0]);
 
   TryCatch try_catch;
-  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), writeToBuffer, &closure);
+  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
     return try_catch.ReThrow();
