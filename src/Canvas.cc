@@ -150,7 +150,7 @@ EIO_ToBuffer(eio_req *req) {
   closure_t *closure = (closure_t *) req->data;
 
   closure->status = cairo_surface_write_to_png_stream(
-      closure->canvas->getSurface()
+      closure->canvas->surface()
     , toBuffer
     , closure);
 
@@ -209,7 +209,7 @@ Canvas::ToBuffer(const Arguments &args) {
     closure.len = 0;
 
     TryCatch try_catch;
-    cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), toBuffer, &closure);
+    cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), toBuffer, &closure);
 
     if (try_catch.HasCaught()) {
       return try_catch.ReThrow();
@@ -257,7 +257,7 @@ Canvas::StreamPNGSync(const Arguments &args) {
   closure.fn = Handle<Function>::Cast(args[0]);
 
   TryCatch try_catch;
-  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->getSurface(), streamPNG, &closure);
+  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
     return try_catch.ReThrow();

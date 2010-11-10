@@ -72,7 +72,7 @@ Gradient::AddColorStopRGBA(const Arguments &args) {
   RGBA_ARGS(1);
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
   cairo_pattern_add_color_stop_rgba(
-      grad->getPattern()
+      grad->pattern()
     , args[0]->NumberValue()
     , r / 255 * 1
     , g / 255 * 1

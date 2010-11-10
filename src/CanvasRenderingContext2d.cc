@@ -131,7 +131,7 @@ Context2d::New(const Arguments &args) {
 
 Context2d::Context2d(Canvas *canvas): ObjectWrap() {
   _canvas = canvas;
-  _context = cairo_create(canvas->getSurface());
+  _context = cairo_create(canvas->surface());
   cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
@@ -412,7 +412,7 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorIn
 Handle<Value>
 Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   switch (cairo_get_operator(ctx)) {
     case CAIRO_OPERATOR_ATOP:
       return String::NewSymbol("source-atop");
@@ -465,7 +465,7 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
 void
 Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
@@ -581,7 +581,7 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
 Handle<Value>
 Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  switch (cairo_get_antialias(context->getContext())) {
+  switch (cairo_get_antialias(context->context())) {
     case CAIRO_ANTIALIAS_NONE:
       return String::NewSymbol("none");
     case CAIRO_ANTIALIAS_GRAY:
@@ -601,7 +601,7 @@ void
 Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   cairo_antialias_t a;
   if (0 == strcmp("none", *str)) {
     a = CAIRO_ANTIALIAS_NONE;
@@ -624,7 +624,7 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo
 Handle<Value>
 Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(cairo_get_miter_limit(context->getContext()));
+  return Number::New(cairo_get_miter_limit(context->context()));
 }
 
 /*
@@ -636,7 +636,7 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInf
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-    cairo_set_miter_limit(context->getContext(), n);
+    cairo_set_miter_limit(context->context(), n);
   }
 }
 
@@ -647,7 +647,7 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInf
 Handle<Value>
 Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(cairo_get_line_width(context->getContext()));
+  return Number::New(cairo_get_line_width(context->context()));
 }
 
 /*
@@ -659,7 +659,7 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-    cairo_set_line_width(context->getContext(), n);
+    cairo_set_line_width(context->context(), n);
   }
 }
 
@@ -670,7 +670,7 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
 Handle<Value>
 Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  switch (cairo_get_line_join(context->getContext())) {
+  switch (cairo_get_line_join(context->context())) {
     case CAIRO_LINE_JOIN_BEVEL:
       return String::NewSymbol("bevel");
     case CAIRO_LINE_JOIN_ROUND:
@@ -687,7 +687,7 @@ Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
@@ -705,7 +705,7 @@ Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo 
 Handle<Value>
 Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  switch (cairo_get_line_cap(context->getContext())) {
+  switch (cairo_get_line_cap(context->context())) {
     case CAIRO_LINE_CAP_ROUND:
       return String::NewSymbol("round");
     case CAIRO_LINE_CAP_SQUARE:
@@ -722,7 +722,7 @@ Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
 void
 Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
@@ -742,7 +742,7 @@ Context2d::IsPointInPath(const Arguments &args) {
   HandleScope scope;
   if (args[0]->IsNumber() && args[1]->IsNumber()) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-    cairo_t *ctx = context->getContext();
+    cairo_t *ctx = context->context();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
     return Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y));
@@ -760,7 +760,7 @@ Context2d::SetFillPattern(const Arguments &args) {
   // TODO: HasInstance / error handling
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
-  context->state->fillPattern = grad->getPattern();
+  context->state->fillPattern = grad->pattern();
   return Undefined();
 }
 
@@ -774,7 +774,7 @@ Context2d::SetStrokePattern(const Arguments &args) {
   // TODO: HasInstance / error handling
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
-  context->state->strokePattern = grad->getPattern();
+  context->state->strokePattern = grad->pattern();
   return Undefined();
 }
 
@@ -835,7 +835,7 @@ Context2d::BezierCurveTo(const Arguments &args) {
     ||!args[5]->IsNumber()) return Undefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_curve_to(context->getContext()
+  cairo_curve_to(context->context()
     , args[0]->NumberValue()
     , args[1]->NumberValue()
     , args[2]->NumberValue()
@@ -860,7 +860,7 @@ Context2d::QuadraticCurveTo(const Arguments &args) {
     ||!args[3]->IsNumber()) return Undefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
 
   double x, y
     , x1 = args[0]->NumberValue()
@@ -911,7 +911,7 @@ Handle<Value>
 Context2d::BeginPath(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_new_path(context->getContext());
+  cairo_new_path(context->context());
   return Undefined();
 }
 
@@ -923,7 +923,7 @@ Handle<Value>
 Context2d::ClosePath(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_close_path(context->getContext());
+  cairo_close_path(context->context());
   return Undefined();
 }
 
@@ -935,7 +935,7 @@ Handle<Value>
 Context2d::Rotate(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_rotate(context->getContext()
+  cairo_rotate(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
   return Undefined();
 }
@@ -958,7 +958,7 @@ Context2d::Transform(const Arguments &args) {
     , args[5]->IsNumber() ? args[5]->NumberValue() : 0);
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_transform(context->getContext(), &matrix);
+  cairo_transform(context->context(), &matrix);
   
   return Undefined();
 }
@@ -971,7 +971,7 @@ Handle<Value>
 Context2d::ResetTransform(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_identity_matrix(context->getContext());
+  cairo_identity_matrix(context->context());
   return Undefined();
 }
 
@@ -983,7 +983,7 @@ Handle<Value>
 Context2d::Translate(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_translate(context->getContext()
+  cairo_translate(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0
     , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
   return Undefined();
@@ -997,7 +997,7 @@ Handle<Value>
 Context2d::Scale(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_scale(context->getContext()
+  cairo_scale(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0
     , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
   return Undefined();
@@ -1011,7 +1011,7 @@ Handle<Value>
 Context2d::Clip(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
   return Undefined();
 }
@@ -1150,7 +1150,7 @@ Context2d::LineTo(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("y required")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_line_to(context->getContext()
+  cairo_line_to(context->context()
     , args[0]->NumberValue()
     , args[1]->NumberValue());
 
@@ -1171,7 +1171,7 @@ Context2d::MoveTo(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("y required")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_move_to(context->getContext()
+  cairo_move_to(context->context()
     , args[0]->NumberValue()
     , args[1]->NumberValue());
 
@@ -1205,7 +1205,7 @@ Context2d::SetFont(const Arguments &args) {
   const char *family = *String::AsciiValue(args[4]);
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
 
   // Size
   cairo_set_font_size(ctx, size);
@@ -1243,7 +1243,7 @@ Context2d::MeasureText(const Arguments &args) {
   HandleScope scope;
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
 
   String::Utf8Value str(args[0]->ToString());
   Local<Object> obj = Object::New();
@@ -1295,7 +1295,7 @@ Context2d::FillRect(const Arguments &args) {
   RECT_ARGS;
   if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   context->fill();
@@ -1312,7 +1312,7 @@ Context2d::StrokeRect(const Arguments &args) {
   RECT_ARGS;
   if (0 == width && 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   cairo_new_path(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   context->stroke();
@@ -1329,7 +1329,7 @@ Context2d::ClearRect(const Arguments &args) {
   RECT_ARGS;
   if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
   cairo_save(ctx);
   cairo_rectangle(ctx, x, y, width, height);
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
@@ -1347,7 +1347,7 @@ Context2d::Rect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_rectangle(context->getContext(), x, y, width, height);
+  cairo_rectangle(context->context(), x, y, width, height);
   return Undefined();
 }
 
@@ -1368,7 +1368,7 @@ Context2d::Arc(const Arguments &args) {
   bool anticlockwise = args[5]->BooleanValue();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->getContext();
+  cairo_t *ctx = context->context();
 
   if (anticlockwise && M_PI * 2 != args[4]->NumberValue()) {
     cairo_arc_negative(ctx
