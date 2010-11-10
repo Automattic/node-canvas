@@ -12,7 +12,8 @@ var Canvas = require('../lib/canvas')
 var voronoiFactory = require('./rhill-voronoi-core-min.js');
 
 http.createServer(function (req, res) {
-  var voronoi = voronoiFactory();
+  var voronoi = voronoiFactory()
+    , start = new Date;
   var bbox =  { xl: 0, xr: canvas.width, yt: 0, yb: canvas.height };
   
   for (var i =0 ;i<340;i++)
@@ -130,6 +131,8 @@ http.createServer(function (req, res) {
 			}			
 
   canvas.toBuffer(function(err, buf){
+    var duration = new Date - start;
+    console.log('Rendered in %dms', duration);
     res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': buf.length });
     res.end(buf);
   });
