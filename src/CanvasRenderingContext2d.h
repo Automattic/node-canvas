@@ -100,8 +100,8 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    inline cairo_t *getContext(){ return _context; }
-    inline Canvas *getCanvas(){ return _canvas; }
+    inline cairo_t *context(){ return _context; }
+    inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);

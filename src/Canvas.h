@@ -59,7 +59,7 @@ class Canvas: public node::ObjectWrap {
     static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Local<Value> Error(cairo_status_t status);
-    inline cairo_surface_t *getSurface(){ return _surface; }
+    inline cairo_surface_t *surface(){ return _surface; }
     Canvas(int width, int height);
     void resurface();
 

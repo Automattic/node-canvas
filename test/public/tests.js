@@ -656,7 +656,7 @@ tests['textBaseline hanging'] = function(ctx){
   ctx.fillText("hanging", 100, 100);
 };
 
-tests['textBaseline bottom'] = function(ctx){
+tests['textBaseline middle'] = function(ctx){
   ctx.strokeStyle = '#666';
   ctx.strokeRect(0,0,200,200);
   ctx.lineTo(0,100);
@@ -664,9 +664,9 @@ tests['textBaseline bottom'] = function(ctx){
   ctx.stroke();
 
   ctx.font = 'normal 20px Arial';
-  ctx.textBaseline = 'bottom';
+  ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
-  ctx.fillText("bottom", 100, 100);
+  ctx.fillText("middle", 100, 100);
 };
 
 tests['textBaseline ideographic'] = function(ctx){
@@ -680,6 +680,19 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.textBaseline = 'ideographic';
   ctx.textAlign = 'center';
   ctx.fillText("ideographic", 100, 100);
+};
+
+tests['textBaseline bottom'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 20px Arial';
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'center';
+  ctx.fillText("bottom", 100, 100);
 };
 
 tests['font size px'] = function(ctx){
@@ -1357,4 +1370,20 @@ tests['shadow integration'] = function(ctx){
   ctx.arc(50, 151, 50, 0, Math.PI*2, false);
   ctx.fillStyle = "gold";
   ctx.fill();
+};
+
+tests['font state'] = function(ctx){
+  ctx.save();
+  ctx.font = '20px Impact';
+  ctx.fillText('Bam!', 50, 80);
+
+  ctx.save();
+  ctx.font = '10px Arial';
+  ctx.fillText('Boom!', 50, 100);
+
+  ctx.restore();
+  ctx.fillText('Bam again!', 50, 120);
+
+  ctx.restore();
+  ctx.fillText('Boom again!', 50, 140);
 };
