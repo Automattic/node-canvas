@@ -1,4 +1,18 @@
 
+0.0.5 / 2010-11-10 
+==================
+
+  * Added custom port support to _test/server.js_
+  * Added more global composite operator support
+  * Added `Context2d#antialias=`
+  * Added _voronoi_ example
+  * Added -D__NDEBUG__ to default build
+  * Added __BUFFER_DATA__ macro for backwards compat buffer data access [Don Park]
+  * Fixed getter bug preventing patterns from being returned via `fillStyle` etc
+
+  * Fixed; __CAIRO_STATUS_NO_MEMORY___ on failed {re,m}alloc()
+  * Fixed; free `Canvas::ToBuffer()` closure data
+
 0.0.4 / 2010-11-09 
 ==================
 
