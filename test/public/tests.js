@@ -1371,3 +1371,19 @@ tests['shadow integration'] = function(ctx){
   ctx.fillStyle = "gold";
   ctx.fill();
 };
+
+tests['font state'] = function(ctx){
+  ctx.save();
+  ctx.font = '20px Impact';
+  ctx.fillText('Bam!', 50, 80);
+
+  ctx.save();
+  ctx.font = '10px Arial';
+  ctx.fillText('Boom!', 50, 100);
+
+  ctx.restore();
+  ctx.fillText('Bam again!', 50, 120);
+
+  ctx.restore();
+  ctx.fillText('Boom again!', 50, 140);
+};
