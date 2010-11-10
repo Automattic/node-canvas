@@ -4,6 +4,7 @@ PKG_CONFIG="http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz"
 PIXMAN="http://www.cairographics.org/releases/pixman-0.20.0.tar.gz"
 CAIRO="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
 LIBPNG="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng-1.2.40.tar.gz"
+PREFIX=${1-/usr/local}
 
 require() {
   echo "... checking for $1"
@@ -31,13 +32,14 @@ install() {
   local dir=$1
   echo "... installing $1"
  cd $dir \
-   && ./configure --disable-dependency-tracking \
+   && ./configure --disable-dependency-tracking --prefix=$PREFIX \
    && make \
    && make install \
    && echo "... removing $dir" \
    && cd .. && rm -fr $dir
 }
 
+echo "... installing to $PREFIX"
 require curl
 require tar
 test `which pkg-config` || fetch $PKG_CONFIG
