@@ -6,11 +6,11 @@ CAIRO="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
 LIBPNG="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng-1.2.40.tar.gz"
 
 require() {
-  echo "... checking for \x1b[33m$1\x1b[0m"
+  echo "... checking for $1"
   if test `which $1`; then
-    echo "... \x1b[32mfound\x1b[0m"
+    echo "... found"
   else
-    echo "... \x1b[31mnot found\x1b[0m"
+    echo "... not found"
     exit 1
   fi
 }
