@@ -30,10 +30,12 @@ fetch() {
 install() {
   local dir=$1
   echo "... installing $1"
-#  cd $dir \
-#    && ./configure --disable-dependency-tracking \
-#    && make \
-#    && make install
+ cd $dir \
+   && ./configure --disable-dependency-tracking \
+   && make \
+   && make install \
+   && echo "... removing $dir" \
+   && cd .. && rm -fr $dir
 }
 
 require curl
