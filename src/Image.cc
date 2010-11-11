@@ -150,7 +150,7 @@ Image::Image() {
  */
 
 Image::~Image() {
-  cairo_surface_destroy(_surface);
+  if (_surface) cairo_surface_destroy(_surface);
 }
 
 /*
