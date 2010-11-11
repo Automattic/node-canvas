@@ -102,6 +102,28 @@ Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
 }
 
 /*
+ * Get onerror callback.
+ */
+
+Handle<Value>
+Image::GetOnerror(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return img->onerror;
+}
+
+/*
+ * Set onerror callback.
+ */
+
+void
+Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsFunction()) {
+    Image *img = ObjectWrap::Unwrap<Image>(info.This());
+    img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
+  }
+}
+
+/*
  * Initialize a new Image.
  */
 
