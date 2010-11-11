@@ -14,6 +14,7 @@ using namespace v8;
 
 class Image: public node::ObjectWrap {
   public:
+    bool complete;
     char *filename;
     Persistent<Function> onload;
     Persistent<Function> onerror;

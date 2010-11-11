@@ -129,6 +129,7 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
  */
 
 Image::Image() {
+  complete = false;
   filename = NULL;
   _surface = NULL;
 }
@@ -181,6 +182,7 @@ Image::loaded() {
     if (try_catch.HasCaught()) {
       error(try_catch.Exception());
     }
+    complete = true;
   }
 
   Unref();
