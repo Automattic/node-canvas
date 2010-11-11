@@ -23,6 +23,8 @@ Image::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
+  proto->SetAccessor(String::NewSymbol("width"), GetWidth);
+  proto->SetAccessor(String::NewSymbol("height"), GetHeight);
   proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
   target->Set(String::NewSymbol("Image"), t->GetFunction());
@@ -65,6 +67,26 @@ Handle<Value>
 Image::GetComplete(Local<String>, const AccessorInfo &info) {
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   return Boolean::New(img->complete);
+}
+
+/*
+ * Get width.
+ */
+
+Handle<Value>
+Image::GetWidth(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return Number::New(img->width);
+}
+
+/*
+ * Get height.
+ */
+
+Handle<Value>
+Image::GetHeight(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return Number::New(img->height);
 }
 
 /*
@@ -196,7 +218,7 @@ Image::load() {
 }
 
 /*
- * Invoke onload (when assigned).
+ * Invoke onload (when assigned) and assign dimensions.
  */
 
 void
@@ -239,5 +261,7 @@ Image::error(Local<Value> err) {
 cairo_status_t
 Image::loadSurface() {
   _surface = cairo_image_surface_create_from_png(filename);
+  width = cairo_image_surface_get_width(_surface);
+  height = cairo_image_surface_get_height(_surface);
   return cairo_surface_status(_surface);
 }

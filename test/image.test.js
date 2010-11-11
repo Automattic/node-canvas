@@ -19,14 +19,16 @@ module.exports = {
 
     assert.strictEqual(false, img.complete);
     img.onload = function(){
-      assert.strictEqual(true, img.complete);
       ++n;
     };
-    
+
     img.src = png;
     assert.equal(img.src, png);
 
     beforeExit(function(){
+      assert.strictEqual(true, img.complete);
+      assert.strictEqual(320, img.width);
+      assert.strictEqual(320, img.height);
       assert.equal(1, n);
     });
   },
@@ -41,9 +43,9 @@ module.exports = {
     };
     
     img.onerror = function(err){
+      ++n;
       assert.strictEqual(false, img.complete);
       assert.ok(err instanceof Error, 'did not invoke onerror() with error');
-      ++n;
     };
     
     img.src = png + 's';

@@ -16,6 +16,7 @@ class Image: public node::ObjectWrap {
   public:
     bool complete;
     char *filename;
+    int width, height;
     Persistent<Function> onload;
     Persistent<Function> onerror;
     static void Initialize(Handle<Object> target);
@@ -25,6 +26,8 @@ class Image: public node::ObjectWrap {
     static Handle<Value> GetOnload(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnerror(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetComplete(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
     static void SetSrc(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnload(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);
