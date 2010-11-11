@@ -48,7 +48,7 @@ Image::Inspect(const Arguments &args) {
   Local<String> str = String::New("[Image");
   if (img->loaded()) {
     str = String::Concat(str, String::New(" "));
-    str = String::Concat(str, String::New(img->filename()));
+    str = String::Concat(str, String::New(img->filename));
   }
   str = String::Concat(str, String::New("]"));
   return scope.Close(str);
@@ -61,7 +61,7 @@ Image::Inspect(const Arguments &args) {
 Handle<Value>
 Image::GetSrc(Local<String>, const AccessorInfo &info) {
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return String::New(img->filename());
+  return String::New(img->filename);
 }
 
 /*
@@ -73,7 +73,9 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsString()) {
     String::AsciiValue src(val);
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->load(*src);
+    if (info.This()->Get(String::New("onload"))->IsFunction())
+      printf("function\n");
+    img->filename = *src;
   }
 }
 
@@ -82,7 +84,7 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
  */
 
 Image::Image() {
-  _filename = NULL;
+  filename = NULL;
   _surface = NULL;
 }
 
@@ -92,10 +94,4 @@ Image::Image() {
 
 Image::~Image() {
   cairo_surface_destroy(_surface);
-}
-
-void
-Image::load(char *path) {
-  _filename = path;
-  // TODO: implement
 }
