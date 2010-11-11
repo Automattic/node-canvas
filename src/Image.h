@@ -22,7 +22,9 @@ class Image: public node::ObjectWrap {
     static Handle<Value> GetSrc(Local<String> prop, const AccessorInfo &info);
     static void SetSrc(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_surface_t *surface(){ return _surface; } 
-    inline bool loaded(){ return filename; }
+    cairo_status_t loadSurface();
+    void loaded();
+    void load();
     Image();
   
   private:

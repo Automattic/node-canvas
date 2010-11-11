@@ -46,7 +46,7 @@ Image::Inspect(const Arguments &args) {
   HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
   Local<String> str = String::New("[Image");
-  if (img->loaded()) {
+  if (img->filename) {
     str = String::Concat(str, String::New(" "));
     str = String::Concat(str, String::New(img->filename));
   }
@@ -78,6 +78,7 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
     if (onload->IsFunction()) {
       img->onload = Persistent<Function>::New(Handle<Function>::Cast(onload));
     }
+    img->load();
   }
 }
 
@@ -96,4 +97,41 @@ Image::Image() {
 
 Image::~Image() {
   cairo_surface_destroy(_surface);
+}
+
+static int
+EIO_Load(eio_req *req) {
+  Image *img = (Image *) req->data;
+  req->result = img->loadSurface();
+  return 0;
+}
+
+static int
+EIO_AfterLoad(eio_req *req) {
+  Image *img = (Image *) req->data;
+  // TODO: handle CAIRO_STATUS_{NO_MEMORY,FILE_NOT_FOUND,READ_ERROR}
+  img->loaded();
+  ev_unref(EV_DEFAULT_UC);
+  return 0;
+}
+
+void
+Image::load() {
+  Ref();
+  eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
+  ev_ref(EV_DEFAULT_UC);
+}
+
+void
+Image::loaded() {
+  // TODO: TryCatch
+  onload->Call(Context::GetCurrent()->Global(), 0, NULL);
+  onload.Dispose();
+  Unref();
+}
+
+cairo_status_t
+Image::loadSurface() {
+  _surface = cairo_image_surface_create_from_png(filename);
+  return cairo_surface_status(_surface);
 }
