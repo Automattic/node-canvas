@@ -150,9 +150,16 @@ EIO_Load(eio_req *req) {
 
 static int
 EIO_AfterLoad(eio_req *req) {
+  HandleScope scope;
   Image *img = (Image *) req->data;
-  // TODO: handle CAIRO_STATUS_{NO_MEMORY,FILE_NOT_FOUND,READ_ERROR}
-  img->loaded();
+
+  if (req->result) {
+    Local<Value> argv[1] = { Canvas::Error((cairo_status_t) req->result) };
+    img->onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+  } else {
+    img->loaded();
+  }
+
   ev_unref(EV_DEFAULT_UC);
   return 0;
 }
