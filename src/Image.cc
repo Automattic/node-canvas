@@ -153,12 +153,20 @@ Image::~Image() {
   cairo_surface_destroy(_surface);
 }
 
+/*
+ * Load callback.
+ */
+
 static int
 EIO_Load(eio_req *req) {
   Image *img = (Image *) req->data;
   req->result = img->loadSurface();
   return 0;
 }
+
+/*
+ * After load callback.
+ */
 
 static int
 EIO_AfterLoad(eio_req *req) {
@@ -175,12 +183,21 @@ EIO_AfterLoad(eio_req *req) {
   return 0;
 }
 
+/*
+ * Initiate image loading.
+ */
+
 void
 Image::load() {
   Ref();
+  complete = false;
   eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
   ev_ref(EV_DEFAULT_UC);
 }
+
+/*
+ * Invoke onload (when assigned).
+ */
 
 void
 Image::loaded() {
@@ -199,6 +216,10 @@ Image::loaded() {
   Unref();
 }
 
+/*
+ * Invoke onerror (when assigned) with the given err.
+ */
+
 void
 Image::error(Local<Value> err) {
   HandleScope scope;
@@ -208,6 +229,12 @@ Image::error(Local<Value> err) {
     onerror->Call(Context::GetCurrent()->Global(), 1, argv);
   }
 }
+
+/*
+ * Load cairo surface from the image src.
+ * 
+ * TODO: support more formats
+ */
 
 cairo_status_t
 Image::loadSurface() {
