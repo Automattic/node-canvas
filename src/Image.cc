@@ -7,6 +7,7 @@
 
 #include "Canvas.h"
 #include "Image.h"
+#include <string.h>
 
 /*
  * Initialize Image.
@@ -90,7 +91,7 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsString()) {
     String::AsciiValue src(val);
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->filename = *src;
+    img->filename = strdup(*src);
     img->load();
   }
 }
@@ -155,6 +156,7 @@ Image::Image() {
 
 Image::~Image() {
   if (_surface) cairo_surface_destroy(_surface);
+  if (filename) free(filename);
 }
 
 /*
