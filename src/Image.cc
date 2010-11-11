@@ -145,7 +145,7 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
 
 Image::Image() {
   complete = false;
-  filename = NULL;
+  filename = (char *) "";
   _surface = NULL;
 }
 
