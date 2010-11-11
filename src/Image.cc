@@ -20,7 +20,6 @@ Image::Initialize(Handle<Object> target) {
   t->SetClassName(String::NewSymbol("Image"));
 
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
@@ -40,23 +39,6 @@ Image::New(const Arguments &args) {
   Image *img = new Image;
   img->Wrap(args.This());
   return args.This();
-}
-
-/*
- * Custom inspect.
- */
-
-Handle<Value>
-Image::Inspect(const Arguments &args) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  Local<String> str = String::New("[Image");
-  if (img->filename) {
-    str = String::Concat(str, String::New(" "));
-    str = String::Concat(str, String::New(img->filename));
-  }
-  str = String::Concat(str, String::New("]"));
-  return scope.Close(str);
 }
 
 /*

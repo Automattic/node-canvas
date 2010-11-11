@@ -21,7 +21,6 @@ class Image: public node::ObjectWrap {
     Persistent<Function> onerror;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
-    static Handle<Value> Inspect(const Arguments &args);
     static Handle<Value> GetSrc(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnload(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnerror(Local<String> prop, const AccessorInfo &info);
