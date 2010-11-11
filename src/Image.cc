@@ -22,6 +22,7 @@ Image::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
+  proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
   target->Set(String::NewSymbol("Image"), t->GetFunction());
 }
 
@@ -74,11 +75,29 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
     String::AsciiValue src(val);
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
     img->filename = *src;
-    Handle<Value> onload = info.This()->Get(String::New("onload"));
-    if (onload->IsFunction()) {
-      img->onload = Persistent<Function>::New(Handle<Function>::Cast(onload));
-    }
     img->load();
+  }
+}
+
+/*
+ * Get onload callback.
+ */
+
+Handle<Value>
+Image::GetOnload(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return img->onload;
+}
+
+/*
+ * Set onload callback.
+ */
+
+void
+Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsFunction()) {
+    Image *img = ObjectWrap::Unwrap<Image>(info.This());
+    img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
   }
 }
 
@@ -124,9 +143,11 @@ Image::load() {
 
 void
 Image::loaded() {
-  // TODO: TryCatch
-  onload->Call(Context::GetCurrent()->Global(), 0, NULL);
-  onload.Dispose();
+  if (!onload.IsEmpty()) {
+    // TODO: TryCatch
+    onload->Call(Context::GetCurrent()->Global(), 0, NULL);
+    onload.Dispose();
+  }
   Unref();
 }
 
