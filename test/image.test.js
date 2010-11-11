@@ -20,12 +20,14 @@ module.exports = {
     assert.strictEqual(false, img.complete);
     img.onload = function(){
       ++n;
+      assert.equal(img.src, png);
     };
 
     img.src = png;
     assert.equal(img.src, png);
 
     beforeExit(function(){
+      assert.equal(img.src, png);
       assert.strictEqual(true, img.complete);
       assert.strictEqual(320, img.width);
       assert.strictEqual(320, img.height);
