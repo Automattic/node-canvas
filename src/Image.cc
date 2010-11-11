@@ -5,8 +5,8 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "canvas.h"
-#include "image.h"
+#include "Canvas.h"
+#include "Image.h"
 
 /*
  * Initialize Image.
@@ -20,6 +20,7 @@ Image::Initialize(Handle<Object> target) {
   t->SetClassName(String::NewSymbol("Image"));
 
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   target->Set(String::NewSymbol("Image"), t->GetFunction());
 }
@@ -37,10 +38,51 @@ Image::New(const Arguments &args) {
 }
 
 /*
+ * Custom inspect.
+ */
+
+Handle<Value>
+Image::Inspect(const Arguments &args) {
+  HandleScope scope;
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  Local<String> str = String::New("[Image");
+  if (img->loaded()) {
+    str = String::Concat(str, String::New(" "));
+    str = String::Concat(str, String::New(img->filename()));
+  }
+  str = String::Concat(str, String::New("]"));
+  return scope.Close(str);
+}
+
+/*
+ * Get src path.
+ */
+
+Handle<Value>
+Image::GetSrc(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return String::New(img->filename());
+}
+
+/*
+ * Set src path.
+ */
+
+void
+Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsString()) {
+    String::AsciiValue src(val);
+    Image *img = ObjectWrap::Unwrap<Image>(info.This());
+    img->load(*src);
+  }
+}
+
+/*
  * Initialize a new Image.
  */
 
 Image::Image() {
+  _filename = NULL;
   _surface = NULL;
 }
 
@@ -50,4 +92,10 @@ Image::Image() {
 
 Image::~Image() {
   cairo_surface_destroy(_surface);
+}
+
+void
+Image::load(char *path) {
+  _filename = path;
+  // TODO: implement
 }
