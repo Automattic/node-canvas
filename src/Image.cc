@@ -73,9 +73,11 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsString()) {
     String::AsciiValue src(val);
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    if (info.This()->Get(String::New("onload"))->IsFunction())
-      printf("function\n");
     img->filename = *src;
+    Handle<Value> onload = info.This()->Get(String::New("onload"));
+    if (onload->IsFunction()) {
+      img->onload = Persistent<Function>::New(Handle<Function>::Cast(onload));
+    }
   }
 }
 

@@ -15,6 +15,7 @@ using namespace v8;
 class Image: public node::ObjectWrap {
   public:
     char *filename;
+    Persistent<Function> onload;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> Inspect(const Arguments &args);
