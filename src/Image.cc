@@ -23,6 +23,7 @@ Image::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
+  proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
   target->Set(String::NewSymbol("Image"), t->GetFunction());
 }
 
@@ -165,11 +166,20 @@ Image::load() {
 
 void
 Image::loaded() {
+  HandleScope scope;
+
   if (!onload.IsEmpty()) {
-    // TODO: TryCatch
+    TryCatch try_catch;
     onload->Call(Context::GetCurrent()->Global(), 0, NULL);
     onload.Dispose();
+    if (try_catch.HasCaught()) {
+      if (!onerror.IsEmpty()) {
+        Local<Value> argv[1] = { try_catch.Exception() };
+        onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+      }
+    }
   }
+
   Unref();
 }
 
