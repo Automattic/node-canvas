@@ -24,6 +24,7 @@ class Image: public node::ObjectWrap {
     static Handle<Value> GetSrc(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnload(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnerror(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetComplete(Local<String> prop, const AccessorInfo &info);
     static void SetSrc(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnload(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);

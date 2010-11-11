@@ -22,6 +22,7 @@ Image::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "inspect", Inspect);
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
+  proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
   target->Set(String::NewSymbol("Image"), t->GetFunction());
@@ -54,6 +55,16 @@ Image::Inspect(const Arguments &args) {
   }
   str = String::Concat(str, String::New("]"));
   return scope.Close(str);
+}
+
+/*
+ * Get complete boolean.
+ */
+
+Handle<Value>
+Image::GetComplete(Local<String>, const AccessorInfo &info) {
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return Boolean::New(img->complete);
 }
 
 /*
@@ -174,6 +185,7 @@ Image::load() {
 void
 Image::loaded() {
   HandleScope scope;
+  complete = true;
 
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
@@ -182,7 +194,6 @@ Image::loaded() {
     if (try_catch.HasCaught()) {
       error(try_catch.Exception());
     }
-    complete = true;
   }
 
   Unref();
