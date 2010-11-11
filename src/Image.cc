@@ -154,8 +154,7 @@ EIO_AfterLoad(eio_req *req) {
   Image *img = (Image *) req->data;
 
   if (req->result) {
-    Local<Value> argv[1] = { Canvas::Error((cairo_status_t) req->result) };
-    img->onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+    img->error(Canvas::Error((cairo_status_t) req->result));
   } else {
     img->loaded();
   }
@@ -180,14 +179,21 @@ Image::loaded() {
     onload->Call(Context::GetCurrent()->Global(), 0, NULL);
     onload.Dispose();
     if (try_catch.HasCaught()) {
-      if (!onerror.IsEmpty()) {
-        Local<Value> argv[1] = { try_catch.Exception() };
-        onerror->Call(Context::GetCurrent()->Global(), 1, argv);
-      }
+      error(try_catch.Exception());
     }
   }
 
   Unref();
+}
+
+void
+Image::error(Local<Value> err) {
+  if (onerror.IsEmpty()) {
+    // TODO:
+  } else {
+    Local<Value> argv[1] = { err };
+    onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+  }
 }
 
 cairo_status_t

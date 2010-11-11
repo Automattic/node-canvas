@@ -28,6 +28,7 @@ class Image: public node::ObjectWrap {
     static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_surface_t *surface(){ return _surface; } 
     cairo_status_t loadSurface();
+    void error(Local<Value>);
     void loaded();
     void load();
     Image();
