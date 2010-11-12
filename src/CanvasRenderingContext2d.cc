@@ -444,7 +444,7 @@ Context2d::DrawImage(const Arguments &args) {
       return ThrowException(Exception::TypeError(String::New("invalid arguments")));
   }
 
-  // Draw
+  // Start draw
   cairo_save(ctx);
 
   // Source surface
@@ -463,9 +463,10 @@ Context2d::DrawImage(const Arguments &args) {
     dx /= fx;
     dy /= fy;
   }
-  // TODO: globalAlpha
+
+  // Paint
   cairo_set_source_surface(ctx, src, dx, dy);
-  cairo_paint(ctx);
+  cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
   cairo_surface_destroy(src);
