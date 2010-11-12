@@ -400,12 +400,12 @@ Context2d::DrawImage(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   // Dest point
-  double dx = args[1]->NumberValue();
-  double dy = args[2]->NumberValue();
+  int dx = args[1]->NumberValue();
+  int dy = args[2]->NumberValue();
 
   // Dest dimensions
-  double dw = args[3]->IsNumber() ? args[3]->NumberValue() : img->width;
-  double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
+  int dw = args[3]->IsNumber() ? args[3]->NumberValue() : img->width;
+  int dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
 
   // Draw
   uint8_t *dst = context->canvas()->data();
@@ -415,10 +415,10 @@ Context2d::DrawImage(const Arguments &args) {
 
   for (int y = 0; y < dh; ++y) {
     uint32_t *srcRow = (uint32_t *)(src + srcStride * y);
-    uint32_t *dstRow = (uint32_t *)(dst + dstStride * y);
+    uint32_t *dstRow = (uint32_t *)(dst + dstStride * (y + dy));
     for (int x = 0; x < dw; ++x) {
-      uint32_t *srcPixel = srcRow + x;
-      uint32_t *dstPixel = dstRow + x;
+      uint32_t *srcPixel = srcRow + x + dx;
+      uint32_t *dstPixel = dstRow + x + dx;
       *dstPixel = *srcPixel;
     }
   }
