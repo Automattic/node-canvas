@@ -457,10 +457,11 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Scale src
   if (dw != sw || dh != sh) {
-    cairo_scale(ctx
-      , (float) dw / sw
-      , (float) dh / sh
-      );
+    double fx = (double) dw / sw;
+    double fy = (double) dh / sh;
+    cairo_scale(ctx, fx, fy);
+    dx /= fx;
+    dy /= fy;
   }
   // TODO: globalAlpha
   cairo_set_source_surface(ctx, src, dx, dy);
