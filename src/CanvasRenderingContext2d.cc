@@ -408,7 +408,7 @@ Context2d::DrawImage(const Arguments &args) {
   double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
 
   // Draw
-  uint8_t *src = cairo_image_surface_get_data(img->surface());
+  uint8_t *src = img->data();
   cairo_t *ctx = context->context();
 
   return Undefined();
