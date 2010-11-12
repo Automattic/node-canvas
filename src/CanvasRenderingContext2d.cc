@@ -399,6 +399,10 @@ Context2d::DrawImage(const Arguments &args) {
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
+  // Src point
+  int sx = 0;
+  int sy = 0;
+
   // Dest point
   int dx = args[1]->NumberValue();
   int dy = args[2]->NumberValue();
@@ -410,20 +414,27 @@ Context2d::DrawImage(const Arguments &args) {
   // Draw
   uint8_t *dst = context->canvas()->data();
   int dstStride = context->canvas()->stride();
-  uint8_t *src = img->data();
+
   int srcStride = img->stride();
+  uint8_t *src = img->data() + sy * srcStride + sx * 4;
 
   for (int y = 0; y < dh; ++y) {
-    uint32_t *srcRow = (uint32_t *)(src + srcStride * y);
     uint32_t *dstRow = (uint32_t *)(dst + dstStride * (y + dy));
     for (int x = 0; x < dw; ++x) {
-      uint32_t *srcPixel = srcRow + x + dx;
+      int bx = x * 4;
+      uint32_t *srcPixel = (uint32_t *)(src + bx);
       uint32_t *dstPixel = dstRow + x + dx;
       *dstPixel = *srcPixel;
     }
+    src += srcStride;
   }
 
-  // TODO: cairo_surface_mark_dirty_rectangle(surface, x, y, w, h)
+  cairo_surface_mark_dirty_rectangle(
+      context->canvas()->surface()
+    , dx
+    , dy
+    , dw
+    , dh);
 
   return Undefined();
 }
