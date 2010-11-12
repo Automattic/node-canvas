@@ -407,11 +407,9 @@ Context2d::DrawImage(const Arguments &args) {
   double dw = args[3]->IsNumber() ? args[3]->NumberValue() : img->width;
   double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
 
+  // Draw
+  uint8_t *src = cairo_image_surface_get_data(img->surface());
   cairo_t *ctx = context->context();
-  cairo_save(ctx);
-  cairo_set_source_surface(ctx, img->surface(), dx, dy);
-  cairo_paint(ctx);
-  cairo_restore(ctx);
 
   return Undefined();
 }
