@@ -387,17 +387,18 @@ Context2d::New(const Arguments &args) {
 /*
  * Draw image src image to the destination (context).
  *
- * dx, dy
- * dx, dy, dw, dh
- * sx, sy, sw, sh, dx, dy, dw, dh
+ *  - dx, dy
+ *  - dx, dy, dw, dh
+ *  - sx, sy, sw, sh, dx, dy, dw, dh
+ *
  */
 
 Handle<Value>
 Context2d::DrawImage(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
+  if (args.Length() < 3)
+    return ThrowException(Exception::TypeError(String::New("invalid arguments")));
   
   // TODO: instanceof
   // TODO: arg handling / boundaries
@@ -405,20 +406,43 @@ Context2d::DrawImage(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
 
-  // Src point
-  int sx = 0
-    , sy = 0;
-
-  // Dest point
-  int dx = args[1]->NumberValue()
-    , dy = args[2]->NumberValue();
-
-  // Dest dimensions
   int height = img->height
     , width = img->width;
 
-  int dw = args[3]->IsNumber() ? args[3]->NumberValue() : width
-    , dh = args[4]->IsNumber() ? args[4]->NumberValue() : height;
+  int sx, sy, sw, sh
+    , dx, dy, dw, dh;
+
+  // Arguments
+  switch (args.Length()) {
+    // img, sx, sy, sw, sh, dx, dy, dw, dh
+    case 9:
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
+      break;
+    // img, dx, dy, dw, dh
+    case 5:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
+      break;
+    // img, dx, dy
+    case 3:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = width;
+      dh = height;
+      break;
+    default:
+      // TODO: throw
+      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  }
 
   // Draw
   cairo_save(ctx);
