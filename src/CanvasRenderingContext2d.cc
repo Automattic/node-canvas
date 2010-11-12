@@ -385,7 +385,7 @@ Context2d::New(const Arguments &args) {
 }
 
 /*
- * Draw image.
+ * Draw image src image to the destination (context).
  */
 
 Handle<Value>
@@ -408,10 +408,22 @@ Context2d::DrawImage(const Arguments &args) {
   double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
 
   // Draw
-  cairo_t *ctx = context->context();
   uint8_t *dst = context->canvas()->data();
+  int dstStride = context->canvas()->stride();
   uint8_t *src = img->data();
-  int stride = img->stride();
+  int srcStride = img->stride();
+
+  for (int y = 0; y < dh; ++y) {
+    uint32_t *srcRow = (uint32_t *)(src + srcStride * y);
+    uint32_t *dstRow = (uint32_t *)(dst + dstStride * y);
+    for (int x = 0; x < dw; ++x) {
+      uint32_t *srcPixel = srcRow + x;
+      uint32_t *dstPixel = dstRow + x;
+      *dstPixel = *srcPixel;
+    }
+  }
+
+  // TODO: cairo_surface_mark_dirty_rectangle(surface, x, y, w, h)
 
   return Undefined();
 }
