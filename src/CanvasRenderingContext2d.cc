@@ -403,43 +403,35 @@ Context2d::DrawImage(const Arguments &args) {
   // TODO: arg handling / boundaries
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
 
   // Src point
-  int sx = 0;
-  int sy = 0;
+  int sx = 0
+    , sy = 0;
 
   // Dest point
-  int dx = args[1]->NumberValue();
-  int dy = args[2]->NumberValue();
+  int dx = args[1]->NumberValue()
+    , dy = args[2]->NumberValue();
 
   // Dest dimensions
-  int dw = args[3]->IsNumber() ? args[3]->NumberValue() : img->width;
-  int dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
+  int height = img->height
+    , width = img->width;
+
+  int dw = args[3]->IsNumber() ? args[3]->NumberValue() : width
+    , dh = args[4]->IsNumber() ? args[4]->NumberValue() : height;
 
   // Draw
-  uint8_t *dst = context->canvas()->data();
-  int dstStride = context->canvas()->stride();
-
-  int srcStride = img->stride();
-  uint8_t *src = img->data() + sy * srcStride + sx * 4;
-
-  for (int y = 0; y < dh; ++y) {
-    uint32_t *dstRow = (uint32_t *)(dst + dstStride * (y + dy));
-    for (int x = 0; x < dw; ++x) {
-      int bx = x * 4;
-      uint32_t *srcPixel = (uint32_t *)(src + bx);
-      uint32_t *dstPixel = dstRow + x + dx;
-      *dstPixel = *srcPixel;
-    }
-    src += srcStride;
+  cairo_save(ctx);
+  if (dw != width || dh != height) {
+    cairo_scale(ctx
+      , (float) dw / width
+      , (float) dh / height
+      );
   }
-
-  cairo_surface_mark_dirty_rectangle(
-      context->canvas()->surface()
-    , dx
-    , dy
-    , dw
-    , dh);
+  // TODO: globalAlpha
+  cairo_set_source_surface(ctx, img->surface(), dx, dy);
+  cairo_paint(ctx);
+  cairo_restore(ctx);
 
   return Undefined();
 }
