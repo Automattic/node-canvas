@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "Canvas.h"
+#include "Image.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
@@ -66,6 +67,7 @@ Context2d::Initialize(Handle<Object> target) {
 
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
@@ -110,19 +112,6 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
-}
-
-/*
- * Initialize a new Context2d with the given canvas.
- */
-
-Handle<Value>
-Context2d::New(const Arguments &args) {
-  HandleScope scope;
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
-  Context2d *context = new Context2d(canvas);
-  context->Wrap(args.This());
-  return args.This();
 }
 
 /*
@@ -380,6 +369,46 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
       }
   }
   free( precalc );
+}
+
+/*
+ * Initialize a new Context2d with the given canvas.
+ */
+
+Handle<Value>
+Context2d::New(const Arguments &args) {
+  HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
+  Context2d *context = new Context2d(canvas);
+  context->Wrap(args.This());
+  return args.This();
+}
+
+/*
+ * Draw image.
+ */
+
+Handle<Value>
+Context2d::DrawImage(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+  
+  // TODO: instanceof
+  Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+
+  double x = args[1]->NumberValue();
+  double y = args[2]->NumberValue();
+  
+  cairo_t *ctx = context->context();
+  cairo_save(ctx);
+  cairo_set_source_surface(ctx, img->surface(), x, y);
+  cairo_paint(ctx);
+  cairo_restore(ctx);
+
+  return Undefined();
 }
 
 /*

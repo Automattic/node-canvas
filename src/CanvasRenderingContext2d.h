@@ -47,6 +47,7 @@ class Context2d: public node::ObjectWrap {
     canvas_state_t *state;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
+    static Handle<Value> DrawImage(const Arguments &args);
     static Handle<Value> Save(const Arguments &args);
     static Handle<Value> Restore(const Arguments &args);
     static Handle<Value> Rotate(const Arguments &args);
