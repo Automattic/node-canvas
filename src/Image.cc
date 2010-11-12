@@ -197,10 +197,12 @@ EIO_AfterLoad(eio_req *req) {
 
 void
 Image::load() {
-  Ref();
-  state = LOADING;
-  eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
-  ev_ref(EV_DEFAULT_UC);
+  if (LOADING != state) {
+    Ref();
+    state = LOADING;
+    eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
+    ev_ref(EV_DEFAULT_UC);
+  }
 }
 
 /*
