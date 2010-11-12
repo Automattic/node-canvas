@@ -7,6 +7,7 @@
 
 #include "Canvas.h"
 #include "Image.h"
+#include <stdlib.h>
 #include <string.h>
 
 /*

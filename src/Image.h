@@ -8,7 +8,7 @@
 #ifndef __NODE_IMAGE_H__
 #define __NODE_IMAGE_H__
 
-#include "canvas.h"
+#include "Canvas.h"
 
 using namespace v8;
 
