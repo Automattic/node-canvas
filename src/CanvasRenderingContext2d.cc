@@ -408,8 +408,10 @@ Context2d::DrawImage(const Arguments &args) {
   double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
 
   // Draw
-  uint8_t *src = img->data();
   cairo_t *ctx = context->context();
+  uint8_t *dst = context->canvas()->data();
+  uint8_t *src = img->data();
+  int stride = img->stride();
 
   return Undefined();
 }
