@@ -5,6 +5,7 @@
 
 var express = require('../support/express')
   , Canvas = require('../lib/canvas')
+  , Image = Canvas.Image
   , jade = require('../support/jade')
   , app = express.createServer();
 

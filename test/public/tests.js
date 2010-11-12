@@ -1387,3 +1387,43 @@ tests['font state'] = function(ctx){
   ctx.restore();
   ctx.fillText('Boom again!', 50, 140);
 };
+
+tests['drawImage(img,0,0)'] = function(ctx){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0);
+  };
+  img.src = 'state.png';
+};
+
+tests['drawImage(img,x,y)'] = function(ctx){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img, 5, 25);
+  };
+  img.src = 'state.png';
+};
+
+tests['drawImage(img,x,y,w,h) scale down'] = function(ctx){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img, 25, 25, 10, 10);
+  };
+  img.src = 'state.png';
+};
+
+tests['drawImage(img,x,y,w,h) scale up'] = function(ctx){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0, 200, 200);
+  };
+  img.src = 'state.png';
+};
+
+tests['drawImage(img,x,y,w,h) scale vertical'] = function(ctx){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0, img.width, 200);
+  };
+  img.src = 'state.png';
+};
