@@ -31,6 +31,10 @@ app.get('/', function(req, res){
 });
 
 app.post('/render', function(req, res, next){
+  // Normalize state.png as ./public/state.png
+  // no good way around this at the moment
+  req.body.fn = req.body.fn.replace("'state.png'", "'" + __dirname + "/public/state.png'");
+  
   // Do not try this at home :)
   var fn = eval('(' + req.body.fn + ')')
     , width = req.body.width
