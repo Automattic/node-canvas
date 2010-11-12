@@ -432,9 +432,11 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
       return String::NewSymbol("destination-over");
     case CAIRO_OPERATOR_LIGHTEN:
       return String::NewSymbol("lighter");
+    // Non-standard
+    // supported by resent versions of cairo
+#if CAIRO_VERSION_MINOR >= 10
     case CAIRO_OPERATOR_DARKEN:
       return String::NewSymbol("darkler");
-    // Non-standard
     case CAIRO_OPERATOR_MULTIPLY:
       return String::NewSymbol("multiply");
     case CAIRO_OPERATOR_SCREEN:
@@ -453,6 +455,7 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
       return String::NewSymbol("hsl-color");
     case CAIRO_OPERATOR_HSL_LUMINOSITY:
       return String::NewSymbol("hsl-luminosity");
+#endif
     default:
       return String::NewSymbol("source-over");
   }
@@ -469,11 +472,7 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
   String::AsciiValue type(val->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
-  }else if (0 == strcmp("lighter", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
-  }else if (0 == strcmp("darker", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
-  }else if (0 == strcmp("source-atop", *type)) {
+  } else if (0 == strcmp("source-atop", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
   } else if (0 == strcmp("source-in", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_IN);
@@ -487,7 +486,13 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
   } else if (0 == strcmp("destination-over", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  } else if (0 == strcmp("lighter", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
   // Non-standard
+  // supported by resent versions of cairo
+#if CAIRO_VERSION_MINOR >= 10
+  } else if (0 == strcmp("darker", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
   } else if (0 == strcmp("multiply", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_MULTIPLY);
   } else if (0 == strcmp("screen", *type)) {
@@ -506,6 +511,7 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
   } else if (0 == strcmp("hsl-luminosity", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
+#endif
   } else {
     cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   }
