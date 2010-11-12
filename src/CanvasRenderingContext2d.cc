@@ -406,10 +406,10 @@ Context2d::DrawImage(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
 
-  int height = img->height
-    , width = img->width;
-
-  int sx, sy, sw, sh
+  int sx = 0
+    , sy = 0
+    , sw = img->width
+    , sh = img->height
     , dx, dy, dw, dh;
 
   // Arguments
@@ -436,8 +436,8 @@ Context2d::DrawImage(const Arguments &args) {
     case 3:
       dx = args[1]->NumberValue();
       dy = args[2]->NumberValue();
-      dw = width;
-      dh = height;
+      dw = img->width;
+      dh = img->height;
       break;
     default:
       // TODO: throw
@@ -446,16 +446,28 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Draw
   cairo_save(ctx);
-  if (dw != width || dh != height) {
+
+  // Source surface
+  cairo_surface_t *src = cairo_surface_create_for_rectangle(
+      img->surface()
+    , sx
+    , sy
+    , sw
+    , sh);
+
+  // Scale src
+  if (dw != sw || dh != sh) {
     cairo_scale(ctx
-      , (float) dw / width
-      , (float) dh / height
+      , (float) dw / sw
+      , (float) dh / sh
       );
   }
   // TODO: globalAlpha
-  cairo_set_source_surface(ctx, img->surface(), dx, dy);
+  cairo_set_source_surface(ctx, src, dx, dy);
   cairo_paint(ctx);
+
   cairo_restore(ctx);
+  cairo_surface_destroy(src);
 
   return Undefined();
 }
