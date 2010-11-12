@@ -386,6 +386,10 @@ Context2d::New(const Arguments &args) {
 
 /*
  * Draw image src image to the destination (context).
+ *
+ * dx, dy
+ * dx, dy, dw, dh
+ * sx, sy, sw, sh, dx, dy, dw, dh
  */
 
 Handle<Value>
