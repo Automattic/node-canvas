@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "Canvas.h"
+#include "Image.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
@@ -66,6 +67,7 @@ Context2d::Initialize(Handle<Object> target) {
 
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(t, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
@@ -110,19 +112,6 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
-}
-
-/*
- * Initialize a new Context2d with the given canvas.
- */
-
-Handle<Value>
-Context2d::New(const Arguments &args) {
-  HandleScope scope;
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
-  Context2d *context = new Context2d(canvas);
-  context->Wrap(args.This());
-  return args.This();
 }
 
 /*
@@ -380,6 +369,109 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
       }
   }
   free( precalc );
+}
+
+/*
+ * Initialize a new Context2d with the given canvas.
+ */
+
+Handle<Value>
+Context2d::New(const Arguments &args) {
+  HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
+  Context2d *context = new Context2d(canvas);
+  context->Wrap(args.This());
+  return args.This();
+}
+
+/*
+ * Draw image src image to the destination (context).
+ *
+ *  - dx, dy
+ *  - dx, dy, dw, dh
+ *  - sx, sy, sw, sh, dx, dy, dw, dh
+ *
+ */
+
+Handle<Value>
+Context2d::DrawImage(const Arguments &args) {
+  HandleScope scope;
+
+  if (args.Length() < 3)
+    return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  
+  // TODO: instanceof
+  // TODO: arg handling / boundaries
+  Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+
+  int sx = 0
+    , sy = 0
+    , sw = img->width
+    , sh = img->height
+    , dx, dy, dw, dh;
+
+  // Arguments
+  switch (args.Length()) {
+    // img, sx, sy, sw, sh, dx, dy, dw, dh
+    case 9:
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
+      break;
+    // img, dx, dy, dw, dh
+    case 5:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
+      break;
+    // img, dx, dy
+    case 3:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = img->width;
+      dh = img->height;
+      break;
+    default:
+      // TODO: throw
+      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  }
+
+  // Start draw
+  cairo_save(ctx);
+
+  // Source surface
+  cairo_surface_t *src = cairo_surface_create_for_rectangle(
+      img->surface()
+    , sx
+    , sy
+    , sw
+    , sh);
+
+  // Scale src
+  if (dw != sw || dh != sh) {
+    double fx = (double) dw / sw;
+    double fy = (double) dh / sh;
+    cairo_scale(ctx, fx, fy);
+    dx /= fx;
+    dy /= fy;
+  }
+
+  // Paint
+  cairo_set_source_surface(ctx, src, dx, dy);
+  cairo_paint_with_alpha(ctx, context->state->globalAlpha);
+
+  cairo_restore(ctx);
+  cairo_surface_destroy(src);
+
+  return Undefined();
 }
 
 /*
