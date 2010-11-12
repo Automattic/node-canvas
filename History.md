@@ -1,4 +1,15 @@
 
+0.0.7 / 2010-11-12 
+==================
+
+  * Fixed _lighter_ for older versions of cairo
+
+0.0.6 / 2010-11-12 
+==================
+
+  * Added `Image`
+  * Added conditional support for cairo 1.10.0 operators
+
 0.0.5 / 2010-11-10 
 ==================
 

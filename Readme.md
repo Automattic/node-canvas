@@ -11,7 +11,7 @@
 
     $ npm install canvas
 
-If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.10.0_ first using the package manager available to you, or [building from source](https://github.com/LearnBoost/node-canvas/wiki/_pages).
+If not previously installed, you will want to install the [cairo graphics library](http://cairographics.org/download/) version _>= 1.8.6_ first using the package manager available to you, or [building from source](https://github.com/LearnBoost/node-canvas/wiki/_pages).
 
 ## Screencasts
 
