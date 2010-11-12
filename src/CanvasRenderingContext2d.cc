@@ -400,6 +400,7 @@ Context2d::DrawImage(const Arguments &args) {
     || !args[2]->IsNumber()) return Undefined();
   
   // TODO: instanceof
+  // TODO: arg handling / boundaries
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
