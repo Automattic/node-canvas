@@ -14,7 +14,6 @@ using namespace v8;
 
 class Image: public node::ObjectWrap {
   public:
-    bool complete;
     char *filename;
     int width, height;
     Persistent<Function> onload;
@@ -38,6 +37,12 @@ class Image: public node::ObjectWrap {
     void loaded();
     void load();
     Image();
+
+    enum {
+        DEFAULT
+      , LOADING
+      , COMPLETE
+    } state;
   
   private:
     cairo_surface_t *_surface;

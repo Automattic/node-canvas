@@ -50,7 +50,7 @@ Image::New(const Arguments &args) {
 Handle<Value>
 Image::GetComplete(Local<String>, const AccessorInfo &info) {
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return Boolean::New(img->complete);
+  return Boolean::New(Image::COMPLETE == img->state);
 }
 
 /*
@@ -146,10 +146,10 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
  */
 
 Image::Image() {
-  complete = false;
   filename = (char *) "";
   _surface = NULL;
   width = height = 0;
+  state = DEFAULT;
 }
 
 /*
@@ -198,7 +198,7 @@ EIO_AfterLoad(eio_req *req) {
 void
 Image::load() {
   Ref();
-  complete = false;
+  state = LOADING;
   eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
   ev_ref(EV_DEFAULT_UC);
 }
@@ -210,7 +210,7 @@ Image::load() {
 void
 Image::loaded() {
   HandleScope scope;
-  complete = true;
+  state = COMPLETE;
 
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
