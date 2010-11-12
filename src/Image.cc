@@ -149,6 +149,7 @@ Image::Image() {
   complete = false;
   filename = (char *) "";
   _surface = NULL;
+  width = height = 0;
 }
 
 /*

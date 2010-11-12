@@ -56,5 +56,23 @@ module.exports = {
     beforeExit(function(){
       assert.equal(1, n);
     });
+  },
+  
+  'test Image#{width,height}': function(assert, beforeExit){
+    var img = new Image
+      , n = 0;
+    
+    assert.strictEqual(0, img.width);
+    assert.strictEqual(0, img.height);
+    img.onload = function(){
+      ++n;
+      assert.strictEqual(150, img.width);
+      assert.strictEqual(150, img.height);
+    };
+    img.src = png;
+
+    beforeExit(function(){
+      assert.equal(1, n);
+    });
   }
 };
