@@ -399,12 +399,17 @@ Context2d::DrawImage(const Arguments &args) {
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
-  double x = args[1]->NumberValue();
-  double y = args[2]->NumberValue();
-  
+  // Dest point
+  double dx = args[1]->NumberValue();
+  double dy = args[2]->NumberValue();
+
+  // Dest dimensions
+  double dw = args[3]->IsNumber() ? args[3]->NumberValue() : img->width;
+  double dh = args[4]->IsNumber() ? args[4]->NumberValue() : img->height;
+
   cairo_t *ctx = context->context();
   cairo_save(ctx);
-  cairo_set_source_surface(ctx, img->surface(), x, y);
+  cairo_set_source_surface(ctx, img->surface(), dx, dy);
   cairo_paint(ctx);
   cairo_restore(ctx);
 
