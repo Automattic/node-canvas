@@ -30,7 +30,6 @@ app.get('/', function(req, res){
   res.render('tests');
 });
 
-var n = 0;
 app.post('/render', function(req, res, next){
   // Normalize state.png as ./public/state.png
   // no good way around this at the moment
