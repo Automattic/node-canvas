@@ -60,6 +60,8 @@ class Canvas: public node::ObjectWrap {
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Local<Value> Error(cairo_status_t status);
     inline cairo_surface_t *surface(){ return _surface; }
+    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
+    inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     Canvas(int width, int height);
     void resurface();
 
