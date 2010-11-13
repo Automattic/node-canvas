@@ -1388,50 +1388,56 @@ tests['font state'] = function(ctx){
   ctx.fillText('Boom again!', 50, 140);
 };
 
-tests['drawImage(img,0,0)'] = function(ctx){
+tests['drawImage(img,0,0)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 0, 0);
+    done();
   };
   img.src = 'state.png';
 };
 
-tests['drawImage(img,x,y)'] = function(ctx){
+tests['drawImage(img,x,y)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 5, 25);
+    done();
   };
   img.src = 'state.png';
 };
 
-tests['drawImage(img,x,y,w,h) scale down'] = function(ctx){
+tests['drawImage(img,x,y,w,h) scale down'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 25, 25, 10, 10);
+    done();
   };
   img.src = 'state.png';
 };
 
-tests['drawImage(img,x,y,w,h) scale up'] = function(ctx){
+tests['drawImage(img,x,y,w,h) scale up'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 0, 0, 200, 200);
+    done();
   };
   img.src = 'state.png';
 };
 
-tests['drawImage(img,x,y,w,h) scale vertical'] = function(ctx){
+tests['drawImage(img,x,y,w,h) scale vertical'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 0, 0, img.width, 200);
+    done();
   };
   img.src = 'state.png';
 };
 
-tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function(ctx){
+tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
     ctx.drawImage(img, 13, 13, 80, 80, 25, 25, img.width / 2, img.height / 2);
+    done();
   };
   img.src = 'state.png';
 };

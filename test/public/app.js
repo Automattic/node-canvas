@@ -49,7 +49,7 @@ function runTests() {
 function runTest(name, canvas, dest) {
   var fn = tests[name]
     , start = new Date;
-  fn(canvas.getContext('2d'));
+  fn(canvas.getContext('2d'), function(){});
   canvas.title += ' (rendered in ' + (new Date - start) + 'ms)';
   renderOnServer(name, canvas, function(res){
     if (res.error) {

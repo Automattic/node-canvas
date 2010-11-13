@@ -30,6 +30,7 @@ app.get('/', function(req, res){
   res.render('tests');
 });
 
+var n = 0;
 app.post('/render', function(req, res, next){
   // Normalize state.png as ./public/state.png
   // no good way around this at the moment
@@ -43,12 +44,16 @@ app.post('/render', function(req, res, next){
     , ctx = canvas.getContext('2d')
     , start = new Date;
 
-  fn(ctx);
-  var duration = new Date - start;
+  function done(){
+    var duration = new Date - start;
+    canvas.toDataURL(function(err, str){
+      res.send({ data: str, duration: duration });
+    });
+  }
 
-  canvas.toDataURL(function(err, str){
-    res.send({ data: str, duration: duration });
-  });
+  2 == fn.length 
+    ? fn(ctx, done)
+    : fn(ctx), done();
 });
 
 app.listen(parseInt(process.argv[2] || '3000', 10));
