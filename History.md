@@ -1,4 +1,12 @@
 
+0.0.8 / 2010-11-12 
+==================
+
+  * Added `CanvasRenderingContext2d#drawImage()`
+  * Fixed `free()` call missing stdlib
+  * Fixed Image#{width,height} initialization to 0
+  * Fixed; load image on non-LOADING state
+
 0.0.7 / 2010-11-12 
 ==================
 
