@@ -14,6 +14,7 @@
 #include <cairo.h>
 
 using namespace v8;
+using namespace node;
 
 /*
  * Maxmimum states per context.

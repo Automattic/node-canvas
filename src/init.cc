@@ -7,6 +7,8 @@
 
 #include "Canvas.h"
 #include "Image.h"
+#include "ImageData.h"
+#include "PixelArray.h"
 #include "CanvasGradient.h"
 #include "CanvasRenderingContext2d.h"
 
@@ -15,6 +17,8 @@ init (Handle<Object> target) {
   HandleScope scope;
   Canvas::Initialize(target);
   Image::Initialize(target);
+  ImageData::Initialize(target);
+  PixelArray::Initialize(target);
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));

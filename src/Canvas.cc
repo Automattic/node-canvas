@@ -12,9 +12,6 @@
 #include <node_buffer.h>
 #include <node_version.h>
 
-using namespace v8;
-using namespace node;
-
 /*
  * Buffer data pointer access.
  */
