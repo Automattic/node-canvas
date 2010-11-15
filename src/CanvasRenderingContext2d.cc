@@ -405,7 +405,6 @@ Context2d::DrawImage(const Arguments &args) {
 #endif
   
   // TODO: instanceof
-  // TODO: arg handling / boundaries
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -444,7 +443,6 @@ Context2d::DrawImage(const Arguments &args) {
       dh = img->height;
       break;
     default:
-      // TODO: throw
       return ThrowException(Exception::TypeError(String::New("invalid arguments")));
   }
 
