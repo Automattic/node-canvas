@@ -90,19 +90,18 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
   // Normalize data (argb -> rgba)
   for (int y = 0; y < height; ++y) {
     uint32_t *srcRow = (uint32_t *)(src + _stride * y);
-    uint32_t *dstRow = (uint32_t *)(dst + _stride * y); 
     for (int x = 0; x < width; ++x) {
+      int bx = x * 4;
       uint32_t *pixel = srcRow + x;
-      uint32_t *dstPixel = dstRow + x;
 
       // premultiplied
       uint8_t a = *pixel >> 24;
-      uint8_t r = (*pixel >> 16) * 255 / a;
-      uint8_t g = (*pixel >> 8) * 255 / a;
-      uint8_t b = *pixel * 255 / a;
-
-      printf("rgba(%d,%d,%d,%d)\n", r,g,b,a);
+      dst[bx + 3] = a;
+      dst[bx + 0] = (*pixel >> 16) * 255 / a;
+      dst[bx + 1] = (*pixel >> 8) * 255 / a;
+      dst[bx + 2] = *pixel * 255 / a;
     }
+    dst += _stride;
   }
 }
 
