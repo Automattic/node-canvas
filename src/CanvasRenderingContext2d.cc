@@ -402,7 +402,7 @@ Context2d::DrawImage(const Arguments &args) {
 
 #if CAIRO_VERSION_MINOR < 10
   return ThrowException(Exception::Error(String::New("drawImage() needs cairo >= 1.10.0")));
-#endif
+#else
   
   // TODO: instanceof
   Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
@@ -473,6 +473,8 @@ Context2d::DrawImage(const Arguments &args) {
 
   cairo_restore(ctx);
   cairo_surface_destroy(src);
+
+#endif
 
   return Undefined();
 }
