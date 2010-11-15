@@ -78,11 +78,32 @@ PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
  * Initialize a new PixelArray.
  */
 
-PixelArray::PixelArray(Canvas *canvas, int src_x, int src_y, int width, int height):
+PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
   _width(width), _height(height) {
-  _data = (uint8_t *) malloc(length());
+
+  // Alloc space for our new data
+  _stride = width * 4;
+  uint8_t *dst = _data = (uint8_t *) malloc(length());
   memset(_data, 0, length());
-  _data = cairo_image_surface_get_data(canvas->surface());
+  uint8_t *src = canvas->data();
+
+  // Normalize data (argb -> rgba)
+  for (int y = 0; y < height; ++y) {
+    uint32_t *srcRow = (uint32_t *)(src + _stride * y);
+    uint32_t *dstRow = (uint32_t *)(dst + _stride * y); 
+    for (int x = 0; x < width; ++x) {
+      uint32_t *pixel = srcRow + x;
+      uint32_t *dstPixel = dstRow + x;
+
+      // premultiplied
+      uint8_t a = *pixel >> 24;
+      uint8_t r = (*pixel >> 16) * 255 / a;
+      uint8_t g = (*pixel >> 8) * 255 / a;
+      uint8_t b = *pixel * 255 / a;
+
+      printf("rgba(%d,%d,%d,%d)\n", r,g,b,a);
+    }
+  }
 }
 
 PixelArray::PixelArray(int width, int height):
