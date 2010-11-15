@@ -408,7 +408,7 @@ Context2d::PutImageData(const Arguments &args) {
     , dw = arr->width()
     , dh = arr->height();
 
-  uint8_t *srcRows = src + sy + srcStride + sx * 4;
+  uint8_t *srcRows = src;
   for (int y = 0; y < dh; ++y) {
     uint32_t *row = (uint32_t *)(dst + dstStride * (y + dy));
     for (int x = 0; x < dw; ++x) {

@@ -90,10 +90,10 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
 
   // Normalize data (argb -> rgba)
   for (int y = 0; y < height; ++y) {
-    uint32_t *row = (uint32_t *)(src + srcStride * y);
+    uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
     for (int x = 0; x < width; ++x) {
       int bx = x * 4;
-      uint32_t *pixel = row + x;
+      uint32_t *pixel = row + x + sx;
 
       // ARGB
       uint8_t a = *pixel >> 24;
