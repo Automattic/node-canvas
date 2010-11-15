@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "Canvas.h"
 #include "Image.h"
+#include "ImageData.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
@@ -65,6 +66,7 @@ Context2d::Initialize(Handle<Object> target) {
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(t, "putImageData", PutImageData);
   NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
@@ -379,6 +381,43 @@ Context2d::New(const Arguments &args) {
   Context2d *context = new Context2d(canvas);
   context->Wrap(args.This());
   return args.This();
+}
+
+/*
+ * Put image data.
+ */
+
+Handle<Value>
+Context2d::PutImageData(const Arguments &args) {
+  HandleScope scope;
+  // TODO: validate
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args[0]->ToObject());
+  PixelArray *arr = imageData->pixelArray();
+  
+  uint8_t *src = arr->data();
+  uint8_t *dst = context->canvas()->data();
+
+  int srcStride = arr->stride()
+    , dstStride = context->canvas()->stride();
+
+  int dx = args[1]->NumberValue()
+    , dy = args[1]->NumberValue()
+    , dw = arr->width()
+    , dh = arr->height();
+
+
+  for (int y = 0; y < dh; ++y) {
+    uint32_t *srcRow = (uint32_t *)(src + srcStride * (y + dy));
+    uint32_t *dstRow = (uint32_t *)(dst + dstStride * (y + dy));
+    for (int x = 0; x < dw; ++x) {
+      uint32_t *srcPixel = srcRow + x + dx;
+      uint32_t *dstPixel = dstRow + x + dx;
+      *dstPixel = *srcPixel;
+    }
+  }
+
+  return Undefined();
 }
 
 /*
