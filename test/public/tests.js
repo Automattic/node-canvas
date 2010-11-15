@@ -220,7 +220,7 @@ tests['rect()'] = function(ctx){
 };
 
 tests['clip()'] = function(ctx){
-  ctx.arc(50,50,50,0,Math.PI * 2);
+  ctx.arc(50,50,50,0,Math.PI * 2,false);
   ctx.stroke();
   ctx.clip();
   ctx.fillStyle = 'rgba(0,0,0,.5)';
@@ -856,7 +856,7 @@ tests['globalCompositeOperation source-over'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'source-over';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -865,7 +865,7 @@ tests['globalCompositeOperation source-in'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'source-in';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -874,7 +874,7 @@ tests['globalCompositeOperation source-out'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'source-out';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -883,7 +883,7 @@ tests['globalCompositeOperation destination-in'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'destination-in';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -892,7 +892,7 @@ tests['globalCompositeOperation destination-out'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'destination-out';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -901,7 +901,7 @@ tests['globalCompositeOperation destination-atop'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'destination-atop';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -910,7 +910,7 @@ tests['globalCompositeOperation xor'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'xor';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -919,7 +919,7 @@ tests['globalCompositeOperation copy'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'copy';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -928,7 +928,7 @@ tests['globalCompositeOperation lighter'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'lighter';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -937,7 +937,7 @@ tests['globalCompositeOperation darker'] = function(ctx){
   ctx.fillRect(0,0,100,100);
   ctx.globalCompositeOperation = 'darker';
   ctx.fillStyle = 'red';
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -950,7 +950,7 @@ tests['globalCompositeOperation multiply'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -963,7 +963,7 @@ tests['globalCompositeOperation screen'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -976,7 +976,7 @@ tests['globalCompositeOperation overlay'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -989,7 +989,7 @@ tests['globalCompositeOperation hard-light'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -1002,7 +1002,7 @@ tests['globalCompositeOperation hsl-hue'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -1015,7 +1015,7 @@ tests['globalCompositeOperation hsl-saturation'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -1028,7 +1028,7 @@ tests['globalCompositeOperation hsl-color'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 
@@ -1041,7 +1041,7 @@ tests['globalCompositeOperation hsl-luminosity'] = function(ctx){
   grad.addColorStop(0.2, 'red');
   grad.addColorStop(1, 'black');
   ctx.fillStyle = grad;
-  ctx.arc(80,80,50,0,Math.PI * 2);
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
   ctx.fill();
 };
 

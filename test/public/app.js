@@ -1,4 +1,8 @@
 
+function log() {
+  if (window.console) console.log.apply(this, arguments);
+}
+
 window.onload = function(){
   runTests();
   get('run').addEventListener('click', runTests, false);
@@ -31,7 +35,7 @@ function runTests() {
       , tr = create('tr')
       , tds = [create('td'), create('td'), create('td')]
       , src = create('pre');
-    src.innerText = fn.toString();
+    src.appendChild(document.createTextNode(fn.toString()));
     canvas.width = 200;
     canvas.height = 200;
     canvas.title = name;
@@ -49,7 +53,11 @@ function runTests() {
 function runTest(name, canvas, dest) {
   var fn = tests[name]
     , start = new Date;
-  fn(canvas.getContext('2d'), function(){});
+  try {
+    fn(canvas.getContext('2d'), function(){});
+  } catch (err) {
+    log(err);
+  }
   canvas.title += ' (rendered in ' + (new Date - start) + 'ms)';
   renderOnServer(name, canvas, function(res){
     if (res.error) {
@@ -57,7 +65,7 @@ function runTest(name, canvas, dest) {
       p.innerText = res.error;
       dest.appendChild(p);
     } else if (res.data) {
-      var img = create('image');
+      var img = create('img');
       img.src = res.data;
       img.alt = img.title = name + ' (rendered in ' + res.duration + 'ms)';
       dest.appendChild(img);
