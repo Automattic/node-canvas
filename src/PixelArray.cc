@@ -82,6 +82,7 @@ PixelArray::PixelArray(Canvas *canvas, int src_x, int src_y, int width, int heig
   _width(width), _height(height) {
   _data = (uint8_t *) malloc(length());
   memset(_data, 0, length());
+  _data = cairo_image_surface_get_data(canvas->surface());
 }
 
 PixelArray::PixelArray(int width, int height):
