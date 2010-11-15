@@ -20,7 +20,6 @@ class ImageData: public node::ObjectWrap {
     static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
     inline PixelArray *pixelArray(){ return _arr; }
     ImageData(PixelArray *arr): _arr(arr) {}
-    ~ImageData() { delete _arr; };
   private:
     PixelArray *_arr;
 };

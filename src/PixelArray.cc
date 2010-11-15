@@ -56,7 +56,6 @@ PixelArray::New(const Arguments &args) {
     default:
       return ThrowException(Exception::TypeError(String::New("invalid arguments")));
   }
-
   // Let v8 handle accessors (and clamping)
   args.This()->SetIndexedPropertiesToPixelData(
       arr->data()
@@ -81,6 +80,8 @@ PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
 
 PixelArray::PixelArray(Canvas *canvas, int src_x, int src_y, int width, int height):
   _width(width), _height(height) {
+  _data = (uint8_t *) malloc(length());
+  memset(_data, 0, length());
 }
 
 PixelArray::PixelArray(int width, int height):
@@ -90,5 +91,5 @@ PixelArray::PixelArray(int width, int height):
 }
 
 PixelArray::~PixelArray() {
-
+  free(_data);
 }

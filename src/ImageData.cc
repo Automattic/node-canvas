@@ -33,8 +33,9 @@ Handle<Value>
 ImageData::New(const Arguments &args) {
   HandleScope scope;
   // TODO: arg assertions
-  PixelArray *data = ObjectWrap::Unwrap<PixelArray>(args[0]->ToObject());
-  ImageData *imageData = new ImageData(data);
+  PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(args[0]->ToObject());
+  ImageData *imageData = new ImageData(arr);
+  args.This()->Set(String::NewSymbol("data"), args[0]);
   imageData->Wrap(args.This());
   return args.This();
 }
