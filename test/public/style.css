@@ -27,3 +27,10 @@ p.msg {
   width: 100%;
   margin-top: 35px;
 }
+table tr td:nth-child(1),
+table tr td:nth-child(2) {
+  width: 200px;
+}
+table tr td:nth-child(3) {
+  padding: 0 45px;
+}

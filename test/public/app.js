@@ -16,8 +16,14 @@ function get(id) {
   return document.getElementById(id);
 }
 
-function create(type) {
-  return document.createElement(type);
+function create(type, str) {
+  var el = document.createElement(type);
+  if (str) el.appendChild(text(str));
+  return el;
+}
+
+function text(str) {
+  return document.createTextNode(str);
 }
 
 function clearTests() {
@@ -33,24 +39,26 @@ function runTests() {
     var fn = tests[name]
       , canvas = create('canvas')
       , tr = create('tr')
-      , tds = [create('td'), create('td'), create('td')]
-      , src = create('pre');
-    src.appendChild(document.createTextNode(fn.toString()));
+      , tds = [create('td'), create('td'), create('td')];
+
     canvas.width = 200;
     canvas.height = 200;
     canvas.title = name;
+
     tds[1].appendChild(canvas);
-    tds[2].appendChild(src);
+    tds[2].appendChild(create('h3', name));
+
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);
     tr.appendChild(tds[2]);
+
     tbody.appendChild(tr);
     table.appendChild(tbody);
-    runTest(name, canvas, tds[0]);
+    runTest(name, canvas, tds[0], tds[2]);
   }
 }
 
-function runTest(name, canvas, dest) {
+function runTest(name, canvas, dest, stats) {
   var fn = tests[name]
     , start = new Date;
   try {
@@ -58,7 +66,7 @@ function runTest(name, canvas, dest) {
   } catch (err) {
     log(err);
   }
-  canvas.title += ' (rendered in ' + (new Date - start) + 'ms)';
+  stats.appendChild(create('p', 'browser: ' + (new Date - start) + 'ms'));
   renderOnServer(name, canvas, function(res){
     if (res.error) {
       var p = create('p');
@@ -67,7 +75,7 @@ function runTest(name, canvas, dest) {
     } else if (res.data) {
       var img = create('img');
       img.src = res.data;
-      img.alt = img.title = name + ' (rendered in ' + res.duration + 'ms)';
+      stats.appendChild(create('p', 'node: ' + res.duration + 'ms'));
       dest.appendChild(img);
     }
   });
