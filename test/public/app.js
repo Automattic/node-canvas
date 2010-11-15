@@ -1,5 +1,6 @@
-function LOG() {
-  if (window.console) console.log(LOG.arguments);
+
+function log() {
+  if (window.console) console.log.apply(this, arguments);
 }
 
 window.onload = function(){
@@ -55,7 +56,7 @@ function runTest(name, canvas, dest) {
   try {
     fn(canvas.getContext('2d'), function(){});
   } catch (err) {
-    LOG(err);
+    log(err);
   }
   canvas.title += ' (rendered in ' + (new Date - start) + 'ms)';
   renderOnServer(name, canvas, function(res){
