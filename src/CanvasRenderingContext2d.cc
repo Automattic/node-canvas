@@ -401,20 +401,25 @@ Context2d::PutImageData(const Arguments &args) {
   int srcStride = arr->stride()
     , dstStride = context->canvas()->stride();
 
-  int dx = args[1]->NumberValue()
-    , dy = args[1]->NumberValue()
+  int sx = 0
+    , sy = 0
+    , dx = args[1]->NumberValue()
+    , dy = args[2]->NumberValue()
     , dw = arr->width()
     , dh = arr->height();
 
-
+  uint8_t *srcRows = src + sy + srcStride + sx * 4;
   for (int y = 0; y < dh; ++y) {
-    uint32_t *srcRow = (uint32_t *)(src + srcStride * (y + dy));
-    uint32_t *dstRow = (uint32_t *)(dst + dstStride * (y + dy));
+    uint32_t *row = (uint32_t *)(dst + dstStride * (y + dy));
     for (int x = 0; x < dw; ++x) {
-      uint32_t *srcPixel = srcRow + x + dx;
-      uint32_t *dstPixel = dstRow + x + dx;
-      *dstPixel = *srcPixel;
+      int bx = x * 4;
+      uint32_t *pixel = row + x + dx;
+      *pixel = srcRows[bx + 3] << 24
+        | srcRows[bx + 0] << 16
+        | srcRows[bx + 1] << 8
+        | srcRows[bx + 2];
     }
+    srcRows += srcStride;
   }
 
   // TODO: cairo_surface_mark_dirty_rectangle
