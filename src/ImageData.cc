@@ -46,7 +46,7 @@ ImageData::New(const Arguments &args) {
 Handle<Value>
 ImageData::GetWidth(Local<String> prop, const AccessorInfo &info) {
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(info.This());
-  return Number::New(imageData->pixelArray()->getWidth());
+  return Number::New(imageData->pixelArray()->width());
 }
 
 /*
@@ -56,5 +56,5 @@ ImageData::GetWidth(Local<String> prop, const AccessorInfo &info) {
 Handle<Value>
 ImageData::GetHeight(Local<String> prop, const AccessorInfo &info) {
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(info.This());
-  return Number::New(imageData->pixelArray()->getHeight());
+  return Number::New(imageData->pixelArray()->height());
 }
