@@ -9,7 +9,7 @@
 #include "CanvasGradient.h"
 
 /*
- * Initialie CanvasGradient.
+ * Initialize CanvasGradient.
  */
 
 void
