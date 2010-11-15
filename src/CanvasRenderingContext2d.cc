@@ -385,6 +385,10 @@ Context2d::New(const Arguments &args) {
 
 /*
  * Put image data.
+ *
+ *  - imageData, dx, dy
+ *  - imageData, dx, dy, sx, sy, dw, dh
+ *
  */
 
 Handle<Value>
@@ -405,13 +409,30 @@ Context2d::PutImageData(const Arguments &args) {
     , sy = 0
     , dx = args[1]->NumberValue()
     , dy = args[2]->NumberValue()
-    , dw = arr->width()
-    , dh = arr->height();
+    , dw
+    , dh
+    , rows
+    , cols;
+
+  switch (args.Length()) {
+    case 3:
+      cols = arr->width();
+      rows = arr->height();
+      break;
+    case 7:
+      sx = args[3]->NumberValue();
+      sx = args[4]->NumberValue();
+      dw = args[5]->NumberValue();
+      dh = args[6]->NumberValue();
+      break;
+    default:
+      return ThrowException(Exception::Error(String::New("invalid arguments")));
+  }
 
   uint8_t *srcRows = src;
-  for (int y = 0; y < dh; ++y) {
+  for (int y = 0; y < rows; ++y) {
     uint32_t *row = (uint32_t *)(dst + dstStride * (y + dy));
-    for (int x = 0; x < dw; ++x) {
+    for (int x = 0; x < cols; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + dx;
 
