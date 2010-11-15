@@ -94,12 +94,17 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
       int bx = x * 4;
       uint32_t *pixel = row + x;
 
-      // premultiplied
+      // ARGB
       uint8_t a = *pixel >> 24;
+      uint8_t r = *pixel >> 16;
+      uint8_t g = *pixel >> 8;
+      uint8_t b = *pixel;
+
+      // undo premultiplication
       dst[bx + 3] = a;
-      dst[bx + 0] = (*pixel >> 16) * 255 / a;
-      dst[bx + 1] = (*pixel >> 8) * 255 / a;
-      dst[bx + 2] = *pixel * 255 / a;
+      dst[bx + 0] = r * 255 / a;
+      dst[bx + 1] = g * 255 / a;
+      dst[bx + 2] = b * 255 / a;
     }
     dst += s;
   }
