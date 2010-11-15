@@ -399,6 +399,10 @@ Context2d::DrawImage(const Arguments &args) {
 
   if (args.Length() < 3)
     return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+
+#if CAIRO_VERSION_MINOR < 10
+  return ThrowException(Exception::Error(String::New("drawImage() needs cairo >= 1.10.0")));
+#endif
   
   // TODO: instanceof
   // TODO: arg handling / boundaries
@@ -448,6 +452,7 @@ Context2d::DrawImage(const Arguments &args) {
   cairo_save(ctx);
 
   // Source surface
+  // TODO: only works with cairo >= 1.10.0
   cairo_surface_t *src = cairo_surface_create_for_rectangle(
       img->surface()
     , sx
