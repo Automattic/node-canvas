@@ -13,9 +13,6 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
-using namespace v8;
-using namespace node;
-
 /*
  * Set RGBA.
  */

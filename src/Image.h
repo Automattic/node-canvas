@@ -10,8 +10,6 @@
 
 #include "Canvas.h"
 
-using namespace v8;
-
 class Image: public node::ObjectWrap {
   public:
     char *filename;

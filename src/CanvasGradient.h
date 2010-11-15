@@ -10,8 +10,6 @@
 
 #include "Canvas.h"
 
-using namespace v8;
-
 class Gradient: public node::ObjectWrap {
   public:
     static void Initialize(Handle<Object> target);
