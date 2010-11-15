@@ -18,13 +18,13 @@ class PixelArray: public node::ObjectWrap {
     inline int length(){ return _width * _height * 4; }
     inline int width(){ return _width; }
     inline int height(){ return _height; }
-    inline int stride(){ return _stride; }
+    inline int stride(){ return _width * 4; }
     inline uint8_t *data(){ return _data; }
     PixelArray(Canvas *canvas, int x, int y, int width, int height);
     PixelArray(int width, int height);
     ~PixelArray();
   private:
-    int _stride;
+    uint8_t *alloc();
     uint8_t *_data;
     int _width, _height;
 };
