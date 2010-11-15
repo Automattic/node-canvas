@@ -85,11 +85,12 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
   // Alloc space for our new data
   uint8_t *dst = alloc();
   uint8_t *src = canvas->data();
-  int s = stride();
+  int srcStride = canvas->stride()
+    , dstStride = stride();
 
   // Normalize data (argb -> rgba)
   for (int y = 0; y < height; ++y) {
-    uint32_t *row = (uint32_t *)(src + s * y);
+    uint32_t *row = (uint32_t *)(src + srcStride * y);
     for (int x = 0; x < width; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x;
@@ -106,7 +107,7 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
       dst[bx + 1] = g * 255 / a;
       dst[bx + 2] = b * 255 / a;
     }
-    dst += s;
+    dst += dstStride;
   }
 }
 
