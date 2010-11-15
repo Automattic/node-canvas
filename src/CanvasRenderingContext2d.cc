@@ -417,6 +417,8 @@ Context2d::PutImageData(const Arguments &args) {
     }
   }
 
+  // TODO: cairo_surface_mark_dirty_rectangle
+
   return Undefined();
 }
 
