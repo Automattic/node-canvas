@@ -414,10 +414,18 @@ Context2d::PutImageData(const Arguments &args) {
     for (int x = 0; x < dw; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + dx;
-      *pixel = srcRows[bx + 3] << 24
-        | srcRows[bx + 0] << 16
-        | srcRows[bx + 1] << 8
-        | srcRows[bx + 2];
+
+      // RGBA
+      uint8_t a = srcRows[bx + 3];
+      uint8_t r = srcRows[bx + 0];
+      uint8_t g = srcRows[bx + 1];
+      uint8_t b = srcRows[bx + 3];
+
+      // ARGB
+      *pixel = a << 24
+        | r << 16
+        | g << 8
+        | b;
     }
     srcRows += srcStride;
   }
