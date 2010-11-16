@@ -1441,3 +1441,39 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function(ctx, done){
   };
   img.src = 'state.png';
 };
+
+tests['putImageData(dx,dy)'] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+                       Math.floor(255-42.5*j) + ',0)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+  var data = ctx.getImageData(0,0,50,50);
+  ctx.putImageData(data,10,10);
+};
+
+tests['putImageData(dx,dy) 2'] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+                       Math.floor(255-42.5*j) + ',0)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+  var data = ctx.getImageData(25,25,50,50);
+  ctx.putImageData(data,10,10);
+};
+
+tests['putImageData(dx,dy) 3'] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+                       Math.floor(255-42.5*j) + ',0)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+  var data = ctx.getImageData(10,25,10,50);
+  ctx.putImageData(data,50,10);
+};
