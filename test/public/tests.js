@@ -1486,6 +1486,6 @@ tests['putImageData() 4'] = function(ctx){
       ctx.fillRect(j*25,i*25,25,25);
     }
   }
-  var data = ctx.getImageData(10,25,10,50);
-  ctx.putImageData(data,50,10);
+  var data = ctx.getImageData(0,0,50,50);
+  ctx.putImageData(data,30,30,10,10,30,30);
 };
