@@ -1501,5 +1501,18 @@ tests['putImageData() 5'] = function(ctx){
   }
   ctx.strokeRect(60,60,50,30);
   var data = ctx.getImageData(0,0,50,50);
+  ctx.putImageData(data,60,60,0,0,50,30);
+};
+
+tests['putImageData() 6'] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+                       Math.floor(255-42.5*j) + ',0)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+  ctx.strokeRect(60,60,50,30);
+  var data = ctx.getImageData(0,0,50,50);
   ctx.putImageData(data,60,60,30,10,50,30);
 };
