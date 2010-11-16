@@ -85,23 +85,36 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
   // Alloc space for our new data
   uint8_t *dst = alloc();
   uint8_t *src = canvas->data();
-  int s = stride();
+  int srcStride = canvas->stride()
+    , dstStride = stride();
 
   // Normalize data (argb -> rgba)
   for (int y = 0; y < height; ++y) {
-    uint32_t *row = (uint32_t *)(src + s * y);
+    uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
     for (int x = 0; x < width; ++x) {
       int bx = x * 4;
-      uint32_t *pixel = row + x;
+      uint32_t *pixel = row + x + sx;
 
-      // premultiplied
+      // ARGB
       uint8_t a = *pixel >> 24;
+      uint8_t r = *pixel >> 16;
+      uint8_t g = *pixel >> 8;
+      uint8_t b = *pixel;
+
+      // undo premultiplication
       dst[bx + 3] = a;
-      dst[bx + 0] = (*pixel >> 16) * 255 / a;
-      dst[bx + 1] = (*pixel >> 8) * 255 / a;
-      dst[bx + 2] = *pixel * 255 / a;
+      // TODO: abstract
+      if (a) {
+        dst[bx + 0] = r * 255 / a;
+        dst[bx + 1] = g * 255 / a;
+        dst[bx + 2] = b * 255 / a;
+      } else {
+        dst[bx + 0] = r;
+        dst[bx + 1] = g;
+        dst[bx + 2] = b;
+      }
     }
-    dst += s;
+    dst += dstStride;
   }
 }
 

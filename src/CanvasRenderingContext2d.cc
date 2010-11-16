@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "Canvas.h"
 #include "Image.h"
+#include "ImageData.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
@@ -65,6 +66,7 @@ Context2d::Initialize(Handle<Object> target) {
   // Prototype
   Local<ObjectTemplate> proto = t->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(t, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(t, "putImageData", PutImageData);
   NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
@@ -379,6 +381,92 @@ Context2d::New(const Arguments &args) {
   Context2d *context = new Context2d(canvas);
   context->Wrap(args.This());
   return args.This();
+}
+
+/*
+ * Put image data.
+ *
+ *  - imageData, dx, dy
+ *  - imageData, dx, dy, sx, sy, dw, dh
+ *
+ */
+
+Handle<Value>
+Context2d::PutImageData(const Arguments &args) {
+  HandleScope scope;
+  // TODO: validate
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args[0]->ToObject());
+  PixelArray *arr = imageData->pixelArray();
+  
+  uint8_t *src = arr->data();
+  uint8_t *dst = context->canvas()->data();
+
+  int srcStride = arr->stride()
+    , dstStride = context->canvas()->stride();
+
+  int sx = 0
+    , sy = 0
+    , sw = 0
+    , sh = 0
+    , dx = args[1]->NumberValue()
+    , dy = args[2]->NumberValue()
+    , rows
+    , cols;
+
+  // TODO: spec boundaries
+  switch (args.Length()) {
+    // imageData, dx, dy
+    case 3:
+      cols = arr->width();
+      rows = arr->height();
+      break;
+    // imageData, dx, dy, sx, sy, dw, dh
+    case 7: {
+      sx = args[3]->NumberValue();
+      sy = args[4]->NumberValue();
+      sw = args[5]->NumberValue();
+      sh = args[6]->NumberValue();
+      cols = sw;
+      rows = sh;
+      dx += sx; 
+      dy += sy; 
+      }
+      break;
+    default:
+      return ThrowException(Exception::Error(String::New("invalid arguments")));
+  }
+
+  uint8_t *srcRows = src + sy * srcStride + sx * 4;
+  for (int y = 0; y < rows; ++y) {
+    uint32_t *row = (uint32_t *)(dst + dstStride * (y + dy));
+    for (int x = 0; x < cols; ++x) {
+      int bx = x * 4;
+      uint32_t *pixel = row + x + dx;
+
+      // RGBA
+      uint8_t a = srcRows[bx + 3];
+      uint8_t r = srcRows[bx + 0];
+      uint8_t g = srcRows[bx + 1];
+      uint8_t b = srcRows[bx + 2];
+
+      // ARGB
+      *pixel = a << 24
+        | r << 16
+        | g << 8
+        | b;
+    }
+    srcRows += srcStride;
+  }
+
+  cairo_surface_mark_dirty_rectangle(
+      context->canvas()->surface()
+    , dx
+    , dy
+    , cols
+    , rows);
+
+  return Undefined();
 }
 
 /*
