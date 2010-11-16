@@ -1514,5 +1514,5 @@ tests['putImageData() 6'] = function(ctx){
   }
   ctx.strokeRect(60,60,50,30);
   var data = ctx.getImageData(0,0,50,50);
-  ctx.putImageData(data,60,60,30,10,50,30);
+  ctx.putImageData(data,60,60,10,0,35,30);
 };
