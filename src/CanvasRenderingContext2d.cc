@@ -414,11 +414,14 @@ Context2d::PutImageData(const Arguments &args) {
     , rows
     , cols;
 
+  // TODO: spec boundaries
   switch (args.Length()) {
+    // imageData, dx, dy
     case 3:
       cols = arr->width();
       rows = arr->height();
       break;
+    // imageData, dx, dy, sx, sy, dw, dh
     case 7: {
       sx = args[3]->NumberValue();
       sy = args[4]->NumberValue();
@@ -426,7 +429,8 @@ Context2d::PutImageData(const Arguments &args) {
       sh = args[6]->NumberValue();
       cols = sw;
       rows = sh;
-      //dx += sx + sw; 
+      dx += sx; 
+      dy += sy; 
       }
       break;
     default:
@@ -455,7 +459,12 @@ Context2d::PutImageData(const Arguments &args) {
     srcRows += srcStride;
   }
 
-  // TODO: cairo_surface_mark_dirty_rectangle
+  cairo_surface_mark_dirty_rectangle(
+      context->canvas()->surface()
+    , dx
+    , dy
+    , cols
+    , rows);
 
   return Undefined();
 }
