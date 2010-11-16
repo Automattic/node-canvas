@@ -409,8 +409,6 @@ Context2d::PutImageData(const Arguments &args) {
     , sy = 0
     , dx = args[1]->NumberValue()
     , dy = args[2]->NumberValue()
-    , dw
-    , dh
     , rows
     , cols;
 
@@ -421,9 +419,9 @@ Context2d::PutImageData(const Arguments &args) {
       break;
     case 7:
       sx = args[3]->NumberValue();
-      sx = args[4]->NumberValue();
-      dw = args[5]->NumberValue();
-      dh = args[6]->NumberValue();
+      sy = args[4]->NumberValue();
+      cols = args[5]->NumberValue();
+      rows = args[6]->NumberValue();
       break;
     default:
       return ThrowException(Exception::Error(String::New("invalid arguments")));
