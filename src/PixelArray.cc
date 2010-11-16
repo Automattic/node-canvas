@@ -103,9 +103,16 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
 
       // undo premultiplication
       dst[bx + 3] = a;
-      dst[bx + 0] = r * 255 / a;
-      dst[bx + 1] = g * 255 / a;
-      dst[bx + 2] = b * 255 / a;
+      // TODO: abstract
+      if (a) {
+        dst[bx + 0] = r * 255 / a;
+        dst[bx + 1] = g * 255 / a;
+        dst[bx + 2] = b * 255 / a;
+      } else {
+        dst[bx + 0] = r;
+        dst[bx + 1] = g;
+        dst[bx + 2] = b;
+      }
     }
     dst += dstStride;
   }
