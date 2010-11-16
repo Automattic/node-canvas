@@ -1530,3 +1530,15 @@ tests['putImageData() CTM'] = function(ctx){
   var data = ctx.getImageData(0,0,50,50);
   ctx.putImageData(data,60,60,10,20,35,30);
 };
+
+tests['putImageData() alpha'] = function(ctx){
+  ctx.fillStyle = 'rgba(255,0,0,0.5)'
+  ctx.fillRect(0,0,50,100);
+  ctx.fillStyle = 'rgba(0,255,0,0.5)'
+  ctx.fillRect(50,0,50,100);
+  ctx.fillStyle = 'rgba(0,0,255,0.5)'
+  ctx.fillRect(100,0,50,100);
+
+  var data = ctx.getImageData(0,0,120,20);
+  ctx.putImageData(data,20,120);
+};
