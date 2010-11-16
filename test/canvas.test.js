@@ -318,6 +318,7 @@ module.exports = {
     ctx.fillStyle = '#00f';
     ctx.fillRect(2,0,1,6);
 
+    // Full width
     var imageData = ctx.getImageData(0,0,3,6);
     assert.equal(3, imageData.width);
     assert.equal(6, imageData.height);
@@ -337,5 +338,21 @@ module.exports = {
     assert.equal(0, imageData.data[9]);
     assert.equal(255, imageData.data[10]);
     assert.equal(255, imageData.data[11]);
+
+    // Slice
+    var imageData = ctx.getImageData(0,0,2,1);
+    assert.equal(2, imageData.width);
+    assert.equal(1, imageData.height);
+    assert.equal(8, imageData.data.length);
+    
+    assert.equal(255, imageData.data[0]);
+    assert.equal(0, imageData.data[1]);
+    assert.equal(0, imageData.data[2]);
+    assert.equal(255, imageData.data[3]);
+    
+    assert.equal(0, imageData.data[4]);
+    assert.equal(255, imageData.data[5]);
+    assert.equal(0, imageData.data[6]);
+    assert.equal(255, imageData.data[7]);
   }
 }
