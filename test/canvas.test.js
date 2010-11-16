@@ -313,6 +313,11 @@ module.exports = {
     assert.equal(2, imageData.width);
     assert.equal(6, imageData.height);
     assert.equal(2 * 6 * 4, imageData.data.length);
+
+    assert.equal(0, imageData.data[0]);
+    assert.equal(0, imageData.data[1]);
+    assert.equal(0, imageData.data[2]);
+    assert.equal(0, imageData.data[3]);
   },
   
   'test Context2d#createImageData(ImageData)': function(assert){
