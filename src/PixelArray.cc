@@ -128,16 +128,23 @@ PixelArray::PixelArray(int width, int height):
 }
 
 /*
- * Allocate / zero data buffer.
+ * Allocate / zero data buffer. Hint mem adjustment.
  */
 
 uint8_t *
 PixelArray::alloc() {
-  _data = (uint8_t *) malloc(length());
-  memset(_data, 0, length());
+  int len = length();
+  _data = (uint8_t *) malloc(len);
+  memset(_data, 0, len);
+  V8::AdjustAmountOfExternalAllocatedMemory(len);
   return _data;
 }
 
+/*
+ * Hint mem adjustment.
+ */
+
 PixelArray::~PixelArray() {
+  V8::AdjustAmountOfExternalAllocatedMemory(-length());
   free(_data);
 }
