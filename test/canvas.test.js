@@ -354,5 +354,14 @@ module.exports = {
     assert.equal(255, imageData.data[5]);
     assert.equal(0, imageData.data[6]);
     assert.equal(255, imageData.data[7]);
+    
+    // Assignment
+    var data = ctx.getImageData(0,0,5,5).data;
+    data[0] = 50;
+    assert.equal(50, data[0]);
+    data[0] = 280;
+    assert.equal(255, data[0]);
+    data[0] = -4444;
+    assert.equal(0, data[0]);
   }
 }
