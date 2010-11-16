@@ -305,6 +305,16 @@ module.exports = {
     });
   },
   
+  'test Context2d#createImageData(width, height)': function(assert){
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+    
+    var imageData = ctx.createImageData(2,6);
+    assert.equal(2, imageData.width);
+    assert.equal(6, imageData.height);
+    assert.equal(2 * 6 * 4, imageData.data.length);
+  },
+  
   'test Context2d#getImageData()': function(assert){
     var canvas = new Canvas(3, 6)
       , ctx = canvas.getContext('2d');
