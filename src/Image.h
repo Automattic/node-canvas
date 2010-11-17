@@ -36,6 +36,7 @@ class Image: public node::ObjectWrap {
     void loaded();
     void load();
     Image();
+		static Persistent<FunctionTemplate> constructor;
 
     enum {
         DEFAULT

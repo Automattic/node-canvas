@@ -17,18 +17,18 @@
 void
 Image::Initialize(Handle<Object> target) {
   HandleScope scope;
-  Local<FunctionTemplate> t = FunctionTemplate::New(Image::New);
-  t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("Image"));
+	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("Image"));
 
-  Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight);
   proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
-  target->Set(String::NewSymbol("Image"), t->GetFunction());
+  target->Set(String::NewSymbol("Image"), constructor->GetFunction());
 }
 
 /*
