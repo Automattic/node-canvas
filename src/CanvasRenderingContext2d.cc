@@ -430,7 +430,7 @@ Context2d::PutImageData(const Arguments &args) {
       cols = arr->width();
       rows = arr->height();
       break;
-    // imageData, dx, dy, sx, sy, dw, dh
+    // imageData, dx, dy, sx, sy, sw, sh
     case 7:
       sx = args[3]->NumberValue();
       sy = args[4]->NumberValue();
@@ -440,6 +440,7 @@ Context2d::PutImageData(const Arguments &args) {
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
       if (sy + sh > arr->height()) sh = arr->height() - sy;
+      if (sw <= 0 || sh <= 0) return Undefined();
       cols = sw;
       rows = sh;
       dx += sx; 
