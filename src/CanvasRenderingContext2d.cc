@@ -393,7 +393,7 @@ Context2d::New(const Arguments &args) {
  * Put image data.
  *
  *  - imageData, dx, dy
- *  - imageData, dx, dy, sx, sy, dw, dh
+ *  - imageData, dx, dy, sx, sy, sw, sh
  *
  */
 
@@ -424,7 +424,6 @@ Context2d::PutImageData(const Arguments &args) {
     , rows
     , cols;
 
-  // TODO: spec boundaries
   switch (args.Length()) {
     // imageData, dx, dy
     case 3:
@@ -432,16 +431,19 @@ Context2d::PutImageData(const Arguments &args) {
       rows = arr->height();
       break;
     // imageData, dx, dy, sx, sy, dw, dh
-    case 7: {
+    case 7:
       sx = args[3]->NumberValue();
       sy = args[4]->NumberValue();
       sw = args[5]->NumberValue();
       sh = args[6]->NumberValue();
+      if (sx < 0) sw += sx, sx = 0;
+      if (sy < 0) sh += sy, sy = 0;
+      if (sx + sw > arr->width()) sw = arr->width() - sx;
+      if (sy + sh > arr->height()) sh = arr->height() - sy;
       cols = sw;
       rows = sh;
       dx += sx; 
       dy += sy; 
-      }
       break;
     default:
       return ThrowException(Exception::Error(String::New("invalid arguments")));
