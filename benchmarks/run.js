@@ -113,6 +113,14 @@ bm('moveTo() / arc() / stroke()', function(){
   ctx.stroke();
 });
 
+bm('createImageData(300,300)', function(){
+  ctx.createImageData(300,300);
+});
+
+bm('getImageData(0,0,100,100)', function(){
+  ctx.getImageData(0,0,100,100);
+});
+
 // bm('PNGStream 200x200', 50, function(done){
 //   var stream = canvas.createSyncPNGStream();
 //   stream.on('data', function(chunk){
