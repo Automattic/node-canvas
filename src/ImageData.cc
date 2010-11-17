@@ -14,15 +14,15 @@
 void
 ImageData::Initialize(Handle<Object> target) {
   HandleScope scope;
-  Local<FunctionTemplate> t = FunctionTemplate::New(ImageData::New);
-  t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("ImageData"));
+	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ImageData::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("ImageData"));
 
   // Prototype
-  Local<ObjectTemplate> proto = t->PrototypeTemplate();
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight);
-  target->Set(String::NewSymbol("ImageData"), t->GetFunction());
+  target->Set(String::NewSymbol("ImageData"), constructor->GetFunction());
 }
 
 /*
