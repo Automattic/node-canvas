@@ -419,8 +419,8 @@ Context2d::PutImageData(const Arguments &args) {
     , sy = 0
     , sw = 0
     , sh = 0
-    , dx = args[1]->NumberValue()
-    , dy = args[2]->NumberValue()
+    , dx = args[1]->Int32Value()
+    , dy = args[2]->Int32Value()
     , rows
     , cols;
 
@@ -432,10 +432,10 @@ Context2d::PutImageData(const Arguments &args) {
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
-      sx = args[3]->NumberValue();
-      sy = args[4]->NumberValue();
-      sw = args[5]->NumberValue();
-      sh = args[6]->NumberValue();
+      sx = args[3]->Int32Value();
+      sy = args[4]->Int32Value();
+      sw = args[5]->Int32Value();
+      sh = args[6]->Int32Value();
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
@@ -520,26 +520,26 @@ Context2d::DrawImage(const Arguments &args) {
   switch (args.Length()) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = args[1]->NumberValue();
-      sy = args[2]->NumberValue();
-      sw = args[3]->NumberValue();
-      sh = args[4]->NumberValue();
-      dx = args[5]->NumberValue();
-      dy = args[6]->NumberValue();
-      dw = args[7]->NumberValue();
-      dh = args[8]->NumberValue();
+      sx = args[1]->Int32Value();
+      sy = args[2]->Int32Value();
+      sw = args[3]->Int32Value();
+      sh = args[4]->Int32Value();
+      dx = args[5]->Int32Value();
+      dy = args[6]->Int32Value();
+      dw = args[7]->Int32Value();
+      dh = args[8]->Int32Value();
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
-      dw = args[3]->NumberValue();
-      dh = args[4]->NumberValue();
+      dx = args[1]->Int32Value();
+      dy = args[2]->Int32Value();
+      dw = args[3]->Int32Value();
+      dh = args[4]->Int32Value();
       break;
     // img, dx, dy
     case 3:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
+      dx = args[1]->Int32Value();
+      dy = args[2]->Int32Value();
       dw = img->width;
       dh = img->height;
       break;
@@ -561,8 +561,8 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Scale src
   if (dw != sw || dh != sh) {
-    double fx = (double) dw / sw;
-    double fy = (double) dh / sh;
+    float fx = (float) dw / sw;
+    float fy = (float) dh / sh;
     cairo_scale(ctx, fx, fy);
     dx /= fx;
     dy /= fy;
