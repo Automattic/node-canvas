@@ -43,6 +43,14 @@ class Image: public node::ObjectWrap {
       , LOADING
       , COMPLETE
     } state;
+
+    typedef enum {
+        UNKNOWN
+      , JPEG
+      , PNG
+    } type;
+
+    static type extension(const char *filename);
   
   private:
     cairo_surface_t *_surface;

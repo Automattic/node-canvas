@@ -9,6 +9,7 @@
 #include "Image.h"
 #include <stdlib.h>
 #include <string.h>
+#include <jpeglib.h>
 
 Persistent<FunctionTemplate> Image::constructor;
 
@@ -202,6 +203,7 @@ EIO_AfterLoad(eio_req *req) {
 
 void
 Image::load() {
+  printf("%d\n", extension(filename));
   if (LOADING != state) {
     // TODO: use node IO
     // Ref();
@@ -273,4 +275,18 @@ Image::loadSurface() {
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
   return cairo_surface_status(_surface);
+}
+
+/*
+ * Return UNKNOWN, JPEG, or PNG based on the filename.
+ */
+
+Image::type
+Image::extension(const char *filename) {
+  size_t len = strlen(filename);
+  filename += len;
+  if (0 == strcmp(".jpeg", filename - 5)) return Image::JPEG;
+  if (0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
+  if (0 == strcmp(".png", filename - 4)) return Image::PNG;
+  return Image::UNKNOWN;
 }
