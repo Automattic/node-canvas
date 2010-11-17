@@ -54,9 +54,7 @@ Canvas::Initialize(Handle<Object> target) {
 Handle<Value>
 Canvas::New(const Arguments &args) {
   HandleScope scope;
-  int width = 0
-    , height = 0;
-
+  int width = 0, height = 0;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
   Canvas *canvas = new Canvas(width, height);
