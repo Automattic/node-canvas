@@ -962,9 +962,13 @@ Context2d::IsPointInPath(const Arguments &args) {
 Handle<Value>
 Context2d::SetFillPattern(const Arguments &args) {
   HandleScope scope;
-  // TODO: HasInstance / error handling
+
+  Local<Object> obj = args[0]->ToObject();
+  if (!Gradient::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("Gradient expected")));
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
   context->state->fillPattern = grad->pattern();
   return Undefined();
 }
@@ -976,9 +980,13 @@ Context2d::SetFillPattern(const Arguments &args) {
 Handle<Value>
 Context2d::SetStrokePattern(const Arguments &args) {
   HandleScope scope;
-  // TODO: HasInstance / error handling
+
+  Local<Object> obj = args[0]->ToObject();
+  if (!Gradient::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("Gradient expected")));
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args[0]->ToObject());
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
   context->state->strokePattern = grad->pattern();
   return Undefined();
 }
