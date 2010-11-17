@@ -14,7 +14,9 @@
 void
 ImageData::Initialize(Handle<Object> target) {
   HandleScope scope;
-	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ImageData::New));
+
+  // Constructor
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ImageData::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("ImageData"));
 

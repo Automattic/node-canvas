@@ -16,13 +16,16 @@
 void
 PixelArray::Initialize(Handle<Object> target) {
   HandleScope scope;
-  Local<FunctionTemplate> t = FunctionTemplate::New(PixelArray::New);
-  t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("CanvasPixelArray"));
 
-  Local<ObjectTemplate> proto = t->InstanceTemplate();
+  // Constructor
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(PixelArray::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
+
+  // Prototype
+  Local<ObjectTemplate> proto = constructor->InstanceTemplate();
   proto->SetAccessor(String::NewSymbol("length"), GetLength);
-  target->Set(String::NewSymbol("CanvasPixelArray"), t->GetFunction());
+  target->Set(String::NewSymbol("CanvasPixelArray"), constructor->GetFunction());
 }
 
 /*

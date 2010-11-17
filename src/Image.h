@@ -16,6 +16,7 @@ class Image: public node::ObjectWrap {
     int width, height;
     Persistent<Function> onload;
     Persistent<Function> onerror;
+    static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> GetSrc(Local<String> prop, const AccessorInfo &info);
@@ -36,7 +37,6 @@ class Image: public node::ObjectWrap {
     void loaded();
     void load();
     Image();
-		static Persistent<FunctionTemplate> constructor;
 
     enum {
         DEFAULT

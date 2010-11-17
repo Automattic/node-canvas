@@ -15,10 +15,13 @@
 void
 Gradient::Initialize(Handle<Object> target) {
   HandleScope scope;
+
+  // Constructor
   constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Gradient::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("CanvasGradient"));
 
+  // Prototype
   NODE_SET_PROTOTYPE_METHOD(constructor, "addColorStopRGBA", AddColorStopRGBA);
   target->Set(String::NewSymbol("CanvasGradient"), constructor->GetFunction());
 }

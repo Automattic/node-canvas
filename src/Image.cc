@@ -17,10 +17,13 @@
 void
 Image::Initialize(Handle<Object> target) {
   HandleScope scope;
-	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
+
+  // Constructor
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Image"));
 
+  // Prototype
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);

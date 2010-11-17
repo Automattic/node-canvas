@@ -12,6 +12,7 @@
 
 class PixelArray: public node::ObjectWrap {
   public:
+    static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> GetLength(Local<String> prop, const AccessorInfo &info);

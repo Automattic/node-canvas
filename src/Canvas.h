@@ -51,6 +51,7 @@ class Canvas: public node::ObjectWrap {
   public:
     int width;
     int height;
+    static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> ToBuffer(const Arguments &args);
@@ -65,7 +66,6 @@ class Canvas: public node::ObjectWrap {
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     Canvas(int width, int height);
     void resurface();
-		static Persistent<FunctionTemplate> constructor;
 
   private:
     ~Canvas();

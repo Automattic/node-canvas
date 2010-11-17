@@ -30,10 +30,13 @@
 void
 Canvas::Initialize(Handle<Object> target) {
   HandleScope scope;
-	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
+
+  // Constructor
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Canvas"));
 
+  // Prototype
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
