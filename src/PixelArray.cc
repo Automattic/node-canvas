@@ -38,7 +38,7 @@ Handle<Value>
 PixelArray::New(const Arguments &args) {
   HandleScope scope;
   PixelArray *arr;
-  // TODO: arg handling
+  Local<Object> obj = args[0]->ToObject();
 
   switch (args.Length()) {
     // width, height
@@ -49,7 +49,10 @@ PixelArray::New(const Arguments &args) {
       break;
     // canvas, x, y, width, height
     case 5: {
-      Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
+      if (!Canvas::constructor->HasInstance(obj))
+        return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+
+      Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
       arr = new PixelArray(
           canvas
         , args[1]->Int32Value()
@@ -61,6 +64,7 @@ PixelArray::New(const Arguments &args) {
     default:
       return ThrowException(Exception::TypeError(String::New("invalid arguments")));
   }
+
   // Let v8 handle accessors (and clamping)
   args.This()->SetIndexedPropertiesToPixelData(
       arr->data()
