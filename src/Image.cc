@@ -265,6 +265,7 @@ Image::error(Local<Value> err) {
 /*
  * Load cairo surface from the image src.
  * 
+ * TODO: better format resolution
  * TODO: support more formats
  */
 
