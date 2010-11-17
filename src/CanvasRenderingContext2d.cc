@@ -120,7 +120,7 @@ Context2d::Initialize(Handle<Object> target) {
  * Create a cairo context.
  */
 
-Context2d::Context2d(Canvas *canvas): ObjectWrap() {
+Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = cairo_create(canvas->surface());
   cairo_set_line_width(_context, 1);
@@ -380,7 +380,10 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
 Handle<Value>
 Context2d::New(const Arguments &args) {
   HandleScope scope;
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args[0]->ToObject());
+  Local<Object> obj = args[0]->ToObject();
+  if (!Canvas::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
   Context2d *context = new Context2d(canvas);
   context->Wrap(args.This());
   return args.This();
@@ -397,9 +400,13 @@ Context2d::New(const Arguments &args) {
 Handle<Value>
 Context2d::PutImageData(const Arguments &args) {
   HandleScope scope;
-  // TODO: validate
+
+  Local<Object> obj = args[0]->ToObject();
+  if (!ImageData::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("ImageData expected")));
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args[0]->ToObject());
+  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
   PixelArray *arr = imageData->pixelArray();
   
   uint8_t *src = arr->data();
@@ -491,9 +498,12 @@ Context2d::DrawImage(const Arguments &args) {
 #if CAIRO_VERSION_MINOR < 10
   return ThrowException(Exception::Error(String::New("drawImage() needs cairo >= 1.10.0")));
 #else
-  
-  // TODO: instanceof
-  Image *img = ObjectWrap::Unwrap<Image>(args[0]->ToObject());
+
+  Local<Object> obj = args[0]->ToObject();
+  if (!Image::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("Image expected")));
+
+  Image *img = ObjectWrap::Unwrap<Image>(obj);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
 
