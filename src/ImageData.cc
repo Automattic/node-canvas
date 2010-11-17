@@ -36,8 +36,12 @@ ImageData::Initialize(Handle<Object> target) {
 Handle<Value>
 ImageData::New(const Arguments &args) {
   HandleScope scope;
-  // TODO: arg assertions
-  PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(args[0]->ToObject());
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!PixelArray::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("CanvasPixelArray expected")));
+
+  PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(obj);
   ImageData *imageData = new ImageData(arr);
   args.This()->Set(String::NewSymbol("data"), args[0]);
   imageData->Wrap(args.This());

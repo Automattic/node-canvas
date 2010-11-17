@@ -36,8 +36,6 @@ Handle<Value>
 Gradient::New(const Arguments &args) {
   HandleScope scope;
 
-  // TODO: separate concerns / validate args
-
   // Linear
   if (4 == args.Length()) {
     Gradient *grad = new Gradient(
