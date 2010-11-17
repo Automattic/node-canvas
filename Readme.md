@@ -58,10 +58,11 @@ If not previously installed, you will want to install the [cairo graphics librar
       console.log('saved png');
     });
 
+Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
+
 ### Canvas#toBuffer()
 
   A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
-
 
     canvas.toBuffer();
 
