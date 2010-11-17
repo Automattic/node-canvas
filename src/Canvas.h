@@ -65,6 +65,7 @@ class Canvas: public node::ObjectWrap {
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     Canvas(int width, int height);
     void resurface();
+		static Persistent<FunctionTemplate> constructor;
 
   private:
     ~Canvas();

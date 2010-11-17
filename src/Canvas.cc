@@ -30,16 +30,16 @@
 void
 Canvas::Initialize(Handle<Object> target) {
   HandleScope scope;
-  Local<FunctionTemplate> t = FunctionTemplate::New(Canvas::New);
-  t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("Canvas"));
+	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("Canvas"));
 
-  Local<ObjectTemplate> proto = t->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(t, "toBuffer", ToBuffer);
-  NODE_SET_PROTOTYPE_METHOD(t, "streamPNGSync", StreamPNGSync);
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
-  target->Set(String::NewSymbol("Canvas"), t->GetFunction());
+  target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
 }
 
 /*
