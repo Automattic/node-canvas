@@ -203,7 +203,6 @@ EIO_AfterLoad(eio_req *req) {
 
 void
 Image::load() {
-  printf("%d\n", extension(filename));
   if (LOADING != state) {
     // TODO: use node IO
     // Ref();
@@ -271,10 +270,60 @@ Image::error(Local<Value> err) {
 
 cairo_status_t
 Image::loadSurface() {
-  _surface = cairo_image_surface_create_from_png(filename);
-  width = cairo_image_surface_get_width(_surface);
-  height = cairo_image_surface_get_height(_surface);
-  return cairo_surface_status(_surface);
+  switch (extension(filename)) {
+    case Image::PNG:
+      _surface = cairo_image_surface_create_from_png(filename);
+      width = cairo_image_surface_get_width(_surface);
+      height = cairo_image_surface_get_height(_surface);
+      return cairo_surface_status(_surface);
+      break;
+    case Image::JPEG: {
+      // TODO: error handling
+      // TODO: move to node IO
+      FILE *stream = fopen(filename, "r");
+      struct jpeg_decompress_struct info;
+      struct jpeg_error_mgr err;
+      info.err = jpeg_std_error(&err);
+      jpeg_create_decompress(&info);
+      jpeg_stdio_src(&info, stream);
+      jpeg_read_header(&info, 1);
+      jpeg_start_decompress(&info);
+      width = info.output_width;
+      height = info.output_height;
+
+      uint8_t *data = (uint8_t *) malloc(width * height * 4);
+      uint8_t *src = (uint8_t *) malloc(width * 3);
+
+      for (int y = 0; y < height; ++y) {
+        jpeg_read_scanlines(&info, &src, 1);
+        uint32_t *row = (uint32_t *)(data + (width * 4));
+        for (int x = 0; x < width; ++x) {
+          uint32_t *pixel = row + x;
+          uint8_t r = src[x];
+          uint8_t g = src[x + 1];
+          uint8_t b = src[x + 2];
+          *pixel = 255 << 24
+            | r << 16
+            | g << 8
+            | b;
+        }
+      }
+      
+      _surface = cairo_image_surface_create_for_data(
+          data
+        , CAIRO_FORMAT_ARGB32
+        , width
+        , height
+        , width * 4);
+
+      fclose(stream);
+      jpeg_finish_decompress(&info);
+      jpeg_destroy_decompress(&info);
+      return cairo_surface_status(_surface);
+      }
+      break;
+  }
+  return CAIRO_STATUS_READ_ERROR;
 }
 
 /*
