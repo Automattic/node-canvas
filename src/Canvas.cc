@@ -6,6 +6,7 @@
 //
 
 #include "Canvas.h"
+#include "closure.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,19 +22,6 @@
 #else
 #define BUFFER_DATA(buf) buf->data()
 #endif
-
-/*
- * PNG stream closure.
- */
-
-typedef struct {
-  Persistent<Function> pfn;
-  Handle<Function> fn;
-  unsigned len;
-  uint8_t *data;
-  Canvas *canvas;
-  cairo_status_t status;
-} closure_t;
 
 /*
  * Initialize Canvas.
