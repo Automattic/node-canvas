@@ -7,6 +7,8 @@
 
 #include "ImageData.h"
 
+Persistent<FunctionTemplate> ImageData::constructor;
+
 /*
  * Initialize ImageData.
  */

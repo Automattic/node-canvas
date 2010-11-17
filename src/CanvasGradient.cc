@@ -8,6 +8,8 @@
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
+Persistent<FunctionTemplate> Gradient::constructor;
+
 /*
  * Initialize CanvasGradient.
  */

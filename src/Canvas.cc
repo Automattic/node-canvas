@@ -13,6 +13,8 @@
 #include <node_buffer.h>
 #include <node_version.h>
 
+Persistent<FunctionTemplate> Canvas::constructor;
+
 /*
  * Buffer data pointer access.
  */

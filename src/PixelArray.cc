@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+Persistent<FunctionTemplate> PixelArray::constructor;
+
 /*
  * Initialize PixelArray.
  */

@@ -14,6 +14,8 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 
+Persistent<FunctionTemplate> Context2d::constructor;
+
 /*
  * Set RGBA.
  */

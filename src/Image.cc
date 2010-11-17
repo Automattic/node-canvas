@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+Persistent<FunctionTemplate> Image::constructor;
+
 /*
  * Initialize Image.
  */
