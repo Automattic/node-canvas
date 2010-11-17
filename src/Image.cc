@@ -300,16 +300,13 @@ Image::loadSurface() {
         uint32_t *row = (uint32_t *)(data + (width * 4));
         for (int x = 0; x < width; ++x) {
           uint32_t *pixel = row + x;
-          uint8_t r = src[x];
-          uint8_t g = src[x + 1];
-          uint8_t b = src[x + 2];
           *pixel = 255 << 24
-            | r << 16
-            | g << 8
-            | b;
+            | src[x + 0] << 16
+            | src[x + 1] << 8
+            | src[x + 2];
         }
       }
-      
+
       _surface = cairo_image_surface_create_for_data(
           data
         , CAIRO_FORMAT_ARGB32
