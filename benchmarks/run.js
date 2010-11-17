@@ -175,7 +175,7 @@ if (o3) {
     o3ctx.stroke();
   });
 } else {
-  console.log('cannot load');
+  console.log('  failed to load');
 }
 
 console.log();
