@@ -119,6 +119,7 @@ class Context2d: public node::ObjectWrap {
     void stroke(bool preserve = false);
     void save();
     void restore();
+		static Persistent<FunctionTemplate> constructor;
 
   protected:
     Context2d(Canvas *canvas);

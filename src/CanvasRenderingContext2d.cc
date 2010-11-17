@@ -59,47 +59,47 @@ void
 Context2d::Initialize(Handle<Object> target) {
   HandleScope scope;
   // Constructor
-  Local<FunctionTemplate> t = FunctionTemplate::New(Context2d::New);
-  t->InstanceTemplate()->SetInternalFieldCount(1);
-  t->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
+	constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Context2d::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
 
   // Prototype
-  Local<ObjectTemplate> proto = t->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(t, "drawImage", DrawImage);
-  NODE_SET_PROTOTYPE_METHOD(t, "putImageData", PutImageData);
-  NODE_SET_PROTOTYPE_METHOD(t, "save", Save);
-  NODE_SET_PROTOTYPE_METHOD(t, "restore", Restore);
-  NODE_SET_PROTOTYPE_METHOD(t, "rotate", Rotate);
-  NODE_SET_PROTOTYPE_METHOD(t, "translate", Translate);
-  NODE_SET_PROTOTYPE_METHOD(t, "transform", Transform);
-  NODE_SET_PROTOTYPE_METHOD(t, "resetTransform", ResetTransform);
-  NODE_SET_PROTOTYPE_METHOD(t, "isPointInPath", IsPointInPath);
-  NODE_SET_PROTOTYPE_METHOD(t, "scale", Scale);
-  NODE_SET_PROTOTYPE_METHOD(t, "clip", Clip);
-  NODE_SET_PROTOTYPE_METHOD(t, "fill", Fill);
-  NODE_SET_PROTOTYPE_METHOD(t, "stroke", Stroke);
-  NODE_SET_PROTOTYPE_METHOD(t, "fillText", FillText);
-  NODE_SET_PROTOTYPE_METHOD(t, "strokeText", StrokeText);
-  NODE_SET_PROTOTYPE_METHOD(t, "fillRect", FillRect);
-  NODE_SET_PROTOTYPE_METHOD(t, "strokeRect", StrokeRect);
-  NODE_SET_PROTOTYPE_METHOD(t, "clearRect", ClearRect);
-  NODE_SET_PROTOTYPE_METHOD(t, "rect", Rect);
-  NODE_SET_PROTOTYPE_METHOD(t, "setTextBaseline", SetTextBaseline);
-  NODE_SET_PROTOTYPE_METHOD(t, "setTextAlignment", SetTextAlignment);
-  NODE_SET_PROTOTYPE_METHOD(t, "measureText", MeasureText);
-  NODE_SET_PROTOTYPE_METHOD(t, "moveTo", MoveTo);
-  NODE_SET_PROTOTYPE_METHOD(t, "lineTo", LineTo);
-  NODE_SET_PROTOTYPE_METHOD(t, "bezierCurveTo", BezierCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(t, "quadraticCurveTo", QuadraticCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(t, "beginPath", BeginPath);
-  NODE_SET_PROTOTYPE_METHOD(t, "closePath", ClosePath);
-  NODE_SET_PROTOTYPE_METHOD(t, "arc", Arc);
-  NODE_SET_PROTOTYPE_METHOD(t, "setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(t, "setShadowRGBA", SetShadowRGBA);
-  NODE_SET_PROTOTYPE_METHOD(t, "setFillRGBA", SetFillRGBA);
-  NODE_SET_PROTOTYPE_METHOD(t, "setStrokeRGBA", SetStrokeRGBA);
-  NODE_SET_PROTOTYPE_METHOD(t, "setFillPattern", SetFillPattern);
-  NODE_SET_PROTOTYPE_METHOD(t, "setStrokePattern", SetStrokePattern);
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "transform", Transform);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "resetTransform", ResetTransform);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "isPointInPath", IsPointInPath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "scale", Scale);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "clip", Clip);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fill", Fill);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "stroke", Stroke);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fillText", FillText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeText", StrokeText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fillRect", FillRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeRect", StrokeRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "clearRect", ClearRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setTextBaseline", SetTextBaseline);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setTextAlignment", SetTextAlignment);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "measureText", MeasureText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "moveTo", MoveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "lineTo", LineTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "bezierCurveTo", BezierCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "quadraticCurveTo", QuadraticCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "beginPath", BeginPath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "closePath", ClosePath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setFont", SetFont);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setShadowRGBA", SetShadowRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillRGBA", SetFillRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeRGBA", SetStrokeRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
@@ -110,7 +110,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
-  target->Set(String::NewSymbol("CanvasRenderingContext2d"), t->GetFunction());
+  target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
 }
 
 /*
