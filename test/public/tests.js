@@ -1412,6 +1412,15 @@ tests['drawImage(img,0,0)'] = function(ctx, done){
   img.src = 'state.png';
 };
 
+tests['drawImage(img) jpeg'] = function(ctx, done){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img,0,0,100,100);
+    done();
+  };
+  img.src = 'face.jpeg';
+};
+
 tests['drawImage(img,x,y)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){

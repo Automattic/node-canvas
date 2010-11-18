@@ -33,7 +33,9 @@ app.get('/', function(req, res){
 app.post('/render', function(req, res, next){
   // Normalize state.png as ./public/state.png
   // no good way around this at the moment
-  req.body.fn = req.body.fn.replace("'state.png'", "'" + __dirname + "/public/state.png'");
+  req.body.fn = req.body.fn
+    .replace("'state.png'", "'" + __dirname + "/public/state.png'")
+    .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'");
   
   // Do not try this at home :)
   var fn = eval('(' + req.body.fn + ')')
