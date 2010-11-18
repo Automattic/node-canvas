@@ -167,6 +167,8 @@ Image::~Image() {
   if (filename) free(filename);
 }
 
+#if 0
+
 /*
  * Load callback.
  */
@@ -196,6 +198,8 @@ EIO_AfterLoad(eio_req *req) {
   ev_unref(EV_DEFAULT_UC);
   return 0;
 }
+
+#endif
 
 /*
  * Initiate image loading.
