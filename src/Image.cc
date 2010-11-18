@@ -300,11 +300,12 @@ Image::loadSurface() {
         jpeg_read_scanlines(&info, &src, 1);
         uint32_t *row = (uint32_t *)(data + stride * y);
         for (int x = 0; x < width; ++x) {
+          int bx = 3 * x;
           uint32_t *pixel = row + x;
           *pixel = 255 << 24
-            | src[3 * x + 0] << 16
-            | src[3 * x + 1] << 8
-            | src[3 * x + 2];
+            | src[bx + 0] << 16
+            | src[bx + 1] << 8
+            | src[bx + 2];
         }
       }
 
