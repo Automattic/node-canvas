@@ -315,7 +315,7 @@ Image::loadSurface() {
         , width
         , height
         , width * 4);
-cairo_surface_write_to_png(_surface, "test2.png");
+
       fclose(stream);
       jpeg_finish_decompress(&info);
       jpeg_destroy_decompress(&info);
