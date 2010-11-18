@@ -267,7 +267,7 @@ Image::error(Local<Value> err) {
  * 
  * TODO: better format detection
  * TODO: support more formats
- * TODO: use node IO
+ * TODO: use node IO or at least thread pool
  */
 
 cairo_status_t
