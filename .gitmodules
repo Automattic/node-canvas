@@ -7,6 +7,3 @@
 [submodule "support/jade"]
 	path = support/jade
 	url = git://github.com/visionmedia/jade.git
-[submodule "benchmarks/node-o3-canvas"]
-	path = benchmarks/node-o3-canvas
-	url = https://github.com/ajaxorg/node-o3-canvas.git
