@@ -265,65 +265,78 @@ Image::error(Local<Value> err) {
 /*
  * Load cairo surface from the image src.
  * 
- * TODO: better format resolution
+ * TODO: better format detection
  * TODO: support more formats
  */
 
 cairo_status_t
 Image::loadSurface() {
   switch (extension(filename)) {
-    case Image::PNG:
-      _surface = cairo_image_surface_create_from_png(filename);
-      width = cairo_image_surface_get_width(_surface);
-      height = cairo_image_surface_get_height(_surface);
-      return cairo_surface_status(_surface);
-      break;
-    case Image::JPEG: {
-      // TODO: error handling
-      // TODO: move to node IO
-      FILE *stream = fopen(filename, "r");
-      struct jpeg_decompress_struct info;
-      struct jpeg_error_mgr err;
-      info.err = jpeg_std_error(&err);
-      jpeg_create_decompress(&info);
-      jpeg_stdio_src(&info, stream);
-      jpeg_read_header(&info, 1);
-      jpeg_start_decompress(&info);
-      width = info.output_width;
-      height = info.output_height;
-
-      int stride = width * 4;
-      uint8_t *data = (uint8_t *) malloc(width * height * 4);
-      uint8_t *src = (uint8_t *) malloc(width * 3);
-
-      for (int y = 0; y < height; ++y) {
-        jpeg_read_scanlines(&info, &src, 1);
-        uint32_t *row = (uint32_t *)(data + stride * y);
-        for (int x = 0; x < width; ++x) {
-          int bx = 3 * x;
-          uint32_t *pixel = row + x;
-          *pixel = 255 << 24
-            | src[bx + 0] << 16
-            | src[bx + 1] << 8
-            | src[bx + 2];
-        }
-      }
-
-      _surface = cairo_image_surface_create_for_data(
-          data
-        , CAIRO_FORMAT_ARGB32
-        , width
-        , height
-        , width * 4);
-
-      fclose(stream);
-      jpeg_finish_decompress(&info);
-      jpeg_destroy_decompress(&info);
-      return cairo_surface_status(_surface);
-      }
-      break;
+    case Image::PNG: return loadPNG();
+    case Image::JPEG: return loadJPEG();
   }
   return CAIRO_STATUS_READ_ERROR;
+}
+
+/*
+ * Load PNG.
+ */
+
+cairo_status_t
+Image::loadPNG() {
+  _surface = cairo_image_surface_create_from_png(filename);
+  width = cairo_image_surface_get_width(_surface);
+  height = cairo_image_surface_get_height(_surface);
+  return cairo_surface_status(_surface);
+}
+
+/*
+ * Load JPEG, convert RGB to ARGB.
+ */
+
+cairo_status_t
+Image::loadJPEG() {
+  // TODO: error handling
+  // TODO: move to node IO
+  FILE *stream = fopen(filename, "r");
+  struct jpeg_decompress_struct info;
+  struct jpeg_error_mgr err;
+  info.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&info);
+  jpeg_stdio_src(&info, stream);
+  jpeg_read_header(&info, 1);
+  jpeg_start_decompress(&info);
+  width = info.output_width;
+  height = info.output_height;
+
+  int stride = width * 4;
+  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  uint8_t *src = (uint8_t *) malloc(width * 3);
+
+  for (int y = 0; y < height; ++y) {
+    jpeg_read_scanlines(&info, &src, 1);
+    uint32_t *row = (uint32_t *)(data + stride * y);
+    for (int x = 0; x < width; ++x) {
+      int bx = 3 * x;
+      uint32_t *pixel = row + x;
+      *pixel = 255 << 24
+        | src[bx + 0] << 16
+        | src[bx + 1] << 8
+        | src[bx + 2];
+    }
+  }
+
+  _surface = cairo_image_surface_create_for_data(
+      data
+    , CAIRO_FORMAT_ARGB32
+    , width
+    , height
+    , width * 4);
+
+  fclose(stream);
+  jpeg_finish_decompress(&info);
+  jpeg_destroy_decompress(&info);
+  return cairo_surface_status(_surface);
 }
 
 /*
