@@ -1,4 +1,10 @@
 
+0.2.0 / 2010-11-18 
+==================
+
+  * Added jpeg `Image` support (when libjpeg is available)
+  * Added _hsl_ / _hsla_ color support. [Tom Carden]
+
 0.1.0 / 2010-11-17 
 ==================
 
