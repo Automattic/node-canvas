@@ -267,6 +267,7 @@ Image::error(Local<Value> err) {
  * 
  * TODO: better format detection
  * TODO: support more formats
+ * TODO: use node IO
  */
 
 cairo_status_t
@@ -296,8 +297,6 @@ Image::loadPNG() {
 
 cairo_status_t
 Image::loadJPEG() {
-  // TODO: error handling
-  // TODO: move to node IO
   FILE *stream = fopen(filename, "r");
   struct jpeg_decompress_struct info;
   struct jpeg_error_mgr err;
