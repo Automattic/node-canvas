@@ -11,6 +11,7 @@ def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')
   conf.env.append_value('CPPFLAGS', '-DNDEBUG')
+  conf.check(lib='jpeg', uselib_store='JPEG')
   conf.check_cfg(package='cairo', mandatory=1, args='--cflags --libs')
   flags = ['-O3', '-Wall']
   conf.env.append_value('CCFLAGS', flags)
@@ -20,4 +21,4 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = 'canvas'
   obj.source = bld.glob('src/*.cc')
-  obj.uselib = ['CAIRO']
+  obj.uselib = ['CAIRO', 'JPEG']
