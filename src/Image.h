@@ -33,7 +33,9 @@ class Image: public node::ObjectWrap {
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
     cairo_status_t loadSurface();
     cairo_status_t loadPNG();
+#ifdef HAVE_JPEG
     cairo_status_t loadJPEG();
+#endif
     void error(Local<Value>);
     void loadSync();
     void loaded();

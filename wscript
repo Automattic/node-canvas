@@ -11,8 +11,9 @@ def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')
   conf.env.append_value('CPPFLAGS', '-DNDEBUG')
-  conf.check(lib='jpeg', uselib_store='JPEG')
-  conf.check_cfg(package='cairo', mandatory=1, args='--cflags --libs')
+  if conf.check(lib='jpeg', uselib_store='JPEG', mandatory=False):
+    conf.env.append_value('CPPFLAGS', '-DHAVE_JPEG=1')
+  conf.check_cfg(package='cairo', args='--cflags --libs', mandatory=True)
   flags = ['-O3', '-Wall']
   conf.env.append_value('CCFLAGS', flags)
   conf.env.append_value('CXXFLAGS', flags)

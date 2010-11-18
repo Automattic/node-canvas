@@ -274,7 +274,9 @@ cairo_status_t
 Image::loadSurface() {
   switch (extension(filename)) {
     case Image::PNG: return loadPNG();
+#ifdef HAVE_JPEG
     case Image::JPEG: return loadJPEG();
+#endif
   }
   return CAIRO_STATUS_READ_ERROR;
 }
@@ -290,6 +292,8 @@ Image::loadPNG() {
   height = cairo_image_surface_get_height(_surface);
   return cairo_surface_status(_surface);
 }
+
+#ifdef HAVE_JPEG
 
 /*
  * Load JPEG, convert RGB to ARGB.
@@ -348,6 +352,8 @@ Image::loadJPEG() {
   jpeg_destroy_decompress(&info);
   return cairo_surface_status(_surface);
 }
+
+#endif
 
 /*
  * Return UNKNOWN, JPEG, or PNG based on the filename.
