@@ -292,12 +292,13 @@ Image::loadSurface() {
       width = info.output_width;
       height = info.output_height;
 
+      int stride = width * 4;
       uint8_t *data = (uint8_t *) malloc(width * height * 4);
       uint8_t *src = (uint8_t *) malloc(width * 3);
 
       for (int y = 0; y < height; ++y) {
         jpeg_read_scanlines(&info, &src, 1);
-        uint32_t *row = (uint32_t *)(data + (width * 4));
+        uint32_t *row = (uint32_t *)(data + stride * y);
         for (int x = 0; x < width; ++x) {
           uint32_t *pixel = row + x;
           *pixel = 255 << 24
