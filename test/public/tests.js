@@ -1466,6 +1466,17 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function(ctx, done){
   img.src = 'state.png';
 };
 
+tests['drawImage(img,0,0) globalAlpha'] = function(ctx, done){
+  var img = new Image;
+  ctx.fillRect(50,50,30,30);
+  ctx.globalAlpha = .5;
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0);
+    done();
+  };
+  img.src = 'state.png';
+};
+
 tests['putImageData()'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
