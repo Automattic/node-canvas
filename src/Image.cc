@@ -302,9 +302,9 @@ Image::loadSurface() {
         for (int x = 0; x < width; ++x) {
           uint32_t *pixel = row + x;
           *pixel = 255 << 24
-            | src[x + 0] << 16
-            | src[x + 1] << 8
-            | src[x + 2];
+            | src[3 * x + 0] << 16
+            | src[3 * x + 1] << 8
+            | src[3 * x + 2];
         }
       }
 
@@ -314,7 +314,7 @@ Image::loadSurface() {
         , width
         , height
         , width * 4);
-
+cairo_surface_write_to_png(_surface, "test2.png");
       fclose(stream);
       jpeg_finish_decompress(&info);
       jpeg_destroy_decompress(&info);
