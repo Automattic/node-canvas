@@ -1,4 +1,18 @@
 
+0.1.0 / 2010-11-17 
+==================
+
+  * Added `Image`
+  * Added `ImageData`
+  * Added `PixelArray`
+  * Added `CanvasRenderingContext2d#drawImage()`
+  * Added `CanvasRenderingContext2d#getImageData()`
+  * Added `CanvasRenderingContext2d#createImageData()`
+  * Added kraken blur benchmark example
+  * Added several new tests
+  * Fixed instanceof checks for many c++ methods
+  * Fixed test runner in firefox [Don Park]
+
 0.0.8 / 2010-11-12 
 ==================
 
