@@ -1,14 +1,4 @@
 
-// Try loading
-
-try {
-  var o3 = true;
-  canvasFactory = require('./node-o3-canvas/lib/o3-canvas')
-} catch (err) {
-  var o3 = false;
-  canvasFactory = function(){};
-}
-
 /**
  * Module dependencies.
  */
@@ -16,9 +6,7 @@ try {
 var Canvas = require('../lib/canvas')
   , canvas = new Canvas(200, 200)
   , largeCanvas = new Canvas(1000, 1000)
-  , ctx = canvas.getContext('2d')
-  , o3ctx = canvasFactory(200,200,'argb')
-  , o3ctxLarge = canvasFactory(1000,1000,'argb');
+  , ctx = canvas.getContext('2d');
 
 var times = 10000;
 console.log('\n  \x1b[33m%s\x1b[0m times\n', times);
@@ -130,60 +118,5 @@ bm('getImageData(0,0,100,100)', function(){
 //     done();
 //   });
 // });
-
-// node-o3-canvas
-console.log('\n  node-o3-canvas\n');
-
-if (o3) {
-  bm('lineTo()', function(){
-    o3ctx.lineTo(0, 50);
-  });
-
-  bm('arc()', function(){
-    o3ctx.arc(75,75,50,0,Math.PI*2,true);
-  });
-
-  bm('fillStyle= hex', function(){
-    o3ctx.fillStyle = '#FFCCAA';
-  });
-
-  bm('fillStyle= rgba()', function(){
-    o3ctx.fillStyle = 'rgba(0,255,80,1)';
-  });
-
-  bm('fillRect()', function(){
-    o3ctx.fillRect(50, 50, 100, 100);
-  });
-
-  bm('strokeRect()', function(){
-    o3ctx.strokeRect(50, 50, 100, 100);
-  });
-
-  bm('pngBuffer() 200x200', 50, function(){
-    o3ctx.pngBuffer();
-  });
-
-  bm('pngBuffer() 1000x1000', 50, function(){
-    o3ctxLarge.pngBuffer();
-  });
-
-  bm('pngBuffer().toBase64() 200x200', 50, function(){
-    o3ctx.pngBuffer().toBase64();
-  });
-
-  bm('moveTo() / arc() / stroke()', function(){
-    o3ctx.beginPath();
-    o3ctx.arc(75,75,50,0,Math.PI*2,true); // Outer circle
-    o3ctx.moveTo(110,75);
-    o3ctx.arc(75,75,35,0,Math.PI,false);   // Mouth
-    o3ctx.moveTo(65,65);
-    o3ctx.arc(60,65,5,0,Math.PI*2,true);  // Left eye
-    o3ctx.moveTo(95,65);
-    o3ctx.arc(90,65,5,0,Math.PI*2,true);  // Right eye
-    o3ctx.stroke();
-  });
-} else {
-  console.log('  failed to load');
-}
 
 console.log();
