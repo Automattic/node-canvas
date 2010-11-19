@@ -288,18 +288,18 @@ Canvas::~Canvas() {
 
 void
 Canvas::resurface(Handle<Object> canvas) {
-  HandleScope scope;
-
   // Re-surface
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
   // Reset context
-  Local<Value> context = canvas->Get(String::New("context")); 
-  Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
-  cairo_t *prev = context2d->context();
-  context2d->setContext(cairo_create(surface()));
-  cairo_destroy(prev);
+  Handle<Value> context = canvas->Get(String::New("context"));
+  if (!context->IsUndefined()) {
+    Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+    cairo_t *prev = context2d->context();
+    context2d->setContext(cairo_create(surface()));
+    cairo_destroy(prev);
+  }
 }
 
 /*
