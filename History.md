@@ -1,4 +1,12 @@
 
+0.2.1 / 2010-11-19 
+==================
+
+  * Added image _resize_ example
+  * Fixed canvas resizing via `{width,height}=`. Closes #57
+  * Fixed `Canvas#getContext()`, caching the CanvasRenderingContext
+  * Fixed async image loading (test server still messed)
+
 0.2.0 / 2010-11-18 
 ==================
 
