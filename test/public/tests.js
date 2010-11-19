@@ -1477,7 +1477,7 @@ tests['drawImage(img,0,0) globalAlpha'] = function(ctx, done){
   img.src = 'state.png';
 };
 
-tests['drawImage(img,0,0) clip'] = function(ctx){
+tests['drawImage(img,0,0) clip'] = function(ctx, done){
   ctx.arc(50,50,50,0,Math.PI * 2,false);
   ctx.stroke();
   ctx.clip();
