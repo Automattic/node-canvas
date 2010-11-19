@@ -67,7 +67,7 @@ class Canvas: public node::ObjectWrap {
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     Canvas(int width, int height);
-    void resurface();
+    void resurface(Handle<Object> canvas);
 
   private:
     ~Canvas();

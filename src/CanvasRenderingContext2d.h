@@ -45,6 +45,7 @@ class Context2d: public node::ObjectWrap {
     short stateno;
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
+    Context2d(Canvas *canvas);
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
@@ -121,9 +122,6 @@ class Context2d: public node::ObjectWrap {
     void stroke(bool preserve = false);
     void save();
     void restore();
-
-  protected:
-    Context2d(Canvas *canvas);
 
   private:
     ~Context2d();
