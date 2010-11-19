@@ -213,7 +213,11 @@ module.exports = {
     var canvas = new Canvas(100, 200);
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
+
     canvas = new Canvas;
+    assert.equal(0, canvas.width);
+    assert.equal(0, canvas.height);
+
     canvas.width = 50;
     canvas.height = 50;
     assert.equal(50, canvas.width);
