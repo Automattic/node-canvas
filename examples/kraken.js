@@ -15,7 +15,7 @@ img.onload = function(){
   ctx.drawImage(img,0,0);
 };
 
-img.src = __dirname + '/squid.png';
+img.src = __dirname + '/images/squid.png';
 
 
 var sigma = 10; // radius
