@@ -133,8 +133,8 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
  * EIO toBuffer callback.
  */
 
-static int
-EIO_ToBuffer(eio_req *req) {
+int
+Canvas::EIO_ToBuffer(eio_req *req) {
   closure_t *closure = (closure_t *) req->data;
 
   closure->status = cairo_surface_write_to_png_stream(
@@ -149,8 +149,8 @@ EIO_ToBuffer(eio_req *req) {
  * EIO after toBuffer callback.
  */
 
-static int
-EIO_AfterToBuffer(eio_req *req) {
+int
+Canvas::EIO_AfterToBuffer(eio_req *req) {
   HandleScope scope;
   closure_t *closure = (closure_t *) req->data;
   ev_unref(EV_DEFAULT_UC);
@@ -165,6 +165,7 @@ EIO_AfterToBuffer(eio_req *req) {
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
   }
 
+  closure->canvas->Unref();
   closure->pfn.Dispose();
   free(closure->data);
   free(closure);

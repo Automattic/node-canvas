@@ -172,7 +172,7 @@ Image::~Image() {
  */
 
 int
-Image::EIO_load(eio_req *req) {
+Image::EIO_Load(eio_req *req) {
   Image *img = (Image *) req->data;
   req->result = img->loadSurface();
   return 0;
@@ -183,7 +183,7 @@ Image::EIO_load(eio_req *req) {
  */
 
 int
-Image::EIO_afterLoad(eio_req *req) {
+Image::EIO_AfterLoad(eio_req *req) {
   HandleScope scope;
   Image *img = (Image *) req->data;
 
@@ -207,7 +207,7 @@ Image::load() {
   if (LOADING != state) {
     Ref();
     state = LOADING;
-    eio_custom(EIO_load, EIO_PRI_DEFAULT, EIO_afterLoad, this);
+    eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
     ev_ref(EV_DEFAULT_UC);
   }
 }
