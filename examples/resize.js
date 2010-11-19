@@ -15,9 +15,11 @@ img.onerror = function(err){
 };
 
 img.onload = function(){
-  var canvas = new Canvas(img.width / 2, img.height / 2)
+  var width = img.width / 2
+    , height = img.height / 2
+    , canvas = new Canvas(width, height)
     , ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, img.width / 2, img.height / 2);
+  ctx.drawImage(img, 0, 0, width, height);
   canvas.toBuffer(function(err, buf){
     fs.writeFile(__dirname + '/resize.png', buf, function(){
       console.log('Resized and saved in %dms', new Date - start);
