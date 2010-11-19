@@ -6,6 +6,7 @@
 //
 
 #include "Canvas.h"
+#include "CanvasRenderingContext2d.h"
 #include "closure.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -81,7 +82,7 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->width = val->Uint32Value();
-    canvas->resurface();
+    canvas->resurface(info.This());
   }
 }
 
@@ -104,7 +105,7 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->height = val->Uint32Value();
-    canvas->resurface();
+    canvas->resurface(info.This());
   }
 }
 
@@ -286,9 +287,19 @@ Canvas::~Canvas() {
  */
 
 void
-Canvas::resurface() {
+Canvas::resurface(Handle<Object> canvas) {
+  HandleScope scope;
+
+  // Re-surface
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+
+  // Reset context
+  Local<Value> context = canvas->Get(String::New("context")); 
+  Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+  cairo_t *prev = context2d->context();
+  context2d->setContext(cairo_create(surface()));
+  cairo_destroy(prev);
 }
 
 /*
