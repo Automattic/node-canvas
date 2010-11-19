@@ -167,14 +167,12 @@ Image::~Image() {
   if (filename) free(filename);
 }
 
-#if 0
-
 /*
  * Load callback.
  */
 
-static int
-EIO_Load(eio_req *req) {
+int
+Image::EIO_load(eio_req *req) {
   Image *img = (Image *) req->data;
   req->result = img->loadSurface();
   return 0;
@@ -184,8 +182,8 @@ EIO_Load(eio_req *req) {
  * After load callback.
  */
 
-static int
-EIO_AfterLoad(eio_req *req) {
+int
+Image::EIO_afterLoad(eio_req *req) {
   HandleScope scope;
   Image *img = (Image *) req->data;
 
@@ -195,11 +193,10 @@ EIO_AfterLoad(eio_req *req) {
     img->loaded();
   }
 
+  img->Unref();
   ev_unref(EV_DEFAULT_UC);
   return 0;
 }
-
-#endif
 
 /*
  * Initiate image loading.
@@ -208,12 +205,10 @@ EIO_AfterLoad(eio_req *req) {
 void
 Image::load() {
   if (LOADING != state) {
-    // TODO: use node IO
-    // Ref();
+    Ref();
     state = LOADING;
-    loadSync();
-    // eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
-    // ev_ref(EV_DEFAULT_UC);
+    eio_custom(EIO_load, EIO_PRI_DEFAULT, EIO_afterLoad, this);
+    ev_ref(EV_DEFAULT_UC);
   }
 }
 

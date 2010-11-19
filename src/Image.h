@@ -31,6 +31,8 @@ class Image: public node::ObjectWrap {
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
+    static int EIO_load(eio_req *req);
+    static int EIO_afterLoad(eio_req *req);
     cairo_status_t loadSurface();
     cairo_status_t loadPNG();
 #ifdef HAVE_JPEG
