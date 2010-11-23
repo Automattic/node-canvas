@@ -25,7 +25,7 @@
        NAME += *str++ - '0'; \
      } while (*str >= '0' && *str <= '9'); \
    } else { \
-     return -1; \
+     return 0; \
    } \
    while (' ' == *str || ',' == *str) str++;
 
@@ -227,10 +227,10 @@ h(char c) {
 rgba_t
 rgba_create(uint32_t rgba) {
   rgba_t color;
-  color.r = rgba >> 24;
-  color.g = (rgba & 0x00ff0000) >> 16;
-  color.b = (rgba & 0x0000ff00) >> 8;
-  color.a = rgba & 0xff;
+  color.r = (double) (rgba >> 24) / 255;
+  color.g = (double) ((rgba & 0x00ff0000) >> 16) / 255;
+  color.b = (double) ((rgba & 0x0000ff00) >> 8) / 255;
+  color.a = (double) (rgba & 0xff) / 255;
   return color;
 }
 
@@ -297,7 +297,7 @@ rgba_from_rgb_string(const char *str) {
     CHANNEL(b);
     return rgba_from_rgb(r, g, b);
   }
-  return -1;
+  return 0;
 }
 
 /*
@@ -330,7 +330,7 @@ rgba_from_rgba_string(const char *str) {
     }
     return rgba_from_rgba(r, g, b, a * 255);
   }
-  return -1;
+  return 0;
 }
 
 /*
@@ -346,7 +346,7 @@ rgba_from_hex_string(const char *str) {
   size_t len = strlen(str);
   if (6 == len) return rgba_from_hex6_string(str);
   if (3 == len) return rgba_from_hex3_string(str);
-  return -1;
+  return 0;
 }
 
 /*
@@ -361,7 +361,7 @@ rgba_from_name_string(const char *str) {
     if (*str == *color.name && 0 == strcmp(str, color.name))
       return color.val;
   }
-  return -1;
+  return 0;
 }
 
 /*

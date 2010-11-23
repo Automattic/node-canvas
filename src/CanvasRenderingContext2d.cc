@@ -18,16 +18,6 @@
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
- * Set RGBA.
- */
-
-#define RGBA(_,R,G,B,A) \
-  _.r = R / 255 * 1; \
-  _.g = G / 255 * 1; \
-  _.b = B / 255 * 1; \
-  _.a = A; \
-
-/*
  * Rectangle arg assertions.
  */
 
@@ -132,9 +122,11 @@ Context2d::Context2d(Canvas *canvas) {
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
-  RGBA(state->fill,0,0,0,1);
-  RGBA(state->stroke,0,0,0,1);
-  RGBA(state->shadow,0,0,0,0);
+  rgba_t transparent = { 0,0,0,1 };
+  rgba_t transparent_black = { 0,0,0,0 };
+  state->fill = transparent;
+  state->stroke = transparent;
+  state->shadow = transparent_black;
 }
 
 /*
@@ -1003,9 +995,12 @@ Context2d::SetStrokePattern(const Arguments &args) {
 Handle<Value>
 Context2d::SetShadowColor(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS(0);
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+  uint32_t rgba = rgba_from_string(*str);
+  if (!rgba) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->state->shadow,r,g,b,a);
+  context->state->shadow = rgba_create(rgba);
   return Undefined();
 }
 
@@ -1018,10 +1013,11 @@ Context2d::SetFillColor(const Arguments &args) {
   HandleScope scope;
   if (!args[0]->IsString()) return Undefined();
   String::AsciiValue str(args[0]);
-  rgba_t color = rgba_create(rgba_from_string(*str));
+  uint32_t rgba = rgba_from_string(*str);
+  if (!rgba) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = NULL;
-  //RGBA(context->state->fill,r,g,b,a);
+  context->state->fill = rgba_create(rgba);
   return Undefined();
 }
 
@@ -1032,10 +1028,13 @@ Context2d::SetFillColor(const Arguments &args) {
 Handle<Value>
 Context2d::SetStrokeColor(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS(0);
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+  uint32_t rgba = rgba_from_string(*str);
+  if (!rgba) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->strokePattern = NULL;
-  RGBA(context->state->stroke,r,g,b,a);
+  context->state->stroke = rgba_create(rgba);
   return Undefined();
 }
 
