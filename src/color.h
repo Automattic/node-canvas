@@ -27,32 +27,8 @@ typedef struct {
 rgba_t
 rgba_create(uint32_t rgba);
 
-inline int32_t
-rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-
 int32_t
-rgba_from_rgb(uint8_t r, uint8_t g, uint8_t b);
-
-int32_t
-rgba_from_hex6_string(const char *str);
-
-int32_t
-rgba_from_hex3_string(const char *str);
-
-int32_t
-rgba_from_rgb_string(const char *str);
-
-int32_t
-rgba_from_rgba_string(const char *str);
-
-int32_t
-rgba_from_hex_string(const char *str);
-
-int32_t
-rgba_from_name_string(const char *str);
-
-int32_t
-rgba_from_string(const char *str);
+rgba_from_string(const char *str, short *ok);
 
 void
 rgba_inspect(int32_t rgba);

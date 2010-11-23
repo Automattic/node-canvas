@@ -238,7 +238,7 @@ rgba_create(uint32_t rgba) {
  * Return rgba from (r,g,b,a).
  */
 
-inline int32_t
+static inline int32_t
 rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
   return
       r << 24
@@ -251,7 +251,7 @@ rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
  * Return rgba from (r,g,b).
  */
 
-int32_t
+static int32_t
 rgba_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
   return rgba_from_rgba(r, g, b, 0);
 }
@@ -260,7 +260,7 @@ rgba_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
  * Return rgb from "#RRGGBB".
  */
 
-int32_t
+static int32_t
 rgba_from_hex6_string(const char *str) {
   return rgba_from_rgb(
       (h(str[0]) << 4) + h(str[1])
@@ -273,7 +273,7 @@ rgba_from_hex6_string(const char *str) {
  * Return rgb from "#RGB"
  */
 
-int32_t
+static int32_t
 rgba_from_hex3_string(const char *str) {
   return rgba_from_rgb(
       (h(str[0]) << 4) + h(str[0])
@@ -286,8 +286,8 @@ rgba_from_hex3_string(const char *str) {
  * Return rgb from "rgb()"
  */
 
-int32_t
-rgba_from_rgb_string(const char *str) {
+static int32_t
+rgba_from_rgb_string(const char *str, short *ok) {
   if (str == strnstr(str, "rgb(", 4)) {
     str += 4;
     WHITESPACE;
@@ -295,17 +295,17 @@ rgba_from_rgb_string(const char *str) {
     CHANNEL(r);
     CHANNEL(g);
     CHANNEL(b);
-    return rgba_from_rgb(r, g, b);
+    return *ok = 1, rgba_from_rgb(r, g, b);
   }
-  return 0;
+  return *ok = 0;
 }
 
 /*
  * Return rgb from "rgba()"
  */
 
-int32_t
-rgba_from_rgba_string(const char *str) {
+static int32_t
+rgba_from_rgba_string(const char *str, short *ok) {
   if (str == strnstr(str, "rgba(", 5)) {
     str += 5;
     WHITESPACE;
@@ -328,9 +328,9 @@ rgba_from_rgba_string(const char *str) {
         }
       }
     }
-    return rgba_from_rgba(r, g, b, a * 255);
+    return *ok = 1, rgba_from_rgba(r, g, b, a * 255);
   }
-  return 0;
+  return *ok = 0;
 }
 
 /*
@@ -341,27 +341,28 @@ rgba_from_rgba_string(const char *str) {
  *
  */
 
-int32_t
-rgba_from_hex_string(const char *str) {
+static int32_t
+rgba_from_hex_string(const char *str, short *ok) {
   size_t len = strlen(str);
+  *ok = 1;
   if (6 == len) return rgba_from_hex6_string(str);
   if (3 == len) return rgba_from_hex3_string(str);
-  return 0;
+  return *ok = 0;
 }
 
 /*
  * Return named color value.
  */
 
-int32_t
-rgba_from_name_string(const char *str) {
+static int32_t
+rgba_from_name_string(const char *str, short *ok) {
   int i = 0;
   struct named_color color;
   while ((color = named_colors[i++]).name) {
     if (*str == *color.name && 0 == strcmp(str, color.name))
-      return color.val;
+      return *ok = 1, color.val;
   }
-  return 0;
+  return *ok = 0;
 }
 
 /*
@@ -376,14 +377,14 @@ rgba_from_name_string(const char *str) {
  */
 
 int32_t
-rgba_from_string(const char *str) {
+rgba_from_string(const char *str, short *ok) {
   if ('#' == str[0]) 
-    return rgba_from_hex_string(++str);
+    return rgba_from_hex_string(++str, ok);
   if (str == strnstr(str, "rgba", 4))
-    return rgba_from_rgba_string(str);
+    return rgba_from_rgba_string(str, ok);
   if (str == strnstr(str, "rgb", 3))
-    return rgba_from_rgb_string(str);
-  return rgba_from_name_string(str);
+    return rgba_from_rgb_string(str, ok);
+  return rgba_from_name_string(str, ok);
 }
 
 /*

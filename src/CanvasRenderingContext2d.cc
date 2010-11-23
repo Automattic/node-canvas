@@ -995,10 +995,11 @@ Context2d::SetStrokePattern(const Arguments &args) {
 Handle<Value>
 Context2d::SetShadowColor(const Arguments &args) {
   HandleScope scope;
+  short ok;
   if (!args[0]->IsString()) return Undefined();
   String::AsciiValue str(args[0]);
-  uint32_t rgba = rgba_from_string(*str);
-  if (!rgba) return Undefined();
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->shadow = rgba_create(rgba);
   return Undefined();
@@ -1011,10 +1012,11 @@ Context2d::SetShadowColor(const Arguments &args) {
 Handle<Value>
 Context2d::SetFillColor(const Arguments &args) {
   HandleScope scope;
+  short ok;
   if (!args[0]->IsString()) return Undefined();
   String::AsciiValue str(args[0]);
-  uint32_t rgba = rgba_from_string(*str);
-  if (!rgba) return Undefined();
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = NULL;
   context->state->fill = rgba_create(rgba);
@@ -1028,10 +1030,11 @@ Context2d::SetFillColor(const Arguments &args) {
 Handle<Value>
 Context2d::SetStrokeColor(const Arguments &args) {
   HandleScope scope;
+  short ok;
   if (!args[0]->IsString()) return Undefined();
   String::AsciiValue str(args[0]);
-  uint32_t rgba = rgba_from_string(*str);
-  if (!rgba) return Undefined();
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->strokePattern = NULL;
   context->state->stroke = rgba_create(rgba);
