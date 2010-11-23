@@ -100,9 +100,9 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setShadowRGBA", SetShadowRGBA);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillRGBA", SetFillRGBA);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeRGBA", SetStrokeRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setShadowColor", SetShadowColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
@@ -997,11 +997,11 @@ Context2d::SetStrokePattern(const Arguments &args) {
 }
 
 /*
- * Set shadow RGBA, used internally for shadowColor=
+ * Set shadow color, used internally for shadowColor=
  */
 
 Handle<Value>
-Context2d::SetShadowRGBA(const Arguments &args) {
+Context2d::SetShadowColor(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1010,25 +1010,27 @@ Context2d::SetShadowRGBA(const Arguments &args) {
 }
 
 /*
- * Set fill RGBA, used internally for fillStyle=
+ * Set fill color, used internally for fillStyle=
  */
 
 Handle<Value>
-Context2d::SetFillRGBA(const Arguments &args) {
+Context2d::SetFillColor(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS(0);
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+  printf("%s\n", *str);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = NULL;
-  RGBA(context->state->fill,r,g,b,a);
+  //RGBA(context->state->fill,r,g,b,a);
   return Undefined();
 }
 
 /*
- * Set stroke RGBA, used internally for strokeStyle=
+ * Set stroke color, used internally for strokeStyle=
  */
 
 Handle<Value>
-Context2d::SetStrokeRGBA(const Arguments &args) {
+Context2d::SetStrokeColor(const Arguments &args) {
   HandleScope scope;
   RGBA_ARGS(0);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());

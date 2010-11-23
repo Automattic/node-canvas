@@ -67,9 +67,9 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> FillText(const Arguments &args);
     static Handle<Value> StrokeText(const Arguments &args);
     static Handle<Value> SetFont(const Arguments &args);
-    static Handle<Value> SetFillRGBA(const Arguments &args);
-    static Handle<Value> SetStrokeRGBA(const Arguments &args);
-    static Handle<Value> SetShadowRGBA(const Arguments &args);
+    static Handle<Value> SetFillColor(const Arguments &args);
+    static Handle<Value> SetStrokeColor(const Arguments &args);
+    static Handle<Value> SetShadowColor(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
     static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> SetTextBaseline(const Arguments &args);
