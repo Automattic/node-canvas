@@ -84,6 +84,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> ClearRect(const Arguments &args);
     static Handle<Value> Rect(const Arguments &args);
     static Handle<Value> Arc(const Arguments &args);
+    static Handle<Value> ArcTo(const Arguments &args);
     static Handle<Value> GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
