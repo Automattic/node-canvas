@@ -5,7 +5,9 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include <stdio.h>
+#ifndef __COLOR_PARSER_H__
+#define __COLOR_PARSER_H__
+
 #include <stdint.h>
 #include <string.h>
 
@@ -248,7 +250,7 @@ rgba_create(uint32_t rgba) {
  * Return rgba from (r,g,b,a).
  */
 
-int32_t
+inline int32_t
 rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
   return
       r << 24
@@ -409,3 +411,5 @@ rgba_inspect(int32_t rgba) {
     , rgba & 0xFF
     );
 }
+
+#endif /* __COLOR_PARSER_H__ */
