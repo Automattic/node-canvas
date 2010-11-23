@@ -8,16 +8,9 @@
 #ifndef __NODE_CONTEXT2D_H__
 #define __NODE_CONTEXT2D_H__
 
+#include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
-
-/*
- * RGBA struct used to retain values of fill/stroke.
- */
-
-typedef struct {
-  double r, g, b, a;
-} rgba_t;
 
 /*
  * State struct.

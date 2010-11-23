@@ -1018,7 +1018,7 @@ Context2d::SetFillColor(const Arguments &args) {
   HandleScope scope;
   if (!args[0]->IsString()) return Undefined();
   String::AsciiValue str(args[0]);
-  printf("%s\n", *str);
+  uint32_t color = rgba_from_string(*str);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = NULL;
   //RGBA(context->state->fill,r,g,b,a);
