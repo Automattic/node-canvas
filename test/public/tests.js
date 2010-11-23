@@ -64,6 +64,25 @@ tests['arc() 2'] = function(ctx){
   }
 };
 
+tests['arcTo()'] = function(ctx){
+  ctx.fillStyle = '#08C8EE';
+  ctx.translate(-50,-50);
+  ctx.moveTo(120, 100);
+  ctx.lineTo(180, 100);
+  ctx.arcTo(200, 100, 200, 120, 5);
+  ctx.lineTo(200, 180);
+  ctx.arcTo(200, 200, 180, 200, 20);
+  ctx.lineTo(120, 200);
+  ctx.arcTo(100, 200, 100, 180, 20);
+  ctx.lineTo(100, 120);
+  ctx.arcTo(100, 100, 120, 100, 20);
+  ctx.fill();
+
+  ctx.font = 'bold 25px Arial';
+  ctx.fillStyle = '#fff';
+  ctx.fillText('node', 120, 155);
+};
+
 tests['bezierCurveTo()'] = function(ctx){
   ctx.beginPath();
   ctx.moveTo(75,40);
