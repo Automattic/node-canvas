@@ -228,9 +228,9 @@ rgba_t
 rgba_create(uint32_t rgba) {
   rgba_t color;
   color.r = rgba >> 24;
-  color.g = rgba >> 16;
-  color.b = rgba >> 8;
-  color.a = rgba;
+  color.g = (rgba & 0x00ff0000) >> 16;
+  color.b = (rgba & 0x0000ff00) >> 8;
+  color.a = rgba & 0xff;
   return color;
 }
 
