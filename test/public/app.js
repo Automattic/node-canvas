@@ -66,7 +66,9 @@ function runTest(name, canvas, dest, stats) {
   } catch (err) {
     log(err);
   }
-  stats.appendChild(create('p', 'browser: ' + (new Date - start) + 'ms'));
+  var duration = new Date - start;
+  stats.appendChild(create('p', 'browser: ' + duration + 'ms'));
+  stats.appendChild(create('p', 'fps: ' + (1000 / duration).toFixed(0)));
   renderOnServer(name, canvas, function(res){
     if (res.error) {
       var p = create('p');
@@ -76,6 +78,7 @@ function runTest(name, canvas, dest, stats) {
       var img = create('img');
       img.src = res.data;
       stats.appendChild(create('p', 'node: ' + res.duration + 'ms'));
+      stats.appendChild(create('p', 'fps: ' + (1000 / res.duration).toFixed(0)));
       dest.appendChild(img);
     }
   });

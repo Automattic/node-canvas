@@ -34,3 +34,6 @@ table tr td:nth-child(2) {
 table tr td:nth-child(3) {
   padding: 0 45px;
 }
+table tr td p {
+  margin: 5px 0;
+}
