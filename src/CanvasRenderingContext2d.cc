@@ -90,13 +90,13 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setShadowColor", SetShadowColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFillColor", SetFillColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
+  proto->SetAccessor(String::NewSymbol("shadowColor"), GetShadowColor, SetShadowColor);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
@@ -989,20 +989,28 @@ Context2d::SetStrokePattern(const Arguments &args) {
 }
 
 /*
- * Set shadow color, used internally for shadowColor=
+ * Set shadow color.
+ */
+
+void
+Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  short ok;
+  String::AsciiValue str(val->ToString());
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (ok) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    context->state->shadow = rgba_create(rgba);
+  }
+}
+
+/*
+ * Get shadow color.
  */
 
 Handle<Value>
-Context2d::SetShadowColor(const Arguments &args) {
-  HandleScope scope;
-  short ok;
-  if (!args[0]->IsString()) return Undefined();
-  String::AsciiValue str(args[0]);
-  uint32_t rgba = rgba_from_string(*str, &ok);
-  if (!ok) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->state->shadow = rgba_create(rgba);
-  return Undefined();
+Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  return Null();
 }
 
 /*
