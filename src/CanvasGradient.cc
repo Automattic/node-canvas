@@ -5,6 +5,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
+#include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
@@ -24,7 +25,7 @@ Gradient::Initialize(Handle<Object> target) {
   constructor->SetClassName(String::NewSymbol("CanvasGradient"));
 
   // Prototype
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addColorStopRGBA", AddColorStopRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "addColorStop", AddColorStop);
   target->Set(String::NewSymbol("CanvasGradient"), constructor->GetFunction());
 }
 
@@ -64,23 +65,33 @@ Gradient::New(const Arguments &args) {
 }
 
 /*
- * Add RGBA color stop.
+ * Add color stop.
  */
 
 Handle<Value>
-Gradient::AddColorStopRGBA(const Arguments &args) {
+Gradient::AddColorStop(const Arguments &args) {
   HandleScope scope;
   if (!args[0]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("offset required")));
-  RGBA_ARGS(1);
+  if (!args[1]->IsString())
+    return ThrowException(Exception::TypeError(String::New("color string required")));
+
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
-  cairo_pattern_add_color_stop_rgba(
-      grad->pattern()
-    , args[0]->NumberValue()
-    , r / 255 * 1
-    , g / 255 * 1
-    , b / 255 * 1
-    , a);
+  short ok;
+  String::AsciiValue str(args[1]);
+  uint32_t rgba = rgba_from_string(*str, &ok);
+
+  if (ok) {
+    rgba_t color = rgba_create(rgba);
+    cairo_pattern_add_color_stop_rgba(
+        grad->pattern()
+      , args[0]->NumberValue()
+      , color.r
+      , color.g
+      , color.b
+      , color.a);
+  }
+
   return Undefined();
 }
 

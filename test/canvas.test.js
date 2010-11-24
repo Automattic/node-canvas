@@ -5,7 +5,6 @@
 
 var Canvas = require('canvas')
   , assert = require('assert')
-  , parseColor = Canvas.Context2d.parseColor
   , parseFont = Canvas.Context2d.parseFont
   , sys = require('sys')
   , fs = require('fs');
@@ -17,104 +16,6 @@ module.exports = {
   
   'test .cairoVersion': function(assert){
     assert.match(Canvas.cairoVersion, /^\d+\.\d+\.\d+$/);
-  },
-  
-  'test .parseColor()': function(assert){
-    assert.equal(null, parseColor());
-    assert.equal(null, parseColor(''));
-
-    // rgb()
-    assert.eql([255,165,0,1], parseColor('rgb(255,165,0)'));
-    assert.eql([255,165,0,1], parseColor('rgb(255, 165, 0)'));
-    assert.eql([255,165,0,1], parseColor('rgb(255 , 165 , 0)'));
-    assert.equal(null, parseColor('rgb()'));
-
-    // rgba()
-    assert.eql([255,165,0,1], parseColor('rgba(255,165,0,1)'));
-    assert.eql([255,165,0,1], parseColor('rgba(255,165,0,1)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165,0,0.6)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165, 0, 0.6)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165 , 0 ,.6)'));
-    assert.equal(null, parseColor('rgba(2554,165 , 0 ,.6)'));
-    assert.equal(null, parseColor('rgba()'));
-
-    // hsl()
-    assert.eql([255,0,0,1], parseColor('hsl(0,100.0,50.0)'));
-    assert.eql([255,0,0,1], parseColor('hsl(360,100.0,50.0)'));
-    assert.eql([0,255,0,1], parseColor('hsl(120,100.0,50.0)'));
-    assert.eql([0,0,255,1], parseColor('hsl(240,100.0,50.0)'));
-    assert.equal(null, parseColor('hsl()'));
-
-    // adapted from tables at http://www.w3.org/TR/css3-color/#hsl-examples
-    // NB:- corrected rounded percents to precise percents
-    //      e.g. 13% --> 12.5%, etc.
-    //   ...presumably the precise values were used to generate the tables?
-    assert.eql(parseColor('#FFFFFF'), parseColor('hsl(0,100%,100%)'))
-    assert.eql(parseColor('#FFFFFF'), parseColor('hsl(0,75%,100%)'))
-    assert.eql(parseColor('#FFFFFF'), parseColor('hsl(0,50%,100%)'))
-    assert.eql(parseColor('#FFFFFF'), parseColor('hsl(0,25%,100%)'))
-    assert.eql(parseColor('#FFFFFF'), parseColor('hsl(0,0%,100%)'))
-    assert.eql(parseColor('#FFBFBF'), parseColor('hsl(0,100%,87.5%)'))
-    assert.eql(parseColor('#F7C7C7'), parseColor('hsl(0,75%,87.5%)'))
-    assert.eql(parseColor('#EFCFCF'), parseColor('hsl(0,50%,87.5%)'))
-    assert.eql(parseColor('#E7D7D7'), parseColor('hsl(0,25%,87.5%)'))
-    assert.eql(parseColor('#DFDFDF'), parseColor('hsl(0,0%,87.5%)'))
-    assert.eql(parseColor('#FF8080'), parseColor('hsl(0,100%,75%)'))
-    assert.eql(parseColor('#EF8F8F'), parseColor('hsl(0,75%,75%)'))
-    assert.eql(parseColor('#DF9F9F'), parseColor('hsl(0,50%,75%)'))
-    assert.eql(parseColor('#CFAFAF'), parseColor('hsl(0,25%,75%)'))
-    assert.eql(parseColor('#BFBFBF'), parseColor('hsl(0,0%,75%)'))
-    assert.eql(parseColor('#FF4040'), parseColor('hsl(0,100%,62.5%)'))
-    assert.eql(parseColor('#E75858'), parseColor('hsl(0,75%,62.5%)'))
-    assert.eql(parseColor('#CF7070'), parseColor('hsl(0,50%,62.5%)'))
-    assert.eql(parseColor('#B78787'), parseColor('hsl(0,25%,62.5%)'))
-    assert.eql(parseColor('#9F9F9F'), parseColor('hsl(0,0%,62.5%)'))
-    assert.eql(parseColor('#FF0000'), parseColor('hsl(0,100%,50%)'))
-    assert.eql(parseColor('#DF2020'), parseColor('hsl(0,75%,50%)'))
-    assert.eql(parseColor('#BF4040'), parseColor('hsl(0,50%,50%)'))
-    assert.eql(parseColor('#9F6060'), parseColor('hsl(0,25%,50%)'))
-    assert.eql(parseColor('#808080'), parseColor('hsl(0,0%,50%)'))
-    assert.eql(parseColor('#BF0000'), parseColor('hsl(0,100%,37.5%)'))
-    assert.eql(parseColor('#A71818'), parseColor('hsl(0,75%,37.5%)'))
-    assert.eql(parseColor('#8F3030'), parseColor('hsl(0,50%,37.5%)'))
-    assert.eql(parseColor('#784848'), parseColor('hsl(0,25%,37.5%)'))
-    assert.eql(parseColor('#606060'), parseColor('hsl(0,0%,37.5%)'))
-    assert.eql(parseColor('#800000'), parseColor('hsl(0,100%,25%)')) 
-    assert.eql(parseColor('#701010'), parseColor('hsl(0,75%,25%)'))
-    assert.eql(parseColor('#602020'), parseColor('hsl(0,50%,25%)'))
-    assert.eql(parseColor('#503030'), parseColor('hsl(0,25%,25%)'))
-    assert.eql(parseColor('#404040'), parseColor('hsl(0,0%,25%)'))
-    assert.eql(parseColor('#400000'), parseColor('hsl(0,100%,12.5%)'))
-    assert.eql(parseColor('#380808'), parseColor('hsl(0,75%,12.5%)'))
-    assert.eql(parseColor('#301010'), parseColor('hsl(0,50%,12.5%)'))
-    assert.eql(parseColor('#281818'), parseColor('hsl(0,25%,12.5%)'))
-    assert.eql(parseColor('#202020'), parseColor('hsl(0,0%,12.5%)'))
-    assert.eql(parseColor('#000000'), parseColor('hsl(0,100%,0%)'))
-    assert.eql(parseColor('#000000'), parseColor('hsl(0,75%,0%)'))
-    assert.eql(parseColor('#000000'), parseColor('hsl(0,50%,0%)'))
-    assert.eql(parseColor('#000000'), parseColor('hsl(0,25%,0%)'))
-    assert.eql(parseColor('#000000'), parseColor('hsl(0,0%,0%)'))
-    
-    // TODO: there are 11 more tables to adapt from
-    // http://www.w3.org/TR/css3-color/#hsl-examples :)
-    
-    // hsla()
-    assert.eql([255,0,0,1], parseColor('hsla(0,100.0,50.0,1.0)'));
-    assert.eql([255,0,0,1], parseColor('hsla(360,100.0,50.0,1.0)'));
-    assert.eql([0,255,0,1], parseColor('hsla(120,100.0,50.0,1.0)'));
-    assert.eql([0,0,255,1], parseColor('hsla(240,100.0,50.0,1.0)'));
-    assert.equal(null, parseColor('hsl()'));
-
-    // hex
-    assert.eql([165,89,89,1], parseColor('#A55959'));
-    assert.eql([255,255,255,1], parseColor('#FFFFFF'));
-    assert.eql([255,255,255,1], parseColor('#ffffff'));
-    assert.eql([255,255,255,1], parseColor('#FFF'));
-    assert.eql([255,255,255,1], parseColor('#fff'));
-
-    // name
-    assert.eql([255,255,255,1], parseColor('white'));
-    assert.eql([0,0,0,1], parseColor('black'));
   },
   
   'test .parseFont()': function(assert){
@@ -191,7 +92,10 @@ module.exports = {
       assert.equal('#80c880', ctx[prop], prop + ' rgba(128, 200, 128, 1) -> #80c880, got ' + ctx[prop]);
 
       ctx[prop] = 'rgba(128,80,0,0.5)';
-      assert.equal('rgba(128, 80, 0, 0.5)', ctx[prop], prop + ' rgba(128,80,0,0.5) -> rgba(128, 80, 0, 0.5), got ' + ctx[prop]);
+      assert.equal('rgba(128, 80, 0, 0.50)', ctx[prop], prop + ' rgba(128,80,0,0.5) -> rgba(128, 80, 0, 0.5), got ' + ctx[prop]);
+
+      ctx[prop] = 'rgba(128,80,0,0.75)';
+      assert.equal('rgba(128, 80, 0, 0.75)', ctx[prop], prop + ' rgba(128,80,0,0.75) -> rgba(128, 80, 0, 0.75), got ' + ctx[prop]);
 
       if ('shadowColor' == prop) return;
 

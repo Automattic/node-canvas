@@ -8,16 +8,9 @@
 #ifndef __NODE_CONTEXT2D_H__
 #define __NODE_CONTEXT2D_H__
 
+#include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
-
-/*
- * RGBA struct used to retain values of fill/stroke.
- */
-
-typedef struct {
-  double r, g, b, a;
-} rgba_t;
 
 /*
  * State struct.
@@ -67,9 +60,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> FillText(const Arguments &args);
     static Handle<Value> StrokeText(const Arguments &args);
     static Handle<Value> SetFont(const Arguments &args);
-    static Handle<Value> SetFillRGBA(const Arguments &args);
-    static Handle<Value> SetStrokeRGBA(const Arguments &args);
-    static Handle<Value> SetShadowRGBA(const Arguments &args);
+    static Handle<Value> SetFillColor(const Arguments &args);
+    static Handle<Value> SetStrokeColor(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
     static Handle<Value> SetStrokePattern(const Arguments &args);
     static Handle<Value> SetTextBaseline(const Arguments &args);
@@ -87,6 +79,9 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> ArcTo(const Arguments &args);
     static Handle<Value> GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetFillColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetStrokeColor(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineJoin(Local<String> prop, const AccessorInfo &info);
@@ -97,6 +92,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetAntiAlias(Local<String> prop, const AccessorInfo &info);
     static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info);

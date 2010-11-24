@@ -18,16 +18,6 @@
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
- * Set RGBA.
- */
-
-#define RGBA(_,R,G,B,A) \
-  _.r = R / 255 * 1; \
-  _.g = G / 255 * 1; \
-  _.b = B / 255 * 1; \
-  _.a = A; \
-
-/*
  * Rectangle arg assertions.
  */
 
@@ -100,13 +90,15 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setShadowRGBA", SetShadowRGBA);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillRGBA", SetFillRGBA);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeRGBA", SetStrokeRGBA);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
+  proto->SetAccessor(String::NewSymbol("shadowColor"), GetShadowColor, SetShadowColor);
+  proto->SetAccessor(String::NewSymbol("fillColor"), GetFillColor);
+  proto->SetAccessor(String::NewSymbol("strokeColor"), GetStrokeColor);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
@@ -132,9 +124,11 @@ Context2d::Context2d(Canvas *canvas) {
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
-  RGBA(state->fill,0,0,0,1);
-  RGBA(state->stroke,0,0,0,1);
-  RGBA(state->shadow,0,0,0,0);
+  rgba_t transparent = { 0,0,0,1 };
+  rgba_t transparent_black = { 0,0,0,0 };
+  state->fill = transparent;
+  state->stroke = transparent;
+  state->shadow = transparent_black;
 }
 
 /*
@@ -997,44 +991,90 @@ Context2d::SetStrokePattern(const Arguments &args) {
 }
 
 /*
- * Set shadow RGBA, used internally for shadowColor=
+ * Set shadow color.
  */
 
-Handle<Value>
-Context2d::SetShadowRGBA(const Arguments &args) {
-  HandleScope scope;
-  RGBA_ARGS(0);
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  RGBA(context->state->shadow,r,g,b,a);
-  return Undefined();
+void
+Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  short ok;
+  String::AsciiValue str(val->ToString());
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (ok) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    context->state->shadow = rgba_create(rgba);
+  }
 }
 
 /*
- * Set fill RGBA, used internally for fillStyle=
+ * Get shadow color.
  */
 
 Handle<Value>
-Context2d::SetFillRGBA(const Arguments &args) {
+Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  rgba_to_string(context->state->shadow, buf);
+  return String::New(buf);
+}
+
+/*
+ * Set fill color, used internally for fillStyle=
+ */
+
+Handle<Value>
+Context2d::SetFillColor(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS(0);
+  short ok;
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = NULL;
-  RGBA(context->state->fill,r,g,b,a);
+  context->state->fill = rgba_create(rgba);
   return Undefined();
 }
 
 /*
- * Set stroke RGBA, used internally for strokeStyle=
+ * Get fill color.
  */
 
 Handle<Value>
-Context2d::SetStrokeRGBA(const Arguments &args) {
+Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  rgba_to_string(context->state->fill, buf);
+  return String::New(buf);
+}
+
+/*
+ * Set stroke color, used internally for strokeStyle=
+ */
+
+Handle<Value>
+Context2d::SetStrokeColor(const Arguments &args) {
   HandleScope scope;
-  RGBA_ARGS(0);
+  short ok;
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+  uint32_t rgba = rgba_from_string(*str, &ok);
+  if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->strokePattern = NULL;
-  RGBA(context->state->stroke,r,g,b,a);
+  context->state->stroke = rgba_create(rgba);
   return Undefined();
+}
+
+/*
+ * Get stroke color.
+ */
+
+Handle<Value>
+Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  rgba_to_string(context->state->stroke, buf);
+  return String::New(buf);
 }
 
 /*
