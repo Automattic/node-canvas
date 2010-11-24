@@ -97,6 +97,8 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("shadowColor"), GetShadowColor, SetShadowColor);
+  proto->SetAccessor(String::NewSymbol("fillColor"), GetFillColor);
+  proto->SetAccessor(String::NewSymbol("strokeColor"), GetStrokeColor);
   proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
   proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
@@ -1034,6 +1036,18 @@ Context2d::SetFillColor(const Arguments &args) {
 }
 
 /*
+ * Get fill color.
+ */
+
+Handle<Value>
+Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  rgba_to_string(context->state->fill, buf);
+  return String::New(buf);
+}
+
+/*
  * Set stroke color, used internally for strokeStyle=
  */
 
@@ -1049,6 +1063,18 @@ Context2d::SetStrokeColor(const Arguments &args) {
   context->state->strokePattern = NULL;
   context->state->stroke = rgba_create(rgba);
   return Undefined();
+}
+
+/*
+ * Get stroke color.
+ */
+
+Handle<Value>
+Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  rgba_to_string(context->state->stroke, buf);
+  return String::New(buf);
 }
 
 /*

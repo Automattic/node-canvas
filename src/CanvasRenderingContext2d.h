@@ -80,6 +80,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetFillColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetStrokeColor(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetLineJoin(Local<String> prop, const AccessorInfo &info);
