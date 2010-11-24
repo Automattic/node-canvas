@@ -182,7 +182,7 @@ static struct named_color {
   , { "whitesmoke", 0xf5f5f5ff }
   , { "yellow", 0xffff00ff }
   , { "yellowgreen", 0x9acd32ff }
-  , {NULL, NULL}
+  , { NULL, NULL }
 };
 
 /*
