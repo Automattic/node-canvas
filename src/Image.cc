@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <jpeglib.h>
+#include <errno.h>
 
 Persistent<FunctionTemplate> Image::constructor;
 
@@ -303,7 +304,14 @@ cairo_status_t
 Image::loadJPEG() {
   // File stream
   FILE *stream = fopen(filename, "r");
-  if (!stream) return CAIRO_STATUS_READ_ERROR;
+
+  if (!stream) {
+    switch (errno) {
+      case ENOMEM: return CAIRO_STATUS_NO_MEMORY;
+      case ENOENT: return CAIRO_STATUS_FILE_NOT_FOUND;
+      default: return CAIRO_STATUS_READ_ERROR;
+  	}
+  }
 
   // JPEG setup
   struct jpeg_decompress_struct info;
