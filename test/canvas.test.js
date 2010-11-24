@@ -5,7 +5,6 @@
 
 var Canvas = require('canvas')
   , assert = require('assert')
-  , parseColor = Canvas.Context2d.parseColor
   , parseFont = Canvas.Context2d.parseFont
   , sys = require('sys')
   , fs = require('fs');
@@ -17,37 +16,6 @@ module.exports = {
   
   'test .cairoVersion': function(assert){
     assert.match(Canvas.cairoVersion, /^\d+\.\d+\.\d+$/);
-  },
-  
-  'test .parseColor()': function(assert){
-    assert.equal(null, parseColor());
-    assert.equal(null, parseColor(''));
-
-    // rgb()
-    assert.eql([255,165,0,1], parseColor('rgb(255,165,0)'));
-    assert.eql([255,165,0,1], parseColor('rgb(255, 165, 0)'));
-    assert.eql([255,165,0,1], parseColor('rgb(255 , 165 , 0)'));
-    assert.equal(null, parseColor('rgb()'));
-
-    // rgba()
-    assert.eql([255,165,0,1], parseColor('rgba(255,165,0,1)'));
-    assert.eql([255,165,0,1], parseColor('rgba(255,165,0,1)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165,0,0.6)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165, 0, 0.6)'));
-    assert.eql([255,165,0,.6], parseColor('rgba(255,165 , 0 ,.6)'));
-    assert.equal(null, parseColor('rgba(2554,165 , 0 ,.6)'));
-    assert.equal(null, parseColor('rgba()'));
-
-    // hex
-    assert.eql([165,89,89,1], parseColor('#A55959'));
-    assert.eql([255,255,255,1], parseColor('#FFFFFF'));
-    assert.eql([255,255,255,1], parseColor('#ffffff'));
-    assert.eql([255,255,255,1], parseColor('#FFF'));
-    assert.eql([255,255,255,1], parseColor('#fff'));
-
-    // name
-    assert.eql([255,255,255,1], parseColor('white'));
-    assert.eql([0,0,0,1], parseColor('black'));
   },
   
   'test .parseFont()': function(assert){
