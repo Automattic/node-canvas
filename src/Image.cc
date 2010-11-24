@@ -175,7 +175,6 @@ Image::~Image() {
 void
 Image::load() {
   if (LOADING != state) {
-    Ref();
     state = LOADING;
     loadSync();
   }
@@ -212,8 +211,6 @@ Image::loaded() {
       error(try_catch.Exception());
     }
   }
-
-  Unref();
 }
 
 /*
