@@ -105,6 +105,28 @@ module.exports = {
     });
   },
   
+  'test color parser': function(){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ffccaa';
+    assert.equal('#ffccaa', ctx.fillStyle);
+
+    ctx.fillStyle = '#FFCCAA';
+    assert.equal('#ffccaa', ctx.fillStyle);
+
+    ctx.fillStyle = '#FCA';
+    assert.equal('#ffccaa', ctx.fillStyle);
+
+    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#FGG';
+    assert.equal('#ff0000', ctx.fillStyle);
+
+    ctx.fillStyle = '#fff';
+    ctx.fillStyle = 'afasdfasdf';
+    assert.equal('#ffffff', ctx.fillStyle);
+  },
+  
   'test Canvas#getContext("2d")': function(assert){
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');
