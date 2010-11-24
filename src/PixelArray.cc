@@ -103,25 +103,10 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
     for (int x = 0; x < width; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + sx;
-
-      // ARGB
-      uint8_t a = *pixel >> 24;
-      uint8_t r = *pixel >> 16;
-      uint8_t g = *pixel >> 8;
-      uint8_t b = *pixel;
-
-      // undo premultiplication
-      dst[bx + 3] = a;
-      // TODO: abstract
-      if (a) {
-        dst[bx + 0] = r * 255 / a;
-        dst[bx + 1] = g * 255 / a;
-        dst[bx + 2] = b * 255 / a;
-      } else {
-        dst[bx + 0] = r;
-        dst[bx + 1] = g;
-        dst[bx + 2] = b;
-      }
+      dst[bx + 3] = (*pixel & 0xff000000) >> 24;
+      dst[bx + 0] = (*pixel & 0x00ff0000) >> 16;
+      dst[bx + 1] = (*pixel & 0x0000ff00) >> 8;
+      dst[bx + 2] = *pixel & 0xff;
     }
     dst += dstStride;
   }
