@@ -239,9 +239,8 @@ rgba_create(uint32_t rgba) {
  * Return a string representation of the color.
  */
 
-char *
-rgba_to_string(rgba_t rgba) {
-  char *buf = (char *) malloc(64);
+void
+rgba_to_string(rgba_t rgba, char *buf) {
   if (1 == rgba.a) {
     sprintf(buf, "#%.2X%.2X%.2X"
       , (int) (rgba.r * 255)
@@ -254,7 +253,6 @@ rgba_to_string(rgba_t rgba) {
       , (int) (rgba.b * 255)
       , rgba.a);
   }
-  return buf;
 }
 
 /*

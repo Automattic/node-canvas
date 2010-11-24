@@ -1009,8 +1009,10 @@ Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorIn
 
 Handle<Value>
 Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
+  char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return String::New(rgba_to_string(context->state->shadow));
+  rgba_to_string(context->state->shadow, buf);
+  return String::New(buf);
 }
 
 /*
