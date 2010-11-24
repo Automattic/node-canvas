@@ -220,11 +220,11 @@ Image::loaded() {
 void
 Image::error(Local<Value> err) {
   HandleScope scope;
-  // TODO: properly dispose
   // TODO: handle exception in onerror segfault
   if (!onerror.IsEmpty()) {
     Local<Value> argv[1] = { err };
     onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+    onerror.Dispose();
   }
 }
 
