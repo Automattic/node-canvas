@@ -274,7 +274,7 @@ rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 
 static int32_t
 rgba_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  return rgba_from_rgba(r, g, b, 0);
+  return rgba_from_rgba(r, g, b, 255);
 }
 
 /*
