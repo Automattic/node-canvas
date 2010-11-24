@@ -1636,3 +1636,28 @@ tests['putImageData() alpha'] = function(ctx){
   var data = ctx.getImageData(0,0,120,20);
   ctx.putImageData(data,20,120);
 };
+
+tests['putImageData() alpha 2'] = function(ctx){
+  ctx.fillStyle = 'rgba(255,0,0,0.2)'
+  ctx.fillRect(0,0,50,100);
+  ctx.fillStyle = 'rgba(0,255,0,0.5)'
+  ctx.fillRect(50,0,50,100);
+  ctx.fillStyle = 'rgba(0,0,255,0.75)'
+  ctx.fillRect(100,0,50,100);
+
+  var data = ctx.getImageData(0,0,120,20);
+  ctx.putImageData(data,20,120);
+};
+
+tests['putImageData() globalAlpha'] = function(ctx){
+  ctx.globalAlpha = 0.5
+  ctx.fillStyle = '#f00'
+  ctx.fillRect(0,0,50,100);
+  ctx.fillStyle = '#0f0'
+  ctx.fillRect(50,0,50,100);
+  ctx.fillStyle = '#00f'
+  ctx.fillRect(100,0,50,100);
+
+  var data = ctx.getImageData(0,0,120,20);
+  ctx.putImageData(data,20,120);
+};
