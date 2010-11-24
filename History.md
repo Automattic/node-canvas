@@ -1,4 +1,11 @@
 
+0.3.0 / 2010-11-24 
+==================
+
+  * Added arcTo(). Closes #11
+  * Added c color parser, _./examples/ray.js_ is now twice as fast 
+  * Fixed `putImageData()` bug messing up rgba channels
+
 0.2.1 / 2010-11-19 
 ==================
 
