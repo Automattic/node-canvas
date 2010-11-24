@@ -5,6 +5,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
+#include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
@@ -74,15 +75,23 @@ Gradient::AddColorStop(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("offset required")));
   if (!args[1]->IsString())
     return ThrowException(Exception::TypeError(String::New("color string required")));
-  RGBA_ARGS(1);
+
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
-  cairo_pattern_add_color_stop_rgba(
-      grad->pattern()
-    , args[0]->NumberValue()
-    , r / 255 * 1
-    , g / 255 * 1
-    , b / 255 * 1
-    , a);
+  short ok;
+  String::AsciiValue str(args[1]);
+  uint32_t rgba = rgba_from_string(*str, &ok);
+
+  if (ok) {
+    rgba_t color = rgba_create(rgba);
+    cairo_pattern_add_color_stop_rgba(
+        grad->pattern()
+      , args[0]->NumberValue()
+      , color.r
+      , color.g
+      , color.b
+      , color.a);
+  }
+
   return Undefined();
 }
 

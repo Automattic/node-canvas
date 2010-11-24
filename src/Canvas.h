@@ -26,24 +26,6 @@ using namespace node;
 #endif
 
 /*
- * RGBA arg assertions.
- */
-
-#define RGBA_ARGS(N) \
-  if (!args[N]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("r required"))); \
-  if (!args[N+1]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("g required"))); \
-  if (!args[N+2]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("b required"))); \
-  if (!args[N+3]->IsNumber()) \
-    return ThrowException(Exception::TypeError(String::New("alpha required"))); \
-  double r = args[N]->Int32Value(); \
-  double g = args[N+1]->Int32Value(); \
-  double b = args[N+2]->Int32Value(); \
-  double a = args[N+3]->NumberValue();
-
-/*
  * Canvas.
  */
 
