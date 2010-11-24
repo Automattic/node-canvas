@@ -242,7 +242,7 @@ rgba_create(uint32_t rgba) {
 void
 rgba_to_string(rgba_t rgba, char *buf) {
   if (1 == rgba.a) {
-    sprintf(buf, "#%.2X%.2X%.2X"
+    sprintf(buf, "#%.2x%.2x%.2x"
       , (int) (rgba.r * 255)
       , (int) (rgba.g * 255)
       , (int) (rgba.b * 255));
