@@ -1625,6 +1625,18 @@ tests['putImageData() 9'] = function(ctx){
   ctx.putImageData(data,-10,-10,0,20,500,500);
 };
 
+tests['putImageData() 10'] = function(ctx){
+  ctx.fillStyle = 'rgba(255,0,0,1)'
+  ctx.fillRect(0,0,50,100);
+  ctx.fillStyle = 'rgba(0,255,0,1)'
+  ctx.fillRect(50,0,50,100);
+  ctx.fillStyle = 'rgba(0,0,255,1)'
+  ctx.fillRect(100,0,50,100);
+
+  var data = ctx.getImageData(0,0,120,20);
+  ctx.putImageData(data,20,120);
+};
+
 tests['putImageData() alpha'] = function(ctx){
   ctx.fillStyle = 'rgba(255,0,0,0.5)'
   ctx.fillRect(0,0,50,100);
