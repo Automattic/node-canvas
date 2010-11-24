@@ -309,7 +309,7 @@ rgba_from_hex3_string(const char *str) {
 
 static int32_t
 rgba_from_rgb_string(const char *str, short *ok) {
-  if (str == strnstr(str, "rgb(", 4)) {
+  if (str == strstr(str, "rgb(")) {
     str += 4;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
@@ -327,7 +327,7 @@ rgba_from_rgb_string(const char *str, short *ok) {
 
 static int32_t
 rgba_from_rgba_string(const char *str, short *ok) {
-  if (str == strnstr(str, "rgba(", 5)) {
+  if (str == strstr(str, "rgba(")) {
     str += 5;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
@@ -401,9 +401,9 @@ int32_t
 rgba_from_string(const char *str, short *ok) {
   if ('#' == str[0]) 
     return rgba_from_hex_string(++str, ok);
-  if (str == strnstr(str, "rgba", 4))
+  if (str == strstr(str, "rgba"))
     return rgba_from_rgba_string(str, ok);
-  if (str == strnstr(str, "rgb", 3))
+  if (str == strstr(str, "rgb"))
     return rgba_from_rgb_string(str, ok);
   return rgba_from_name_string(str, ok);
 }
