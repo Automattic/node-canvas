@@ -1,4 +1,10 @@
 
+0.3.1 / 2010-11-24 
+==================
+
+  * Fixed; `Image` loading is sync until race-condition is resolved
+  * Fixed; `Image::loadJPEG()` return status based on errno
+
 0.3.0 / 2010-11-24 
 ==================
 
