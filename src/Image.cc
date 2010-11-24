@@ -169,37 +169,6 @@ Image::~Image() {
 }
 
 /*
- * Load callback.
- */
-
-int
-Image::EIO_Load(eio_req *req) {
-  Image *img = (Image *) req->data;
-  req->result = img->loadSurface();
-  return 0;
-}
-
-/*
- * After load callback.
- */
-
-int
-Image::EIO_AfterLoad(eio_req *req) {
-  HandleScope scope;
-  Image *img = (Image *) req->data;
-
-  if (req->result) {
-    img->error(Canvas::Error((cairo_status_t) req->result));
-  } else {
-    img->loaded();
-  }
-
-  img->Unref();
-  ev_unref(EV_DEFAULT_UC);
-  return 0;
-}
-
-/*
  * Initiate image loading.
  */
 
@@ -208,8 +177,7 @@ Image::load() {
   if (LOADING != state) {
     Ref();
     state = LOADING;
-    eio_custom(EIO_Load, EIO_PRI_DEFAULT, EIO_AfterLoad, this);
-    ev_ref(EV_DEFAULT_UC);
+    loadSync();
   }
 }
 
