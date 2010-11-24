@@ -9,8 +9,11 @@
 #include "Image.h"
 #include <stdlib.h>
 #include <string.h>
-#include <jpeglib.h>
 #include <errno.h>
+
+#ifdef HAVE_JPEG
+#include <jpeglib.h>
+#endif
 
 Persistent<FunctionTemplate> Image::constructor;
 
