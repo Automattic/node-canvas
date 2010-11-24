@@ -6,6 +6,7 @@
 //
 
 #include "color.h"
+#include <stdlib.h>
 
 /*
  * Consume whitespace.
@@ -232,6 +233,28 @@ rgba_create(uint32_t rgba) {
   color.b = (double) ((rgba & 0x0000ff00) >> 8) / 255;
   color.a = (double) (rgba & 0xff) / 255;
   return color;
+}
+
+/*
+ * Return a string representation of the color.
+ */
+
+char *
+rgba_to_string(rgba_t rgba) {
+  char *buf = (char *) malloc(64);
+  if (1 == rgba.a) {
+    sprintf(buf, "#%.2X%.2X%.2X"
+      , (int) (rgba.r * 255)
+      , (int) (rgba.g * 255)
+      , (int) (rgba.b * 255));
+  } else {
+    sprintf(buf, "rgba(%d, %d, %d, %.2f)"
+      , (int) (rgba.r * 255)
+      , (int) (rgba.g * 255)
+      , (int) (rgba.b * 255)
+      , rgba.a);
+  }
+  return buf;
 }
 
 /*

@@ -30,6 +30,9 @@ rgba_create(uint32_t rgba);
 int32_t
 rgba_from_string(const char *str, short *ok);
 
+char *
+rgba_to_string(rgba_t rgba);
+
 void
 rgba_inspect(int32_t rgba);
 
