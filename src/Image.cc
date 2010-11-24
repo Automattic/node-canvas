@@ -302,9 +302,9 @@ Image::loadPNG() {
 
 cairo_status_t
 Image::loadJPEG() {
-  // File stream
   FILE *stream = fopen(filename, "r");
 
+  // Generalized errors
   if (!stream) {
     switch (errno) {
       case ENOMEM: return CAIRO_STATUS_NO_MEMORY;
