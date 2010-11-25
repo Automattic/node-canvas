@@ -319,7 +319,7 @@ Image::loadJPEG() {
     , CAIRO_FORMAT_ARGB32
     , width
     , height
-    , width * 4);
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
 
   // Cleanup
   fclose(stream);
