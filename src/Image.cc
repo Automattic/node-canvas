@@ -322,10 +322,13 @@ Image::loadJPEG() {
     , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
 
   // Cleanup
+  free(src);
   fclose(stream);
   jpeg_finish_decompress(&info);
   jpeg_destroy_decompress(&info);
-  return cairo_surface_status(_surface);
+  cairo_status_t status = cairo_surface_status(_surface);
+  if (status) free(data);
+  return status;
 }
 
 #endif
