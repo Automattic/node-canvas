@@ -40,9 +40,7 @@ function spark(ctx, data) {
 
 spark(ctx, [1,2,4,5,10,4,2,5,4,3,3,2]);
 
-var out = fs.createWriteStream(__dirname + '/spark.png')
-  , stream = canvas.createPNGStream();
-
-stream.on('data', function(chunk){
-  out.write(chunk);
+canvas.toBuffer(function(err, buf){
+  if (err) throw err;
+  fs.writeFile(__dirname + '/spark.png', buf);
 });
