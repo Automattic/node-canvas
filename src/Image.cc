@@ -156,7 +156,7 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
  */
 
 Image::Image() {
-  filename = (char *) "";
+  filename = NULL;
   _surface = NULL;
   width = height = 0;
   state = DEFAULT;
