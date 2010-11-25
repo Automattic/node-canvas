@@ -79,9 +79,7 @@ ctx.translate(243,0);
 render(1);
 console.log('Rendered in %s seconds', (new Date - start) / 1000);
 
-var out = fs.createWriteStream(__dirname + '/ray.png')
-  , stream = canvas.createPNGStream();
-
-stream.on('data', function(chunk){
-  out.write(chunk);
+canvas.toBuffer(function(err, buf){
+  if (err) throw err;
+  fs.writeFile(__dirname + '/ray.png', buf);
 });
