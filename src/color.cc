@@ -106,7 +106,7 @@ static struct named_color {
   , { "lightblue", 0xadd8e6ff }
   , { "lightcoral", 0xf08080ff }
   , { "lightcyan", 0xe0ffffff }
-  , { "lightgoldenrodyellow", 0xfafa}
+  , { "lightgoldenrodyellow", 0xfafad2ff }
   , { "lightgrey", 0xd3d3d3ff }
   , { "lightgreen", 0x90ee90ff }
   , { "lightpink", 0xffb6c1ff }
@@ -128,7 +128,7 @@ static struct named_color {
   , { "mediumpurple", 0x9370d8ff }
   , { "mediumseagreen", 0x3cb371ff }
   , { "mediumslateblue", 0x7b68eeff }
-  , { "mediumspringgreen", 0x00fa9af }
+  , { "mediumspringgreen", 0x00fa9aff }
   , { "mediumturquoise", 0x48d1ccff }
   , { "mediumvioletred", 0xc71585ff }
   , { "midnightblue", 0x191970ff }
