@@ -1739,3 +1739,35 @@ tests['putImageData() globalAlpha'] = function(ctx){
   var data = ctx.getImageData(0,0,120,20);
   ctx.putImageData(data,20,120);
 };
+
+tests['putImageData() png data'] = function(ctx, done){
+  var img = new Image;
+  ctx.fillRect(50,50,30,30);
+  img.onload = function(){
+    ctx.drawImage(img,0,0,200,200);
+    var imageData = ctx.getImageData(0,0,50,50)
+      , data = imageData.data;
+    for (var i = 0, len = data.length; i < len; i += 4) {
+      data[i + 3] = 80;
+    }
+    ctx.putImageData(imageData,50,50);
+    done();
+  };
+  img.src = 'state.png';
+};
+
+tests['putImageData() png data'] = function(ctx, done){
+  var img = new Image;
+  ctx.fillRect(50,50,30,30);
+  img.onload = function(){
+    ctx.drawImage(img,0,0,200,200);
+    var imageData = ctx.getImageData(0,0,50,50)
+      , data = imageData.data;
+    for (var i = 0, len = data.length; i < len; i += 4) {
+      data[i + 3] = 80;
+    }
+    ctx.putImageData(imageData,50,50,10,10,20,20);
+    done();
+  };
+  img.src = 'state.png';
+};
