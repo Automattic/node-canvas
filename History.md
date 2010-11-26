@@ -1,4 +1,15 @@
 
+0.3.2 / 2010-11-26 
+==================
+
+  * Added --profile option to config
+  * Fixed `eio_custom` segfault(s). Closes #46
+  * Fixed two named colors. Closes #62 [thanks noonat]
+  * Fixed a few warnings
+  * Fixed; freeing data in `Image::loadJPEG()` on failure
+  * Fixed; include _jpeglib_ only when __HAVE_JPEG__
+  * Fixed; using `strstr()` instead of `strnstr()`
+
 0.3.1 / 2010-11-24 
 ==================
 
