@@ -1756,7 +1756,7 @@ tests['putImageData() png data'] = function(ctx, done){
   img.src = 'state.png';
 };
 
-tests['putImageData() png data'] = function(ctx, done){
+tests['putImageData() png data 2'] = function(ctx, done){
   var img = new Image;
   ctx.fillRect(50,50,30,30);
   img.onload = function(){
