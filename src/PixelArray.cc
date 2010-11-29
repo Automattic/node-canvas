@@ -103,10 +103,15 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
     for (int x = 0; x < width; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + sx;
-      dst[bx + 3] = (*pixel & 0xff000000) >> 24;
-      dst[bx + 0] = (*pixel & 0x00ff0000) >> 16;
-      dst[bx + 1] = (*pixel & 0x0000ff00) >> 8;
-      dst[bx + 2] = *pixel & 0xff;
+      uint8_t a = *pixel >> 24;
+      uint8_t r = *pixel >> 16;
+      uint8_t g = *pixel >> 8;
+      uint8_t b = *pixel;
+      dst[bx + 3] = a;
+      float alpha = (float) a / 255;
+      dst[bx + 0] = (int)((float) r / alpha);
+      dst[bx + 1] = (int)((float) g / alpha);
+      dst[bx + 2] = (int)((float) b / alpha);
     }
     dst += dstStride;
   }
