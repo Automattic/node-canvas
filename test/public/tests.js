@@ -1771,3 +1771,21 @@ tests['putImageData() png data 2'] = function(ctx, done){
   };
   img.src = 'state.png';
 };
+
+tests['putImageData() png data 3'] = function(ctx, done){
+  var img = new Image;
+  ctx.fillRect(50,50,30,30);
+  img.onload = function(){
+    ctx.drawImage(img,0,0,200,200);
+    var imageData = ctx.getImageData(0,0,50,50)
+      , data = imageData.data;
+    for (var i = 0, len = data.length; i < len; i += 4) {
+      data[i + 0] = data[i + 0] * 0.2;
+      data[i + 1] = data[i + 1] * 0.2;
+      data[i + 2] = data[i + 2] * 0.2;
+    }
+    ctx.putImageData(imageData,50,50);
+    done();
+  };
+  img.src = 'state.png';
+};
