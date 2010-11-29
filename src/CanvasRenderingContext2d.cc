@@ -94,6 +94,7 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
   NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
+  proto->SetAccessor(String::NewSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
   proto->SetAccessor(String::NewSymbol("shadowColor"), GetShadowColor, SetShadowColor);
@@ -130,6 +131,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->fill = transparent;
   state->stroke = transparent;
   state->shadow = transparent_black;
+  state->patternQuality = CAIRO_FILTER_GOOD;
 }
 
 /*
@@ -568,6 +570,7 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Paint
   cairo_set_source_surface(ctx, src, dx, dy);
+  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
@@ -656,6 +659,40 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
 #endif
     default:
       return String::NewSymbol("source-over");
+  }
+}
+
+/*
+ * Set pattern quality.
+ */
+
+void
+Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  String::AsciiValue quality(val->ToString());
+  if (0 == strcmp("fast", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_FAST;
+  } else if (0 == strcmp("good", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_GOOD;
+  } else if (0 == strcmp("best", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_BEST;
+  }
+}
+
+/*
+ * Get pattern quality.
+ */
+
+Handle<Value>
+Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  switch (context->state->patternQuality) {
+    case CAIRO_FILTER_FAST:
+      return String::New("fast");
+    case CAIRO_FILTER_BEST:
+      return String::New("best");
+    default:  
+      return String::New("good");
   }
 }
 

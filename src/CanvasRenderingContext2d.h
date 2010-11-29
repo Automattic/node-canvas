@@ -22,6 +22,7 @@
 typedef struct {
   rgba_t fill;
   rgba_t stroke;
+  cairo_filter_t patternQuality;
   cairo_pattern_t *fillPattern;
   cairo_pattern_t *strokePattern;
   float globalAlpha;
@@ -77,6 +78,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> Rect(const Arguments &args);
     static Handle<Value> Arc(const Arguments &args);
     static Handle<Value> ArcTo(const Arguments &args);
+    static Handle<Value> GetPatternQuality(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowColor(Local<String> prop, const AccessorInfo &info);
@@ -90,6 +92,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetShadowOffsetY(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetShadowBlur(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetAntiAlias(Local<String> prop, const AccessorInfo &info);
+    static void SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info);

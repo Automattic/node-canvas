@@ -90,6 +90,14 @@ or specify the mime type:
       
     });
 
+### CanvasRenderingContext2d#patternQuality
+
+Given one of the values below will alter pattern (gradients, images, etc) render quality, defaults to _good_.
+
+  - fast
+  - good
+  - best
+
 ### Global Composite Operations
 
  In addition to those specified and commonly implemented by browsers, the following have been added:
