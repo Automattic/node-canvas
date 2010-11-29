@@ -22,6 +22,7 @@
 typedef struct {
   rgba_t fill;
   rgba_t stroke;
+  cairo_filter_t patternQuality;
   cairo_pattern_t *fillPattern;
   cairo_pattern_t *strokePattern;
   float globalAlpha;

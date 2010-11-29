@@ -130,6 +130,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->fill = transparent;
   state->stroke = transparent;
   state->shadow = transparent_black;
+  state->patternQuality = CAIRO_FILTER_GOOD;
 }
 
 /*
@@ -568,6 +569,7 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Paint
   cairo_set_source_surface(ctx, src, dx, dy);
+  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
