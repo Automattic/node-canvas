@@ -459,12 +459,13 @@ Context2d::PutImageData(const Arguments &args) {
       uint8_t r = srcRows[bx + 0];
       uint8_t g = srcRows[bx + 1];
       uint8_t b = srcRows[bx + 2];
+      float alpha = (float) a / 255;
 
       // ARGB
       *pixel = a << 24
-        | r << 16
-        | g << 8
-        | b;
+        | (int)((float) r * alpha) << 16
+        | (int)((float) g * alpha) << 8
+        | (int)((float) b * alpha);
     }
     srcRows += srcStride;
   }
