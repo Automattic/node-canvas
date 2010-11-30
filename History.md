@@ -1,4 +1,11 @@
 
+0.3.3 / 2010-11-30 
+==================
+
+  * Added `CanvasRenderingContext2d#patternQuality` accessor, accepting _fast_, _good_, and _best_
+  * Fixed; pre-multiply `putImageData()` components
+  * Fixed; `PixelArray` data is not premultiplied
+
 0.3.2 / 2010-11-26 
 ==================
 
