@@ -178,6 +178,17 @@ module.exports = {
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
   },
   
+  'test Context2d#patternQuality': function(assert){
+    var canvas = new Canvas(200, 200)
+      , ctx = canvas.getContext('2d');
+    
+    assert.equal('good', ctx.patternQuality);
+    ctx.patternQuality = 'best';
+    assert.equal('best', ctx.patternQuality);
+    ctx.patternQuality = 'invalid';
+    assert.equal('best', ctx.patternQuality);
+  },
+  
   'test Context2d#font=': function(assert){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
