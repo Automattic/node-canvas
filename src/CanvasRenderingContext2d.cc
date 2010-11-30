@@ -209,9 +209,12 @@ Context2d::restorePath() {
 
 void
 Context2d::fill(bool preserve) {
-  state->fillPattern
-    ? cairo_set_source(_context, state->fillPattern)
-    : setSourceRGBA(state->fill);
+  if (state->fillPattern) {
+    cairo_pattern_set_filter(state->fillPattern, state->patternQuality);
+    cairo_set_source(_context, state->fillPattern);
+  } else {
+    setSourceRGBA(state->fill);
+  }
 
   if (preserve) {
     hasShadow()
@@ -230,9 +233,12 @@ Context2d::fill(bool preserve) {
 
 void
 Context2d::stroke(bool preserve) {
-  state->strokePattern
-    ? cairo_set_source(_context, state->strokePattern)
-    : setSourceRGBA(state->stroke);
+  if (state->strokePattern) {
+    cairo_pattern_set_filter(state->strokePattern, state->patternQuality);
+    cairo_set_source(_context, state->fillPattern);
+  } else {
+    setSourceRGBA(state->stroke);
+  }
 
   if (preserve) {
     hasShadow()
