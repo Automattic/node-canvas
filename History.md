@@ -1,4 +1,9 @@
 
+0.4.0 / 2010-12-12 
+==================
+
+  * Added `drawImage()` with `Canvas` instance support. Closes #67
+
 0.3.3 / 2010-11-30 
 ==================
 
