@@ -508,19 +508,37 @@ Context2d::DrawImage(const Arguments &args) {
   return ThrowException(Exception::Error(String::New("drawImage() needs cairo >= 1.10.0")));
 #else
 
-  Local<Object> obj = args[0]->ToObject();
-  if (!Image::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("Image expected")));
-
-  Image *img = ObjectWrap::Unwrap<Image>(obj);
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->context();
-
   int sx = 0
     , sy = 0
-    , sw = img->width
-    , sh = img->height
+    , sw = 0
+    , sh = 0
     , dx, dy, dw, dh;
+
+  cairo_surface_t *surface;
+
+  Local<Object> obj = args[0]->ToObject();
+
+  // Image
+  if (Image::constructor->HasInstance(obj)) {
+    Image *img = ObjectWrap::Unwrap<Image>(obj);
+    sw = img->width;
+    sh = img->height;
+    surface = img->surface();
+
+  // Canvas
+  } else if (Canvas::constructor->HasInstance(obj)) {
+    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
+    sw = canvas->width;
+    sh = canvas->height;
+    surface = canvas->surface();
+
+  // Invalid
+  } else {
+    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+  }
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
 
   // Arguments
   switch (args.Length()) {
@@ -546,8 +564,8 @@ Context2d::DrawImage(const Arguments &args) {
     case 3:
       dx = args[1]->Int32Value();
       dy = args[2]->Int32Value();
-      dw = img->width;
-      dh = img->height;
+      dw = sw;
+      dh = sh;
       break;
     default:
       return ThrowException(Exception::TypeError(String::New("invalid arguments")));
@@ -559,7 +577,7 @@ Context2d::DrawImage(const Arguments &args) {
   // Source surface
   // TODO: only works with cairo >= 1.10.0
   cairo_surface_t *src = cairo_surface_create_for_rectangle(
-      img->surface()
+      surface
     , sx
     , sy
     , sw
