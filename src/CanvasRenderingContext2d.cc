@@ -1369,11 +1369,10 @@ Handle<Value>
 Context2d::FillText(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[0]->IsString()
-    || !args[1]->IsNumber()
+  if (!args[1]->IsNumber()
     || !args[2]->IsNumber()) return Undefined();
 
-  String::Utf8Value str(args[0]);
+  String::Utf8Value str(args[0]->ToString());
   double x = args[1]->NumberValue();
   double y = args[2]->NumberValue();
 
@@ -1395,11 +1394,10 @@ Handle<Value>
 Context2d::StrokeText(const Arguments &args) {
   HandleScope scope;
   
-  if (!args[0]->IsString()
-    || !args[1]->IsNumber()
+  if (!args[1]->IsNumber()
     || !args[2]->IsNumber()) return Undefined();
 
-  String::Utf8Value str(args[0]);
+  String::Utf8Value str(args[0]->ToString());
   double x = args[1]->NumberValue();
   double y = args[2]->NumberValue();
   
