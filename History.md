@@ -1,4 +1,9 @@
 
+0.4.1 / 2010-12-18 
+==================
+
+  * Fixed; toString() first argument of `{fill,stroke}Text()`. Closes #68
+
 0.4.0 / 2010-12-12 
 ==================
 
