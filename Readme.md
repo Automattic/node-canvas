@@ -114,12 +114,16 @@ Given one of the values below will alter pattern (gradients, images, etc) render
 
 ## Anti-Aliasing
 
- Set anti-aliasing mode:
+ Set anti-aliasing mode
  
  - default
  - none
  - gray
  - subpixel
+
+ For example:
+ 
+   ctx.antialias = 'none';
 
 ## Benchmarks
 
