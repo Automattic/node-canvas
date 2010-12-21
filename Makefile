@@ -2,7 +2,8 @@
 ADDON = build/default/canvas.node
 
 $(ADDON): src/*.cc
-	node-waf configure build
+	node-waf configure build \
+	  && ln -s $@ index.node
 
 test: $(ADDON)
 	@./support/expresso/bin/expresso \
@@ -17,5 +18,6 @@ benchmark:
 
 clean:
 	node-waf distclean
+	rm -f index.node
 
 .PHONY: test test-server benchmark clean
