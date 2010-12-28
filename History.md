@@ -1,4 +1,9 @@
 
+0.4.2 / 2010-12-28 
+==================
+
+  * Fixed font size growing issue after successive calls. Closes #70
+
 0.4.1 / 2010-12-18 
 ==================
 

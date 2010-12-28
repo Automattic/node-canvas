@@ -1,6 +1,6 @@
 { "name": "canvas"
  , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "0.4.1"
+ , "version":  "0.4.2"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics"]
  , "scripts": {
