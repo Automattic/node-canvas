@@ -42,12 +42,12 @@ module.exports = {
       , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial, sans-serif' }
       , '50px Helvetica ,  Arial, sans-serif'
       , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
-      , '50px "Helvetica Nueue", sans-serif'
-      , { size: 50, unit: 'px', family: '"Helvetica Nueue", sans-serif' }
-      , '50px "Helvetica Nueue", "foo bar baz" , sans-serif'
-      , { size: 50, unit: 'px', family: '"Helvetica Nueue", "foo bar baz" , sans-serif' }
-      , "50px 'Helvetica Nueue'"
-      , { size: 50, unit: 'px', family: "'Helvetica Nueue'" }
+      , '50px "Helvetica Neue", sans-serif'
+      , { size: 50, unit: 'px', family: 'Helvetica Neue, sans-serif' }
+      , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
+      , { size: 50, unit: 'px', family: 'Helvetica Neue, foo bar baz , sans-serif' }
+      , "50px 'Helvetica Neue'"
+      , { size: 50, unit: 'px', family: "Helvetica Neue" }
       , 'italic 20px Arial'
       , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
       , 'oblique 20px Arial'
