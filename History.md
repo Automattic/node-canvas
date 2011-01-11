@@ -1,4 +1,12 @@
 
+0.4.3 / 2011-01-11 
+==================
+
+  * Fixed font family dereferencing. Closes #72
+  * Fixed; stripping of quotes from font-family before applying
+  * Fixed duplicate textAlign getter
+  * Removed sans-serif default of _Arial_
+
 0.4.2 / 2010-12-28 
 ==================
 
