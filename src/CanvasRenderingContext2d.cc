@@ -1529,11 +1529,6 @@ Context2d::SetFont(const Arguments &args) {
   // Size
   cairo_set_font_size(ctx, size);
 
-  // Family
-  if (0 == strcmp("sans-serif", family)) {
-    family = "Arial";
-  }
-
   // Style
   cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
   if (0 == strcmp("italic", *style)) {
