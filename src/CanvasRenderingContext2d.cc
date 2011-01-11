@@ -1521,7 +1521,7 @@ Context2d::SetFont(const Arguments &args) {
   String::AsciiValue style(args[1]);
   double size = args[2]->NumberValue();
   String::AsciiValue unit(args[3]);
-  const char *family = *String::AsciiValue(args[4]);
+  String::AsciiValue family(args[4]);
   
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -1543,7 +1543,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_select_font_face(ctx, family, s, w);
+  cairo_select_font_face(ctx, *family, s, w);
   
   return Undefined();
 }
