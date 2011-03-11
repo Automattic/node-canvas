@@ -59,8 +59,9 @@ Image::New(const Arguments &args) {
 
 Handle<Value>
 Image::GetComplete(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return Boolean::New(Image::COMPLETE == img->state);
+  return scope.Close(Boolean::New(Image::COMPLETE == img->state));
 }
 
 /*
@@ -69,8 +70,9 @@ Image::GetComplete(Local<String>, const AccessorInfo &info) {
 
 Handle<Value>
 Image::GetWidth(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return Number::New(img->width);
+  return scope.Close(Number::New(img->width));
 }
 
 /*
@@ -79,8 +81,9 @@ Image::GetWidth(Local<String>, const AccessorInfo &info) {
 
 Handle<Value>
 Image::GetHeight(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return Number::New(img->height);
+  return scope.Close(Number::New(img->height));
 }
 
 /*
@@ -89,8 +92,9 @@ Image::GetHeight(Local<String>, const AccessorInfo &info) {
 
 Handle<Value>
 Image::GetSrc(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return String::New(img->filename);
+  return scope.Close(String::New(img->filename));
 }
 
 /*
@@ -102,6 +106,7 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsString()) {
     String::AsciiValue src(val);
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
+    if (img->filename) free(img->filename);
     img->filename = strdup(*src);
     img->load();
   }
