@@ -770,6 +770,24 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
   } else if (0 == strcmp("hsl-luminosity", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
+  } else if (0 == strcmp("clear", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
+  } else if (0 == strcmp("source", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SOURCE);
+  } else if (0 == strcmp("dest", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST);
+  } else if (0 == strcmp("saturate", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SATURATE);
+  } else if (0 == strcmp("color-dodge", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_COLOR_DODGE);
+  } else if (0 == strcmp("color-burn", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_COLOR_BURN);
+  } else if (0 == strcmp("difference", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DIFFERENCE);
+  } else if (0 == strcmp("exclusion", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_EXCLUSION);
+  } else if (0 == strcmp("over", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
 #endif
   } else if (0 == strcmp("lighter", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
