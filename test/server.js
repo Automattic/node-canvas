@@ -1,12 +1,14 @@
 
+require.paths.unshift(__dirname + '/../support');
+
 /**
  * Module dependencies.
  */
 
-var express = require('../support/express')
+var express = require('express')
   , Canvas = require('../lib/canvas')
   , Image = Canvas.Image
-  , jade = require('../support/jade')
+  , jade = require('jade')
   , app = express.createServer();
 
 // Config
