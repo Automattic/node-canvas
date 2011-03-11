@@ -305,7 +305,10 @@ Image::loadJPEG() {
   if (!data) return ThrowException(Canvas::Error(CAIRO_STATUS_NO_MEMORY));
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
-  if (!src) return ThrowException(Canvas::Error(CAIRO_STATUS_NO_MEMORY));
+  if (!src) {
+    free(data);
+    return ThrowException(Canvas::Error(CAIRO_STATUS_NO_MEMORY));
+  }
 
   // Copy RGB -> ARGB
   for (int y = 0; y < height; ++y) {
