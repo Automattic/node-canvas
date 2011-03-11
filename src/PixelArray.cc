@@ -80,7 +80,8 @@ PixelArray::New(const Arguments &args) {
 
 Handle<Value>
 PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
-  return Number::New(info.This()->GetIndexedPropertiesPixelDataLength());
+  HandleScope scope;
+  return scope.Close(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*
@@ -133,8 +134,7 @@ PixelArray::PixelArray(int width, int height):
 uint8_t *
 PixelArray::alloc() {
   int len = length();
-  _data = (uint8_t *) malloc(len);
-  memset(_data, 0, len);
+  _data = (uint8_t *) calloc(1, len);
   V8::AdjustAmountOfExternalAllocatedMemory(len);
   return _data;
 }
