@@ -191,7 +191,6 @@ void
 Image::loadSync() {
   TryCatch try_catch;
   loadSurface();
-
   if (try_catch.HasCaught()) {
     error(try_catch);
   } else {
