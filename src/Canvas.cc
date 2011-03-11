@@ -59,8 +59,9 @@ Canvas::New(const Arguments &args) {
 
 Handle<Value>
 Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
-  return Number::New(canvas->width);
+  return scope.Close(Number::New(canvas->width));
 }
 
 /*
@@ -82,8 +83,9 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
 
 Handle<Value>
 Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
-  return Number::New(canvas->height);
+  return scope.Close(Number::New(canvas->height));
 }
 
 /*
@@ -299,6 +301,7 @@ Canvas::resurface(Handle<Object> canvas) {
   // Re-surface
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
 
   // Reset context
   Handle<Value> context = canvas->Get(String::New("context"));
