@@ -139,6 +139,10 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
+  // Olaf (2011-02-21): free the state table
+  for (int i = 0 ; i < CANVAS_MAX_STATES; ++i) {
+    if (states[i]) free(states[i]);
+  }
   cairo_destroy(_context);
 }
 
