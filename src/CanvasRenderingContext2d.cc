@@ -185,6 +185,9 @@ Context2d::saveState() {
 void
 Context2d::restoreState() {
   if (0 == stateno) return;
+  // Olaf (2011-02-21): Free old state data
+  free(states[stateno]);
+  states[stateno] = NULL;
   state = states[--stateno];
 }
 
