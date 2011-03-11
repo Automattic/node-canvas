@@ -50,7 +50,12 @@ module.exports = {
       assert.ok(err instanceof Error, 'did not invoke onerror() with error');
     };
     
-    img.src = png + 's';
+    try {
+      img.src = png + 's';
+    } catch (err) {
+      assert.fail('got error ' + err);
+    }
+
     assert.equal(img.src, png + 's');
 
     beforeExit(function(){
@@ -66,8 +71,8 @@ module.exports = {
     assert.strictEqual(0, img.height);
     img.onload = function(){
       ++n;
-      assert.strictEqual(150, img.width);
-      assert.strictEqual(150, img.height);
+      assert.strictEqual(320, img.width);
+      assert.strictEqual(320, img.height);
     };
     img.src = png;
 
