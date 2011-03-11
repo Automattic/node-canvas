@@ -157,9 +157,9 @@ Visual tests:
 
 ## Versions
 
-Tested with:
+Tested with and designed for:
 
-  - node 0.2.4
+  - node 0.4.2
   - cairo 1.8.6
 
 ## License 
