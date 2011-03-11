@@ -106,17 +106,29 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
 static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  if (closure->len) {
-    closure->data = (uint8_t *) realloc(closure->data, closure->len + len);
-    if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
-    memcpy(closure->data + closure->len, data, len);
-    closure->len += len;
-  } else {
-    closure->data = (uint8_t *) malloc(len);
-    if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
-    memcpy(closure->data, data, len);
-    closure->len += len;
+
+  // Olaf (2011-02-21): Store more data, but don't call realloc() on every chunk.
+  // Also, keep track of how much memory is used
+  if (closure->len + len > closure->max_len) {
+    uint8_t * new_data;
+    unsigned new_max_len = closure->max_len;
+
+    // Round up the buffer size to be a multiple of 1024 bytes.
+    new_max_len = (closure->max_len + len + 1023) & ~1023;
+
+    new_data = (uint8_t *) realloc(closure->data, new_max_len);
+    if (new_data == NULL) return CAIRO_STATUS_NO_MEMORY;
+
+    // Keep track of how much more memory we just allocated.
+    V8::AdjustAmountOfExternalAllocatedMemory(new_max_len - closure->max_len);
+
+    closure->data = new_data;
+    closure->max_len = new_max_len;
   }
+
+  memcpy(closure->data + closure->len, data, len);
+  closure->len += len;
+
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -158,7 +170,7 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
 
   closure->canvas->Unref();
   closure->pfn.Dispose();
-  free(closure->data);
+  closure_destroy(closure);
   free(closure);
   return 0;
 }
@@ -186,18 +198,22 @@ Canvas::ToBuffer(const Arguments &args) {
     return Undefined();
   } else {
     closure_t closure;
-    closure.len = 0;
+    // Olaf (2011-02-21): zero everything
+    memset(&closure, 0, sizeof(closure));
 
     TryCatch try_catch;
     cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), toBuffer, &closure);
 
     if (try_catch.HasCaught()) {
+      closure_destroy(&closure);
       return try_catch.ReThrow();
     } else if (status) {
+      closure_destroy(&closure);
       return ThrowException(Canvas::Error(status));
     } else {
       Buffer *buf = Buffer::New(closure.len);
       memcpy(Buffer::Data(buf->handle_), closure.data, closure.len);
+      closure_destroy(&closure);
       return buf->handle_;
     }
   }
