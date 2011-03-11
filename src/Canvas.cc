@@ -197,6 +197,7 @@ Canvas::ToBuffer(const Arguments &args) {
     eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
     ev_ref(EV_DEFAULT_UC);
     return Undefined();
+  // Sync
   } else {
     closure_t closure;
     // Olaf (2011-02-21): zero everything
