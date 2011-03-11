@@ -167,7 +167,10 @@ Image::Image() {
  */
 
 Image::~Image() {
-  if (_surface) cairo_surface_destroy(_surface);
+  if (_surface) {
+    V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
+    cairo_surface_destroy(_surface);
+  }
   if (filename) free(filename);
 }
 
@@ -194,6 +197,7 @@ Image::loadSync() {
   if (try_catch.HasCaught()) {
     error(try_catch);
   } else {
+    V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
     loaded();
   }
 }
@@ -263,12 +267,12 @@ Image::loadSurface() {
 Handle<Value>
 Image::loadPNG() {
   _surface = cairo_image_surface_create_from_png(filename);
-  width = cairo_image_surface_get_width(_surface);
-  height = cairo_image_surface_get_height(_surface);
   cairo_status_t status = cairo_surface_status(_surface);
   if (status) {
     return ThrowException(Canvas::Error(status));
   } else {
+    width = cairo_image_surface_get_width(_surface);
+    height = cairo_image_surface_get_height(_surface);
     return Undefined();
   }
 }
@@ -338,6 +342,7 @@ Image::loadJPEG() {
   jpeg_finish_decompress(&info);
   jpeg_destroy_decompress(&info);
   cairo_status_t status = cairo_surface_status(_surface);
+
   if (status) {
     free(data);
     return ThrowException(Canvas::Error(status));
