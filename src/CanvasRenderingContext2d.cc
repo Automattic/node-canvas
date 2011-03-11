@@ -910,8 +910,9 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo
 
 Handle<Value>
 Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(cairo_get_miter_limit(context->context()));
+  return scope.Close(Number::New(cairo_get_miter_limit(context->context())));
 }
 
 /*
@@ -933,8 +934,9 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInf
 
 Handle<Value>
 Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(cairo_get_line_width(context->context()));
+  return scope.Close(Number::New(cairo_get_line_width(context->context())));
 }
 
 /*
@@ -956,15 +958,15 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
 
 Handle<Value>
 Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *join;
   switch (cairo_get_line_join(context->context())) {
-    case CAIRO_LINE_JOIN_BEVEL:
-      return String::NewSymbol("bevel");
-    case CAIRO_LINE_JOIN_ROUND:
-      return String::NewSymbol("round");
-    default:
-      return String::NewSymbol("miter");
+    case CAIRO_LINE_JOIN_BEVEL: join = "bevel"; break;
+    case CAIRO_LINE_JOIN_ROUND: join = "round"; break;
+    default: join = "miter";
   }
+  return scope.Close(String::NewSymbol(join));
 }
 
 /*
@@ -991,15 +993,15 @@ Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo 
 
 Handle<Value>
 Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *cap;
   switch (cairo_get_line_cap(context->context())) {
-    case CAIRO_LINE_CAP_ROUND:
-      return String::NewSymbol("round");
-    case CAIRO_LINE_CAP_SQUARE:
-      return String::NewSymbol("square");
-    default:
-      return String::NewSymbol("butt");
+    case CAIRO_LINE_CAP_ROUND: cap = "round"; break;
+    case CAIRO_LINE_CAP_SQUARE: cap = "square"; break;
+    default: cap = "butt";
   }
+  return scope.Close(String::NewSymbol(cap));
 }
 
 /*
@@ -1032,7 +1034,7 @@ Context2d::IsPointInPath(const Arguments &args) {
     cairo_t *ctx = context->context();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
-    return Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y));
+    return scope.Close(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   }
   return False();
 }
@@ -1094,10 +1096,11 @@ Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorIn
 
 Handle<Value>
 Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->shadow, buf);
-  return String::New(buf);
+  return scope.Close(String::New(buf));
 }
 
 /*
@@ -1124,10 +1127,11 @@ Context2d::SetFillColor(const Arguments &args) {
 
 Handle<Value>
 Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->fill, buf);
-  return String::New(buf);
+  return scope.Close(String::New(buf));
 }
 
 /*
@@ -1154,10 +1158,11 @@ Context2d::SetStrokeColor(const Arguments &args) {
 
 Handle<Value>
 Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->stroke, buf);
-  return String::New(buf);
+  return scope.Close(String::New(buf));
 }
 
 /*
