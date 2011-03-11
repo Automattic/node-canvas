@@ -618,8 +618,9 @@ Context2d::DrawImage(const Arguments &args) {
 
 Handle<Value>
 Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->state->globalAlpha);
+  return scope.Close(Number::New(context->state->globalAlpha));
 }
 
 /*
@@ -641,56 +642,48 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorIn
 
 Handle<Value>
 Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
+
+  const char *op = "source-over";
   switch (cairo_get_operator(ctx)) {
-    case CAIRO_OPERATOR_ATOP:
-      return String::NewSymbol("source-atop");
-    case CAIRO_OPERATOR_IN:
-      return String::NewSymbol("source-in");
-    case CAIRO_OPERATOR_OUT:
-      return String::NewSymbol("source-out");
-    case CAIRO_OPERATOR_XOR:
-      return String::NewSymbol("xor");
-    case CAIRO_OPERATOR_DEST_ATOP:
-      return String::NewSymbol("destination-atop");
-    case CAIRO_OPERATOR_DEST_IN:
-      return String::NewSymbol("destination-in");
-    case CAIRO_OPERATOR_DEST_OUT:
-      return String::NewSymbol("destination-out");
-    case CAIRO_OPERATOR_DEST_OVER:
-      return String::NewSymbol("destination-over");
-    case CAIRO_OPERATOR_ADD:
-      return String::NewSymbol("lighter");
+    case CAIRO_OPERATOR_ATOP: op = "source-atop"; break;
+    case CAIRO_OPERATOR_IN: op = "source-in"; break;
+    case CAIRO_OPERATOR_OUT: op = "source-out"; break;
+    case CAIRO_OPERATOR_XOR: op = "xor"; break;
+    case CAIRO_OPERATOR_DEST_ATOP: op = "destination-atop"; break;
+    case CAIRO_OPERATOR_DEST_IN: op = "destination-in"; break;
+    case CAIRO_OPERATOR_DEST_OUT: op = "destination-out"; break;
+    case CAIRO_OPERATOR_DEST_OVER: op = "destination-over"; break;
+    case CAIRO_OPERATOR_ADD: op = "lighter"; break;
     // Non-standard
     // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
-    case CAIRO_OPERATOR_LIGHTEN:
-      return String::NewSymbol("lighter");
-    case CAIRO_OPERATOR_DARKEN:
-      return String::NewSymbol("darkler");
-    case CAIRO_OPERATOR_MULTIPLY:
-      return String::NewSymbol("multiply");
-    case CAIRO_OPERATOR_SCREEN:
-      return String::NewSymbol("screen");
-    case CAIRO_OPERATOR_OVERLAY:
-      return String::NewSymbol("overlay");
-    case CAIRO_OPERATOR_HARD_LIGHT:
-      return String::NewSymbol("hard-light");
-    case CAIRO_OPERATOR_SOFT_LIGHT:
-      return String::NewSymbol("soft-light");
-    case CAIRO_OPERATOR_HSL_HUE:
-      return String::NewSymbol("hsl-hue");
-    case CAIRO_OPERATOR_HSL_SATURATION:
-      return String::NewSymbol("hsl-saturation");
-    case CAIRO_OPERATOR_HSL_COLOR:
-      return String::NewSymbol("hsl-color");
-    case CAIRO_OPERATOR_HSL_LUMINOSITY:
-      return String::NewSymbol("hsl-luminosity");
+    case CAIRO_OPERATOR_LIGHTEN: op = "lighter"; break;
+    case CAIRO_OPERATOR_DARKEN: op = "darker"; break;
+    case CAIRO_OPERATOR_MULTIPLY: op = "multiply"; break;
+    case CAIRO_OPERATOR_SCREEN: op = "screen"; break;
+    case CAIRO_OPERATOR_OVERLAY: op = "overlay"; break;
+    case CAIRO_OPERATOR_HARD_LIGHT: op = "hard-light"; break;
+    case CAIRO_OPERATOR_SOFT_LIGHT: op = "soft-light"; break;
+    case CAIRO_OPERATOR_HSL_HUE: op = "hsl-hue"; break;
+    case CAIRO_OPERATOR_HSL_SATURATION: op = "hsl-saturation"; break;
+    case CAIRO_OPERATOR_HSL_COLOR: op = "hsl-color"; break;
+    case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "hsl-luminosity"; break;
+    case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
+    case CAIRO_OPERATOR_SOURCE: op = "source"; break;
+    case CAIRO_OPERATOR_DEST: op = "dest"; break;
+    case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
+    case CAIRO_OPERATOR_COLOR_DODGE: op = "color-dodge"; break;
+    case CAIRO_OPERATOR_COLOR_BURN: op = "color-burn"; break;
+    case CAIRO_OPERATOR_DIFFERENCE: op = "difference"; break;
+    case CAIRO_OPERATOR_EXCLUSION: op = "exclusion"; break;
+    case CAIRO_OPERATOR_OVER: op = "over"; break;
 #endif
-    default:
-      return String::NewSymbol("source-over");
   }
+
+  return scope.Close(String::NewSymbol(op));
 }
 
 /*
