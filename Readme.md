@@ -162,6 +162,9 @@ Tested with and designed for:
   - node 0.4.2
   - cairo 1.8.6
 
+For node 0.2.x `node-canvas` <= 0.4.3 may be used,
+0.5.0 and above are designed for node 0.4.x only.
+
 ## License 
 
 (The MIT License)
