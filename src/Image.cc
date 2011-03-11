@@ -189,9 +189,11 @@ Image::load() {
 
 void
 Image::loadSync() {
-  cairo_status_t status = loadSurface();
-  if (status) {
-    error(Canvas::Error(status));
+  TryCatch try_catch;
+  loadSurface();
+
+  if (try_catch.HasCaught()) {
+    error(try_catch);
   } else {
     loaded();
   }
@@ -211,7 +213,7 @@ Image::loaded() {
     onload->Call(Context::GetCurrent()->Global(), 0, NULL);
     onload.Dispose();
     if (try_catch.HasCaught()) {
-      error(try_catch.Exception());
+      error(try_catch);
     }
   }
 }
@@ -221,10 +223,12 @@ Image::loaded() {
  */
 
 void
-Image::error(Local<Value> err) {
+Image::error(TryCatch &try_catch) {
   HandleScope scope;
-  if (!onerror.IsEmpty()) {
-    Local<Value> argv[1] = { err };
+  if (onerror.IsEmpty()) {
+    FatalException(try_catch);
+  } else {
+    Local<Value> argv[1] = { try_catch.Exception() };
     onerror->Call(Context::GetCurrent()->Global(), 1, argv);
     onerror.Dispose();
   }
@@ -238,7 +242,7 @@ Image::error(Local<Value> err) {
  * TODO: use node IO or at least thread pool
  */
 
-cairo_status_t
+Handle<Value>
 Image::loadSurface() {
   switch (extension(filename)) {
     case Image::PNG: return loadPNG();
@@ -246,19 +250,24 @@ Image::loadSurface() {
     case Image::JPEG: return loadJPEG();
 #endif
   }
-  return CAIRO_STATUS_READ_ERROR;
+  return ThrowException(Exception::Error(String::New("failed to load image")));
 }
 
 /*
  * Load PNG.
  */
 
-cairo_status_t
+Handle<Value>
 Image::loadPNG() {
   _surface = cairo_image_surface_create_from_png(filename);
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
-  return cairo_surface_status(_surface);
+  cairo_status_t status = cairo_surface_status(_surface);
+  if (status) {
+    return ThrowException(Canvas::Error(status));
+  } else {
+    return Undefined();
+  }
 }
 
 #ifdef HAVE_JPEG
@@ -267,17 +276,13 @@ Image::loadPNG() {
  * Load JPEG, convert RGB to ARGB.
  */
 
-cairo_status_t
+Handle<Value>
 Image::loadJPEG() {
   FILE *stream = fopen(filename, "r");
 
   // Generalized errors
   if (!stream) {
-    switch (errno) {
-      case ENOMEM: return CAIRO_STATUS_NO_MEMORY;
-      case ENOENT: return CAIRO_STATUS_FILE_NOT_FOUND;
-      default: return CAIRO_STATUS_READ_ERROR;
-  	}
+    return ThrowException(ErrnoException(errno, "fopen"));
   }
 
   // JPEG setup
@@ -294,10 +299,10 @@ Image::loadJPEG() {
   // Data alloc
   int stride = width * 4;
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) return ThrowException(Canvas::Error(CAIRO_STATUS_NO_MEMORY));
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
-  if (!src) return CAIRO_STATUS_NO_MEMORY;
+  if (!src) return ThrowException(Canvas::Error(CAIRO_STATUS_NO_MEMORY));
 
   // Copy RGB -> ARGB
   for (int y = 0; y < height; ++y) {
@@ -327,8 +332,12 @@ Image::loadJPEG() {
   jpeg_finish_decompress(&info);
   jpeg_destroy_decompress(&info);
   cairo_status_t status = cairo_surface_status(_surface);
-  if (status) free(data);
-  return status;
+  if (status) {
+    free(data);
+    return ThrowException(Canvas::Error(status));
+  } else {
+    return Undefined();
+  }
 }
 
 #endif
