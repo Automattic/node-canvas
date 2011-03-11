@@ -229,8 +229,12 @@ Image::error(TryCatch &try_catch) {
     FatalException(try_catch);
   } else {
     Local<Value> argv[1] = { try_catch.Exception() };
+    TryCatch try_catch2;
     onerror->Call(Context::GetCurrent()->Global(), 1, argv);
     onerror.Dispose();
+    if (try_catch2.HasCaught()) {
+      FatalException(try_catch2);
+    }
   }
 }
 
