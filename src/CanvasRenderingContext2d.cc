@@ -1442,37 +1442,45 @@ Context2d::StrokeText(const Arguments &args) {
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
-  // Text extents
   cairo_text_extents_t te;
-  cairo_text_extents(_context, str, &te);
-
   cairo_font_extents_t fe;
-  cairo_font_extents(_context, &fe);
 
   // Alignment
   switch (state->textAlignment) {
     // center
     case 0:
-      x -= te.width / 2 + te.x_bearing;
+      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
+      cairo_text_extents(_context, str, &te);
+      x -= te.width / 2;
       break;
     // right
     case 1:
-      x -= te.width + te.x_bearing;
+      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
+      cairo_text_extents(_context, str, &te);
+      x -= te.width;
       break;
   }
 
   // Baseline approx
-  // TODO:
   switch (state->textBaseline) {
     case TEXT_BASELINE_TOP:
     case TEXT_BASELINE_HANGING:
-      y += te.height;
+      // Olaf (2011-02-26): fe.ascent approximates the distance between
+      // the top of the em square and the alphabetic baseline
+      cairo_font_extents(_context, &fe);
+      y += fe.ascent;
       break;
     case TEXT_BASELINE_MIDDLE:
-      y += te.height / 2;
+      // Olaf (2011-02-26): fe.ascent approximates the distance between
+      // the top of the em square and the alphabetic baseline
+      cairo_font_extents(_context, &fe);
+      y += fe.ascent / 2;
       break;
     case TEXT_BASELINE_BOTTOM:
-      y -= te.height / 2;
+      // Olaf (2011-02-26): we need to know the distance between the alphabetic
+      // baseline and the bottom of the em square
+      cairo_font_extents(_context, &fe);
+      y -= fe.height - fe.ascent;
       break;
   }
 
