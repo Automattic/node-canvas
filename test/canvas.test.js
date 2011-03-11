@@ -9,6 +9,10 @@ var Canvas = require('canvas')
   , sys = require('sys')
   , fs = require('fs');
 
+console.log();
+console.log('   canvas: %s', Canvas.version);
+console.log('   cairo: %s', Canvas.cairoVersion);
+
 module.exports = {
   'test .version': function(assert){
     assert.match(Canvas.version, /^\d+\.\d+\.\d+$/);
