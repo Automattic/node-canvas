@@ -709,15 +709,15 @@ Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const Accesso
 
 Handle<Value>
 Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *quality;
   switch (context->state->patternQuality) {
-    case CAIRO_FILTER_FAST:
-      return String::New("fast");
-    case CAIRO_FILTER_BEST:
-      return String::New("best");
-    default:  
-      return String::New("good");
+    case CAIRO_FILTER_FAST: quality = "fast"; break;
+    case CAIRO_FILTER_BEST: quality = "best"; break;
+    default: quality = "good";
   }
+  return scope.Close(String::NewSymbol(quality));
 }
 
 /*
