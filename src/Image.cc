@@ -366,8 +366,8 @@ Image::type
 Image::extension(const char *filename) {
   size_t len = strlen(filename);
   filename += len;
-  if (0 == strcmp(".jpeg", filename - 5)) return Image::JPEG;
-  if (0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
-  if (0 == strcmp(".png", filename - 4)) return Image::PNG;
+  if (len >= 5 && 0 == strcmp(".jpeg", filename - 5)) return Image::JPEG;
+  if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
+  if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
   return Image::UNKNOWN;
 }
