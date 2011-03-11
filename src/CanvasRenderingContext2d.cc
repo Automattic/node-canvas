@@ -802,8 +802,9 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
 
 Handle<Value>
 Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->state->shadowOffsetX);
+  return scope.Close(Number::New(context->state->shadowOffsetX));
 }
 
 /*
@@ -822,8 +823,9 @@ Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const Accessor
 
 Handle<Value>
 Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->state->shadowOffsetY);
+  return scope.Close(Number::New(context->state->shadowOffsetY));
 }
 
 /*
@@ -842,8 +844,9 @@ Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const Accessor
 
 Handle<Value>
 Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return Number::New(context->state->shadowBlur);
+  return scope.Close(Number::New(context->state->shadowBlur));
 }
 
 /*
@@ -865,17 +868,16 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
 
 Handle<Value>
 Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *aa;
   switch (cairo_get_antialias(context->context())) {
-    case CAIRO_ANTIALIAS_NONE:
-      return String::NewSymbol("none");
-    case CAIRO_ANTIALIAS_GRAY:
-      return String::NewSymbol("gray");
-    case CAIRO_ANTIALIAS_SUBPIXEL:
-      return String::NewSymbol("subpixel");
-    default:
-      return String::NewSymbol("default");
+    case CAIRO_ANTIALIAS_NONE: aa = "none"; break;
+    case CAIRO_ANTIALIAS_GRAY: aa = "gray"; break;
+    case CAIRO_ANTIALIAS_SUBPIXEL: aa = "subpixel"; break;
+    default: aa = "default";
   }
+  return scope.Close(String::NewSymbol(aa));
 }
 
 /*
