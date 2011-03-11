@@ -254,7 +254,7 @@ Image::loadSurface() {
     case Image::JPEG: return loadJPEG();
 #endif
   }
-  return ThrowException(Exception::Error(String::New("failed to load image")));
+  return ThrowException(Exception::Error(String::New("failed to detect image format")));
 }
 
 /*
