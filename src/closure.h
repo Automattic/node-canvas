@@ -28,7 +28,6 @@ typedef struct {
 
 cairo_status_t
 closure_init(closure_t *closure, Canvas *canvas) {
-  memset(closure, 0, sizeof(closure));
   closure->len = 0;
   closure->canvas = canvas;
   closure->data = (uint8_t *) malloc(closure->max_len = 1024);
