@@ -37,6 +37,7 @@ module.exports = {
   
   'test Image#onerror': function(assert, beforeExit){
     var img = new Image
+      , error
       , n = 0;
 
     assert.strictEqual(false, img.complete);
@@ -46,19 +47,20 @@ module.exports = {
     
     img.onerror = function(err){
       ++n;
-      assert.strictEqual(false, img.complete);
-      assert.ok(err instanceof Error, 'did not invoke onerror() with error');
+      error = err;
     };
-    
+
     try {
       img.src = png + 's';
     } catch (err) {
-      assert.fail('got error ' + err);
+      assert.fail('error did not invoke onerror(): ' + err);
     }
 
     assert.equal(img.src, png + 's');
 
     beforeExit(function(){
+      assert.ok(error instanceof Error, 'did not invoke onerror() with error');
+      assert.strictEqual(false, img.complete);
       assert.equal(1, n);
     });
   },

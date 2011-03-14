@@ -197,6 +197,7 @@ Image::load() {
 
 void
 Image::loadSync() {
+  HandleScope scope;
   TryCatch try_catch;
   loadSurface();
   if (try_catch.HasCaught()) {
@@ -256,6 +257,7 @@ Image::error(TryCatch &try_catch) {
 
 Handle<Value>
 Image::loadSurface() {
+  HandleScope scope;
   switch (extension(filename)) {
     case Image::PNG: return loadPNG();
 #ifdef HAVE_JPEG
@@ -271,6 +273,7 @@ Image::loadSurface() {
 
 Handle<Value>
 Image::loadPNG() {
+  HandleScope scope;
   _surface = cairo_image_surface_create_from_png(filename);
   cairo_status_t status = cairo_surface_status(_surface);
   if (status) {
@@ -290,6 +293,7 @@ Image::loadPNG() {
 
 Handle<Value>
 Image::loadJPEG() {
+  HandleScope scope;
   FILE *stream = fopen(filename, "r");
 
   // Generalized errors
