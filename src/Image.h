@@ -31,13 +31,12 @@ class Image: public node::ObjectWrap {
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
-    Handle<Value> loadSurface();
-    Handle<Value> loadPNG();
+    void loadSurface();
+    void loadPNG();
 #ifdef HAVE_JPEG
-    Handle<Value> loadJPEG();
+    void loadJPEG();
 #endif
     void error(TryCatch &try_catch);
-    void loadSync();
     void loaded();
     void load();
     Image();
