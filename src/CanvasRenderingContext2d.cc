@@ -657,6 +657,11 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
     case CAIRO_OPERATOR_DEST_OUT: op = "destination-out"; break;
     case CAIRO_OPERATOR_DEST_OVER: op = "destination-over"; break;
     case CAIRO_OPERATOR_ADD: op = "lighter"; break;
+    case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
+    case CAIRO_OPERATOR_SOURCE: op = "source"; break;
+    case CAIRO_OPERATOR_DEST: op = "dest"; break;
+    case CAIRO_OPERATOR_OVER: op = "over"; break;
+    case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
     // Non-standard
     // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
@@ -671,15 +676,10 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
     case CAIRO_OPERATOR_HSL_SATURATION: op = "hsl-saturation"; break;
     case CAIRO_OPERATOR_HSL_COLOR: op = "hsl-color"; break;
     case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "hsl-luminosity"; break;
-    case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
-    case CAIRO_OPERATOR_SOURCE: op = "source"; break;
-    case CAIRO_OPERATOR_DEST: op = "dest"; break;
-    case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
     case CAIRO_OPERATOR_COLOR_DODGE: op = "color-dodge"; break;
     case CAIRO_OPERATOR_COLOR_BURN: op = "color-burn"; break;
     case CAIRO_OPERATOR_DIFFERENCE: op = "difference"; break;
     case CAIRO_OPERATOR_EXCLUSION: op = "exclusion"; break;
-    case CAIRO_OPERATOR_OVER: op = "over"; break;
 #endif
   }
 
@@ -745,6 +745,16 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
   } else if (0 == strcmp("destination-over", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
+  } else if (0 == strcmp("clear", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
+  } else if (0 == strcmp("source", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SOURCE);
+  } else if (0 == strcmp("dest", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST);
+  } else if (0 == strcmp("saturate", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_SATURATE);
+  } else if (0 == strcmp("over", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
   // Non-standard
   // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
@@ -770,14 +780,6 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
   } else if (0 == strcmp("hsl-luminosity", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
-  } else if (0 == strcmp("clear", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
-  } else if (0 == strcmp("source", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SOURCE);
-  } else if (0 == strcmp("dest", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST);
-  } else if (0 == strcmp("saturate", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SATURATE);
   } else if (0 == strcmp("color-dodge", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_COLOR_DODGE);
   } else if (0 == strcmp("color-burn", *type)) {
@@ -786,8 +788,6 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
     cairo_set_operator(ctx, CAIRO_OPERATOR_DIFFERENCE);
   } else if (0 == strcmp("exclusion", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_EXCLUSION);
-  } else if (0 == strcmp("over", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
 #endif
   } else if (0 == strcmp("lighter", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
