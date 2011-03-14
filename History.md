@@ -1,4 +1,15 @@
 
+0.5.0 / 2011-03-14 
+==================
+
+  * Added several more operators (color-dodge, color-burn, difference, etc)
+  * Performance; no longer re-allocating `closure->data` for each png write
+  * Fixed freeing of `Context2d` states
+  * Fixed text alignment / baseline [Olaf]
+  * Fixed HandleScopes [Olaf]
+  * Fixed small misc memory leaks
+  * Fixed `Buffer` usage for node 0.4.x 
+ 
 0.4.3 / 2011-01-11 
 ==================
 
