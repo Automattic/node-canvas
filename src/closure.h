@@ -23,6 +23,20 @@ typedef struct {
 } closure_t;
 
 /*
+ * Initialize the given closure.
+ */
+
+cairo_status_t
+closure_init(closure_t *closure, Canvas *canvas) {
+  memset(closure, 0, sizeof(closure));
+  closure->len = 0;
+  closure->canvas = canvas;
+  closure->data = (uint8_t *) malloc(closure->max_len = 1024);
+  if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
  * Free the given closure's data, 
  * and hint V8 at the memory dealloc.
  */
