@@ -112,20 +112,20 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   // Olaf (2011-02-21): Store more data, but don't call realloc() on every chunk.
   // Also, keep track of how much memory is used
   if (closure->len + len > closure->max_len) {
-    uint8_t * new_data;
-    unsigned new_max_len = closure->max_len;
+    uint8_t *data;
+    unsigned max = closure->max_len;
   
     // Round up the buffer size to be a multiple of 1024 bytes.
-    new_max_len = (closure->max_len + len + 1023) & ~1023;
+    max = (closure->max_len + len + 1023) & ~1023;
   
-    new_data = (uint8_t *) realloc(closure->data, new_max_len);
-    if (new_data == NULL) return CAIRO_STATUS_NO_MEMORY;
+    data = (uint8_t *) realloc(closure->data, max);
+    if (!data) return CAIRO_STATUS_NO_MEMORY;
   
     // Keep track of how much more memory we just allocated.
-    V8::AdjustAmountOfExternalAllocatedMemory(new_max_len - closure->max_len);
+    V8::AdjustAmountOfExternalAllocatedMemory(max - closure->max_len);
   
-    closure->data = new_data;
-    closure->max_len = new_max_len;
+    closure->data = data;
+    closure->max_len = max;
   }
   
   memcpy(closure->data + closure->len, data, len);
