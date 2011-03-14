@@ -111,6 +111,7 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
     img->filename = strdup(*src);
     TryCatch try_catch;
     img->load();
+    // TODO: this does not work... something funky going on
     if (try_catch.HasCaught()) {
       img->error(try_catch);
     } else {
