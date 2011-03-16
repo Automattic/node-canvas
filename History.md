@@ -1,4 +1,10 @@
 
+0.5.1 / 2011-03-16 
+==================
+
+  * Fixed (kinda) `img.src=` error handling
+  * Fixed; move closure.h down for malloc ref. Closes #80
+
 0.5.0 / 2011-03-14 
 ==================
 
