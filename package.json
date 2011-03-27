@@ -3,6 +3,7 @@
  , "version":  "0.5.1"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics", "pixman", "cairo"]
+ , "repository": "git://github.com/learnboost/node-canvas"
  , "scripts": {
    "preinstall": "node-waf configure build"
  }
