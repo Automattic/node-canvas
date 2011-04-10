@@ -1,4 +1,9 @@
 
+0.5.2 / 2011-04-09 
+==================
+
+  * Changed; make `PNGStream` a real `Stream` [Marcello Bastea-Forte]
+
 0.5.1 / 2011-03-16 
 ==================
 
