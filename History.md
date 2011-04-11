@@ -1,4 +1,9 @@
 
+0.5.3 / 2011-04-11 
+==================
+
+  * Clamp image bounds in `PixelArray::PixelArray()` [Marcello Bastea-Forte]
+
 0.5.2 / 2011-04-09 
 ==================
 
