@@ -98,6 +98,12 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
   int srcStride = canvas->stride()
     , dstStride = stride();
 
+  if (sx < 0) width += sx, sx = 0;
+  if (sy < 0) height += sy, sy = 0;
+  if (sx + width > canvas->width) width = canvas->width - sx;
+  if (sy + height > canvas->height) height = canvas->height - sy;
+  if (width <= 0 || height <= 0) return;
+
   // Normalize data (argb -> rgba)
   for (int y = 0; y < height; ++y) {
     uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
