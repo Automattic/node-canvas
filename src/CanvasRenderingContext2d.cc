@@ -203,6 +203,7 @@ Context2d::savePath() {
 
 void
 Context2d::restorePath() {
+  cairo_new_path(_context);
   cairo_append_path(_context, _path);
 }
 
