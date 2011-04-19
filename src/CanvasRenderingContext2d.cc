@@ -26,10 +26,10 @@ Persistent<FunctionTemplate> Context2d::constructor;
     ||!args[1]->IsNumber() \
     ||!args[2]->IsNumber() \
     ||!args[3]->IsNumber()) return Undefined(); \
-  double x = args[0]->Int32Value(); \
-  double y = args[1]->Int32Value(); \
-  double width = args[2]->Int32Value(); \
-  double height = args[3]->Int32Value();
+  double x = args[0]->NumberValue(); \
+  double y = args[1]->NumberValue(); \
+  double width = args[2]->NumberValue(); \
+  double height = args[3]->NumberValue();
 
 /*
  * Text baselines.
@@ -548,26 +548,26 @@ Context2d::DrawImage(const Arguments &args) {
   switch (args.Length()) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = args[1]->Int32Value();
-      sy = args[2]->Int32Value();
-      sw = args[3]->Int32Value();
-      sh = args[4]->Int32Value();
-      dx = args[5]->Int32Value();
-      dy = args[6]->Int32Value();
-      dw = args[7]->Int32Value();
-      dh = args[8]->Int32Value();
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = args[1]->Int32Value();
-      dy = args[2]->Int32Value();
-      dw = args[3]->Int32Value();
-      dh = args[4]->Int32Value();
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
       break;
     // img, dx, dy
     case 3:
-      dx = args[1]->Int32Value();
-      dy = args[2]->Int32Value();
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
       dw = sw;
       dh = sh;
       break;
@@ -852,7 +852,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  int n = val->Uint32Value();
+  int n = val->NumberValue();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
