@@ -490,6 +490,16 @@ tests['fill with stroke'] = function(ctx){
   ctx.stroke();
 };
 
+tests['floating point coordinates'] = function(ctx){
+  ctx.lineCap = 'square';
+  for (var i=0; i<70; i+=3.05) {
+    ctx.rect(i+3, 10.5, 0, 130);
+    ctx.moveTo(i+77, 10.5);
+    ctx.lineTo(i+77, 140.5);
+  }
+  ctx.stroke();
+}
+
 tests['lineWidth'] = function(ctx){
   for (var i = 0; i < 10; i++){
     ctx.lineWidth = 1+i;
