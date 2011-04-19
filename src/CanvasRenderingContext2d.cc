@@ -1677,9 +1677,11 @@ Context2d::ClearRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_save(ctx);
+  context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_fill(ctx);
+  context->restorePath();
   cairo_restore(ctx);
   return Undefined();
 }
