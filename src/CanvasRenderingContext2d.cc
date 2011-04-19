@@ -1695,7 +1695,16 @@ Context2d::Rect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_rectangle(context->context(), x, y, width, height);
+  cairo_t *ctx = context->context();
+  if (width == 0) {
+    cairo_move_to(ctx, x, y);
+    cairo_line_to(ctx, x, y + height);
+  } else if (height == 0) {
+    cairo_move_to(ctx, x, y);
+    cairo_line_to(ctx, x + width, y);
+  } else {
+    cairo_rectangle(ctx, x, y, width, height);
+  }
   return Undefined();
 }
 
