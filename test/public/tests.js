@@ -601,6 +601,33 @@ tests['states with stroke/fill/globalAlpha'] = function(ctx){
   ctx.fillRect(60,60,30,30); 
 };
 
+tests['path through fillRect/strokeRect/clearRect'] = function(ctx){
+  // left: fillRect()
+  ctx.beginPath();
+  ctx.rect(0, 50, 50, 50);
+  ctx.fillStyle = '#F00';
+  ctx.fillRect(10, 60, 30, 30);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+
+  // center: strokeRect()
+  ctx.beginPath();
+  ctx.rect(50, 50, 50, 50);
+  ctx.strokeStyle = '#F00';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(60, 60, 30, 30);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+
+  // right: clearRect()
+  ctx.beginPath();
+  ctx.rect(100, 50, 50, 50);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+  ctx.clearRect(110, 60, 30, 30);
+  ctx.fill();
+}
+
 tests['invalid stroke/fill styles'] = function(ctx){
   ctx.fillStyle = 'red';
   ctx.strokeStyle = 'yellow';
