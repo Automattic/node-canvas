@@ -490,6 +490,16 @@ tests['fill with stroke'] = function(ctx){
   ctx.stroke();
 };
 
+tests['floating point coordinates'] = function(ctx){
+  ctx.lineCap = 'square';
+  for (var i=0; i<70; i+=3.05) {
+    ctx.rect(i+3, 10.5, 0, 130);
+    ctx.moveTo(i+77, 10.5);
+    ctx.lineTo(i+77, 140.5);
+  }
+  ctx.stroke();
+}
+
 tests['lineWidth'] = function(ctx){
   for (var i = 0; i < 10; i++){
     ctx.lineWidth = 1+i;
@@ -600,6 +610,33 @@ tests['states with stroke/fill/globalAlpha'] = function(ctx){
   ctx.restore();             
   ctx.fillRect(60,60,30,30); 
 };
+
+tests['path through fillRect/strokeRect/clearRect'] = function(ctx){
+  // left: fillRect()
+  ctx.beginPath();
+  ctx.rect(0, 50, 50, 50);
+  ctx.fillStyle = '#F00';
+  ctx.fillRect(10, 60, 30, 30);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+
+  // center: strokeRect()
+  ctx.beginPath();
+  ctx.rect(50, 50, 50, 50);
+  ctx.strokeStyle = '#F00';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(60, 60, 30, 30);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+
+  // right: clearRect()
+  ctx.beginPath();
+  ctx.rect(100, 50, 50, 50);
+  ctx.fillStyle = '#0F0';
+  ctx.fill();
+  ctx.clearRect(110, 60, 30, 30);
+  ctx.fill();
+}
 
 tests['invalid stroke/fill styles'] = function(ctx){
   ctx.fillStyle = 'red';

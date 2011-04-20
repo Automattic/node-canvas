@@ -26,10 +26,10 @@ Persistent<FunctionTemplate> Context2d::constructor;
     ||!args[1]->IsNumber() \
     ||!args[2]->IsNumber() \
     ||!args[3]->IsNumber()) return Undefined(); \
-  double x = args[0]->Int32Value(); \
-  double y = args[1]->Int32Value(); \
-  double width = args[2]->Int32Value(); \
-  double height = args[3]->Int32Value();
+  double x = args[0]->NumberValue(); \
+  double y = args[1]->NumberValue(); \
+  double width = args[2]->NumberValue(); \
+  double height = args[3]->NumberValue();
 
 /*
  * Text baselines.
@@ -203,6 +203,7 @@ Context2d::savePath() {
 
 void
 Context2d::restorePath() {
+  cairo_new_path(_context);
   cairo_append_path(_context, _path);
 }
 
@@ -547,26 +548,26 @@ Context2d::DrawImage(const Arguments &args) {
   switch (args.Length()) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = args[1]->Int32Value();
-      sy = args[2]->Int32Value();
-      sw = args[3]->Int32Value();
-      sh = args[4]->Int32Value();
-      dx = args[5]->Int32Value();
-      dy = args[6]->Int32Value();
-      dw = args[7]->Int32Value();
-      dh = args[8]->Int32Value();
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = args[1]->Int32Value();
-      dy = args[2]->Int32Value();
-      dw = args[3]->Int32Value();
-      dh = args[4]->Int32Value();
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
       break;
     // img, dx, dy
     case 3:
-      dx = args[1]->Int32Value();
-      dy = args[2]->Int32Value();
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
       dw = sw;
       dh = sh;
       break;
@@ -851,7 +852,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
 
 void
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  int n = val->Uint32Value();
+  int n = val->NumberValue();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
@@ -1639,9 +1640,10 @@ Context2d::FillRect(const Arguments &args) {
   if (0 == width || 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  cairo_new_path(ctx);
+  context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->fill();
+  context->restorePath();
   return Undefined();
 }
 
@@ -1656,9 +1658,10 @@ Context2d::StrokeRect(const Arguments &args) {
   if (0 == width && 0 == height) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  cairo_new_path(ctx);
+  context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->stroke();
+  context->restorePath();
   return Undefined();
 }
 
@@ -1674,9 +1677,11 @@ Context2d::ClearRect(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_save(ctx);
+  context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
   cairo_fill(ctx);
+  context->restorePath();
   cairo_restore(ctx);
   return Undefined();
 }
@@ -1690,7 +1695,16 @@ Context2d::Rect(const Arguments &args) {
   HandleScope scope;
   RECT_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_rectangle(context->context(), x, y, width, height);
+  cairo_t *ctx = context->context();
+  if (width == 0) {
+    cairo_move_to(ctx, x, y);
+    cairo_line_to(ctx, x, y + height);
+  } else if (height == 0) {
+    cairo_move_to(ctx, x, y);
+    cairo_line_to(ctx, x + width, y);
+  } else {
+    cairo_rectangle(ctx, x, y, width, height);
+  }
   return Undefined();
 }
 
