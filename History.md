@@ -1,4 +1,12 @@
 
+0.5.4 / 2011-04-20 
+==================
+
+  * Added; special case of zero-width rectangle [atomizer]
+  * Fixed; do not clamp arguments to integer values [atomizer]
+  * Fixed; preserve current path during `fillRect()` and `strokeRect()` [atomizer]
+  * Fixed; `restorePath()`: clear current path before appending [atomizer]
+
 0.5.3 / 2011-04-11 
 ==================
 
