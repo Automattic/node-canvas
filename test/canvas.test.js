@@ -153,6 +153,12 @@ module.exports = {
 
     ctx.fillStyle = 'rgba( 255, 200, 90, .7555)';
     assert.equal('rgba(255, 200, 90, 0.75)', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb(0, 0, 9000)';
+    assert.equal('#0000ff', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 13.42)';
+    assert.equal('#000000', ctx.fillStyle);
   },
   
   'test Canvas#getContext("2d")': function(assert){
