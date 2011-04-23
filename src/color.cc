@@ -20,14 +20,17 @@
  */
 
 #define CHANNEL(NAME) \
+   c = 0; \
    if (*str >= '0' && *str <= '9') { \
      do { \
-       NAME *= 10; \
-       NAME += *str++ - '0'; \
+       c *= 10; \
+       c += *str++ - '0'; \
      } while (*str >= '0' && *str <= '9'); \
    } else { \
      return 0; \
    } \
+   if (c > 255) c = 255; \
+   NAME = c; \
    while (' ' == *str || ',' == *str) str++;
 
 /*
@@ -313,6 +316,7 @@ rgba_from_rgb_string(const char *str, short *ok) {
     str += 4;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
+    int c;
     CHANNEL(r);
     CHANNEL(g);
     CHANNEL(b);
@@ -331,15 +335,15 @@ rgba_from_rgba_string(const char *str, short *ok) {
     str += 5;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
+    int c;
     float a = 0;
     CHANNEL(r);
     CHANNEL(g);
     CHANNEL(b);
-    // TODO: less strict
-    if ('1' == *str) {
+    if (*str >= '1' && *str <= '9') {
       a = 1;
     } else {
-      if ('0' == *str) a = 0, ++str;
+      if ('0' == *str) ++str;
       if ('.' == *str) {
         ++str;
         float n = .1;
