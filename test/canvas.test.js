@@ -157,7 +157,7 @@ module.exports = {
     ctx.fillStyle = 'rgb(0, 0, 9000)';
     assert.equal('#0000ff', ctx.fillStyle);
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 13.42)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 42.42)';
     assert.equal('#000000', ctx.fillStyle);
   },
   
