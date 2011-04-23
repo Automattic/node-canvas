@@ -229,8 +229,8 @@ rgba_t
 rgba_create(uint32_t rgba) {
   rgba_t color;
   color.r = (double) (rgba >> 24) / 255;
-  color.g = (double) ((rgba & 0x00ff0000) >> 16) / 255;
-  color.b = (double) ((rgba & 0x0000ff00) >> 8) / 255;
+  color.g = (double) (rgba >> 16 & 0xff) / 255;
+  color.b = (double) (rgba >> 8 & 0xff) / 255;
   color.a = (double) (rgba & 0xff) / 255;
   return color;
 }
@@ -415,9 +415,9 @@ rgba_from_string(const char *str, short *ok) {
 void
 rgba_inspect(int32_t rgba) {
   printf("rgba(%d,%d,%d,%d)\n"
-    , rgba >> 24 & 0xFF
-    , rgba >> 16 & 0xFF
-    , rgba >> 8 & 0xFF
-    , rgba & 0xFF
+    , rgba >> 24 & 0xff
+    , rgba >> 16 & 0xff
+    , rgba >> 8 & 0xff
+    , rgba & 0xff
     );
 }
