@@ -312,9 +312,11 @@ Canvas::~Canvas() {
 void
 Canvas::resurface(Handle<Object> canvas) {
   // Re-surface
+  int old_width = cairo_image_surface_get_width(_surface);
+  int old_height = cairo_image_surface_get_height(_surface);
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
+  V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
 
   // Reset context
   Handle<Value> context = canvas->Get(String::New("context"));
