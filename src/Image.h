@@ -38,10 +38,10 @@ class Image: public node::ObjectWrap {
     inline int isComplete(){ return COMPLETE == state; }
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
-    cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
 #ifdef HAVE_JPEG
+    cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG();
 #endif
     void error(Local<Value> error);
