@@ -173,9 +173,7 @@ Image::loadPNGFromBuffer(uint8_t *buf) {
 cairo_status_t
 Image::readPNG(void *c, uint8_t *data, unsigned int len) {
   read_closure_t *closure = (read_closure_t *) c;
-  for (size_t i = 0; i < len; ++i) {
-    data[i] = closure->buf[i + closure->len];
-  }
+  memcpy(data, closure->buf + closure->len, len);
   closure->len += len;
   return CAIRO_STATUS_SUCCESS;
 }
