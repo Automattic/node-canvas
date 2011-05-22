@@ -10,12 +10,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <node_buffer.h>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
 #endif
 
 Persistent<FunctionTemplate> Image::constructor;
+
+/*
+ * Read closure used by loadFromBuffer.
+ */
+
+typedef struct {
+  unsigned len;
+  uint8_t *buf;
+} read_closure_t;
 
 /*
  * Initialize Image.
@@ -74,7 +84,6 @@ Image::GetWidth(Local<String>, const AccessorInfo &info) {
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   return scope.Close(Number::New(img->width));
 }
-
 /*
  * Get height.
  */
@@ -94,7 +103,7 @@ Handle<Value>
 Image::GetSrc(Local<String>, const AccessorInfo &info) {
   HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(String::New(img->filename));
+  return scope.Close(String::New(img->filename ? img->filename : ""));
 }
 
 /*
@@ -104,20 +113,71 @@ Image::GetSrc(Local<String>, const AccessorInfo &info) {
 void
 Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
   HandleScope scope;
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  cairo_status_t status = CAIRO_STATUS_READ_ERROR;
+
+  // url string
   if (val->IsString()) {
     String::AsciiValue src(val);
-    Image *img = ObjectWrap::Unwrap<Image>(info.This());
     if (img->filename) free(img->filename);
     img->filename = strdup(*src);
-    cairo_status_t status = img->load();
-    // TODO: this does not work... something funky going on
-    if (status) {
-      img->error(Canvas::Error(status));
-    } else {
-      V8::AdjustAmountOfExternalAllocatedMemory(4 * img->width * img->height);
-      img->loaded();
-    }
+    status = img->load();
+  // Buffer
+  } else if (Buffer::HasInstance(val)) {
+    uint8_t *buf = (uint8_t *) Buffer::Data(val->ToObject());
+    unsigned len = Buffer::Length(val->ToObject());
+    status = img->loadFromBuffer(buf, len);
   }
+
+  // check status
+  if (status) {
+    img->error(Canvas::Error(status));
+  } else {
+    img->loaded();
+  }
+}
+
+/*
+ * Load image data from `buf` by sniffing
+ * the bytes to determine format.
+ */
+
+cairo_status_t
+Image::loadFromBuffer(uint8_t *buf, unsigned len) {
+  if (isPNG(buf)) return loadPNGFromBuffer(buf);
+#ifdef HAVE_JPEG
+  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);
+#endif
+  return CAIRO_STATUS_READ_ERROR;
+}
+
+/*
+ * Load PNG data from `buf`.
+ */
+
+cairo_status_t
+Image::loadPNGFromBuffer(uint8_t *buf) {
+  read_closure_t closure;
+  closure.len = 0;
+  closure.buf = buf;
+  _surface = cairo_image_surface_create_from_png_stream(readPNG, &closure);
+  cairo_status_t status = cairo_surface_status(_surface);
+  if (status) return status;
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Read PNG data.
+ */
+
+cairo_status_t
+Image::readPNG(void *c, uint8_t *data, unsigned int len) {
+  read_closure_t *closure = (read_closure_t *) c;
+  for (size_t i = 0; i < len; ++i) {
+    data[i] = closure->buf[i + closure->len];
+  }
+  closure->len += len;
+  return CAIRO_STATUS_SUCCESS;
 }
 
 /*
@@ -209,6 +269,11 @@ Image::loaded() {
   HandleScope scope;
   state = COMPLETE;
 
+  width = cairo_image_surface_get_width(_surface);
+  height = cairo_image_surface_get_height(_surface);
+  // TODO: adjust accordingly when re-assigned src
+  V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
+
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
     onload->Call(Context::GetCurrent()->Global(), 0, NULL);
@@ -266,15 +331,75 @@ Image::loadSurface() {
 cairo_status_t
 Image::loadPNG() {
   _surface = cairo_image_surface_create_from_png(filename);
-  cairo_status_t status = cairo_surface_status(_surface);
-  if (!status) {
-    width = cairo_image_surface_get_width(_surface);
-    height = cairo_image_surface_get_height(_surface);
-  }
-  return status;
+  return cairo_surface_status(_surface);
 }
 
 #ifdef HAVE_JPEG
+
+/*
+ * Load jpeg from buffer.
+ */
+
+cairo_status_t
+Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
+  // TODO: remove this duplicate logic
+  // JPEG setup
+  struct jpeg_decompress_struct info;
+  struct jpeg_error_mgr err;
+  info.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&info);
+  jpeg_mem_src(&info, buf, len);
+  jpeg_read_header(&info, 1);
+  jpeg_start_decompress(&info);
+  width = info.output_width;
+  height = info.output_height;
+
+  // Data alloc
+  int stride = width * 4;
+  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  
+  uint8_t *src = (uint8_t *) malloc(width * 3);
+  if (!src) {
+    free(data);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  // Copy RGB -> ARGB
+  for (int y = 0; y < height; ++y) {
+    jpeg_read_scanlines(&info, &src, 1);
+    uint32_t *row = (uint32_t *)(data + stride * y);
+    for (int x = 0; x < width; ++x) {
+      int bx = 3 * x;
+      uint32_t *pixel = row + x;
+      *pixel = 255 << 24
+        | src[bx + 0] << 16
+        | src[bx + 1] << 8
+        | src[bx + 2];
+    }
+  }
+
+  // New image surface
+  _surface = cairo_image_surface_create_for_data(
+      data
+    , CAIRO_FORMAT_ARGB32
+    , width
+    , height
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+
+  // Cleanup
+  free(src);
+  jpeg_finish_decompress(&info);
+  jpeg_destroy_decompress(&info);
+  cairo_status_t status = cairo_surface_status(_surface);
+
+  if (status) {
+    free(data);
+    return status;
+  }
+
+  return CAIRO_STATUS_SUCCESS;
+}
 
 /*
  * Load JPEG, convert RGB to ARGB.
@@ -358,4 +483,31 @@ Image::extension(const char *filename) {
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
   return Image::UNKNOWN;
+}
+
+/*
+ * Sniff bytes for JPEG's magic number ff d8.
+ */
+
+int
+Image::isJPEG(uint8_t *data) {
+  return 0xff == data[0] && 0xd8 == data[1];
+}
+
+/*
+ * Sniff bytes 0..2 for "GIF".
+ */
+
+int
+Image::isGIF(uint8_t *data) {
+  return 'G' == data[0] && 'I' == data[1] && 'F' == data[2];
+}
+
+/*
+ * Sniff bytes 1..3 for "PNG".
+ */
+
+int
+Image::isPNG(uint8_t *data) {
+  return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
 }

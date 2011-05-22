@@ -525,6 +525,9 @@ Context2d::DrawImage(const Arguments &args) {
   // Image
   if (Image::constructor->HasInstance(obj)) {
     Image *img = ObjectWrap::Unwrap<Image>(obj);
+    if (!img->isComplete()) {
+      return ThrowException(Exception::Error(String::New("Image given has not completed loaded")));
+    }
     sw = img->width;
     sh = img->height;
     surface = img->surface();
