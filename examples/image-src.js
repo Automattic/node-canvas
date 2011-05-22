@@ -35,7 +35,7 @@ ctx.drawImage(img, 100, 0, 50, 50);
 var squid = fs.readFileSync(__dirname + '/images/squid.png');
 img = new Image;
 img.src = squid;
-ctx.drawImage(img, 50, 50, 50, 50);
+ctx.drawImage(img, 30, 50, img.width / 4, img.height / 4);
 
 var out = fs.createWriteStream(__dirname + '/image-src.png')
   , stream = canvas.createPNGStream();

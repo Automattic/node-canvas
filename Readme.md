@@ -39,8 +39,26 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Non-Standard API
 
-
  node-canvas extends the canvas API to provide interfacing with node, for example streaming PNG data, converting to a `Buffer` instance, etc. Among the interfacing API, in some cases the drawing API has been extended for SSJS image manipulation / creation usage, however keep in mind these additions may fail to render properly within browsers.
+
+### Image#src=Buffer
+
+ node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
+ 
+   fs.readFile(__dirname + '/images/squid.png', function(err){
+     if (err) throw err;
+     img = new Image;
+     img.src = squid;
+     ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
+   });
+
+ Below is an example of a canvas drawing it-self as the source several time: 
+
+    var img = new Image;
+    img.src = canvas.toBuffer();
+    ctx.drawImage(img, 0, 0, 50, 50);
+    ctx.drawImage(img, 50, 0, 50, 50);
+    ctx.drawImage(img, 100, 0, 50, 50);
 
 ### Canvas#createPNGStream()
 
