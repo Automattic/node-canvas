@@ -1,4 +1,3 @@
-
 # node-canvas
 
  Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
@@ -19,23 +18,24 @@ If not previously installed, you will want to install the [cairo graphics librar
 
 ## Example
 
-    var Canvas = require('canvas')
-      , canvas = new Canvas(200,200)
-      , ctx = canvas.getContext('2d');
-    
-    
-      ctx.font = '30px Impact';
-      ctx.rotate(.1);
-      ctx.fillText("Awesome!", 50, 100);
-    
-      var te = ctx.measureText('Awesome!');
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-      ctx.beginPath();
-      ctx.lineTo(50, 102);
-      ctx.lineTo(50 + te.width, 102);
-      ctx.stroke();
-      
-      console.log('<img src="' + canvas.toDataURL() + '" />');
+```javascript
+var Canvas = require('canvas')
+  , canvas = new Canvas(200,200)
+  , ctx = canvas.getContext('2d');
+
+ctx.font = '30px Impact';
+ctx.rotate(.1);
+ctx.fillText("Awesome!", 50, 100);
+
+var te = ctx.measureText('Awesome!');
+ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+ctx.beginPath();
+ctx.lineTo(50, 102);
+ctx.lineTo(50 + te.width, 102);
+ctx.stroke();
+
+console.log('<img src="' + canvas.toDataURL() + '" />');
+```
 
 ## Non-Standard API
 
@@ -44,69 +44,80 @@ If not previously installed, you will want to install the [cairo graphics librar
 ### Image#src=Buffer
 
  node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
- 
-   fs.readFile(__dirname + '/images/squid.png', function(err){
-     if (err) throw err;
-     img = new Image;
-     img.src = squid;
-     ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
-   });
+
+```javascript 
+fs.readFile(__dirname + '/images/squid.png', function(err){
+  if (err) throw err;
+  img = new Image;
+  img.src = squid;
+  ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
+});
+```
 
  Below is an example of a canvas drawing it-self as the source several time: 
 
-    var img = new Image;
-    img.src = canvas.toBuffer();
-    ctx.drawImage(img, 0, 0, 50, 50);
-    ctx.drawImage(img, 50, 0, 50, 50);
-    ctx.drawImage(img, 100, 0, 50, 50);
+```javascript
+var img = new Image;
+img.src = canvas.toBuffer();
+ctx.drawImage(img, 0, 0, 50, 50);
+ctx.drawImage(img, 50, 0, 50, 50);
+ctx.drawImage(img, 100, 0, 50, 50);
+```
 
 ### Canvas#createPNGStream()
 
   To create a `PNGStream` simple call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
-  
-    var fs = require('fs')
-      , out = fs.createWriteStream(__dirname + '/text.png')
-      , stream = canvas.createPNGStream();
 
-    stream.on('data', function(chunk){
-      out.write(chunk);
-    });
-    
-    stream.on('end', function(){
-      console.log('saved png');
-    });
+```javascript  
+var fs = require('fs')
+  , out = fs.createWriteStream(__dirname + '/text.png')
+  , stream = canvas.createPNGStream();
+
+stream.on('data', function(chunk){
+  out.write(chunk);
+});
+
+stream.on('end', function(){
+  console.log('saved png');
+});
+```
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
 
 ### Canvas#toBuffer()
 
-  A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
+A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
 
-    canvas.toBuffer();
+```javascript
+canvas.toBuffer();
+```
 
 ### Canvas#toBuffer() async
 
-  Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
+Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
 
+```javascript
+canvas.toBuffer(function(err, buf){
 
-    canvas.toBuffer(function(err, buf){
-    
-    });
+});
+```
 
 ### Canvas#toDataURL() async
 
-  Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
+Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
   
-  
+```javascript
     canvas.toDataURL(function(err, str){
       
     });
 
 or specify the mime type:
 
-    canvas.toDataURL('image/png', function(err, str){
-      
-    });
+```javascript
+canvas.toDataURL('image/png', function(err, str){
+  
+});
+```
 
 ### CanvasRenderingContext2d#patternQuality
 
@@ -118,7 +129,7 @@ Given one of the values below will alter pattern (gradients, images, etc) render
 
 ### Global Composite Operations
 
- In addition to those specified and commonly implemented by browsers, the following have been added:
+In addition to those specified and commonly implemented by browsers, the following have been added:
 
   - multiply
   - screen
@@ -140,8 +151,10 @@ Given one of the values below will alter pattern (gradients, images, etc) render
  - subpixel
 
  For example:
- 
-   ctx.antialias = 'none';
+
+```javascript
+ctx.antialias = 'none';
+```
 
 ## Benchmarks
 
