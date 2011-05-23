@@ -110,6 +110,7 @@ Optionally we may pass a callback function to `Canvas#toDataURL()`, and this pro
     canvas.toDataURL(function(err, str){
       
     });
+```
 
 or specify the mime type:
 
