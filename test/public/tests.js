@@ -1024,6 +1024,15 @@ tests['globalCompositeOperation destination-in'] = function(ctx){
   ctx.fill();
 };
 
+tests['globalCompositeOperation source-atop'] = function(ctx){
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,100,100);
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.fillStyle = 'red';
+  ctx.arc(80,80,50,0,Math.PI * 2,false);
+  ctx.fill();
+};
+
 tests['globalCompositeOperation destination-out'] = function(ctx){
   ctx.fillStyle = 'blue';
   ctx.fillRect(0,0,100,100);
