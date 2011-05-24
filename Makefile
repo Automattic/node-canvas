@@ -5,7 +5,7 @@ $(ADDON): src/*.cc
 	node-waf configure build
 
 test: $(ADDON)
-	@./support/expresso/bin/expresso \
+	@./node_modules/.bin/expresso \
 		-I lib \
 		test/*.test.js
 

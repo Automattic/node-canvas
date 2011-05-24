@@ -6,6 +6,7 @@
 var Canvas = require('canvas')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
+  , assert = require('assert')
   , sys = require('sys')
   , fs = require('fs');
 
@@ -14,15 +15,15 @@ console.log('   canvas: %s', Canvas.version);
 console.log('   cairo: %s', Canvas.cairoVersion);
 
 module.exports = {
-  'test .version': function(assert){
+  'test .version': function(){
     assert.match(Canvas.version, /^\d+\.\d+\.\d+$/);
   },
   
-  'test .cairoVersion': function(assert){
+  'test .cairoVersion': function(){
     assert.match(Canvas.cairoVersion, /^\d+\.\d+\.\d+$/);
   },
   
-  'test .parseFont()': function(assert){
+  'test .parseFont()': function(){
     var tests = [
         '20px Arial'
       , { size: 20, unit: 'px', family: 'Arial' }
@@ -161,7 +162,7 @@ module.exports = {
     assert.equal('#000000', ctx.fillStyle);
   },
   
-  'test Canvas#getContext("2d")': function(assert){
+  'test Canvas#getContext("2d")': function(){
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');
     assert.ok('object' == typeof ctx);
@@ -169,7 +170,7 @@ module.exports = {
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
   },
   
-  'test Canvas#{width,height}=': function(assert){
+  'test Canvas#{width,height}=': function(){
     var canvas = new Canvas(100, 200);
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
@@ -184,11 +185,11 @@ module.exports = {
     assert.equal(50, canvas.height);
   },
   
-  'test Canvas#getContext("invalid")': function(assert){
+  'test Canvas#getContext("invalid")': function(){
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
   },
   
-  'test Context2d#patternQuality': function(assert){
+  'test Context2d#patternQuality': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
     
@@ -199,7 +200,7 @@ module.exports = {
     assert.equal('best', ctx.patternQuality);
   },
   
-  'test Context2d#font=': function(assert){
+  'test Context2d#font=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
     
@@ -208,7 +209,7 @@ module.exports = {
     assert.equal('15px Arial, sans-serif', ctx.font);
   },
   
-  'test Context2d#lineWidth=': function(assert){
+  'test Context2d#lineWidth=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -222,7 +223,7 @@ module.exports = {
     assert.equal(10, ctx.lineWidth);
   },
   
-  'test Context2d#antiAlias=': function(assert){
+  'test Context2d#antiAlias=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -239,7 +240,7 @@ module.exports = {
     assert.equal('subpixel', ctx.antialias);
   },
   
-  'test Context2d#lineCap=': function(assert){
+  'test Context2d#lineCap=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -248,7 +249,7 @@ module.exports = {
     assert.equal('round', ctx.lineCap);
   },
   
-  'test Context2d#lineJoin=': function(assert){
+  'test Context2d#lineJoin=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -258,7 +259,7 @@ module.exports = {
   },
 
   
-  'test Context2d#globalAlpha=': function(assert){
+  'test Context2d#globalAlpha=': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
     
@@ -267,7 +268,7 @@ module.exports = {
     assert.equal(0.5, ctx.globalAlpha);
   },
   
-  'test Context2d#isPointInPath()': function(assert){
+  'test Context2d#isPointInPath()': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -286,7 +287,7 @@ module.exports = {
     assert.ok(!ctx.isPointInPath(50,120));
   },
 
-  'test Context2d#textAlign': function(assert){
+  'test Context2d#textAlign': function(){
     var canvas = new Canvas(200,200)
       , ctx = canvas.getContext('2d');
 
@@ -301,19 +302,19 @@ module.exports = {
     assert.equal('end', ctx.textAlign);
   },
   
-  'test Canvas#toBuffer()': function(assert){
+  'test Canvas#toBuffer()': function(){
     var buf = new Canvas(200,200).toBuffer();
     assert.equal('PNG', buf.slice(1,4).toString());
   },
   
-  'test Canvas#toBuffer() async': function(assert){
+  'test Canvas#toBuffer() async': function(){
     new Canvas(200, 200).toBuffer(function(err, buf){
       assert.ok(!err);
       assert.equal('PNG', buf.slice(1,4).toString());
     });
   },
   
-  'test Canvas#toDataURL()': function(assert){
+  'test Canvas#toDataURL()': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -333,21 +334,21 @@ module.exports = {
     assert.equal('currently only image/png is supported', err.message);
   },
   
-  'test Canvas#toDataURL() async': function(assert){
+  'test Canvas#toDataURL() async': function(){
     new Canvas(200,200).toDataURL(function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
     });
   },
   
-  'test Canvas#toDataURL() async with type': function(assert){
+  'test Canvas#toDataURL() async with type': function(){
     new Canvas(200,200).toDataURL('image/png', function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
     });
   },
   
-  'test Context2d#createImageData(width, height)': function(assert){
+  'test Context2d#createImageData(width, height)': function(){
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
     
@@ -362,7 +363,7 @@ module.exports = {
     assert.equal(0, imageData.data[3]);
   },
   
-  'test Context2d#createImageData(ImageData)': function(assert){
+  'test Context2d#createImageData(ImageData)': function(){
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
     
@@ -372,7 +373,7 @@ module.exports = {
     assert.equal(2 * 6 * 4, imageData.data.length);
   },
   
-  'test Context2d#getImageData()': function(assert){
+  'test Context2d#getImageData()': function(){
     var canvas = new Canvas(3, 6)
       , ctx = canvas.getContext('2d');
 
