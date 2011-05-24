@@ -121,9 +121,6 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
   
-    // Keep track of how much more memory we just allocated.
-    V8::AdjustAmountOfExternalAllocatedMemory(max - closure->max_len);
-  
     closure->data = data;
     closure->max_len = max;
   }
