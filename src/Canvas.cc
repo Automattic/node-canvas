@@ -109,13 +109,12 @@ static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   
-  // Olaf (2011-02-21): Store more data, but don't call realloc() on every chunk.
-  // Also, keep track of how much memory is used
+  // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
     unsigned max = closure->max_len;
   
-    // Round up the buffer size to be a multiple of 1024 bytes.
+    // round to the nearest multiple of 1024 bytes
     max = (closure->max_len + len + 1023) & ~1023;
   
     data = (uint8_t *) realloc(closure->data, max);
@@ -162,7 +161,7 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
     closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
     Buffer *buf = Buffer::New(closure->len);
-    memcpy(Buffer::Data(buf->handle_), closure->data, closure->len);
+    memcpy(Buffer::Data(buf), closure->data, closure->len);
     Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
   }
