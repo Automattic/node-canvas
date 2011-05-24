@@ -224,7 +224,7 @@ Canvas::ToBuffer(const Arguments &args) {
       return ThrowException(Canvas::Error(status));
     } else {
       Buffer *buf = Buffer::New(closure.len);
-      memcpy(Buffer::Data(buf->handle_), closure.data, closure.len);
+      memcpy(Buffer::Data(buf), closure.data, closure.len);
       closure_destroy(&closure);
       return buf->handle_;
     }
