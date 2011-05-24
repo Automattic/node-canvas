@@ -4,16 +4,17 @@
  */
 
 var Canvas = require('canvas')
-  , Image = Canvas.Image;
+  , Image = Canvas.Image
+  , assert = require('assert');
 
 var png = __dirname + '/fixtures/clock.png';
 
 module.exports = {
-  'tset Image': function(assert){
+  'tset Image': function(){
     assert.ok(Image instanceof Function);
   },
 
-  'test Image#onload': function(assert, beforeExit){
+  'test Image#onload': function(beforeExit){
     var img = new Image
       , n = 0;
 
@@ -35,7 +36,7 @@ module.exports = {
     });
   },
   
-  'test Image#onerror': function(assert, beforeExit){
+  'test Image#onerror': function(beforeExit){
     var img = new Image
       , error
       , n = 0;
@@ -65,7 +66,7 @@ module.exports = {
     });
   },
   
-  'test Image#{width,height}': function(assert, beforeExit){
+  'test Image#{width,height}': function(beforeExit){
     var img = new Image
       , n = 0;
     
