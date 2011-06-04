@@ -1,4 +1,14 @@
 
+0.6.0 / 2011-06-04 
+==================
+
+  * Added `Image#src=Buffer` support. Closes #91
+  * Added `devDependencies`
+  * Added `source-atop` test
+  * Added _image-src.js_ example
+  * Removed `V8::AdjustAmountOfExternalAllocatedMemory()` call from `toBuffer()`
+  * Fixed v8 memory hint when resizing canvas [atomizer]
+
 0.5.4 / 2011-04-20 
 ==================
 
