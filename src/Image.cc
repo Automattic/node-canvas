@@ -467,7 +467,7 @@ Image::loadJPEG() {
   return CAIRO_STATUS_SUCCESS;
 }
 
-#endif
+#endif /* HAVE_JPEG */
 
 /*
  * Return UNKNOWN, JPEG, or PNG based on the filename.
