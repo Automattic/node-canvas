@@ -145,6 +145,9 @@ Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
 cairo_status_t
 Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   if (isPNG(buf)) return loadPNGFromBuffer(buf);
+#ifdef HAVE_GIF
+  if (isGIF(buf)) return loadGIFFromBuffer(buf, len);
+#endif
 #ifdef HAVE_JPEG
   if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);
 #endif
@@ -313,6 +316,10 @@ Image::loadSurface() {
   switch (extension(filename)) {
     case Image::PNG:
       return loadPNG();
+#ifdef HAVE_GIF
+    case Image::GIF:
+      return loadGIF();
+#endif
 #ifdef HAVE_JPEG
     case Image::JPEG:
       return loadJPEG();
@@ -331,6 +338,187 @@ Image::loadPNG() {
   _surface = cairo_image_surface_create_from_png(filename);
   return cairo_surface_status(_surface);
 }
+
+#ifdef HAVE_GIF
+
+int
+getGIFTransparentColor(GifFileType * gft, int framenum)
+{
+  ExtensionBlock *ext = gft->SavedImages[framenum].ExtensionBlocks;
+
+  for (int ix = 0; ix < gft->SavedImages[framenum].ExtensionBlockCount; ix++, ext++) {
+    if ((ext->Function == GRAPHICS_EXT_FUNC_CODE) && (ext->Bytes[0] & 1)) {
+      return ext->Bytes[3] == 0 ? 0 : (uint8_t) ext->Bytes[3]; 
+    }
+  }
+
+  return -1;
+}
+
+int
+readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length) {
+  struct GIFInputFuncData *gifd = (struct GIFInputFuncData*)gft->UserData;
+  // Make sure we don't read past our buffer
+  if((gifd->cpos + length) > gifd->length) length = gifd->length - gifd->cpos;
+  memcpy(buf, gifd->cpos + gifd->buf, length);
+  gifd->cpos += length;
+  return length;
+}
+
+cairo_status_t
+Image::loadGIF() {
+  FILE *stream = fopen(filename, "r");
+  if (!stream) return CAIRO_STATUS_READ_ERROR;
+
+  fseek(stream, 0L, SEEK_END);
+  unsigned int length = ftell(stream);
+  fseek(stream, 0L, SEEK_SET);
+
+  uint8_t *buf = (uint8_t*)malloc(length);
+  if(!buf) {
+    fclose(stream);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t obj_read = fread(buf, length, 1, stream);
+  fclose(stream);
+
+  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
+
+  if(obj_read == 1)
+    result = loadGIFFromBuffer(buf, length);
+
+  free(buf);
+  return result;
+}
+
+cairo_status_t
+Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
+  int imageIdx = 0;
+  GifFileType* gft;
+
+  struct GIFInputFuncData gifd = 
+    {
+      buf: buf,
+      length: len,
+      cpos: 0
+    };
+
+  if((gft = DGifOpen((void*) &gifd, readGIFFromMemory)) == NULL)
+    return CAIRO_STATUS_READ_ERROR; 
+
+  if(DGifSlurp(gft) != GIF_OK) {
+    DGifCloseFile(gft);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  width = gft->SWidth;
+  height = gft->SHeight;
+
+  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  if (!data) {
+    DGifCloseFile(gft);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  GifImageDesc *img = &gft->SavedImages[imageIdx].ImageDesc;
+  // Local colormap takes precedence over global
+  ColorMapObject *colormap = img->ColorMap ? img->ColorMap : gft->SColorMap;
+
+  int bgColor = 0;
+  int alphaColor = getGIFTransparentColor(gft, imageIdx);
+
+  if(gft->SColorMap)
+    bgColor = (uint8_t) gft->SBackGroundColor;
+  else if(alphaColor >= 0)
+    bgColor = alphaColor;
+
+  uint8_t *src_data = (uint8_t*) gft->SavedImages[imageIdx].RasterBits;
+  uint32_t *dst_data = (uint32_t*) data;
+
+  if(!gft->Image.Interlace) {
+    if((width == img->Width) && (height == img->Height)) {
+      for(int iy = 0; iy < height; iy++) {
+        for(int ix = 0; ix < width; ix++) {
+          *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
+            | (colormap->Colors[*src_data].Red) << 16
+            | (colormap->Colors[*src_data].Green) << 8
+            | (colormap->Colors[*src_data].Blue);
+
+          dst_data++;
+          src_data++;
+        }
+      }
+    } else {
+      // Image does not take up whole "screen" so we need to fill-in the background
+      int bottom = img->Top + img->Height;
+      int right = img->Left + img->Width;
+
+      for(int iy = 0; iy < height; iy++) {
+        for(int ix = 0; ix < width; ix++) {
+          if((iy < img->Top) || (iy >= bottom) || (ix < img->Left) || (ix >= right)) {
+            *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
+              | (colormap->Colors[bgColor].Red) << 16
+              | (colormap->Colors[bgColor].Green) << 8
+              | (colormap->Colors[bgColor].Blue);
+          } else {
+            *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
+              | (colormap->Colors[*src_data].Red) << 16
+              | (colormap->Colors[*src_data].Green) << 8
+              | (colormap->Colors[*src_data].Blue);
+          }
+
+          dst_data++;
+          src_data++;
+        }
+      } 
+    }
+  } else { 
+    // Image is interlaced so that it streams nice over 14.4k and 28.8k modems :)
+    // We first load in 1/8 of the image, followed by another 1/8, followed by
+    // 1/4 and finally the remaining 1/2.
+    int ioffs[] = { 0, 4, 2, 1 };
+    int ijumps[] = { 8, 8, 4, 2 };
+
+    uint8_t *src_ptr = src_data;
+    uint32_t *dst_ptr;
+
+    for(int iz = 0; iz < 4; iz++) {
+      for(int iy = ioffs[iz]; iy < height; iy += ijumps[iz]) {
+        dst_ptr = dst_data + width * iy;
+        for(int ix = 0; ix < width; ix++) {
+          *dst_ptr = ((*src_ptr == alphaColor) ? 0 : 255) << 24
+            | (colormap->Colors[*src_ptr].Red) << 16
+            | (colormap->Colors[*src_ptr].Green) << 8
+            | (colormap->Colors[*src_ptr].Blue);
+
+          dst_ptr++;
+          src_ptr++;
+        }
+      }
+    }
+  }
+
+  DGifCloseFile(gft);
+
+  // New image surface
+  _surface = cairo_image_surface_create_for_data(
+      data
+    , CAIRO_FORMAT_ARGB32
+    , width
+    , height
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+
+  cairo_status_t status = cairo_surface_status(_surface);
+
+  if (status) {
+    free(data);
+    return status;
+  }
+
+  return CAIRO_STATUS_SUCCESS;
+}
+#endif
 
 #ifdef HAVE_JPEG
 
@@ -478,6 +666,7 @@ Image::extension(const char *filename) {
   size_t len = strlen(filename);
   filename += len;
   if (len >= 5 && 0 == strcmp(".jpeg", filename - 5)) return Image::JPEG;
+  if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return Image::GIF;
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
   return Image::UNKNOWN;
