@@ -9,6 +9,9 @@
 #define __NODE_IMAGE_H__
 
 #include "Canvas.h"
+#ifdef HAVE_GIF
+#include <gif_lib.h>
+#endif
 
 class Image: public node::ObjectWrap {
   public:
@@ -40,6 +43,10 @@ class Image: public node::ObjectWrap {
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
+#ifdef HAVE_GIF
+    cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadGIF();
+#endif
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG();
@@ -57,15 +64,27 @@ class Image: public node::ObjectWrap {
 
     typedef enum {
         UNKNOWN
+      , GIF
       , JPEG
       , PNG
     } type;
 
     static type extension(const char *filename);
-  
+
   private:
     cairo_surface_t *_surface;
     ~Image();
 };
+
+#ifdef HAVE_GIF
+  struct GIFInputFuncData {
+    uint8_t *buf;
+    unsigned int length;
+    unsigned int cpos;
+  };
+
+  int readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length);
+  int getGIFTransparentColor(GifFileType *gft, int framenum);
+#endif
 
 #endif
