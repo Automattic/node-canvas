@@ -107,16 +107,16 @@ canvas.toBuffer(function(err, buf){
 Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
   
 ```javascript
-    canvas.toDataURL(function(err, str){
-      
-    });
+canvas.toDataURL(function(err, str){
+
+});
 ```
 
 or specify the mime type:
 
 ```javascript
 canvas.toDataURL('image/png', function(err, str){
-  
+
 });
 ```
 
