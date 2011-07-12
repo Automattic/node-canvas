@@ -342,8 +342,7 @@ Image::loadPNG() {
 #ifdef HAVE_GIF
 
 int
-getGIFTransparentColor(GifFileType * gft, int framenum)
-{
+getGIFTransparentColor(GifFileType * gft, int framenum) {
   ExtensionBlock *ext = gft->SavedImages[framenum].ExtensionBlocks;
 
   for (int ix = 0; ix < gft->SavedImages[framenum].ExtensionBlockCount; ix++, ext++) {
@@ -518,7 +517,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   return CAIRO_STATUS_SUCCESS;
 }
-#endif
+#endif /* HAVE_GIF */
 
 #ifdef HAVE_JPEG
 
