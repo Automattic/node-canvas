@@ -476,14 +476,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
         for (int x = 0; x < width; ++x) {
           if ((y < img->Top) || (y >= bottom) || (x < img->Left) || (x >= right)) {
             *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
-              | (colormap->Colors[bgColor].Red) << 16
-              | (colormap->Colors[bgColor].Green) << 8
-              | (colormap->Colors[bgColor].Blue);
+              | colormap->Colors[bgColor].Red << 16
+              | colormap->Colors[bgColor].Green << 8
+              | colormap->Colors[bgColor].Blue;
           } else {
             *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
-              | (colormap->Colors[*src_data].Red) << 16
-              | (colormap->Colors[*src_data].Green) << 8
-              | (colormap->Colors[*src_data].Blue);
+              | colormap->Colors[*src_data].Red << 16
+              | colormap->Colors[*src_data].Green << 8
+              | colormap->Colors[*src_data].Blue;
           }
 
           dst_data++;
