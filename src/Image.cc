@@ -420,11 +420,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   int imageIdx = 0;
   GifFileType* gif;
 
-  gif_data_t gifd = {
-      buf: buf
-    , len: len
-    , pos: 0
-  };
+  gif_data_t gifd = { buf, len, 0 };
 
   if((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
