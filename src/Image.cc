@@ -352,10 +352,14 @@ Image::loadPNG() {
 
 #ifdef HAVE_GIF
 
+/*
+ * Return the alpha color for `gif` at `frame`, or -1.
+ */
+
 int
 get_gif_transparent_color(GifFileType *gif, int frame) {
   ExtensionBlock *ext = gif->SavedImages[frame].ExtensionBlocks;
-  int len =  gif->SavedImages[frame].ExtensionBlockCount;
+  int len = gif->SavedImages[frame].ExtensionBlockCount;
   for (int x = 0; x < len; ++x, ++ext) {
     if ((ext->Function == GRAPHICS_EXT_FUNC_CODE) && (ext->Bytes[0] & 1)) {
       return ext->Bytes[3] == 0 ? 0 : (uint8_t) ext->Bytes[3]; 
@@ -364,15 +368,22 @@ get_gif_transparent_color(GifFileType *gif, int frame) {
   return -1;
 }
 
+/*
+ * Memory GIF reader callback.
+ */
+
 int
-read_gif_from_memory(GifFileType *gif, GifByteType *buf, int length) {
-  gif_data_t *gifd = (gif_data_t *) gif->UserData;
-  // Make sure we don't read past our buffer
-  if((gifd->pos + length) > gifd->len) length = gifd->len - gifd->pos;
-  memcpy(buf, gifd->pos + gifd->buf, length);
-  gifd->pos += length;
-  return length;
+read_gif_from_memory(GifFileType *gif, GifByteType *buf, int len) {
+  gif_data_t *data = (gif_data_t *) gif->UserData;
+  if ((data->pos + len) > data->len) len = data->len - data->pos;
+  memcpy(buf, data->pos + data->buf, len);
+  data->pos += len;
+  return len;
 }
+
+/*
+ * Load GIF.
+ */
 
 cairo_status_t
 Image::loadGIF() {
@@ -380,24 +391,23 @@ Image::loadGIF() {
   if (!stream) return CAIRO_STATUS_READ_ERROR;
 
   fseek(stream, 0L, SEEK_END);
-  unsigned int length = ftell(stream);
+  int len = ftell(stream);
   fseek(stream, 0L, SEEK_SET);
 
-  uint8_t *buf = (uint8_t*)malloc(length);
-  if(!buf) {
+  uint8_t *buf = (uint8_t *) malloc(len);
+
+  if (!buf) {
     fclose(stream);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  size_t obj_read = fread(buf, length, 1, stream);
+  size_t read = fread(buf, len, 1, stream);
   fclose(stream);
 
   cairo_status_t result = CAIRO_STATUS_READ_ERROR;
-
-  if(obj_read == 1)
-    result = loadGIFFromBuffer(buf, length);
-
+  if (1 == read) result = loadGIFFromBuffer(buf, len);
   free(buf);
+
   return result;
 }
 
