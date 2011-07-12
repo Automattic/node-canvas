@@ -40,6 +40,10 @@ class Image: public node::ObjectWrap {
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
+#ifdef HAVE_GIF
+    cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadGIF();
+#endif
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG();
@@ -57,12 +61,13 @@ class Image: public node::ObjectWrap {
 
     typedef enum {
         UNKNOWN
+      , GIF
       , JPEG
       , PNG
     } type;
 
     static type extension(const char *filename);
-  
+
   private:
     cairo_surface_t *_surface;
     ~Image();
