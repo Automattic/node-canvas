@@ -417,7 +417,7 @@ Image::loadGIF() {
 
 cairo_status_t
 Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
-  int imageIdx = 0;
+  int i = 0;
   GifFileType* gif;
 
   gif_data_t gifd = { buf, len, 0 };
@@ -439,7 +439,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  GifImageDesc *img = &gif->SavedImages[imageIdx].ImageDesc;
+  GifImageDesc *img = &gif->SavedImages[i].ImageDesc;
 
   // local colormap takes precedence over global
   ColorMapObject *colormap = img->ColorMap
@@ -447,11 +447,11 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     : gif->SColorMap;
 
   int bgColor = 0;
-  int alphaColor = get_gif_transparent_color(gif, imageIdx);
+  int alphaColor = get_gif_transparent_color(gif, i);
   if (gif->SColorMap) bgColor = (uint8_t) gif->SBackGroundColor;
   else if(alphaColor >= 0) bgColor = alphaColor;
 
-  uint8_t *src_data = (uint8_t*) gif->SavedImages[imageIdx].RasterBits;
+  uint8_t *src_data = (uint8_t*) gif->SavedImages[i].RasterBits;
   uint32_t *dst_data = (uint32_t*) data;
 
   if (!gif->Image.Interlace) {
