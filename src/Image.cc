@@ -391,17 +391,20 @@ Image::loadGIF() {
   return result;
 }
 
+/*
+ * Load give from `buf` and the given `len`.
+ */
+
 cairo_status_t
 Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   int imageIdx = 0;
   GifFileType* gft;
 
-  struct GIFInputFuncData gifd = 
-    {
-      buf: buf,
-      length: len,
-      cpos: 0
-    };
+  struct GIFInputFuncData gifd = {
+      buf: buf
+    , length: len
+    , cpos: 0
+  };
 
   if((gft = DGifOpen((void*) &gifd, readGIFFromMemory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
