@@ -474,7 +474,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-          if ((y < img->Top) || (y >= bottom) || (x < img->Left) || (x >= right)) {
+          if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
             *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[bgColor].Red << 16
               | colormap->Colors[bgColor].Green << 8
