@@ -422,10 +422,10 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   gif_data_t gifd = { buf, len, 0 };
 
-  if((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
+  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
 
-  if(DGifSlurp(gif) != GIF_OK) {
+  if (GIF_OK != DGifSlurp(gif)) {
     DGifCloseFile(gif);
     return CAIRO_STATUS_READ_ERROR;
   }
@@ -440,23 +440,24 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   }
 
   GifImageDesc *img = &gif->SavedImages[imageIdx].ImageDesc;
-  // Local colormap takes precedence over global
-  ColorMapObject *colormap = img->ColorMap ? img->ColorMap : gif->SColorMap;
+
+  // local colormap takes precedence over global
+  ColorMapObject *colormap = img->ColorMap
+    ? img->ColorMap
+    : gif->SColorMap;
 
   int bgColor = 0;
   int alphaColor = get_gif_transparent_color(gif, imageIdx);
-  if(gif->SColorMap)
-    bgColor = (uint8_t) gif->SBackGroundColor;
-  else if(alphaColor >= 0)
-    bgColor = alphaColor;
+  if (gif->SColorMap) bgColor = (uint8_t) gif->SBackGroundColor;
+  else if(alphaColor >= 0) bgColor = alphaColor;
 
   uint8_t *src_data = (uint8_t*) gif->SavedImages[imageIdx].RasterBits;
   uint32_t *dst_data = (uint32_t*) data;
 
-  if(!gif->Image.Interlace) {
-    if((width == img->Width) && (height == img->Height)) {
-      for(int iy = 0; iy < height; iy++) {
-        for(int ix = 0; ix < width; ix++) {
+  if (!gif->Image.Interlace) {
+    if (width == img->Width && height == img->Height) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
           *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
             | (colormap->Colors[*src_data].Red) << 16
             | (colormap->Colors[*src_data].Green) << 8
@@ -471,9 +472,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       int bottom = img->Top + img->Height;
       int right = img->Left + img->Width;
 
-      for(int iy = 0; iy < height; iy++) {
-        for(int ix = 0; ix < width; ix++) {
-          if((iy < img->Top) || (iy >= bottom) || (ix < img->Left) || (ix >= right)) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          if ((y < img->Top) || (y >= bottom) || (x < img->Left) || (x >= right)) {
             *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
               | (colormap->Colors[bgColor].Red) << 16
               | (colormap->Colors[bgColor].Green) << 8
@@ -500,10 +501,10 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     uint8_t *src_ptr = src_data;
     uint32_t *dst_ptr;
 
-    for(int iz = 0; iz < 4; iz++) {
-      for(int iy = ioffs[iz]; iy < height; iy += ijumps[iz]) {
-        dst_ptr = dst_data + width * iy;
-        for(int ix = 0; ix < width; ix++) {
+    for(int z = 0; z < 4; z++) {
+      for(int y = ioffs[z]; y < height; y += ijumps[z]) {
+        dst_ptr = dst_data + width * y;
+        for(int x = 0; x < width; ++x) {
           *dst_ptr = ((*src_ptr == alphaColor) ? 0 : 255) << 24
             | (colormap->Colors[*src_ptr].Red) << 16
             | (colormap->Colors[*src_ptr].Green) << 8
