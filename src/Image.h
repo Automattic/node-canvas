@@ -9,9 +9,6 @@
 #define __NODE_IMAGE_H__
 
 #include "Canvas.h"
-#ifdef HAVE_GIF
-#include <gif_lib.h>
-#endif
 
 class Image: public node::ObjectWrap {
   public:
@@ -75,16 +72,5 @@ class Image: public node::ObjectWrap {
     cairo_surface_t *_surface;
     ~Image();
 };
-
-#ifdef HAVE_GIF
-  struct GIFInputFuncData {
-    uint8_t *buf;
-    unsigned int length;
-    unsigned int cpos;
-  };
-
-  int readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length);
-  int getGIFTransparentColor(GifFileType *gft, int framenum);
-#endif
 
 #endif

@@ -16,6 +16,19 @@
 #include <jpeglib.h>
 #endif
 
+#ifdef HAVE_GIF
+  #include <gif_lib.h>
+
+struct GIFInputFuncData {
+  uint8_t *buf;
+  unsigned int length;
+  unsigned int cpos;
+};
+
+int readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length);
+int getGIFTransparentColor(GifFileType *gft, int framenum);
+#endif
+
 Persistent<FunctionTemplate> Image::constructor;
 
 /*
