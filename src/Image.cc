@@ -17,16 +17,12 @@
 #endif
 
 #ifdef HAVE_GIF
-  #include <gif_lib.h>
-
-struct GIFInputFuncData {
+#include <gif_lib.h>
+typedef struct {
   uint8_t *buf;
-  unsigned int length;
-  unsigned int cpos;
-};
-
-int readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length);
-int getGIFTransparentColor(GifFileType *gft, int framenum);
+  unsigned len;
+  unsigned pos;
+} gif_data_t;
 #endif
 
 Persistent<FunctionTemplate> Image::constructor;
@@ -352,10 +348,12 @@ Image::loadPNG() {
   return cairo_surface_status(_surface);
 }
 
+// GIF support
+
 #ifdef HAVE_GIF
 
 int
-getGIFTransparentColor(GifFileType * gft, int framenum) {
+get_gif_transparent_color(GifFileType * gft, int framenum) {
   ExtensionBlock *ext = gft->SavedImages[framenum].ExtensionBlocks;
 
   for (int ix = 0; ix < gft->SavedImages[framenum].ExtensionBlockCount; ix++, ext++) {
@@ -368,12 +366,12 @@ getGIFTransparentColor(GifFileType * gft, int framenum) {
 }
 
 int
-readGIFFromMemory(GifFileType *gft, GifByteType *buf, int length) {
-  struct GIFInputFuncData *gifd = (struct GIFInputFuncData*)gft->UserData;
+read_gif_from_memory(GifFileType *gft, GifByteType *buf, int length) {
+  gif_data_t *gifd = (gif_data_t *) gft->UserData;
   // Make sure we don't read past our buffer
-  if((gifd->cpos + length) > gifd->length) length = gifd->length - gifd->cpos;
-  memcpy(buf, gifd->cpos + gifd->buf, length);
-  gifd->cpos += length;
+  if((gifd->pos + length) > gifd->len) length = gifd->len - gifd->pos;
+  memcpy(buf, gifd->pos + gifd->buf, length);
+  gifd->pos += length;
   return length;
 }
 
@@ -413,13 +411,13 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   int imageIdx = 0;
   GifFileType* gft;
 
-  struct GIFInputFuncData gifd = {
+  gif_data_t gifd = {
       buf: buf
-    , length: len
-    , cpos: 0
+    , len: len
+    , pos: 0
   };
 
-  if((gft = DGifOpen((void*) &gifd, readGIFFromMemory)) == NULL)
+  if((gft = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
 
   if(DGifSlurp(gft) != GIF_OK) {
@@ -441,8 +439,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   ColorMapObject *colormap = img->ColorMap ? img->ColorMap : gft->SColorMap;
 
   int bgColor = 0;
-  int alphaColor = getGIFTransparentColor(gft, imageIdx);
-
+  int alphaColor = get_gif_transparent_color(gft, imageIdx);
   if(gft->SColorMap)
     bgColor = (uint8_t) gft->SBackGroundColor;
   else if(alphaColor >= 0)
@@ -534,6 +531,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   return CAIRO_STATUS_SUCCESS;
 }
 #endif /* HAVE_GIF */
+
+// JPEG support
 
 #ifdef HAVE_JPEG
 
