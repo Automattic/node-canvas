@@ -353,21 +353,20 @@ Image::loadPNG() {
 #ifdef HAVE_GIF
 
 int
-get_gif_transparent_color(GifFileType * gft, int framenum) {
-  ExtensionBlock *ext = gft->SavedImages[framenum].ExtensionBlocks;
-
-  for (int ix = 0; ix < gft->SavedImages[framenum].ExtensionBlockCount; ix++, ext++) {
+get_gif_transparent_color(GifFileType *gif, int frame) {
+  ExtensionBlock *ext = gif->SavedImages[frame].ExtensionBlocks;
+  int len =  gif->SavedImages[frame].ExtensionBlockCount;
+  for (int x = 0; x < len; ++x, ++ext) {
     if ((ext->Function == GRAPHICS_EXT_FUNC_CODE) && (ext->Bytes[0] & 1)) {
       return ext->Bytes[3] == 0 ? 0 : (uint8_t) ext->Bytes[3]; 
     }
   }
-
   return -1;
 }
 
 int
-read_gif_from_memory(GifFileType *gft, GifByteType *buf, int length) {
-  gif_data_t *gifd = (gif_data_t *) gft->UserData;
+read_gif_from_memory(GifFileType *gif, GifByteType *buf, int length) {
+  gif_data_t *gifd = (gif_data_t *) gif->UserData;
   // Make sure we don't read past our buffer
   if((gifd->pos + length) > gifd->len) length = gifd->len - gifd->pos;
   memcpy(buf, gifd->pos + gifd->buf, length);
@@ -409,7 +408,7 @@ Image::loadGIF() {
 cairo_status_t
 Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   int imageIdx = 0;
-  GifFileType* gft;
+  GifFileType* gif;
 
   gif_data_t gifd = {
       buf: buf
@@ -417,38 +416,38 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     , pos: 0
   };
 
-  if((gft = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
+  if((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
 
-  if(DGifSlurp(gft) != GIF_OK) {
-    DGifCloseFile(gft);
+  if(DGifSlurp(gif) != GIF_OK) {
+    DGifCloseFile(gif);
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  width = gft->SWidth;
-  height = gft->SHeight;
+  width = gif->SWidth;
+  height = gif->SHeight;
 
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
-    DGifCloseFile(gft);
+    DGifCloseFile(gif);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  GifImageDesc *img = &gft->SavedImages[imageIdx].ImageDesc;
+  GifImageDesc *img = &gif->SavedImages[imageIdx].ImageDesc;
   // Local colormap takes precedence over global
-  ColorMapObject *colormap = img->ColorMap ? img->ColorMap : gft->SColorMap;
+  ColorMapObject *colormap = img->ColorMap ? img->ColorMap : gif->SColorMap;
 
   int bgColor = 0;
-  int alphaColor = get_gif_transparent_color(gft, imageIdx);
-  if(gft->SColorMap)
-    bgColor = (uint8_t) gft->SBackGroundColor;
+  int alphaColor = get_gif_transparent_color(gif, imageIdx);
+  if(gif->SColorMap)
+    bgColor = (uint8_t) gif->SBackGroundColor;
   else if(alphaColor >= 0)
     bgColor = alphaColor;
 
-  uint8_t *src_data = (uint8_t*) gft->SavedImages[imageIdx].RasterBits;
+  uint8_t *src_data = (uint8_t*) gif->SavedImages[imageIdx].RasterBits;
   uint32_t *dst_data = (uint32_t*) data;
 
-  if(!gft->Image.Interlace) {
+  if(!gif->Image.Interlace) {
     if((width == img->Width) && (height == img->Height)) {
       for(int iy = 0; iy < height; iy++) {
         for(int ix = 0; ix < width; ix++) {
@@ -511,7 +510,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     }
   }
 
-  DGifCloseFile(gft);
+  DGifCloseFile(gif);
 
   // New image surface
   _surface = cairo_image_surface_create_for_data(
