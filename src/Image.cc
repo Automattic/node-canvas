@@ -315,27 +315,35 @@ Image::error(Local<Value> err) {
 /*
  * Load cairo surface from the image src.
  * 
- * TODO: better format detection
  * TODO: support more formats
  * TODO: use node IO or at least thread pool
  */
 
 cairo_status_t
 Image::loadSurface() {
-  switch (extension(filename)) {
-    case Image::PNG:
-      return loadPNG();
-#ifdef HAVE_GIF
-    case Image::GIF:
-      return loadGIF();
-#endif
-#ifdef HAVE_JPEG
-    case Image::JPEG:
-      return loadJPEG();
-#endif
-    default:
-      return CAIRO_STATUS_READ_ERROR;
+  FILE *stream = fopen(filename, "r");
+  if (!stream) return CAIRO_STATUS_READ_ERROR;
+  uint8_t buf[5];
+  if (1 != fread(&buf, 5, 1, stream)) return CAIRO_STATUS_READ_ERROR;
+  fseek(stream, 0, SEEK_SET);
+
+  // png
+  if (isPNG(buf)) {
+    fclose(stream);
+    return loadPNG();
   }
+
+  // gif
+#ifdef HAVE_GIF
+  if (isGIF(buf)) return loadGIF(stream);
+#endif
+
+  // jpeg
+#ifdef HAVE_JPEG
+  if (isJPEG(buf)) return loadJPEG(stream);
+#endif
+
+  return CAIRO_STATUS_READ_ERROR;
 }
 
 /*
@@ -386,10 +394,7 @@ read_gif_from_memory(GifFileType *gif, GifByteType *buf, int len) {
  */
 
 cairo_status_t
-Image::loadGIF() {
-  FILE *stream = fopen(filename, "r");
-  if (!stream) return CAIRO_STATUS_READ_ERROR;
-
+Image::loadGIF(FILE *stream) {
   fseek(stream, 0L, SEEK_END);
   int len = ftell(stream);
   fseek(stream, 0L, SEEK_SET);
@@ -612,10 +617,7 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
  */
 
 cairo_status_t
-Image::loadJPEG() {
-  FILE *stream = fopen(filename, "r");
-  if (!stream) return CAIRO_STATUS_READ_ERROR;
-
+Image::loadJPEG(FILE *stream) {
   // JPEG setup
   struct jpeg_decompress_struct info;
   struct jpeg_error_mgr err;

@@ -42,11 +42,11 @@ class Image: public node::ObjectWrap {
     cairo_status_t loadPNG();
 #ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
-    cairo_status_t loadGIF();
+    cairo_status_t loadGIF(FILE *stream);
 #endif
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
-    cairo_status_t loadJPEG();
+    cairo_status_t loadJPEG(FILE *stream);
 #endif
     void error(Local<Value> error);
     void loaded();
