@@ -1,4 +1,10 @@
 
+0.7.1 / 2011-08-25 
+==================
+
+  * Added better image format detection
+  * Added libpath options to waf configuration; this was necessary to correctly detect gif and jpeg support on FreeBSD
+
 0.7.0 / 2011-07-12 
 ==================
 
