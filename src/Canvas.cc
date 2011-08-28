@@ -133,7 +133,7 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
  * EIO toBuffer callback.
  */
 
-int
+void
 Canvas::EIO_ToBuffer(eio_req *req) {
   closure_t *closure = (closure_t *) req->data;
 
@@ -142,7 +142,6 @@ Canvas::EIO_ToBuffer(eio_req *req) {
     , toBuffer
     , closure);
 
-  return 0;
 }
 
 /*
