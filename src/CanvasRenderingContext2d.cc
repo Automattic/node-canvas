@@ -78,8 +78,6 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "strokeRect", StrokeRect);
   NODE_SET_PROTOTYPE_METHOD(constructor, "clearRect", ClearRect);
   NODE_SET_PROTOTYPE_METHOD(constructor, "rect", Rect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setTextBaseline", SetTextBaseline);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setTextAlignment", SetTextAlignment);
   NODE_SET_PROTOTYPE_METHOD(constructor, "measureText", MeasureText);
   NODE_SET_PROTOTYPE_METHOD(constructor, "moveTo", MoveTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "lineTo", LineTo);
@@ -89,11 +87,13 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillColor", SetFillColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokeColor", SetStrokeColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setFillPattern", SetFillPattern);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setStrokePattern", SetStrokePattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokePattern", SetStrokePattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextBaseline", SetTextBaseline);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextAlignment", SetTextAlignment);
   proto->SetAccessor(String::NewSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
