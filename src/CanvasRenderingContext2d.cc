@@ -1497,9 +1497,9 @@ Context2d::LineTo(const Arguments &args) {
   HandleScope scope;
 
   if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("x required")));
+    return ThrowException(Exception::TypeError(String::New("lineTo() x must be a number")));
   if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("y required")));
+    return ThrowException(Exception::TypeError(String::New("lineTo() y must be a number")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_line_to(context->context()
@@ -1518,9 +1518,9 @@ Context2d::MoveTo(const Arguments &args) {
   HandleScope scope;
 
   if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("x required")));
+    return ThrowException(Exception::TypeError(String::New("moveTo() x must be a number")));
   if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("y required")));
+    return ThrowException(Exception::TypeError(String::New("moveTo() y must be a number")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_move_to(context->context()
