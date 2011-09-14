@@ -1,4 +1,9 @@
 
+0.7.3 / 2011-09-14 
+==================
+
+  * Added better lineTo() / moveTo() exception messages
+
 0.7.2 / 2011-08-30 
 ==================
 
