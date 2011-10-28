@@ -51,7 +51,7 @@ Image::Initialize(Handle<Object> target) {
 
   // Prototype
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
-  proto->SetAccessor(String::NewSymbol("src"), GetSrc, SetSrc);
+  proto->SetAccessor(String::NewSymbol("source"), GetSource, SetSource);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight);
@@ -109,7 +109,7 @@ Image::GetHeight(Local<String>, const AccessorInfo &info) {
  */
 
 Handle<Value>
-Image::GetSrc(Local<String>, const AccessorInfo &info) {
+Image::GetSource(Local<String>, const AccessorInfo &info) {
   HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   return scope.Close(String::New(img->filename ? img->filename : ""));
@@ -120,7 +120,7 @@ Image::GetSrc(Local<String>, const AccessorInfo &info) {
  */
 
 void
-Image::SetSrc(Local<String>, Local<Value> val, const AccessorInfo &info) {
+Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
   HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
