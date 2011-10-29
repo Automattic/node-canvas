@@ -133,7 +133,11 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
  * EIO toBuffer callback.
  */
 
+#if NODE_VERSION_AT_LEAST(0, 5, 4)
+void
+#else
 int
+#endif
 Canvas::EIO_ToBuffer(eio_req *req) {
   closure_t *closure = (closure_t *) req->data;
 
@@ -142,7 +146,9 @@ Canvas::EIO_ToBuffer(eio_req *req) {
     , toBuffer
     , closure);
 
+#if !NODE_VERSION_AT_LEAST(0, 5, 4)
   return 0;
+#endif
 }
 
 /*
