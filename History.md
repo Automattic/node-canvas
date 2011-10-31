@@ -1,4 +1,10 @@
 
+0.8.1 / 2011-10-31 
+==================
+
+  * Added 0.5.x support [TooTallNate]
+  * Fixed `measureText().width`. Closes #126
+
 0.8.0 / 2011-10-28 
 ==================
 

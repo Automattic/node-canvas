@@ -1,6 +1,6 @@
 {  "name": "canvas"
  , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "0.8.0"
+ , "version":  "0.8.1"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics", "pixman", "cairo"]
  , "repository": "git://github.com/learnboost/node-canvas"
@@ -12,6 +12,6 @@
    , "expresso": "0.7.6"
    , "jade": "0.11.0"
  }
- , "engines": { "node": ">= 0.4.0 && < 0.6.0" }
+ , "engines": { "node": ">= 0.4.0 && < 0.7.0" }
  , "main": "./lib/canvas.js"
 }
