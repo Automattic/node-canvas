@@ -363,6 +363,15 @@ module.exports = {
     assert.equal(0, imageData.data[3]);
   },
   
+  'test Context2d#measureText().width': function(){
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+
+    assert.ok(ctx.measureText('foo').width);
+    assert.ok(ctx.measureText('foo').width != ctx.measureText('foobar').width);
+    assert.ok(ctx.measureText('foo').width != ctx.measureText('foo    ').width);
+  },
+  
   'test Context2d#createImageData(ImageData)': function(){
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
