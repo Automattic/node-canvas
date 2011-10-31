@@ -369,6 +369,7 @@ module.exports = {
 
     assert.ok(ctx.measureText('foo').width);
     assert.ok(ctx.measureText('foo').width != ctx.measureText('foobar').width);
+    assert.ok(ctx.measureText('foo').width != ctx.measureText('  foo').width);
     assert.ok(ctx.measureText('foo').width != ctx.measureText('foo    ').width);
   },
   
