@@ -18,7 +18,7 @@ app.set('view engine', 'jade');
 // Middleware
 
 app.use(express.favicon());
-app.use(express.logger({ format: '\x1b[90m:remote-addr\x1b[0m - \x1b[33m:method\x1b[0m :url :status \x1b[90m:response-timems\x1b[0m' }));
+app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(app.router);
 app.use(express.static(__dirname + '/public'));
