@@ -45,8 +45,8 @@ console.log('<img src="' + canvas.toDataURL() + '" />');
 
  node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
 
-```javascript 
-fs.readFile(__dirname + '/images/squid.png', function(err){
+```javascript
+fs.readFile(__dirname + '/images/squid.png', function(err, squid){
   if (err) throw err;
   img = new Image;
   img.src = squid;
@@ -54,7 +54,7 @@ fs.readFile(__dirname + '/images/squid.png', function(err){
 });
 ```
 
- Below is an example of a canvas drawing it-self as the source several time: 
+ Below is an example of a canvas drawing it-self as the source several time:
 
 ```javascript
 var img = new Image;
@@ -68,7 +68,7 @@ ctx.drawImage(img, 100, 0, 50, 50);
 
   To create a `PNGStream` simple call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
 
-```javascript  
+```javascript
 var fs = require('fs')
   , out = fs.createWriteStream(__dirname + '/text.png')
   , stream = canvas.createPNGStream();
@@ -105,7 +105,7 @@ canvas.toBuffer(function(err, buf){
 ### Canvas#toDataURL() async
 
 Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
-  
+
 ```javascript
 canvas.toDataURL(function(err, str){
 
@@ -145,7 +145,7 @@ In addition to those specified and commonly implemented by browsers, the followi
 ## Anti-Aliasing
 
  Set anti-aliasing mode
- 
+
  - default
  - none
  - gray
@@ -197,7 +197,7 @@ Tested with and designed for:
 For node 0.2.x `node-canvas` <= 0.4.3 may be used,
 0.5.0 and above are designed for node 0.4.x only.
 
-## License 
+## License
 
 (The MIT License)
 
