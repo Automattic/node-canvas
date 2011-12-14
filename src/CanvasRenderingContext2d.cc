@@ -139,7 +139,7 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
-  while(stateno>=0) {
+  while(stateno >= 0) {
     free(states[stateno--]);
   }
   cairo_destroy(_context);
