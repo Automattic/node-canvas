@@ -139,6 +139,9 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
+  while(stateno>=0) {
+    free(states[stateno--]);
+  }
   cairo_destroy(_context);
 }
 
@@ -205,6 +208,7 @@ void
 Context2d::restorePath() {
   cairo_new_path(_context);
   cairo_append_path(_context, _path);
+  cairo_path_destroy(_path);
 }
 
 /*
