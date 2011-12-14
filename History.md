@@ -1,4 +1,10 @@
 
+0.8.2 / 2011-12-14 
+==================
+
+  * Fixed two memory leaks in context2d [Tharit]
+  * Fixed `make test-server`
+
 0.8.1 / 2011-10-31 
 ==================
 
