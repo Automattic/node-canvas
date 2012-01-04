@@ -1,4 +1,9 @@
 
+0.8.3 / 2012-01-04 
+==================
+
+  * Added support for libjpeg62-dev or libjpeg8-dev [wwlinx]
+
 0.8.2 / 2011-12-14 
 ==================
 
