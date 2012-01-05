@@ -14,7 +14,7 @@ module.exports = {
     assert.ok(Image instanceof Function);
   },
 
-  'test Image#onload': function(beforeExit){
+  'test Image#onload': function(){
     var img = new Image
       , n = 0;
 
@@ -27,16 +27,14 @@ module.exports = {
     img.src = png;
     assert.equal(img.src, png);
 
-    beforeExit(function(){
-      assert.equal(img.src, png);
-      assert.strictEqual(true, img.complete);
-      assert.strictEqual(320, img.width);
-      assert.strictEqual(320, img.height);
-      assert.equal(1, n);
-    });
+    assert.equal(img.src, png);
+    assert.strictEqual(true, img.complete);
+    assert.strictEqual(320, img.width);
+    assert.strictEqual(320, img.height);
+    assert.equal(1, n);
   },
   
-  'test Image#onerror': function(beforeExit){
+  'test Image#onerror': function(){
     var img = new Image
       , error
       , n = 0;
@@ -59,14 +57,12 @@ module.exports = {
 
     assert.equal(img.src, png + 's');
 
-    beforeExit(function(){
-      assert.ok(error instanceof Error, 'did not invoke onerror() with error');
-      assert.strictEqual(false, img.complete);
-      assert.equal(1, n);
-    });
+    assert.ok(error instanceof Error, 'did not invoke onerror() with error');
+    assert.strictEqual(false, img.complete);
+    assert.equal(1, n);
   },
   
-  'test Image#{width,height}': function(beforeExit){
+  'test Image#{width,height}': function(){
     var img = new Image
       , n = 0;
     
@@ -79,8 +75,6 @@ module.exports = {
     };
     img.src = png;
 
-    beforeExit(function(){
-      assert.equal(1, n);
-    });
+    assert.equal(1, n);
   }
 };

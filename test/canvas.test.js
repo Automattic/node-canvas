@@ -16,11 +16,11 @@ console.log('   cairo: %s', Canvas.cairoVersion);
 
 module.exports = {
   'test .version': function(){
-    assert.match(Canvas.version, /^\d+\.\d+\.\d+$/);
+    Canvas.version.should.match(/^\d+\.\d+\.\d+$/);
   },
   
   'test .cairoVersion': function(){
-    assert.match(Canvas.cairoVersion, /^\d+\.\d+\.\d+$/);
+    Canvas.cairoVersion.should.match(/^\d+\.\d+\.\d+$/);
   },
   
   'test .parseFont()': function(){
@@ -72,13 +72,10 @@ module.exports = {
     for (var i = 0, len = tests.length; i < len; ++i) {
       var str = tests[i++]
         , obj = tests[i]
-        , got = parseFont(str);
+        , actual = parseFont(str);
       if (!obj.style) obj.style = 'normal';
       if (!obj.weight) obj.weight = 'normal';
-      assert.eql(obj, got, ''
-        + '\n   from: ' + sys.inspect(str)
-        + '\n   got:\n' + sys.inspect(got) 
-        + '\n   expected:\n' + sys.inspect(obj));
+      actual.should.eql(obj);
     }
   },
   

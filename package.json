@@ -10,8 +10,9 @@
  }
  , "devDependencies": {
      "express": "2.3.7"
-   , "expresso": "0.7.6"
    , "jade": "0.11.0"
+   , "mocha": "*"
+   , "should": "*"
  }
  , "engines": { "node": ">= 0.4.0 && < 0.7.0" }
  , "main": "./lib/canvas.js"
