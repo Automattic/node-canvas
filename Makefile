@@ -6,7 +6,6 @@ $(ADDON): src/*.cc
 
 test: $(ADDON)
 	@./node_modules/.bin/expresso \
-		-I lib \
 		test/*.test.js
 
 test-server: $(ADDON)

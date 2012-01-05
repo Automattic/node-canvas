@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('canvas')
+var Canvas = require('../')
   , Image = Canvas.Image
   , assert = require('assert');
 

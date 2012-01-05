@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('canvas')
+var Canvas = require('../')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
   , assert = require('assert')
