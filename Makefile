@@ -1,11 +1,13 @@
 
 ADDON = build/default/canvas.node
+REPORTER = spec
 
 $(ADDON): src/*.cc
 	node-waf configure build
 
 test: $(ADDON)
 	@./node_modules/.bin/mocha \
+		--reporter $(REPORTER) \
 		--ui exports \
 		--require should \
 		test/*.test.js
