@@ -1,6 +1,6 @@
 
 ADDON = build/default/canvas.node
-REPORTER = spec
+REPORTER = dot
 
 $(ADDON): src/*.cc
 	node-waf configure build
