@@ -86,7 +86,7 @@ Currently _only_ sync streaming is supported, however we plan on supporting asyn
 
 ### Canvas#createJPEGStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.createJPEGStream()` with the optional parameters `bufsize` and `quality`; functionality is otherwise identical to `createPNGStream()`. See `examples/crop.js` for an example.
+You can likewise create a `JPEGStream` by calling `canvas.createJPEGStream()` with some optional parameters; functionality is otherwise identical to `createPNGStream()`. See `examples/crop.js` for an example.
 
 ### Canvas#toBuffer()
 
