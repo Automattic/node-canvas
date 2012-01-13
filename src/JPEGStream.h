@@ -8,6 +8,7 @@
 
 #include "Canvas.h"
 #include <jpeglib.h>
+#include <jerror.h>
 
 /* Expanded data destination object for closure output */
 /* inspired by IJG's jdatadst.c */
@@ -20,7 +21,7 @@ typedef struct {
 } closure_destination_mgr;
 
 void init_closure_destination(j_compress_ptr cinfo){
-  // I don't think we really have to do anything here ...
+  // we really don't have to do anything here
 }
 
 boolean empty_closure_output_buffer(j_compress_ptr cinfo){
@@ -85,7 +86,7 @@ void jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
   cinfo->dest->free_in_buffer = dest->bufsize;
 }
 
-cairo_status_t write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure_t * closure){
+void write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure_t * closure){
   /*
     libjs code adapted from the Cairo R graphics project:
     http://www.rforge.net/Cairo/
@@ -103,7 +104,6 @@ cairo_status_t write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int q
 	cinfo.image_width = w;
 	cinfo.image_height = h;
 	jpeg_set_defaults(&cinfo);
-  /* TODO: quality */
 	jpeg_set_quality(&cinfo, quality, (quality<25)?0:1);
   jpeg_closure_dest(&cinfo, closure, bufsize);
 
@@ -130,7 +130,6 @@ cairo_status_t write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int q
   free(dst);
 	jpeg_finish_compress(&cinfo);
 	jpeg_destroy_compress(&cinfo);
-  return CAIRO_STATUS_SUCCESS;
 }
 
 #endif

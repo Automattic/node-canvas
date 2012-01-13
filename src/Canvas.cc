@@ -308,19 +308,11 @@ Canvas::StreamJPEGSync(const Arguments &args) {
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[2]);
 
-  /*
-    TODO: tie jpeg_error_mgr into the error callback
-  */
   TryCatch try_catch;
-  cairo_status_t status = write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+  write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
 
   if (try_catch.HasCaught()) {
     return try_catch.ReThrow();
-  // TODO : figure out libjpeg error handling, use this
-  } else if (status) {
-    // error state
-    Local<Value> argv[1] = { Canvas::Error(status) };
-    closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
   }
   return Undefined();
 }
