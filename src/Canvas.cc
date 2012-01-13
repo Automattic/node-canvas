@@ -13,7 +13,10 @@
 #include <node_buffer.h>
 #include <node_version.h>
 #include "closure.h"
+
+#ifdef HAVE_JPEG
 #include "JPEGStream.h"
+#endif
 
 Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -34,7 +37,9 @@ Canvas::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
+#ifdef HAVE_JPEG
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
+#endif
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
@@ -293,6 +298,8 @@ Canvas::StreamPNGSync(const Arguments &args) {
  * Stream JPEG data synchronously.
  */
 
+#ifdef HAVE_JPEG
+
 Handle<Value>
 Canvas::StreamJPEGSync(const Arguments &args) {
   HandleScope scope;
@@ -316,6 +323,8 @@ Canvas::StreamJPEGSync(const Arguments &args) {
   }
   return Undefined();
 }
+
+#endif
 
 /*
  * Initialize cairo surface.
