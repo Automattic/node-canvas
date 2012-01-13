@@ -10,21 +10,25 @@
 #include <jpeglib.h>
 #include <jerror.h>
 
-/* Expanded data destination object for closure output */
-/* inspired by IJG's jdatadst.c */
-typedef struct {
-  struct jpeg_destination_mgr pub; /* public fields */
+/*
+ * Expanded data destination object for closure output,
+ * inspired by IJG's jdatadst.c
+ */
 
-  closure_t * closure;
-  JOCTET * buffer;
+typedef struct {
+  struct jpeg_destination_mgr pub;
+  closure_t *closure;
+  JOCTET *buffer;
   int bufsize;
 } closure_destination_mgr;
 
-void init_closure_destination(j_compress_ptr cinfo){
+void
+init_closure_destination(j_compress_ptr cinfo){
   // we really don't have to do anything here
 }
 
-boolean empty_closure_output_buffer(j_compress_ptr cinfo){
+boolean
+empty_closure_output_buffer(j_compress_ptr cinfo){
   closure_destination_mgr * dest = (closure_destination_mgr *) cinfo->dest;
   Local<Buffer> buf = Buffer::New(dest->bufsize);
   memcpy(Buffer::Data(buf->handle_), dest->buffer, dest->bufsize);
@@ -39,7 +43,8 @@ boolean empty_closure_output_buffer(j_compress_ptr cinfo){
   return true;
 }
 
-void term_closure_destination(j_compress_ptr cinfo){
+void
+term_closure_destination(j_compress_ptr cinfo){
   closure_destination_mgr * dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
@@ -60,7 +65,8 @@ void term_closure_destination(j_compress_ptr cinfo){
   dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, end_argv);
 }
 
-void jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
+void
+jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
   closure_destination_mgr * dest;
 
   /* The destination object is made permanent so that multiple JPEG images
@@ -86,7 +92,8 @@ void jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
   cinfo->dest->free_in_buffer = dest->bufsize;
 }
 
-void write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure_t * closure){
+void
+write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure_t * closure){
   /*
     libjs code adapted from the Cairo R graphics project:
     http://www.rforge.net/Cairo/
