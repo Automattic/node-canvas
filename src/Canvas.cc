@@ -318,9 +318,7 @@ Canvas::StreamJPEGSync(const Arguments &args) {
   TryCatch try_catch;
   write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
 
-  if (try_catch.HasCaught()) {
-    return try_catch.ReThrow();
-  }
+  if (try_catch.HasCaught()) return try_catch.ReThrow();
   return Undefined();
 }
 
