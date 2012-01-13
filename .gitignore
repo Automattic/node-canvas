@@ -3,6 +3,7 @@ build
 .lock-wscript
 test/images/*.png
 examples/*.png
+examples/*.jpg
 testing
 test.png
 .pomo
