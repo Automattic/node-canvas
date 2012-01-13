@@ -13,6 +13,7 @@
 #include <node_buffer.h>
 #include <node_version.h>
 #include "closure.h"
+#include "JPEGStream.h"
 
 Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -33,6 +34,7 @@ Canvas::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
@@ -283,6 +285,42 @@ Canvas::StreamPNGSync(const Arguments &args) {
       , Local<Value>::New(Null())
       , Integer::New(0) };
     closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
+  }
+  return Undefined();
+}
+
+/*
+ * Stream JPEG data synchronously.
+ */
+
+Handle<Value>
+Canvas::StreamJPEGSync(const Arguments &args) {
+  HandleScope scope;
+  // TODO: async as well
+  if (!args[0]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("buffer size required")));
+  if (!args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("quality setting required")));
+  if (!args[2]->IsFunction())
+    return ThrowException(Exception::TypeError(String::New("callback function required")));
+
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  closure_t closure;
+  closure.fn = Handle<Function>::Cast(args[2]);
+
+  /*
+    TODO: tie jpeg_error_mgr into the error callback
+  */
+  TryCatch try_catch;
+  cairo_status_t status = write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+
+  if (try_catch.HasCaught()) {
+    return try_catch.ReThrow();
+  // TODO : figure out libjpeg error handling, use this
+  } else if (status) {
+    // error state
+    Local<Value> argv[1] = { Canvas::Error(status) };
+    closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
   }
   return Undefined();
 }
