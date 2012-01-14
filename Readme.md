@@ -66,7 +66,7 @@ ctx.drawImage(img, 100, 0, 50, 50);
 
 ### Canvas#createPNGStream()
 
-  To create a `PNGStream` simple call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
+  To create a `PNGStream` simply call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
 
 ```javascript
 var fs = require('fs')
@@ -83,6 +83,10 @@ stream.on('end', function(){
 ```
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
+
+### Canvas#createJPEGStream()
+
+You can likewise create a `JPEGStream` by calling `canvas.createJPEGStream()` with some optional parameters; functionality is otherwise identical to `createPNGStream()`. See `examples/crop.js` for an example.
 
 ### Canvas#toBuffer()
 

@@ -43,6 +43,7 @@ class Canvas: public node::ObjectWrap {
     static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static Handle<Value> StreamPNGSync(const Arguments &args);
+    static Handle<Value> StreamJPEGSync(const Arguments &args);
     static Local<Value> Error(cairo_status_t status);
     static
 #if NODE_VERSION_AT_LEAST(0, 5, 4)

@@ -14,6 +14,10 @@
 #include <node_version.h>
 #include "closure.h"
 
+#ifdef HAVE_JPEG
+#include "JPEGStream.h"
+#endif
+
 Persistent<FunctionTemplate> Canvas::constructor;
 
 /*
@@ -33,6 +37,9 @@ Canvas::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
+#ifdef HAVE_JPEG
+  NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
+#endif
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
@@ -286,6 +293,36 @@ Canvas::StreamPNGSync(const Arguments &args) {
   }
   return Undefined();
 }
+
+/*
+ * Stream JPEG data synchronously.
+ */
+
+#ifdef HAVE_JPEG
+
+Handle<Value>
+Canvas::StreamJPEGSync(const Arguments &args) {
+  HandleScope scope;
+  // TODO: async as well
+  if (!args[0]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("buffer size required")));
+  if (!args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("quality setting required")));
+  if (!args[2]->IsFunction())
+    return ThrowException(Exception::TypeError(String::New("callback function required")));
+
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  closure_t closure;
+  closure.fn = Handle<Function>::Cast(args[2]);
+
+  TryCatch try_catch;
+  write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+
+  if (try_catch.HasCaught()) return try_catch.ReThrow();
+  return Undefined();
+}
+
+#endif
 
 /*
  * Initialize cairo surface.
