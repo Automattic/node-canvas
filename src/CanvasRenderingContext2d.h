@@ -25,6 +25,8 @@ typedef struct {
   cairo_filter_t patternQuality;
   cairo_pattern_t *fillPattern;
   cairo_pattern_t *strokePattern;
+  cairo_pattern_t *fillGradient;
+  cairo_pattern_t *strokeGradient;
   float globalAlpha;
   short textAlignment;
   short textBaseline;

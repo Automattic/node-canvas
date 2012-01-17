@@ -436,5 +436,85 @@ module.exports = {
     assert.equal(255, data[0]);
     data[0] = -4444;
     assert.equal(0, data[0]);
-  }
+  },
+
+  'test Context2d#createPattern(Canvas)': function(){
+    var pattern = new Canvas(2,2)
+      , checkers = pattern.getContext('2d');
+
+    // white
+    checkers.fillStyle = '#fff';
+    checkers.fillRect(0,0,2,2);
+
+    // black
+    checkers.fillStyle = '#000';
+    checkers.fillRect(0,0,1,1);
+    checkers.fillRect(1,1,1,1);
+
+    var imageData = checkers.getImageData(0,0,2,2);
+    assert.equal(2, imageData.width);
+    assert.equal(2, imageData.height);
+    assert.equal(16, imageData.data.length);
+
+    // (0,0) black
+    assert.equal(0, imageData.data[0]);
+    assert.equal(0, imageData.data[1]);
+    assert.equal(0, imageData.data[2]);
+    assert.equal(255, imageData.data[3]);
+
+    // (1,0) white
+    assert.equal(255, imageData.data[4]);
+    assert.equal(255, imageData.data[5]);
+    assert.equal(255, imageData.data[6]);
+    assert.equal(255, imageData.data[7]);
+
+    // (0,1) white
+    assert.equal(255, imageData.data[8]);
+    assert.equal(255, imageData.data[9]);
+    assert.equal(255, imageData.data[10]);
+    assert.equal(255, imageData.data[11]);
+    
+    // (1,1) black
+    assert.equal(0, imageData.data[12]);
+    assert.equal(0, imageData.data[13]);
+    assert.equal(0, imageData.data[14]);
+    assert.equal(255, imageData.data[15]);
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d')
+      , pattern = ctx.createPattern(pattern);
+    
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0,0,20,20);
+
+    var imageData = ctx.getImageData(0,0,20,20);
+    assert.equal(20, imageData.width);
+    assert.equal(20, imageData.height);
+    assert.equal(1600, imageData.data.length);
+
+    // (0,0) black
+    assert.equal(0, imageData.data[0]);
+    assert.equal(0, imageData.data[1]);
+    assert.equal(0, imageData.data[2]);
+    assert.equal(255, imageData.data[3]);
+
+    // (1,0) white
+    assert.equal(255, imageData.data[4]);
+    assert.equal(255, imageData.data[5]);
+    assert.equal(255, imageData.data[6]);
+    assert.equal(255, imageData.data[7]);
+
+    // (2,0) black
+    assert.equal(0, imageData.data[8]);
+    assert.equal(0, imageData.data[9]);
+    assert.equal(0, imageData.data[10]);
+    assert.equal(255, imageData.data[11]);
+    
+    // (3,0) white
+    assert.equal(255, imageData.data[12]);
+    assert.equal(255, imageData.data[13]);
+    assert.equal(255, imageData.data[14]);
+    assert.equal(255, imageData.data[15]);
+    
+  },
 }

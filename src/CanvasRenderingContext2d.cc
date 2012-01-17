@@ -14,6 +14,7 @@
 #include "ImageData.h"
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
+#include "CanvasPattern.h"
 
 Persistent<FunctionTemplate> Context2d::constructor;
 
@@ -125,6 +126,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
+  state->strokeGradient = state->strokeGradient = NULL;
   state->textBaseline = NULL;
   rgba_t transparent = { 0,0,0,1 };
   rgba_t transparent_black = { 0,0,0,0 };
@@ -218,8 +220,12 @@ Context2d::restorePath() {
 void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
-    cairo_pattern_set_filter(state->fillPattern, state->patternQuality);
-    cairo_set_source(_context, state->fillPattern);
+    cairo_set_source(_context, state->fillPattern); 
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+    // TODO repeat/repeat-x/repeat-y
+  } else if (state->fillGradient) {
+    cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
+    cairo_set_source(_context, state->fillGradient);
   } else {
     setSourceRGBA(state->fill);
   }
@@ -242,8 +248,11 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
-    cairo_pattern_set_filter(state->strokePattern, state->patternQuality);
-    cairo_set_source(_context, state->fillPattern);
+    cairo_set_source(_context, state->strokePattern); 
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+  } else if (state->strokeGradient) {
+    cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
+    cairo_set_source(_context, state->strokeGradient);
   } else {
     setSourceRGBA(state->stroke);
   }
@@ -1052,12 +1061,17 @@ Context2d::SetFillPattern(const Arguments &args) {
   HandleScope scope;
 
   Local<Object> obj = args[0]->ToObject();
-  if (!Gradient::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("Gradient expected")));
-
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
-  context->state->fillPattern = grad->pattern();
+  if (Gradient::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+    Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
+    context->state->strokeGradient = grad->pattern();
+  } else if(Pattern::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+    Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
+    context->state->fillPattern = pattern->pattern();
+  } else {
+    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+  }
   return Undefined();
 }
 
@@ -1070,12 +1084,18 @@ Context2d::SetStrokePattern(const Arguments &args) {
   HandleScope scope;
 
   Local<Object> obj = args[0]->ToObject();
-  if (!Gradient::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("Gradient expected")));
+  if (Gradient::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+    Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
+    context->state->strokeGradient = grad->pattern();
+  } else if(Pattern::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+    Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
+    context->state->strokePattern = pattern->pattern();
+  } else {
+    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
-  context->state->strokePattern = grad->pattern();
   return Undefined();
 }
 
@@ -1120,7 +1140,7 @@ Context2d::SetFillColor(const Arguments &args) {
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->state->fillPattern = NULL;
+  context->state->fillPattern = context->state->fillGradient = NULL;
   context->state->fill = rgba_create(rgba);
   return Undefined();
 }
@@ -1151,7 +1171,7 @@ Context2d::SetStrokeColor(const Arguments &args) {
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return Undefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->state->strokePattern = NULL;
+  context->state->strokePattern = context->state->strokeGradient = NULL;
   context->state->stroke = rgba_create(rgba);
   return Undefined();
 }
