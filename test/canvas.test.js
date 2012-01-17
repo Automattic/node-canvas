@@ -492,29 +492,21 @@ module.exports = {
     assert.equal(20, imageData.height);
     assert.equal(1600, imageData.data.length);
 
-    // (0,0) black
-    assert.equal(0, imageData.data[0]);
-    assert.equal(0, imageData.data[1]);
-    assert.equal(0, imageData.data[2]);
-    assert.equal(255, imageData.data[3]);
-
-    // (1,0) white
-    assert.equal(255, imageData.data[4]);
-    assert.equal(255, imageData.data[5]);
-    assert.equal(255, imageData.data[6]);
-    assert.equal(255, imageData.data[7]);
-
-    // (2,0) black
-    assert.equal(0, imageData.data[8]);
-    assert.equal(0, imageData.data[9]);
-    assert.equal(0, imageData.data[10]);
-    assert.equal(255, imageData.data[11]);
-    
-    // (3,0) white
-    assert.equal(255, imageData.data[12]);
-    assert.equal(255, imageData.data[13]);
-    assert.equal(255, imageData.data[14]);
-    assert.equal(255, imageData.data[15]);
-    
+    var i=0, b = true;
+    while(i<imageData.data.length){
+      if( b ){
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+      } else {
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+      }
+      // alternate b, except when moving to a new row
+      b = i % (imageData.width*4) == 0 ? b : !b;
+    }
   },
 }
