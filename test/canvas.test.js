@@ -509,4 +509,38 @@ module.exports = {
       b = i % (imageData.width*4) == 0 ? b : !b;
     }
   },
+
+  'test Context2d#createPattern(Image)': function(){
+    var img = new Canvas.Image();
+    img.src = __dirname + '/fixtures/checkers.png';
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d')
+      , pattern = ctx.createPattern(img);
+    
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0,0,20,20);
+    
+    var imageData = ctx.getImageData(0,0,20,20);
+    assert.equal(20, imageData.width);
+    assert.equal(20, imageData.height);
+    assert.equal(1600, imageData.data.length);
+
+    var i=0, b = true;
+    while(i<imageData.data.length){
+      if( b ){
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(  0, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+      } else {
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+        assert.equal(255, imageData.data[i++]);
+      }
+      // alternate b, except when moving to a new row
+      b = i % (imageData.width*4) == 0 ? b : !b;
+    }
+  }
 }
