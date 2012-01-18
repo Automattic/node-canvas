@@ -126,7 +126,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->globalAlpha = 1;
   state->textAlignment = -1;
   state->fillPattern = state->strokePattern = NULL;
-  state->strokeGradient = state->strokeGradient = NULL;
+  state->fillGradient = state->strokeGradient = NULL;
   state->textBaseline = NULL;
   rgba_t transparent = { 0,0,0,1 };
   rgba_t transparent_black = { 0,0,0,0 };
@@ -1064,7 +1064,7 @@ Context2d::SetFillPattern(const Arguments &args) {
   if (Gradient::constructor->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
-    context->state->strokeGradient = grad->pattern();
+    context->state->fillGradient = grad->pattern();
   } else if(Pattern::constructor->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
