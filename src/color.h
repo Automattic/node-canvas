@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stddef.h>
 
 /*
  * RGBA struct.
@@ -31,7 +32,7 @@ int32_t
 rgba_from_string(const char *str, short *ok);
 
 void
-rgba_to_string(rgba_t rgba, char *buf);
+rgba_to_string(rgba_t rgba, char *buf, size_t buf_size);
 
 void
 rgba_inspect(int32_t rgba);

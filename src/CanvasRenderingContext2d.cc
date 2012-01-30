@@ -1123,7 +1123,7 @@ Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->shadow, buf);
+  rgba_to_string(context->state->shadow, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
@@ -1154,7 +1154,7 @@ Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->fill, buf);
+  rgba_to_string(context->state->fill, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
@@ -1185,7 +1185,7 @@ Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->stroke, buf);
+  rgba_to_string(context->state->stroke, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
