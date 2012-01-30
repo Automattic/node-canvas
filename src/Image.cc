@@ -619,11 +619,17 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // Data alloc
   int stride = width * 4;
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) {
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
+	return CAIRO_STATUS_NO_MEMORY;
+  }
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
   if (!src) {
     free(data);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -683,11 +689,19 @@ Image::loadJPEG(FILE *stream) {
   // Data alloc
   int stride = width * 4;
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) {
+	fclose(stream);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
+	return CAIRO_STATUS_NO_MEMORY;
+  }
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
   if (!src) {
     free(data);
+	fclose(stream);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
