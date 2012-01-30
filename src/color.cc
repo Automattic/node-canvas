@@ -251,14 +251,14 @@ rgba_create(uint32_t rgba) {
  */
 
 void
-rgba_to_string(rgba_t rgba, char *buf) {
+rgba_to_string(rgba_t rgba, char *buf, size_t buf_size) {
   if (1 == rgba.a) {
-    sprintf(buf, "#%.2x%.2x%.2x"
+    snprintf(buf, buf_size, "#%.2x%.2x%.2x"
       , (int) (rgba.r * 255)
       , (int) (rgba.g * 255)
       , (int) (rgba.b * 255));
   } else {
-    sprintf(buf, "rgba(%d, %d, %d, %.2f)"
+    snprintf(buf, buf_size, "rgba(%d, %d, %d, %.2f)"
       , (int) (rgba.r * 255)
       , (int) (rgba.g * 255)
       , (int) (rgba.b * 255)
