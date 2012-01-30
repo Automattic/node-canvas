@@ -400,7 +400,13 @@ Image::loadGIF(FILE *stream) {
   int len = ftell(stream);
   fseek(stream, 0L, SEEK_SET);
 
-  uint8_t *buf = (uint8_t *) malloc(len);
+  uint8_t *buf;
+
+  // Olaf (2011-09-20): fix for zero length files (implementation defined behaviour of malloc(0)).
+  if(len > 0)
+	buf = (uint8_t *) malloc(len);
+  else
+	buf = 0;
 
   if (!buf) {
     fclose(stream);
