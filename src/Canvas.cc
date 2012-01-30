@@ -123,10 +123,11 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
-    unsigned max = closure->max_len;
+    unsigned max;
   
     // round to the nearest multiple of 1024 bytes
-    max = (closure->max_len + len + 1023) & ~1023;
+	// Olaf (2011-04-27): don't grow too fast
+    max = (closure->len + len + 1023) & ~1023;
   
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
