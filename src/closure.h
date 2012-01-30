@@ -32,6 +32,9 @@ closure_init(closure_t *closure, Canvas *canvas) {
   closure->canvas = canvas;
   closure->data = (uint8_t *) malloc(closure->max_len = 1024);
   if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
+  // Olaf (2011-04-27): make sure that the allocation size tracked
+  //                    matches what closure_destroy() will submit
+  V8::AdjustAmountOfExternalAllocatedMemory(closure->max_len);
   return CAIRO_STATUS_SUCCESS;
 }
 
