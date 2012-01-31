@@ -82,6 +82,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
          sizeof(closure_destination_mgr));
   }
   
+  /* Olaf: memory allocation failure not checked */
   dest  = (closure_destination_mgr *) cinfo->dest;
 
   cinfo->dest->init_destination = &init_closure_destination;
@@ -91,6 +92,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
   dest->closure = closure;
   dest->bufsize = bufsize;
   dest->buffer = (JOCTET *)malloc(bufsize);
+  /* Olaf: memory allocation failure not checked */
 
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
@@ -119,6 +121,7 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure
   unsigned int *src = (unsigned int *) cairo_image_surface_get_data(surface);
   int sl = 0;
   dst = (unsigned char *) malloc(w * 3);
+  /* Olaf: memory allocation failure not checked */
   while (sl < h) {
     unsigned char *dp = dst;
     int x = 0;
