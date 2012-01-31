@@ -1,4 +1,12 @@
 
+0.10.1 / 2012-01-31 
+==================
+
+  * Added _/opt/local/lib_ to wscript [obarthel]
+  * Added bounds checking to `rgba_to_string()` [obarthel]
+  * Fixed cleanup in JPEG Image loading [obarthel]
+  * Fixed missing CSS color table values [obarthel]
+
 0.10.0 / 2012-01-18 
 ==================
 
