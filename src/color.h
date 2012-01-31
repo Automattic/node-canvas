@@ -32,7 +32,7 @@ int32_t
 rgba_from_string(const char *str, short *ok);
 
 void
-rgba_to_string(rgba_t rgba, char *buf, size_t buf_size);
+rgba_to_string(rgba_t rgba, char *buf, size_t len);
 
 void
 rgba_inspect(int32_t rgba);
