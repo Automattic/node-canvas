@@ -79,6 +79,8 @@ void
 Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+    // Olaf (2011-04-27): update the hint for the GC before the size is changed
+    V8::AdjustAmountOfExternalAllocatedMemory(-4 * canvas->width * canvas->height);
     canvas->width = val->Uint32Value();
     canvas->resurface(info.This());
   }
@@ -103,6 +105,8 @@ void
 Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+    // Olaf (2011-04-27): update the hint for the GC before the size is changed
+    V8::AdjustAmountOfExternalAllocatedMemory(-4 * canvas->width * canvas->height);
     canvas->height = val->Uint32Value();
     canvas->resurface(info.This());
   }
@@ -119,10 +123,11 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
-    unsigned max = closure->max_len;
+    unsigned max;
   
     // round to the nearest multiple of 1024 bytes
-    max = (closure->max_len + len + 1023) & ~1023;
+	// Olaf (2011-04-27): don't grow too fast
+    max = (closure->len + len + 1023) & ~1023;
   
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
@@ -198,7 +203,12 @@ Canvas::ToBuffer(const Arguments &args) {
 
   // Async
   if (args[0]->IsFunction()) {
-    closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
+    closure_t * closure;
+
+    closure = (closure_t *) malloc(sizeof(closure_t));
+    if(closure == NULL)
+		return Canvas::Error(CAIRO_STATUS_NO_MEMORY);
+
     status = closure_init(closure, canvas);
 
     // ensure closure is ok
@@ -340,6 +350,8 @@ Canvas::Canvas(int w, int h): ObjectWrap() {
  */
 
 Canvas::~Canvas() {
+  // Olaf (2011-04-27): update the hint for the GC
+  V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
   cairo_surface_destroy(_surface);
 }
 
@@ -350,11 +362,9 @@ Canvas::~Canvas() {
 void
 Canvas::resurface(Handle<Object> canvas) {
   // Re-surface
-  int old_width = cairo_image_surface_get_width(_surface);
-  int old_height = cairo_image_surface_get_height(_surface);
   cairo_surface_destroy(_surface);
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
+  V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
 
   // Reset context
   Handle<Value> context = canvas->Get(String::New("context"));

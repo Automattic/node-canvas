@@ -154,12 +154,12 @@ Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
 
 cairo_status_t
 Image::loadFromBuffer(uint8_t *buf, unsigned len) {
-  if (isPNG(buf)) return loadPNGFromBuffer(buf);
+  if (isPNG(buf,len)) return loadPNGFromBuffer(buf);
 #ifdef HAVE_GIF
-  if (isGIF(buf)) return loadGIFFromBuffer(buf, len);
+  if (isGIF(buf,len)) return loadGIFFromBuffer(buf, len);
 #endif
 #ifdef HAVE_JPEG
-  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);
+  if (isJPEG(buf,len)) return loadJPEGFromBuffer(buf, len);
 #endif
   return CAIRO_STATUS_READ_ERROR;
 }
@@ -329,19 +329,19 @@ Image::loadSurface() {
   fseek(stream, 0, SEEK_SET);
 
   // png
-  if (isPNG(buf)) {
+  if (isPNG(buf,(unsigned)sizeof(buf))) {
     fclose(stream);
     return loadPNG();
   }
 
   // gif
 #ifdef HAVE_GIF
-  if (isGIF(buf)) return loadGIF(stream);
+  if (isGIF(buf,(unsigned)sizeof(buf))) return loadGIF(stream);
 #endif
 
   // jpeg
 #ifdef HAVE_JPEG
-  if (isJPEG(buf)) return loadJPEG(stream);
+  if (isJPEG(buf,(unsigned)sizeof(buf))) return loadJPEG(stream);
 #endif
 
   return CAIRO_STATUS_READ_ERROR;
@@ -400,7 +400,13 @@ Image::loadGIF(FILE *stream) {
   int len = ftell(stream);
   fseek(stream, 0L, SEEK_SET);
 
-  uint8_t *buf = (uint8_t *) malloc(len);
+  uint8_t *buf;
+
+  // Olaf (2011-09-20): fix for zero length files (implementation defined behaviour of malloc(0)).
+  if(len > 0)
+	buf = (uint8_t *) malloc(len);
+  else
+	buf = 0;
 
   if (!buf) {
     fclose(stream);
@@ -613,11 +619,17 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // Data alloc
   int stride = width * 4;
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) {
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
+	return CAIRO_STATUS_NO_MEMORY;
+  }
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
   if (!src) {
     free(data);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -677,11 +689,19 @@ Image::loadJPEG(FILE *stream) {
   // Data alloc
   int stride = width * 4;
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) {
+	fclose(stream);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
+	return CAIRO_STATUS_NO_MEMORY;
+  }
   
   uint8_t *src = (uint8_t *) malloc(width * 3);
   if (!src) {
     free(data);
+	fclose(stream);
+	jpeg_finish_decompress(&info);
+	jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -744,8 +764,8 @@ Image::extension(const char *filename) {
  */
 
 int
-Image::isJPEG(uint8_t *data) {
-  return 0xff == data[0] && 0xd8 == data[1];
+Image::isJPEG(uint8_t *data, unsigned len) {
+  return len >= 2 && 0xff == data[0] && 0xd8 == data[1];
 }
 
 /*
@@ -753,8 +773,8 @@ Image::isJPEG(uint8_t *data) {
  */
 
 int
-Image::isGIF(uint8_t *data) {
-  return 'G' == data[0] && 'I' == data[1] && 'F' == data[2];
+Image::isGIF(uint8_t *data, unsigned len) {
+  return len >= 3 && 'G' == data[0] && 'I' == data[1] && 'F' == data[2];
 }
 
 /*
@@ -762,6 +782,6 @@ Image::isGIF(uint8_t *data) {
  */
 
 int
-Image::isPNG(uint8_t *data) {
-  return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
+Image::isPNG(uint8_t *data, unsigned len) {
+  return len >= 4 && 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
 }

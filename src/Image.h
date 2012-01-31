@@ -31,9 +31,9 @@ class Image: public node::ObjectWrap {
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
-    static int isPNG(uint8_t *data);
-    static int isJPEG(uint8_t *data);
-    static int isGIF(uint8_t *data);
+    static int isPNG(uint8_t *data, unsigned len);
+    static int isJPEG(uint8_t *data, unsigned len);
+    static int isGIF(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
     cairo_status_t loadSurface();

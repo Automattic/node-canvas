@@ -120,6 +120,10 @@ Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = cairo_create(canvas->surface());
   cairo_set_line_width(_context, 1);
+  /* Olaf: set the state table contents to well-defined values. */
+  memset(states,0,sizeof(states));
+
+  /* Olaf: handle malloc() failure how? */
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
   state->shadowOffsetX = state->shadowOffsetY = 0;
@@ -141,8 +145,12 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
+  canvas_state_t * st;
   while(stateno >= 0) {
-    free(states[stateno--]);
+    /* Olaf: any one of these entries might be NULL. */
+	st = states[stateno--];
+	if(st != NULL)
+      free(st);
   }
   cairo_destroy(_context);
 }
@@ -173,10 +181,16 @@ Context2d::restore() {
 
 void
 Context2d::saveState() {
+  canvas_state_t * st;
   if (stateno == CANVAS_MAX_STATES) return;
-  states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  memcpy(states[stateno], state, sizeof(canvas_state_t));
-  state = states[stateno];
+
+  st = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+  /* Olaf: handle malloc() failure how? */
+  if(st != NULL) {
+    states[++stateno] = st;
+    memcpy(states[stateno], state, sizeof(canvas_state_t));
+    state = states[stateno];
+  }
 }
 
 /*
@@ -186,9 +200,12 @@ Context2d::saveState() {
 void
 Context2d::restoreState() {
   if (0 == stateno) return;
-  // Olaf (2011-02-21): Free old state data
-  free(states[stateno]);
-  states[stateno] = NULL;
+
+  if (states[stateno] != NULL) {
+    free(states[stateno]);
+    states[stateno] = NULL;
+  }
+
   state = states[--stateno];
 }
 
@@ -219,6 +236,9 @@ Context2d::restorePath() {
 
 void
 Context2d::fill(bool preserve) {
+  /* Olaf: handle malloc() failure how? */
+  if (state == NULL) return;
+
   if (state->fillPattern) {
     cairo_set_source(_context, state->fillPattern); 
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
@@ -247,6 +267,9 @@ Context2d::fill(bool preserve) {
 
 void
 Context2d::stroke(bool preserve) {
+  /* Olaf: handle malloc() failure how? */
+  if (state == NULL) return;
+
   if (state->strokePattern) {
     cairo_set_source(_context, state->strokePattern); 
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
@@ -274,6 +297,9 @@ Context2d::stroke(bool preserve) {
 
 void
 Context2d::shadow(void (fn)(cairo_t *cr)) {
+  /* Olaf: handle malloc() failure how? */
+  if (state == NULL) return;
+
   cairo_path_t *path = cairo_copy_path_flat(_context);
   cairo_save(_context);
 
@@ -314,6 +340,9 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
 
 void
 Context2d::setSourceRGBA(rgba_t color) {
+  /* Olaf: handle malloc() failure how? */
+  if (state == NULL) return;
+
   cairo_set_source_rgba(
       _context
     , color.r
@@ -328,7 +357,8 @@ Context2d::setSourceRGBA(rgba_t color) {
 
 bool
 Context2d::hasShadow() {
-  return state->shadow.a
+  /* Olaf: handle malloc() failure how? */
+  return state != NULL && state->shadow.a
     && (state->shadowBlur || state->shadowOffsetX || state->shadowOffsetX);
 }
 
@@ -1123,7 +1153,7 @@ Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->shadow, buf);
+  rgba_to_string(context->state->shadow, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
@@ -1154,7 +1184,7 @@ Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->fill, buf);
+  rgba_to_string(context->state->fill, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
@@ -1185,7 +1215,7 @@ Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  rgba_to_string(context->state->stroke, buf);
+  rgba_to_string(context->state->stroke, buf, sizeof(buf));
   return scope.Close(String::New(buf));
 }
 
@@ -1468,6 +1498,9 @@ void
 Context2d::setTextPath(const char *str, double x, double y) {
   cairo_text_extents_t te;
   cairo_font_extents_t fe;
+
+  /* Olaf: handle malloc() failure how? */
+  if (state == NULL) return;
 
   // Alignment
   switch (state->textAlignment) {
