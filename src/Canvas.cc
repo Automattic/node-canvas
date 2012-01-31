@@ -203,7 +203,12 @@ Canvas::ToBuffer(const Arguments &args) {
 
   // Async
   if (args[0]->IsFunction()) {
-    closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
+    closure_t * closure;
+
+    closure = (closure_t *) malloc(sizeof(closure_t));
+    if(closure == NULL)
+		return Canvas::Error(CAIRO_STATUS_NO_MEMORY);
+
     status = closure_init(closure, canvas);
 
     // ensure closure is ok
