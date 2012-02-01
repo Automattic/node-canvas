@@ -9,7 +9,7 @@
    "preinstall": "node-waf configure build"
  }
  , "devDependencies": {
-     "express": "2.3.7"
+     "express": ">= 2.3.7 && < 3.0.0"
    , "jade": "0.11.0"
    , "mocha": "*"
    , "should": "*"
