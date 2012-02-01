@@ -396,22 +396,27 @@ read_gif_from_memory(GifFileType *gif, GifByteType *buf, int len) {
 
 cairo_status_t
 Image::loadGIF(FILE *stream) {
-  fseek(stream, 0L, SEEK_END);
-  int len = ftell(stream);
-  fseek(stream, 0L, SEEK_SET);
+  struct stat s;
+  int fd = fileno(stream);
 
-  uint8_t *buf = (uint8_t *) malloc(len);
+  // stat
+  if (fstat(fd, &s) < 0) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  } 
+
+  uint8_t *buf = (uint8_t *) malloc(s.st_size);
 
   if (!buf) {
     fclose(stream);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  size_t read = fread(buf, len, 1, stream);
+  size_t read = fread(buf, s.st_size, 1, stream);
   fclose(stream);
 
   cairo_status_t result = CAIRO_STATUS_READ_ERROR;
-  if (1 == read) result = loadGIFFromBuffer(buf, len);
+  if (1 == read) result = loadGIFFromBuffer(buf, s.st_size);
   free(buf);
 
   return result;
