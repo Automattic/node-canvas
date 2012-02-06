@@ -1,4 +1,10 @@
 
+0.10.2 / 2012-02-06 
+==================
+
+  * Fixed: Context2d setters with invalid values ignored
+  * Changed: replaced seek with `fstat()`
+
 0.10.1 / 2012-01-31 
 ==================
 
