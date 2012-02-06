@@ -1,9 +1,9 @@
 {  "name": "canvas"
  , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "0.10.1"
+ , "version":  "0.10.2"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics", "pixman", "cairo", "image", "images"]
-  , "homepage": "https://github.com/learnboost/node-canvas"
+ , "homepage": "https://github.com/learnboost/node-canvas"
  , "repository": "git://github.com/learnboost/node-canvas"
  , "scripts": {
    "preinstall": "node-waf configure build"
