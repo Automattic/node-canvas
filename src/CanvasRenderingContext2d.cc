@@ -119,6 +119,7 @@ Context2d::Initialize(Handle<Object> target) {
 Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = cairo_create(canvas->surface());
+  _layout = pango_cairo_create_layout(_context);
   cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
@@ -128,6 +129,11 @@ Context2d::Context2d(Canvas *canvas) {
   state->fillPattern = state->strokePattern = NULL;
   state->fillGradient = state->strokeGradient = NULL;
   state->textBaseline = NULL;
+  state->fontWeight[0] = '\0';
+  state->fontStyle[0] = '\0';
+  state->fontSize = 10;
+  state->fontUnit[0] = '\0';
+  state->fontFamily[0] = '\0'; // fill with zero byte so strlen returns length of 0
   rgba_t transparent = { 0,0,0,1 };
   rgba_t transparent_black = { 0,0,0,0 };
   state->fill = transparent;
@@ -190,6 +196,7 @@ Context2d::restoreState() {
   free(states[stateno]);
   states[stateno] = NULL;
   state = states[--stateno];
+  setFontFromState();
 }
 
 /*
@@ -1466,50 +1473,47 @@ Context2d::StrokeText(const Arguments &args) {
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
-  cairo_text_extents_t te;
-  cairo_font_extents_t fe;
-
+    
+  pango_layout_set_text(_layout, str, -1);
+  int width, height;
+  pango_cairo_update_layout(_context, _layout);
+  pango_layout_get_pixel_size(_layout, &width, &height);  
+  int baseline = pango_layout_get_baseline(_layout) / PANGO_SCALE;
   // Alignment
+
   switch (state->textAlignment) {
     // center
     case 0:
-      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
-      cairo_text_extents(_context, str, &te);
-      x -= te.width / 2;
-      break;
+	x -= width / 2;
+	break;
     // right
     case 1:
-      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
-      cairo_text_extents(_context, str, &te);
-      x -= te.width;
-      break;
+	x -= width;
+        break;
   }
 
-  // Baseline approx
+  y -= baseline;
+
   switch (state->textBaseline) {
     case TEXT_BASELINE_TOP:
+      y += baseline; 
+      break;
     case TEXT_BASELINE_HANGING:
-      // Olaf (2011-02-26): fe.ascent approximates the distance between
-      // the top of the em square and the alphabetic baseline
-      cairo_font_extents(_context, &fe);
-      y += fe.ascent;
+      y += state->fontAscent; 
+      break;
+    case TEXT_BASELINE_IDEOGRAPHIC:
       break;
     case TEXT_BASELINE_MIDDLE:
-      // Olaf (2011-02-26): fe.ascent approximates the distance between
-      // the top of the em square and the alphabetic baseline
-      cairo_font_extents(_context, &fe);
-      y += fe.ascent / 2;
+      y += state->fontAscent / 2;
       break;
     case TEXT_BASELINE_BOTTOM:
-      // Olaf (2011-02-26): we need to know the distance between the alphabetic
-      // baseline and the bottom of the em square
-      cairo_font_extents(_context, &fe);
-      y -= fe.height - fe.ascent;
+      y -= state->fontDescent;
       break;
   }
 
+  // Draw it as a path
   cairo_move_to(_context, x, y);
-  cairo_text_path(_context, str);
+  pango_cairo_layout_path(_context, _layout);
 }
 
 /*
@@ -1555,13 +1559,87 @@ Context2d::MoveTo(const Arguments &args) {
 }
 
 /*
- * Set font:
+ * Set font from the state:
  *   - weight
  *   - style
  *   - size
  *   - unit
  *   - family
  */
+
+void Context2d::setFontFromState() {
+  PangoFontDescription *fontDesc = pango_font_description_new();
+  // Family
+  if (strlen(state->fontFamily) > 0) {
+    pango_font_description_set_family(fontDesc, state->fontFamily);
+  }
+  
+  // Size 
+  if (state->fontSize > 0) {
+    pango_font_description_set_absolute_size(fontDesc, state->fontSize * PANGO_SCALE);
+  }
+
+
+  //Style
+  if (strlen(state->fontStyle) > 0) {
+    PangoStyle st = PANGO_STYLE_NORMAL;  
+    if (0 == strcmp("italic", state->fontStyle)) {
+      st = PANGO_STYLE_ITALIC;
+    } else if (0 == strcmp("oblique", state->fontStyle)) {
+      st = PANGO_STYLE_OBLIQUE;
+    }
+    pango_font_description_set_style(fontDesc, st);
+  }
+
+  if (strlen(state->fontWeight) > 0) {
+    // Weight
+    PangoWeight w = PANGO_WEIGHT_NORMAL;
+    if (0 == strcmp("bold", state->fontWeight)) {
+      w = PANGO_WEIGHT_BOLD;
+    } else if (0 == strcmp("200", state->fontWeight)) {
+      w = PANGO_WEIGHT_ULTRALIGHT;
+    } else if (0 == strcmp("300",state->fontWeight)) {
+      w = PANGO_WEIGHT_LIGHT;
+    } else if (0 == strcmp("400",state->fontWeight)) {
+      w = PANGO_WEIGHT_NORMAL;
+    } else if (0 == strcmp("500",state->fontWeight)) {
+      w = PANGO_WEIGHT_MEDIUM;
+    } else if (0 == strcmp("600",state->fontWeight)) {
+      w = PANGO_WEIGHT_SEMIBOLD;
+    } else if (0 == strcmp("700",state->fontWeight)) {
+      w = PANGO_WEIGHT_BOLD;
+    } else if (0 == strcmp("800",state->fontWeight)) {
+      w = PANGO_WEIGHT_ULTRABOLD;
+    } else if (0 == strcmp("900",state->fontWeight)) {
+      w = PANGO_WEIGHT_HEAVY;
+    }
+    pango_font_description_set_weight(fontDesc, w);
+  }  
+  
+  pango_layout_set_font_description(_layout, fontDesc);
+  pango_font_description_free(fontDesc);
+  // calculating ascent & descent
+  // I know this can be calculated in a standard pango way
+  // but in my testing the result were so off with the browser canvas
+  // that I decided to calculate them these way
+  // of course, no international support now, I know ...
+  pango_layout_set_text(_layout,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", -1);
+  PangoRectangle extents;
+  pango_layout_get_pixel_extents(_layout, &extents, NULL);
+  int baseline = pango_layout_get_baseline(_layout) / PANGO_SCALE;
+  state->fontDescent = extents.height + extents.y - baseline; 
+  state->fontAscent = baseline - extents.y;
+   
+  // Default way to get ascent and descent ...
+  /*PangoContext *context = pango_layout_get_context(_layout);
+  PangoLanguage *language = pango_context_get_language(context);
+  PangoFontMetrics * fm = pango_context_get_metrics(context, fontDesc, language);
+  
+  state->fontAscent = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
+  state->fontDescent = pango_font_metrics_get_descent(fm)/PANGO_SCALE;*/
+
+}
+  
 
 Handle<Value>
 Context2d::SetFont(const Arguments &args) {
@@ -1574,34 +1652,17 @@ Context2d::SetFont(const Arguments &args) {
     || !args[3]->IsString()
     || !args[4]->IsString()) return Undefined();
 
-  String::AsciiValue weight(args[0]);
-  String::AsciiValue style(args[1]);
-  double size = args[2]->NumberValue();
-  String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
-  
+  // save arguments to state
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->context();
-
-  // Size
-  cairo_set_font_size(ctx, size);
-
-  // Style
-  cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
-  if (0 == strcmp("italic", *style)) {
-    s = CAIRO_FONT_SLANT_ITALIC;
-  } else if (0 == strcmp("oblique", *style)) {
-    s = CAIRO_FONT_SLANT_OBLIQUE;
-  }
-
-  // Weight
-  cairo_font_weight_t w = CAIRO_FONT_WEIGHT_NORMAL;
-  if (0 == strcmp("bold", *weight)) {
-    w = CAIRO_FONT_WEIGHT_BOLD;
-  }
-
-  cairo_select_font_face(ctx, *family, s, w);
+  args[0]->ToString()->WriteAscii(context->state->fontWeight);
+  args[1]->ToString()->WriteAscii(context->state->fontStyle);
+  context->state->fontSize = args[2]->NumberValue();
+  args[3]->ToString()->WriteAscii(context->state->fontUnit);
+  args[4]->ToString()->WriteAscii(context->state->fontFamily);
   
+  // set font from state
+  context->setFontFromState();
+
   return Undefined();
 }
 
@@ -1615,13 +1676,16 @@ Context2d::MeasureText(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
+  PangoLayout *layout = context->layout();
 
   String::Utf8Value str(args[0]->ToString());
   Local<Object> obj = Object::New();
-
-  cairo_text_extents_t te;
-  cairo_text_extents(ctx, *str, &te);
-  obj->Set(String::New("width"), Number::New(te.x_advance));
+  
+  pango_layout_set_text(layout, *str, -1);
+  int width, height;
+  pango_cairo_update_layout(ctx, layout);
+  pango_layout_get_pixel_size(layout, &width, &height);  
+  obj->Set(String::New("width"), Number::New(width));
 
   return scope.Close(obj);
 }

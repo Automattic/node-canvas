@@ -8,6 +8,7 @@
 #ifndef __NODE_CONTEXT2D_H__
 #define __NODE_CONTEXT2D_H__
 
+#include <string>
 #include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
@@ -30,6 +31,13 @@ typedef struct {
   float globalAlpha;
   short textAlignment;
   short textBaseline;
+  char fontWeight[5];
+  char fontStyle[20];
+  double fontSize;
+  char fontUnit[5];
+  char fontFamily[100];
+  int fontAscent;
+  int fontDescent;
   rgba_t shadow;
   int shadowBlur;
   double shadowOffsetX;
@@ -108,9 +116,11 @@ class Context2d: public node::ObjectWrap {
     static void SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
+    inline PangoLayout *layout(){ return _layout; }
     inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
+    void setFontFromState();
     void setTextPath(const char *str, double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
@@ -130,6 +140,7 @@ class Context2d: public node::ObjectWrap {
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
+    PangoLayout *_layout;
 };
 
 #endif
