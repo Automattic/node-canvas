@@ -45,6 +45,10 @@ class Canvas: public node::ObjectWrap {
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Handle<Value> StreamJPEGSync(const Arguments &args);
     static Local<Value> Error(cairo_status_t status);
+#if NODE_VERSION_AT_LEAST(0, 6, 0)
+    static void ToBufferAsync(uv_work_t *req);
+    static void ToBufferAsyncAfter(uv_work_t *req);
+#else
     static
 #if NODE_VERSION_AT_LEAST(0, 5, 4)
       void
@@ -53,6 +57,8 @@ class Canvas: public node::ObjectWrap {
 #endif
       EIO_ToBuffer(eio_req *req);
     static int EIO_AfterToBuffer(eio_req *req);
+#endif
+
     inline cairo_surface_t *surface(){ return _surface; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
