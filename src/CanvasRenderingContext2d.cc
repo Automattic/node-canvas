@@ -1240,6 +1240,11 @@ Context2d::QuadraticCurveTo(const Arguments &args) {
 
   cairo_get_current_point(ctx, &x, &y);
 
+  if (0 == x && 0 == y) {
+    x = x1;
+    y = y1;
+  }
+
   cairo_curve_to(ctx
     , x  + 2.0 / 3.0 * (x1 - x),  y  + 2.0 / 3.0 * (y1 - y)
     , x2 + 2.0 / 3.0 * (x1 - x2), y2 + 2.0 / 3.0 * (y1 - y2)
