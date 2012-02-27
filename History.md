@@ -1,4 +1,9 @@
 
+0.10.3 / 2012-02-27 
+==================
+
+  * Fixed quadratic curve starting point for undefined path. Closes #155
+
 0.10.2 / 2012-02-06 
 ==================
 

@@ -1,6 +1,6 @@
 {  "name": "canvas"
  , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "0.10.2"
+ , "version":  "0.10.3"
  , "author": "TJ Holowaychuk <tj@learnboost.com>"
  , "keywords": ["canvas", "graphic", "graphics", "pixman", "cairo", "image", "images"]
  , "homepage": "https://github.com/learnboost/node-canvas"
