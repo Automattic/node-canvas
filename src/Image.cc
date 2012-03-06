@@ -1,4 +1,3 @@
-
 //
 // Image.cc
 //
@@ -661,8 +660,8 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   jpeg_destroy_decompress(&info);
   cairo_status_t status = cairo_surface_status(_surface);
 
+  free(data);
   if (status) {
-    free(data);
     return status;
   }
 
