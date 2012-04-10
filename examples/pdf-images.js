@@ -36,5 +36,10 @@ img('examples/images/squid.png');
 p('Figure 1.0 - Some squid thing');
 ctx.nextPage();
 
+reset();
+h1('Lime cat');
+img('examples/images/lime-cat.jpg');
+p('Figure 1.1 - Lime cat is awesome');
+
 fs.writeFile('out.pdf', canvas.toBuffer());
 console.log('created out.pdf');
