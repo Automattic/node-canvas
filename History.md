@@ -1,4 +1,13 @@
 
+0.11.0 / 2012-04-10 
+==================
+
+  * Added quick PDF support
+  * Added `Canvas#type` getter
+  * Added ./examples/pdf-images.js
+  * Added ./examples/multiple-page-pdf.js
+  * Added ./examples/small-pdf.js
+
 0.10.3 / 2012-02-27 
 ==================
 
