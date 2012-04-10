@@ -170,21 +170,21 @@ ctx.antialias = 'none';
 var canvas = new Canvas(200, 500, 'pdf');
 ```
 
- An additional method `.nextPage()` is then available to create 
+ An additional method `.addPage()` is then available to create 
  multiple page PDFs:
 
 ```js
 ctx.font = '22px Helvetica';
 ctx.fillText('Hello World', 50, 80);
-ctx.nextPage();
+ctx.addPage();
 
 ctx.font = '22px Helvetica';
 ctx.fillText('Hello World 2', 50, 80);
-ctx.nextPage();
+ctx.addPage();
 
 ctx.font = '22px Helvetica';
 ctx.fillText('Hello World 3', 50, 80);
-ctx.nextPage();
+ctx.addPage();
 ```
 
 ## Benchmarks
