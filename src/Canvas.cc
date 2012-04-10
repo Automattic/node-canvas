@@ -41,6 +41,7 @@ Canvas::Initialize(Handle<Object> target) {
 #ifdef HAVE_JPEG
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
 #endif
+  proto->SetAccessor(String::NewSymbol("type"), GetType);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
@@ -63,6 +64,17 @@ Canvas::New(const Arguments &args) {
   Canvas *canvas = new Canvas(width, height, type);
   canvas->Wrap(args.This());
   return args.This();
+}
+
+/*
+ * Get type string.
+ */
+
+Handle<Value>
+Canvas::GetType(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+  return scope.Close(String::New(canvas->isPDF() ? "pdf" : "image"));
 }
 
 /*

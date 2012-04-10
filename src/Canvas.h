@@ -48,6 +48,7 @@ class Canvas: public node::ObjectWrap {
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> ToBuffer(const Arguments &args);
+    static Handle<Value> GetType(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
     static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);

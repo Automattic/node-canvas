@@ -157,7 +157,16 @@ module.exports = {
     ctx.fillStyle = 'rgba(0, 0, 0, 42.42)';
     assert.equal('#000000', ctx.fillStyle);
   },
-  
+
+  'test Canvas#type': function(){
+    var canvas = new Canvas(10, 10);
+    assert('image' == canvas.type);
+    var canvas = new Canvas(10, 10, 'pdf');
+    assert('pdf' == canvas.type);
+    var canvas = new Canvas(10, 10, 'hey');
+    assert('image' == canvas.type);
+  },
+
   'test Canvas#getContext("2d")': function(){
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');
