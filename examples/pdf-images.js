@@ -34,14 +34,14 @@ h1('PDF image demo');
 p('This is an image embedded in a PDF');
 img('examples/images/squid.png');
 p('Figure 1.0 - Some squid thing');
-ctx.nextPage();
+ctx.addPage();
 
 reset();
 h1('Lime cat');
 p('This is a pretty sweet cat');
 img('examples/images/lime-cat.jpg');
 p('Figure 1.1 - Lime cat is awesome');
-ctx.nextPage();
+ctx.addPage();
 
 fs.writeFile('out.pdf', canvas.toBuffer());
 console.log('created out.pdf');

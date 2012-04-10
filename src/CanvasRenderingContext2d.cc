@@ -62,7 +62,7 @@ Context2d::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "nextPage", NextPage);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "addPage", AddPage);
   NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
@@ -417,7 +417,7 @@ Context2d::New(const Arguments &args) {
  */
 
 Handle<Value>
-Context2d::NextPage(const Arguments &args) {
+Context2d::AddPage(const Arguments &args) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   if (!context->canvas()->isPDF()) {

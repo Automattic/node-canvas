@@ -57,7 +57,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> IsPointInPath(const Arguments &args);
     static Handle<Value> BeginPath(const Arguments &args);
     static Handle<Value> ClosePath(const Arguments &args);
-    static Handle<Value> NextPage(const Arguments &args);
+    static Handle<Value> AddPage(const Arguments &args);
     static Handle<Value> Clip(const Arguments &args);
     static Handle<Value> Fill(const Arguments &args);
     static Handle<Value> Stroke(const Arguments &args);
