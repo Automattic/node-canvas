@@ -38,8 +38,10 @@ ctx.nextPage();
 
 reset();
 h1('Lime cat');
+p('This is a pretty sweet cat');
 img('examples/images/lime-cat.jpg');
 p('Figure 1.1 - Lime cat is awesome');
+ctx.nextPage();
 
 fs.writeFile('out.pdf', canvas.toBuffer());
 console.log('created out.pdf');
