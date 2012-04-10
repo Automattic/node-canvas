@@ -161,6 +161,32 @@ In addition to those specified and commonly implemented by browsers, the followi
 ctx.antialias = 'none';
 ```
 
+## PDF Support
+
+  Basic PDF support was added in 0.11.0. Make sure to install cairo with `--enable-pdf=yes` for the PDF backend. node-canvas must know that it is creating
+  a PDF on initialization, using the "pdf" string:
+
+```js
+var canvas = new Canvas(200, 500, 'pdf');
+```
+
+ An additional method `.nextPage()` is then available to create 
+ multiple page PDFs:
+
+```js
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World', 50, 80);
+ctx.nextPage();
+
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World 2', 50, 80);
+ctx.nextPage();
+
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World 3', 50, 80);
+ctx.nextPage();
+```
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
