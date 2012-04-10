@@ -12,6 +12,7 @@
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>
+#include <cairo-pdf.h>
 #include "closure.h"
 
 #ifdef HAVE_JPEG
@@ -53,9 +54,13 @@ Handle<Value>
 Canvas::New(const Arguments &args) {
   HandleScope scope;
   int width = 0, height = 0;
+  canvas_type_t type = CANVAS_TYPE_IMAGE;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  Canvas *canvas = new Canvas(width, height);
+  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
+    ? CANVAS_TYPE_PDF
+    : CANVAS_TYPE_IMAGE;
+  Canvas *canvas = new Canvas(width, height, type);
   canvas->Wrap(args.This());
   return args.This();
 }
@@ -213,6 +218,15 @@ Canvas::ToBuffer(const Arguments &args) {
   cairo_status_t status;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
 
+  // TODO: async / move this out
+  if (canvas->isPDF()) {
+    cairo_surface_finish(canvas->surface());
+    closure_t *closure = (closure_t *) canvas->closure();
+    Buffer *buf = Buffer::New(closure->len);
+    memcpy(Buffer::Data(buf), closure->data, closure->len);
+    return buf->handle_;
+  }
+
   // Async
   if (args[0]->IsFunction()) {
     closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
@@ -353,11 +367,24 @@ Canvas::StreamJPEGSync(const Arguments &args) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h): ObjectWrap() {
+Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
+  type = t;
   width = w;
   height = h;
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-  V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
+  _surface = NULL;
+  _closure = NULL;
+
+  if (CANVAS_TYPE_PDF == t) {
+    _closure = malloc(sizeof(closure_t));
+    assert(_closure);
+    cairo_status_t status = closure_init((closure_t *) _closure, this);
+    assert(status == CAIRO_STATUS_SUCCESS);
+    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
+  } else {
+    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+    assert(_surface);
+    V8::AdjustAmountOfExternalAllocatedMemory(4 * w * h);
+  }
 }
 
 /*
@@ -365,7 +392,14 @@ Canvas::Canvas(int w, int h): ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-  cairo_surface_destroy(_surface);
+  switch (type) {
+    case CANVAS_TYPE_PDF:
+      closure_destroy((closure_t *) _closure);
+      break;
+    case CANVAS_TYPE_IMAGE:
+      cairo_surface_destroy(_surface);
+      break;
+  }
 }
 
 /*
@@ -374,20 +408,27 @@ Canvas::~Canvas() {
 
 void
 Canvas::resurface(Handle<Object> canvas) {
-  // Re-surface
-  int old_width = cairo_image_surface_get_width(_surface);
-  int old_height = cairo_image_surface_get_height(_surface);
-  cairo_surface_destroy(_surface);
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
+  switch (type) {
+    case CANVAS_TYPE_PDF:
+      cairo_pdf_surface_set_size(_surface, width, height);
+      break;
+    case CANVAS_TYPE_IMAGE:
+      // Re-surface
+      int old_width = cairo_image_surface_get_width(_surface);
+      int old_height = cairo_image_surface_get_height(_surface);
+      cairo_surface_destroy(_surface);
+      _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+      V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
 
-  // Reset context
-  Handle<Value> context = canvas->Get(String::New("context"));
-  if (!context->IsUndefined()) {
-    Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
-    cairo_t *prev = context2d->context();
-    context2d->setContext(cairo_create(surface()));
-    cairo_destroy(prev);
+      // Reset context
+      Handle<Value> context = canvas->Get(String::New("context"));
+      if (!context->IsUndefined()) {
+        Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+        cairo_t *prev = context2d->context();
+        context2d->setContext(cairo_create(surface()));
+        cairo_destroy(prev);
+      }
+      break;
   }
 }
 

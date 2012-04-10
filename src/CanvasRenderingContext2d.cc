@@ -62,6 +62,7 @@ Context2d::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "nextPage", NextPage);
   NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
   NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
@@ -409,6 +410,21 @@ Context2d::New(const Arguments &args) {
   Context2d *context = new Context2d(canvas);
   context->Wrap(args.This());
   return args.This();
+}
+
+/*
+ * Create a new page.
+ */
+
+Handle<Value>
+Context2d::NextPage(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  if (!context->canvas()->isPDF()) {
+    return ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()")));
+  }
+  cairo_show_page(context->context());
+  return Undefined();
 }
 
 /*
