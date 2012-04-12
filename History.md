@@ -1,4 +1,9 @@
 
+0.11.2 / 2012-04-12 
+==================
+
+  * Fixed: pdf memory leak, free closure and surface in ~Canvas
+
 0.11.1 / 2012-04-10 
 ==================
 
