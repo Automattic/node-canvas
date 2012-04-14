@@ -330,7 +330,7 @@ Context2d::setSourceRGBA(rgba_t color) {
 bool
 Context2d::hasShadow() {
   return state->shadow.a
-    && (state->shadowBlur || state->shadowOffsetX || state->shadowOffsetX);
+    && (state->shadowBlur || state->shadowOffsetX || state->shadowOffsetY);
 }
 
 /*
