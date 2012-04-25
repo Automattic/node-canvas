@@ -28,6 +28,8 @@ def configure(conf):
     conf.env.append_value('LINKFLAGS', ['-pg'])
 
   conf.check_cfg(package='cairo', args='--cflags --libs', mandatory=True)
+  conf.check_cfg(package='pango',arg='--cflags --libs', mandatory=True, uselib_store='PANGO')
+  conf.check_cfg(package='pangocairo', args='--cflags --libs', mandatory=True, uselib_store='PANGOCAIRO')
   flags = ['-O3', '-Wall', '-D_FILE_OFFSET_BITS=64', '-D_LARGEFILE_SOURCE']
   conf.env.append_value('CCFLAGS', flags)
   conf.env.append_value('CXXFLAGS', flags)
@@ -36,4 +38,4 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = 'canvas'
   obj.source = bld.glob('src/*.cc')
-  obj.uselib = ['CAIRO', 'GIF', 'JPEG']
+  obj.uselib = ['CAIRO', 'GIF', 'JPEG', 'PANGO', 'PANGOCAIRO']
