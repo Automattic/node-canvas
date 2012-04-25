@@ -1,4 +1,10 @@
 
+0.11.3 / 2012-04-25 
+==================
+
+  * Fixed `Image` memory leak. Closes #150
+  * Fixed Context2d::hasShadow()
+
 0.11.2 / 2012-04-12 
 ==================
 
