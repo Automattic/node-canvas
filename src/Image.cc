@@ -240,6 +240,7 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
  */
 
 Image::Image() {
+  live_data = NULL;
   filename = NULL;
   _surface = NULL;
   width = height = 0;
@@ -255,6 +256,8 @@ Image::~Image() {
     V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
     cairo_surface_destroy(_surface);
   }
+
+  if (live_data) free(live_data);
   if (filename) free(filename);
 }
 
@@ -544,7 +547,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     free(data);
     return status;
   }
-
+  live_data = data;
   return CAIRO_STATUS_SUCCESS;
 }
 #endif /* HAVE_GIF */
@@ -665,7 +668,7 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
     free(data);
     return status;
   }
-
+  live_data = data;
   return CAIRO_STATUS_SUCCESS;
 }
 
