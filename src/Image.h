@@ -70,6 +70,7 @@ class Image: public node::ObjectWrap {
 
   private:
     cairo_surface_t *_surface;
+    uint8_t *live_data;
     ~Image();
 };
 
