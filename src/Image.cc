@@ -257,8 +257,8 @@ Image::~Image() {
     cairo_surface_destroy(_surface);
   }
 
-  if (_data) free(_data);
-  if (filename) free(filename);
+  free(_data);
+  free(filename);
 }
 
 /*

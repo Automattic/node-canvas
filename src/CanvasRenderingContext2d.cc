@@ -142,9 +142,7 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
-  while(stateno >= 0) {
-    free(states[stateno--]);
-  }
+  while(stateno >= 0) free(states[stateno--]);
   cairo_destroy(_context);
 }
 
@@ -393,7 +391,8 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
           }
       }
   }
-  free( precalc );
+
+  free(precalc);
 }
 
 /*
