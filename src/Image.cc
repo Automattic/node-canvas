@@ -269,6 +269,11 @@ Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
 Image::Image() {
   filename = NULL;
   _data = NULL;
+  _data_len = 0;
+#if CAIRO_VERSION_MINOR >= 10
+  _mime_data = NULL;
+  _mime_data_len = 0;
+#endif
   _surface = NULL;
   width = height = 0;
   state = DEFAULT;
@@ -280,15 +285,19 @@ Image::Image() {
 
 Image::~Image() {
   if (_surface) {
-    V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
+    V8::AdjustAmountOfExternalAllocatedMemory(-_data_len);
     cairo_surface_destroy(_surface);
   }
 
-  if (_data) free(_data);
+  free(_data);
+
+#if CAIRO_VERSION_MINOR >= 10
   if (_mime_data) {
     V8::AdjustAmountOfExternalAllocatedMemory(-_mime_data_len);
     free(_mime_data);
   }
+#endif
+
   free(filename);
 }
 
@@ -316,8 +325,9 @@ Image::loaded() {
 
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
+  _data_len = height * cairo_image_surface_get_stride(_surface);
   // TODO: adjust accordingly when re-assigned src
-  V8::AdjustAmountOfExternalAllocatedMemory(4 * width * height);
+  V8::AdjustAmountOfExternalAllocatedMemory(_data_len);
 
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
@@ -580,6 +590,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   }
 
   _data = data;
+
   return CAIRO_STATUS_SUCCESS;
 }
 #endif /* HAVE_GIF */
@@ -690,7 +701,6 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
   free(src);
 
   _data = data;
-  _data_len = width * height * 4;
 
   return CAIRO_STATUS_SUCCESS;
 }
@@ -743,7 +753,6 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   }
 
   _data = data;
-  _data_len = buf_size;
 
   return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
 }

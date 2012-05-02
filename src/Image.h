@@ -88,8 +88,10 @@ class Image: public node::ObjectWrap {
     cairo_surface_t *_surface;
     uint8_t *_data;
     int _data_len;
+#if CAIRO_VERSION_MINOR >= 10
     uint8_t *_mime_data;
     int _mime_data_len;
+#endif
     ~Image();
 };
 
