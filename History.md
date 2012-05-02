@@ -1,4 +1,10 @@
 
+0.12.0 / 2012-05-02 
+==================
+
+  * Added `textDrawingMode` context property [c-spencer]
+  * Added additional TextMetrics properties [c-spencer]
+
 0.11.3 / 2012-04-25 
 ==================
 
