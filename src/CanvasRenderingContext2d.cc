@@ -1554,13 +1554,13 @@ Context2d::setTextPath(const char *str, double x, double y) {
       // Olaf (2011-02-26): fe.ascent approximates the distance between
       // the top of the em square and the alphabetic baseline
       cairo_font_extents(_context, &fe);
-      y += fe.ascent / 2;
+      y += (fe.ascent - fe.descent)/2;
       break;
     case TEXT_BASELINE_BOTTOM:
       // Olaf (2011-02-26): we need to know the distance between the alphabetic
       // baseline and the bottom of the em square
       cairo_font_extents(_context, &fe);
-      y -= fe.height - fe.ascent;
+      y -= fe.descent;
       break;
   }
 
@@ -1712,7 +1712,7 @@ Context2d::MeasureText(const Arguments &args) {
       y_offset = fe.ascent;
       break;
     case TEXT_BASELINE_MIDDLE:
-      y_offset = fe.ascent/2;
+      y_offset = (fe.ascent - fe.descent)/2;
       break;
     case TEXT_BASELINE_BOTTOM:
       y_offset = -fe.descent;
