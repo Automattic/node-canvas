@@ -110,6 +110,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
+  proto->SetAccessor(String::NewSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
 }
 
@@ -135,6 +136,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->stroke = transparent;
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
+  state->textDrawingPaths = true;
 }
 
 /*
@@ -933,6 +935,38 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo
 }
 
 /*
+ * Get text drawing mode.
+ */
+
+Handle<Value>
+Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *mode;
+  if (context->state->textDrawingPaths) {
+    mode = "path";
+  } else {
+    mode = "glyph";
+  }
+  return scope.Close(String::NewSymbol(mode));
+}
+
+/*
+ * Set text drawing mode.
+ */
+
+void
+Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  String::AsciiValue str(val->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  if (0 == strcmp("path", *str)) {
+    context->state->textDrawingPaths = true;
+  } else if (0 == strcmp("glyph", *str)) {
+    context->state->textDrawingPaths = false;
+  }
+}
+
+/*
  * Get miter limit.
  */
 
@@ -1448,8 +1482,9 @@ Context2d::FillText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
+  if (!context->state->textDrawingPaths) context->fill();
   context->setTextPath(*str, x, y);
-  context->fill();
+  if (context->state->textDrawingPaths) context->fill();
   context->restorePath();
 
   return Undefined();
@@ -1473,8 +1508,9 @@ Context2d::StrokeText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
+  if (!context->state->textDrawingPaths) context->stroke();
   context->setTextPath(*str, x, y);
-  context->stroke();
+  if (context->state->textDrawingPaths) context->stroke();
   context->restorePath();
 
   return Undefined();
@@ -1529,7 +1565,11 @@ Context2d::setTextPath(const char *str, double x, double y) {
   }
 
   cairo_move_to(_context, x, y);
-  cairo_text_path(_context, str);
+  if (state->textDrawingPaths) {
+    cairo_text_path(_context, str);
+  } else {
+    cairo_show_text(_context, str);
+  }
 }
 
 /*
