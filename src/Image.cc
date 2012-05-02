@@ -128,6 +128,30 @@ Image::GetSource(Local<String>, const AccessorInfo &info) {
 }
 
 /*
+ * Clean up assets and variables.
+ */
+
+void
+Image::clearData() {
+  if (_surface) {
+    cairo_surface_destroy(_surface);
+    V8::AdjustAmountOfExternalAllocatedMemory(-_data_len);
+    _data_len = 0;
+    _surface = NULL;
+  }
+
+  free(_data);
+  _data = NULL;
+
+  width = height = 0;
+
+  free(filename);
+  filename = NULL;
+
+  state = DEFAULT;
+}
+
+/*
  * Set src path.
  */
 
@@ -136,6 +160,8 @@ Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
   HandleScope scope;
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
+
+  img->clearData();
 
   // url string
   if (val->IsString()) {
@@ -270,10 +296,6 @@ Image::Image() {
   filename = NULL;
   _data = NULL;
   _data_len = 0;
-#if CAIRO_VERSION_MINOR >= 10
-  _mime_data = NULL;
-  _mime_data_len = 0;
-#endif
   _surface = NULL;
   width = height = 0;
   state = DEFAULT;
@@ -284,21 +306,7 @@ Image::Image() {
  */
 
 Image::~Image() {
-  if (_surface) {
-    V8::AdjustAmountOfExternalAllocatedMemory(-_data_len);
-    cairo_surface_destroy(_surface);
-  }
-
-  free(_data);
-
-#if CAIRO_VERSION_MINOR >= 10
-  if (_mime_data) {
-    V8::AdjustAmountOfExternalAllocatedMemory(-_mime_data_len);
-    free(_mime_data);
-  }
-#endif
-
-  free(filename);
+  clearData();
 }
 
 /*
@@ -326,7 +334,6 @@ Image::loaded() {
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
   _data_len = height * cairo_image_surface_get_stride(_surface);
-  // TODO: adjust accordingly when re-assigned src
   V8::AdjustAmountOfExternalAllocatedMemory(_data_len);
 
   if (!onload.IsEmpty()) {
@@ -757,17 +764,42 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
 }
 
+/*
+ * Helper function for disposing of a mime data closure.
+ */
+
+void
+clearMimeData(void *closure) {
+  V8::AdjustAmountOfExternalAllocatedMemory(-((read_closure_t *)closure)->len);
+  free(((read_closure_t *) closure)->buf);
+  free(closure);
+}
+
+/*
+ * Assign a given buffer as mime data against the surface.
+ * The provided buffer will be copied, and the copy will
+ * be automatically freed when the surface is destroyed.
+ */
+
 cairo_status_t
 Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
-  _mime_data = (uint8_t *) malloc(len);
-  if (!_mime_data) return CAIRO_STATUS_NO_MEMORY;
+  uint8_t *mime_data = (uint8_t *) malloc(len);
+  if (!mime_data) return CAIRO_STATUS_NO_MEMORY;
+
+  read_closure_t *mime_closure = (read_closure_t *) malloc(sizeof(read_closure_t));
+  if (!mime_closure) {
+    free(mime_data);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  memcpy(mime_data, data, len);
+
+  mime_closure->buf = mime_data;
+  mime_closure->len = len;
 
   V8::AdjustAmountOfExternalAllocatedMemory(len);
 
-  memcpy(_mime_data, data, len);
-  _mime_data_len = len;
-
-  return cairo_surface_set_mime_data(_surface, mime_type, _mime_data, _mime_data_len, free, _mime_data);
+  return cairo_surface_set_mime_data(_surface, mime_type, mime_data, len, clearMimeData, mime_closure);
 }
 
 #endif
@@ -803,8 +835,6 @@ cairo_status_t
 Image::loadJPEG(FILE *stream) {
   cairo_status_t status;
 
-  printf("loadJPEG\n");
-
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
     // JPEG setup
     struct jpeg_decompress_struct info;
@@ -835,12 +865,6 @@ Image::loadJPEG(FILE *stream) {
 
     fread(buf, len, 1, stream);
     fclose(stream);
-
-    status = loadJPEGFromBuffer(buf, len);
-    if (status) {
-      free(buf);
-      return status;
-    }
 
     switch (data_mode) {
       case DATA_IMAGE: // Can't be this, but compiler warning.
