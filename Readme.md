@@ -132,6 +132,14 @@ Given one of the values below will alter pattern (gradients, images, etc) render
   - good
   - best
 
+### CanvasRenderingContext2d#textDrawingMode
+
+Can be either `path` or `glyph`. Using `glyph` is much faster than `path` for drawing, and when using a PDF context will embed the text natively, so will be selectable and lower filesize. The downside is that cairo does not have any subpixel precision for `glyph`, so this will be noticeably lower quality for text positioning in cases such as rotated text. Also, strokeText in `glyph` will act the same as fillText, except using the stroke style for the fill.
+
+Defaults to _path_.
+
+This property is tracked as part of the canvas state in save/restore.
+
 ### Global Composite Operations
 
 In addition to those specified and commonly implemented by browsers, the following have been added:
