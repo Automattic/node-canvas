@@ -136,7 +136,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->stroke = transparent;
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
-  state->textDrawingPaths = true;
+  state->textDrawingMode = TEXT_DRAW_PATHS;
 }
 
 /*
@@ -943,9 +943,9 @@ Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *mode;
-  if (context->state->textDrawingPaths) {
+  if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
     mode = "path";
-  } else {
+  } else if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     mode = "glyph";
   }
   return scope.Close(String::NewSymbol(mode));
@@ -960,9 +960,9 @@ Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const Access
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
-    context->state->textDrawingPaths = true;
+    context->state->textDrawingMode = TEXT_DRAW_PATHS;
   } else if (0 == strcmp("glyph", *str)) {
-    context->state->textDrawingPaths = false;
+    context->state->textDrawingMode = TEXT_DRAW_GLYPHS;
   }
 }
 
@@ -1482,9 +1482,13 @@ Context2d::FillText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
-  if (!context->state->textDrawingPaths) context->fill();
-  context->setTextPath(*str, x, y);
-  if (context->state->textDrawingPaths) context->fill();
+  if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
+    context->fill();
+    context->setTextPath(*str, x, y);
+  } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
+    context->setTextPath(*str, x, y);
+    context->fill();
+  }
   context->restorePath();
 
   return Undefined();
@@ -1508,9 +1512,13 @@ Context2d::StrokeText(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
-  if (!context->state->textDrawingPaths) context->stroke();
-  context->setTextPath(*str, x, y);
-  if (context->state->textDrawingPaths) context->stroke();
+  if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
+    context->stroke();
+    context->setTextPath(*str, x, y);
+  } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
+    context->setTextPath(*str, x, y);
+    context->stroke();
+  }
   context->restorePath();
 
   return Undefined();
@@ -1565,9 +1573,9 @@ Context2d::setTextPath(const char *str, double x, double y) {
   }
 
   cairo_move_to(_context, x, y);
-  if (state->textDrawingPaths) {
+  if (state->textDrawingMode == TEXT_DRAW_PATHS) {
     cairo_text_path(_context, str);
-  } else {
+  } else if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     cairo_show_text(_context, str);
   }
 }

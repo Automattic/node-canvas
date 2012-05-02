@@ -12,6 +12,11 @@
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
+typedef enum {
+  TEXT_DRAW_PATHS,
+  TEXT_DRAW_GLYPHS
+} canvas_draw_mode_t;
+
 /*
  * State struct.
  *
@@ -34,7 +39,7 @@ typedef struct {
   int shadowBlur;
   double shadowOffsetX;
   double shadowOffsetY;
-  bool textDrawingPaths;
+  canvas_draw_mode_t textDrawingMode;
 } canvas_state_t;
 
 class Context2d: public node::ObjectWrap {
