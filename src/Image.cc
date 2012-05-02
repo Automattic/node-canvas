@@ -12,11 +12,6 @@
 #include <errno.h>
 #include <node_buffer.h>
 
-#ifdef HAVE_JPEG
-#include <jpeglib.h>
-#include <jerror.h>
-#endif
-
 #ifdef HAVE_GIF
 #include <gif_lib.h>
 typedef struct {
@@ -601,6 +596,61 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 #endif
 
+cairo_status_t
+Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
+  int stride = width * 4;
+  cairo_status_t status;
+
+  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  if (!data) {
+    jpeg_finish_decompress(info);
+    jpeg_destroy_decompress(info);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  uint8_t *src = (uint8_t *) malloc(width * 3);
+  if (!src) {
+    free(data);
+    jpeg_finish_decompress(info);
+    jpeg_destroy_decompress(info);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  for (int y = 0; y < height; ++y) {
+    jpeg_read_scanlines(info, &src, 1);
+    uint32_t *row = (uint32_t *)(data + stride * y);
+    for (int x = 0; x < width; ++x) {
+      int bx = 3 * x;
+      uint32_t *pixel = row + x;
+      *pixel = 255 << 24
+        | src[bx + 0] << 16
+        | src[bx + 1] << 8
+        | src[bx + 2];
+    }
+  }
+
+  _surface = cairo_image_surface_create_for_data(
+      data
+    , CAIRO_FORMAT_ARGB32
+    , width
+    , height
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+
+  jpeg_finish_decompress(info);
+  jpeg_destroy_decompress(info);
+  status = cairo_surface_status(_surface);
+
+  if (status) {
+    free(data);
+    free(src);
+    return status;
+  }
+
+  free(src);
+  _data = data;
+  return CAIRO_STATUS_SUCCESS;
+}
+
 /*
  * Load jpeg from buffer.
  */
@@ -613,65 +663,15 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   struct jpeg_error_mgr err;
   info.err = jpeg_std_error(&err);
   jpeg_create_decompress(&info);
+
   jpeg_mem_src(&info, buf, len);
+
   jpeg_read_header(&info, 1);
   jpeg_start_decompress(&info);
   width = info.output_width;
   height = info.output_height;
 
-  // Data alloc
-  int stride = width * 4;
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
-
-  if (!data) {
-    jpeg_finish_decompress(&info);
-    jpeg_destroy_decompress(&info);
-    return CAIRO_STATUS_NO_MEMORY;
-  }
-  
-  uint8_t *src = (uint8_t *) malloc(width * 3);
-  if (!src) {
-    free(data);
-    jpeg_finish_decompress(&info);
-    jpeg_destroy_decompress(&info);
-    return CAIRO_STATUS_NO_MEMORY;
-  }
-
-  // Copy RGB -> ARGB
-  for (int y = 0; y < height; ++y) {
-    jpeg_read_scanlines(&info, &src, 1);
-    uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < width; ++x) {
-      int bx = 3 * x;
-      uint32_t *pixel = row + x;
-      *pixel = 255 << 24
-        | src[bx + 0] << 16
-        | src[bx + 1] << 8
-        | src[bx + 2];
-    }
-  }
-
-  // New image surface
-  _surface = cairo_image_surface_create_for_data(
-      data
-    , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
-
-  // Cleanup
-  free(src);
-  jpeg_finish_decompress(&info);
-  jpeg_destroy_decompress(&info);
-  cairo_status_t status = cairo_surface_status(_surface);
-
-  if (status) {
-    free(data);
-    return status;
-  }
-
-  _data = data;
-  return CAIRO_STATUS_SUCCESS;
+  return decodeJPEGIntoSurface(&info);
 }
 
 /*
@@ -685,68 +685,20 @@ Image::loadJPEG(FILE *stream) {
   struct jpeg_error_mgr err;
   info.err = jpeg_std_error(&err);
   jpeg_create_decompress(&info);
+
   jpeg_stdio_src(&info, stream);
+
   jpeg_read_header(&info, 1);
   jpeg_start_decompress(&info);
   width = info.output_width;
   height = info.output_height;
 
-  // Data alloc
-  int stride = width * 4;
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  cairo_status_t status;
 
-  if (!data) {
-    fclose(stream);
-    jpeg_finish_decompress(&info);
-    jpeg_destroy_decompress(&info);
-    return CAIRO_STATUS_NO_MEMORY;
-  }
-
-  uint8_t *src = (uint8_t *) malloc(width * 3);
-
-  if (!src) {
-    free(data);
-    fclose(stream);
-    jpeg_finish_decompress(&info);
-    jpeg_destroy_decompress(&info);
-    return CAIRO_STATUS_NO_MEMORY;
-  }
-
-  // Copy RGB -> ARGB
-  for (int y = 0; y < height; ++y) {
-    jpeg_read_scanlines(&info, &src, 1);
-    uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < width; ++x) {
-      int bx = 3 * x;
-      uint32_t *pixel = row + x;
-      *pixel = 255 << 24
-        | src[bx + 0] << 16
-        | src[bx + 1] << 8
-        | src[bx + 2];
-    }
-  }
-
-  // New image surface
-  _surface = cairo_image_surface_create_for_data(
-      data
-    , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
-
-  // Cleanup
-  free(src);
+  status = decodeJPEGIntoSurface(&info);
   fclose(stream);
-  jpeg_finish_decompress(&info);
-  jpeg_destroy_decompress(&info);
-  cairo_status_t status = cairo_surface_status(_surface);
 
-  if (status) {
-    free(data);
-    return status;
-  }
-
-  return CAIRO_STATUS_SUCCESS;
+  return status;
 }
 
 #endif /* HAVE_JPEG */

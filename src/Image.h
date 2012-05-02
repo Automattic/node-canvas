@@ -10,6 +10,11 @@
 
 #include "Canvas.h"
 
+#ifdef HAVE_JPEG
+#include <jpeglib.h>
+#include <jerror.h>
+#endif
+
 class Image: public node::ObjectWrap {
   public:
     char *filename;
@@ -47,6 +52,7 @@ class Image: public node::ObjectWrap {
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
+    cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
 #endif
     void error(Local<Value> error);
     void loaded();
@@ -58,6 +64,12 @@ class Image: public node::ObjectWrap {
       , LOADING
       , COMPLETE
     } state;
+
+    enum {
+      DATA_IMAGE,
+      DATA_MIME,
+      DATA_IMAGE_AND_MIME
+    } data_mode;
 
     typedef enum {
         UNKNOWN
