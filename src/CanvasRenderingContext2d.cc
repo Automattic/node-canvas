@@ -1562,13 +1562,13 @@ Context2d::setTextPath(const char *str, double x, double y) {
       // Olaf (2011-02-26): fe.ascent approximates the distance between
       // the top of the em square and the alphabetic baseline
       cairo_font_extents(_context, &fe);
-      y += fe.ascent / 2;
+      y += (fe.ascent - fe.descent)/2;
       break;
     case TEXT_BASELINE_BOTTOM:
       // Olaf (2011-02-26): we need to know the distance between the alphabetic
       // baseline and the bottom of the em square
       cairo_font_extents(_context, &fe);
-      y -= fe.height - fe.ascent;
+      y -= fe.descent;
       break;
   }
 
@@ -1675,6 +1675,9 @@ Context2d::SetFont(const Arguments &args) {
 
 /*
  * Return the given text extents.
+ * TODO: Support for:
+ * hangingBaseline, ideographicBaseline,
+ * fontBoundingBoxAscent, fontBoundingBoxDescent
  */
 
 Handle<Value>
@@ -1688,8 +1691,49 @@ Context2d::MeasureText(const Arguments &args) {
   Local<Object> obj = Object::New();
 
   cairo_text_extents_t te;
+  cairo_font_extents_t fe;
+
   cairo_text_extents(ctx, *str, &te);
+  cairo_font_extents(ctx, &fe);
+
   obj->Set(String::New("width"), Number::New(te.x_advance));
+
+  double x_offset;
+  switch (context->state->textAlignment) {
+    case 0: // center
+      x_offset = te.width / 2;
+      break;
+    case 1: // right
+      x_offset = te.width;
+      break;
+    default: // left
+      x_offset = 0.0;
+  }
+
+  obj->Set(String::New("actualBoundingBoxLeft"), Number::New(x_offset - te.x_bearing));
+  obj->Set(String::New("actualBoundingBoxRight"), Number::New((te.x_bearing + te.width) - x_offset));
+
+  double y_offset;
+  switch (context->state->textBaseline) {
+    case TEXT_BASELINE_TOP:
+    case TEXT_BASELINE_HANGING:
+      y_offset = fe.ascent;
+      break;
+    case TEXT_BASELINE_MIDDLE:
+      y_offset = (fe.ascent - fe.descent)/2;
+      break;
+    case TEXT_BASELINE_BOTTOM:
+      y_offset = -fe.descent;
+      break;
+    default:
+      y_offset = 0.0;
+  }
+  obj->Set(String::New("actualBoundingBoxAscent"), Number::New(-(te.y_bearing + y_offset)));
+  obj->Set(String::New("actualBoundingBoxDescent"), Number::New(te.height + te.y_bearing + y_offset));
+  
+  obj->Set(String::New("emHeightAscent"), Number::New(fe.ascent - y_offset));
+  obj->Set(String::New("emHeightDescent"), Number::New(fe.descent + y_offset));
+  obj->Set(String::New("alphabeticBaseline"), Number::New(-y_offset));
 
   return scope.Close(obj);
 }
