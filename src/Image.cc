@@ -64,6 +64,22 @@ Handle<Value>
 Image::New(const Arguments &args) {
   HandleScope scope;
   Image *img = new Image;
+
+  img->data_mode = DATA_IMAGE;
+
+#if CAIRO_VERSION_MINOR >= 10
+  if (args[0]->IsString()) {
+    String::AsciiValue mode(args[0]->ToString());
+    if (0 == strcmp("mime_only", *mode)) {
+      img->data_mode = DATA_MIME;
+    } else if (0 == strcmp("image_only", *mode)) {
+      img->data_mode = DATA_IMAGE;
+    } else if (0 == strcmp("image_and_mime", *mode)) {
+      img->data_mode = DATA_IMAGE_AND_MIME;
+    }
+  }
+#endif
+
   img->Wrap(args.This());
   return args.This();
 }
@@ -154,7 +170,23 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   if (isGIF(buf)) return loadGIFFromBuffer(buf, len);
 #endif
 #ifdef HAVE_JPEG
-  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);
+#if CAIRO_VERSION_MINOR < 10
+  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);    
+#else
+  if (isJPEG(buf)) {
+    switch (data_mode) {
+      case DATA_IMAGE:
+        return loadJPEGFromBuffer(buf, len);
+      case DATA_MIME:
+        return decodeJPEGBufferIntoMimeSurface(buf, len);
+      case DATA_IMAGE_AND_MIME:
+        cairo_status_t status;
+        status = loadJPEGFromBuffer(buf, len);
+        if (status) return status;
+        return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
+    }
+  }
+#endif
 #endif
   return CAIRO_STATUS_READ_ERROR;
 }
@@ -252,7 +284,11 @@ Image::~Image() {
     cairo_surface_destroy(_surface);
   }
 
-  free(_data);
+  if (_data) free(_data);
+  if (_mime_data) {
+    V8::AdjustAmountOfExternalAllocatedMemory(-_mime_data_len);
+    free(_mime_data);
+  }
   free(filename);
 }
 
@@ -596,6 +632,11 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 #endif
 
+/*
+ * Takes an initialised jpeg_decompress_struct and decodes the
+ * data into _surface.
+ */
+
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
   int stride = width * 4;
@@ -603,7 +644,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
 
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
-    jpeg_finish_decompress(info);
+    jpeg_abort_decompress(info);
     jpeg_destroy_decompress(info);
     return CAIRO_STATUS_NO_MEMORY;
   }
@@ -611,7 +652,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
   uint8_t *src = (uint8_t *) malloc(width * 3);
   if (!src) {
     free(data);
-    jpeg_finish_decompress(info);
+    jpeg_abort_decompress(info);
     jpeg_destroy_decompress(info);
     return CAIRO_STATUS_NO_MEMORY;
   }
@@ -647,9 +688,80 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
   }
 
   free(src);
+
   _data = data;
+  _data_len = width * height * 4;
+
   return CAIRO_STATUS_SUCCESS;
 }
+
+#if CAIRO_VERSION_MINOR >= 10
+
+/*
+ * Takes a jpeg data buffer and assigns it as mime data to a
+ * dummy surface
+ */
+
+cairo_status_t
+Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
+  // TODO: remove this duplicate logic
+  // JPEG setup
+  struct jpeg_decompress_struct info;
+  struct jpeg_error_mgr err;
+  info.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&info);
+
+  jpeg_mem_src(&info, buf, len);
+
+  jpeg_read_header(&info, 1);
+  jpeg_start_decompress(&info);
+  width = info.output_width;
+  height = info.output_height;
+
+  // Data alloc
+  // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
+  int buf_size = height * cairo_format_stride_for_width(CAIRO_FORMAT_A1, width);
+  uint8_t *data = (uint8_t *) malloc(buf_size);
+  if (!data) return CAIRO_STATUS_NO_MEMORY;
+
+  // New image surface
+  _surface = cairo_image_surface_create_for_data(
+      data
+    , CAIRO_FORMAT_A1
+    , width
+    , height
+    , cairo_format_stride_for_width(CAIRO_FORMAT_A1, width));
+
+  // Cleanup
+  jpeg_abort_decompress(&info);
+  jpeg_destroy_decompress(&info);
+  cairo_status_t status = cairo_surface_status(_surface);
+
+  if (status) {
+    free(data);
+    return status;
+  }
+
+  _data = data;
+  _data_len = buf_size;
+
+  return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
+}
+
+cairo_status_t
+Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
+  _mime_data = (uint8_t *) malloc(len);
+  if (!_mime_data) return CAIRO_STATUS_NO_MEMORY;
+
+  V8::AdjustAmountOfExternalAllocatedMemory(len);
+
+  memcpy(_mime_data, data, len);
+  _mime_data_len = len;
+
+  return cairo_surface_set_mime_data(_surface, mime_type, _mime_data, _mime_data_len, free, _mime_data);
+}
+
+#endif
 
 /*
  * Load jpeg from buffer.
@@ -680,23 +792,62 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
 
 cairo_status_t
 Image::loadJPEG(FILE *stream) {
-  // JPEG setup
-  struct jpeg_decompress_struct info;
-  struct jpeg_error_mgr err;
-  info.err = jpeg_std_error(&err);
-  jpeg_create_decompress(&info);
-
-  jpeg_stdio_src(&info, stream);
-
-  jpeg_read_header(&info, 1);
-  jpeg_start_decompress(&info);
-  width = info.output_width;
-  height = info.output_height;
-
   cairo_status_t status;
 
-  status = decodeJPEGIntoSurface(&info);
-  fclose(stream);
+  printf("loadJPEG\n");
+
+  if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
+    // JPEG setup
+    struct jpeg_decompress_struct info;
+    struct jpeg_error_mgr err;
+    info.err = jpeg_std_error(&err);
+    jpeg_create_decompress(&info);
+
+    jpeg_stdio_src(&info, stream);
+
+    jpeg_read_header(&info, 1);
+    jpeg_start_decompress(&info);
+    width = info.output_width;
+    height = info.output_height;
+
+    status = decodeJPEGIntoSurface(&info);
+    fclose(stream);
+  } else { // We'll need the actual source jpeg data, so read fully.
+#if CAIRO_VERSION_MINOR >= 10
+    uint8_t *buf;
+    unsigned len;
+
+    fseek(stream, 0, SEEK_END);
+    len = ftell(stream);
+    fseek(stream, 0, SEEK_SET);
+
+    buf = (uint8_t *) malloc(len);
+    if (!buf) return CAIRO_STATUS_NO_MEMORY;
+
+    fread(buf, len, 1, stream);
+    fclose(stream);
+
+    status = loadJPEGFromBuffer(buf, len);
+    if (status) {
+      free(buf);
+      return status;
+    }
+
+    switch (data_mode) {
+      case DATA_IMAGE: // Can't be this, but compiler warning.
+      case DATA_IMAGE_AND_MIME:
+        status = loadJPEGFromBuffer(buf, len);
+        if (status) break;
+        status = assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
+        break;
+      case DATA_MIME:
+        status = decodeJPEGBufferIntoMimeSurface(buf, len);
+        break;
+    }
+
+    free(buf);
+#endif
+  }
 
   return status;
 }

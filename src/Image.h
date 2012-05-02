@@ -53,6 +53,10 @@ class Image: public node::ObjectWrap {
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
+#if CAIRO_VERSION_MINOR >= 10
+    cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
+    cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
+#endif
 #endif
     void error(Local<Value> error);
     void loaded();
@@ -83,6 +87,9 @@ class Image: public node::ObjectWrap {
   private:
     cairo_surface_t *_surface;
     uint8_t *_data;
+    int _data_len;
+    uint8_t *_mime_data;
+    int _mime_data_len;
     ~Image();
 };
 

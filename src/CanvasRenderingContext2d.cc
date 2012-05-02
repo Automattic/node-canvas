@@ -538,10 +538,6 @@ Context2d::DrawImage(const Arguments &args) {
   if (args.Length() < 3)
     return ThrowException(Exception::TypeError(String::New("invalid arguments")));
 
-#if CAIRO_VERSION_MINOR < 10
-  return ThrowException(Exception::Error(String::New("drawImage() needs cairo >= 1.10.0")));
-#else
-
   int sx = 0
     , sy = 0
     , sw = 0
@@ -611,14 +607,10 @@ Context2d::DrawImage(const Arguments &args) {
   // Start draw
   cairo_save(ctx);
 
-  // Source surface
-  // TODO: only works with cairo >= 1.10.0
-  cairo_surface_t *src = cairo_surface_create_for_rectangle(
-      surface
-    , sx
-    , sy
-    , sw
-    , sh);
+  context->savePath();
+  cairo_rectangle(ctx, dx, dy, dw, dh);
+  cairo_clip(ctx);
+  context->restorePath();
 
   // Scale src
   if (dw != sw || dh != sh) {
@@ -630,14 +622,11 @@ Context2d::DrawImage(const Arguments &args) {
   }
 
   // Paint
-  cairo_set_source_surface(ctx, src, dx, dy);
+  cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
-  cairo_surface_destroy(src);
-
-#endif
 
   return Undefined();
 }
