@@ -30,9 +30,11 @@ class Image: public node::ObjectWrap {
     static Handle<Value> GetComplete(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetDataMode(Local<String> prop, const AccessorInfo &info);
     static void SetSource(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnload(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetDataMode(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
@@ -71,7 +73,7 @@ class Image: public node::ObjectWrap {
     } state;
 
     enum {
-      DATA_IMAGE,
+      DATA_IMAGE = 1,
       DATA_MIME,
       DATA_IMAGE_AND_MIME
     } data_mode;

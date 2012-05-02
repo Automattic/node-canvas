@@ -53,6 +53,11 @@ Image::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("height"), GetHeight);
   proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
+#if CAIRO_VERSION_MINOR >= 10
+  proto->SetAccessor(String::NewSymbol("dataMode"), GetDataMode, SetDataMode);
+  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(1));
+  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(2));
+#endif
   target->Set(String::NewSymbol("Image"), constructor->GetFunction());
 }
 
@@ -64,22 +69,7 @@ Handle<Value>
 Image::New(const Arguments &args) {
   HandleScope scope;
   Image *img = new Image;
-
   img->data_mode = DATA_IMAGE;
-
-#if CAIRO_VERSION_MINOR >= 10
-  if (args[0]->IsString()) {
-    String::AsciiValue mode(args[0]->ToString());
-    if (0 == strcmp("mime_only", *mode)) {
-      img->data_mode = DATA_MIME;
-    } else if (0 == strcmp("image_only", *mode)) {
-      img->data_mode = DATA_IMAGE;
-    } else if (0 == strcmp("image_and_mime", *mode)) {
-      img->data_mode = DATA_IMAGE_AND_MIME;
-    }
-  }
-#endif
-
   img->Wrap(args.This());
   return args.This();
 }
@@ -94,6 +84,44 @@ Image::GetComplete(Local<String>, const AccessorInfo &info) {
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   return scope.Close(Boolean::New(Image::COMPLETE == img->state));
 }
+
+#if CAIRO_VERSION_MINOR >= 10
+
+/*
+ * Get dataMode.
+ */
+
+Handle<Value>
+Image::GetDataMode(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+  return scope.Close(Number::New(img->data_mode));
+}
+
+/*
+ * Set dataMode.
+ */
+
+void
+Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
+  if (val->IsNumber()) {
+    Image *img = ObjectWrap::Unwrap<Image>(info.This());
+    int mode = val->Uint32Value();
+    switch (mode) {
+      case 1:
+        img->data_mode = DATA_IMAGE;
+        break;
+      case 2:
+        img->data_mode = DATA_MIME;
+        break;
+      case 3:
+        img->data_mode = DATA_IMAGE_AND_MIME;
+        break;
+    }
+  }
+}
+
+#endif
 
 /*
  * Get width.
