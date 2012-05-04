@@ -107,9 +107,7 @@ Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsNumber()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
     int mode = val->Uint32Value();
-    if (mode >= DATA_IMAGE && mode <= DATA_IMAGE_AND_MIME) {
-      img->data_mode = (data_mode_t) mode;
-    }
+    img->data_mode = (data_mode_t) mode;
   }
 }
 
@@ -219,16 +217,13 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);    
 #else
   if (isJPEG(buf)) {
-    switch (data_mode) {
-      case DATA_IMAGE:
-        return loadJPEGFromBuffer(buf, len);
-      case DATA_MIME:
-        return decodeJPEGBufferIntoMimeSurface(buf, len);
-      case DATA_IMAGE_AND_MIME:
-        cairo_status_t status;
-        status = loadJPEGFromBuffer(buf, len);
-        if (status) return status;
-        return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
+    if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
+    if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
+    if ((DATA_IMAGE | DATA_MIME) == data_mode) {
+      cairo_status_t status;
+      status = loadJPEGFromBuffer(buf, len);
+      if (status) return status;
+      return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
   }
 #endif
@@ -890,16 +885,11 @@ Image::loadJPEG(FILE *stream) {
     fread(buf, len, 1, stream);
     fclose(stream);
 
-    switch (data_mode) {
-      case DATA_IMAGE: // Can't be this, but compiler warning.
-      case DATA_IMAGE_AND_MIME:
-        status = loadJPEGFromBuffer(buf, len);
-        if (status) break;
-        status = assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
-        break;
-      case DATA_MIME:
-        status = decodeJPEGBufferIntoMimeSurface(buf, len);
-        break;
+    if ((DATA_IMAGE | DATA_MIME) == data_mode) {
+      status = loadJPEGFromBuffer(buf, len);
+      if (!status) status = assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
+    } else if (DATA_MIME == data_mode) {
+      status = decodeJPEGBufferIntoMimeSurface(buf, len);
     }
 
     free(buf);
