@@ -55,8 +55,8 @@ Image::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
   proto->SetAccessor(String::NewSymbol("dataMode"), GetDataMode, SetDataMode);
-  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(1));
-  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(2));
+  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
+  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
 #endif
   target->Set(String::NewSymbol("Image"), constructor->GetFunction());
 }
@@ -107,16 +107,8 @@ Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsNumber()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
     int mode = val->Uint32Value();
-    switch (mode) {
-      case 1:
-        img->data_mode = DATA_IMAGE;
-        break;
-      case 2:
-        img->data_mode = DATA_MIME;
-        break;
-      case 3:
-        img->data_mode = DATA_IMAGE_AND_MIME;
-        break;
+    if (mode >= DATA_IMAGE && mode <= DATA_IMAGE_AND_MIME) {
+      img->data_mode = (data_mode_t) mode;
     }
   }
 }
@@ -171,11 +163,10 @@ Image::clearData() {
   free(_data);
   _data = NULL;
 
-  width = height = 0;
-
   free(filename);
   filename = NULL;
 
+  width = height = 0;
   state = DEFAULT;
 }
 
@@ -827,7 +818,12 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
 
   V8::AdjustAmountOfExternalAllocatedMemory(len);
 
-  return cairo_surface_set_mime_data(_surface, mime_type, mime_data, len, clearMimeData, mime_closure);
+  return cairo_surface_set_mime_data(_surface
+    , mime_type
+    , mime_data
+    , len
+    , clearMimeData
+    , mime_closure);
 }
 
 #endif

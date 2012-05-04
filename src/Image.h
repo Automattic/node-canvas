@@ -72,10 +72,10 @@ class Image: public node::ObjectWrap {
       , COMPLETE
     } state;
 
-    enum {
-      DATA_IMAGE = 1,
-      DATA_MIME,
-      DATA_IMAGE_AND_MIME
+    enum data_mode_t {
+        DATA_IMAGE
+      , DATA_MIME
+      , DATA_IMAGE_AND_MIME
     } data_mode;
 
     typedef enum {
