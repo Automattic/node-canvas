@@ -64,6 +64,21 @@ ctx.drawImage(img, 50, 0, 50, 50);
 ctx.drawImage(img, 100, 0, 50, 50);
 ```
 
+### Image#dataMode
+
+node-canvas adds `Image#dataMode` support, which can be used to opt-in to mime data tracking of images (currently only JPEGs).
+
+When mime data is tracked, in PDF mode JPEGs can be embedded directly into the output, rather than being re-encoded into PNG. This can drastically reduce filesize, and speed up rendering.
+
+```javascript
+var img = new Image;
+img.dataMode = Image.MODE_IMAGE; // Only image data tracked
+img.dataMode = Image.MODE_MIME; // Only mime data tracked
+img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
+```
+
+If image data is not tracked, and the Image is drawn to an image rather than a PDF canvas, the output will be junk. Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
+
 ### Canvas#createPNGStream()
 
   To create a `PNGStream` simply call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
