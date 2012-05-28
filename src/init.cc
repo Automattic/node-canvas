@@ -25,3 +25,5 @@ init (Handle<Object> target) {
   Pattern::Initialize(target);
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
 }
+
+NODE_MODULE(canvas,init);
