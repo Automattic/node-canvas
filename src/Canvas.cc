@@ -134,7 +134,7 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   
   // Olaf: grow buffer
-  if (closure->len + len > closure->max_len) {
+  if ( (closure->len + len) > closure->max_len) {
     uint8_t *data;
     unsigned max = closure->max_len;
   
