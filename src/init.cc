@@ -29,3 +29,4 @@ init (Handle<Object> target) {
 }
 
 NODE_MODULE(canvas,init);
+

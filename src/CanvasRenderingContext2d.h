@@ -16,7 +16,6 @@
 #include <cairo-ft.h>
 #include FT_FREETYPE_H
 
-#include <string>
 #include <vector>
 using namespace std;
 

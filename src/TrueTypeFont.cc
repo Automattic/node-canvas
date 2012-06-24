@@ -45,20 +45,20 @@ TrueTypeFontFace::New(const Arguments &args) {
   }
 
   String::AsciiValue filePath(args[0]);
-  int faceIdx =  int(args[1]->NumberValue());
+  int faceIdx = int(args[1]->NumberValue());
   
   FT_Face    ft_face; /* handle to face object */ 
   FT_Error   ft_error;
  
   if (_initLibrary) {
     _initLibrary = false;
-    ft_error = FT_Init_FreeType( &library ); 
+    ft_error = FT_Init_FreeType(&library); 
     if (ft_error) { 
       return ThrowException(Exception::Error(String::New("Could not load library")));
     } 
   } 
 
-  ft_error = FT_New_Face( library, *filePath, faceIdx, &ft_face ); 
+  ft_error = FT_New_Face(library, *filePath, faceIdx, &ft_face); 
   if (ft_error) { 
     return ThrowException(Exception::Error(String::New("Could not load font file")));    
   }

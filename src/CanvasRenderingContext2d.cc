@@ -1625,7 +1625,6 @@ Context2d::PrepareTrueTypeFace(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("TrueTypeFontFace expected")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->context();
 
   cairo_font_face_t *cr_face;
   TrueTypeFontFace *face = ObjectWrap::Unwrap<TrueTypeFontFace>(obj);
@@ -1634,9 +1633,6 @@ Context2d::PrepareTrueTypeFace(const Arguments &args) {
  
   vector<cairo_font_face_t*> *font_faces = context->font_faces();
   font_faces->insert(font_faces->end(), cr_face);
-
-  cairo_set_font_face(ctx, cr_face);
-  printf("=== PrepareTrueTypeFace %p %p %d\n", context, font_faces, int(font_faces->size()));
 
   return scope.Close(Number::New(font_faces->size() - 1));
 }
@@ -1712,7 +1708,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_select_font_face(ctx, *family, s, w);    
+  cairo_select_font_face(ctx, *family, s, w); 
   
   return Undefined();
 }
