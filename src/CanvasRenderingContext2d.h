@@ -128,7 +128,7 @@ class Context2d: public node::ObjectWrap {
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
-    inline vector<cairo_font_face_t*> font_faces(){ return _font_faces; }
+    inline vector<cairo_font_face_t*> *font_faces(){ return &_font_faces; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);

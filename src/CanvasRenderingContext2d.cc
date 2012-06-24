@@ -1625,20 +1625,20 @@ Context2d::PrepareTrueTypeFace(const Arguments &args) {
     return ThrowException(Exception::TypeError(String::New("TrueTypeFontFace expected")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
 
   cairo_font_face_t *cr_face;
   TrueTypeFontFace *face = ObjectWrap::Unwrap<TrueTypeFontFace>(obj);
 
   cr_face = cairo_ft_font_face_create_for_ft_face(face->face, 0);
  
+  vector<cairo_font_face_t*> *font_faces = context->font_faces();
+  font_faces->insert(font_faces->end(), cr_face);
+
   cairo_set_font_face(ctx, cr_face);
+  printf("=== PrepareTrueTypeFace %p %p %d\n", context, font_faces, int(font_faces->size()));
 
-  vector<cairo_font_face_t*> font_faces = context->font_faces();
-  font_faces.insert(font_faces.end(), cr_face);
-
-  printf("=== PrepareTrueTypeFace %p %p %d\n", context, &font_faces, int(font_faces.size()));
-
-  return scope.Close(Number::New(font_faces.size() - 1));
+  return scope.Close(Number::New(font_faces->size() - 1));
 }
 
 Handle<Value>
@@ -1655,18 +1655,20 @@ Context2d::SetFontFace(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  vector<cairo_font_face_t*> font_faces = context->font_faces();
+  vector<cairo_font_face_t*> *font_faces = context->font_faces();
 
-  printf("_setFontFace %p %p %d %d\n", context, &font_faces, int(font_faces.size()), idx);
+  printf("_setFontFace %p %p %d %d\n", context, font_faces, int(font_faces->size()), idx);
 
-  if (idx > int(font_faces.size()) || idx < 0) 
+  if (idx >= int(font_faces->size()) || idx < 0) 
     return ThrowException(Exception::TypeError(String::New("Try to get element out of bound")));
   
   cairo_set_font_size(ctx, size);
 
-  printf("_setFontFace::2 %p\n", font_faces[idx]);
+  printf("_setFontFace::4\n");
 
-  cairo_set_font_face(ctx, font_faces[idx]);
+  printf("_setFontFace::2 %p\n", font_faces->at(idx));
+
+  cairo_set_font_face(ctx, font_faces->at(idx));
 
   printf("_setFontFace::3\n");
 
