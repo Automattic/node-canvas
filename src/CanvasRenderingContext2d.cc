@@ -1657,20 +1657,11 @@ Context2d::SetFontFace(const Arguments &args) {
   cairo_t *ctx = context->context();
   vector<cairo_font_face_t*> *font_faces = context->font_faces();
 
-  printf("_setFontFace %p %p %d %d\n", context, font_faces, int(font_faces->size()), idx);
-
   if (idx >= int(font_faces->size()) || idx < 0) 
     return ThrowException(Exception::TypeError(String::New("Try to get element out of bound")));
   
   cairo_set_font_size(ctx, size);
-
-  printf("_setFontFace::4\n");
-
-  printf("_setFontFace::2 %p\n", font_faces->at(idx));
-
   cairo_set_font_face(ctx, font_faces->at(idx));
-
-  printf("_setFontFace::3\n");
 
   return Undefined();
 }
