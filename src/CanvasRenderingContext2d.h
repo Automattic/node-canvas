@@ -17,25 +17,13 @@
 #include FT_FREETYPE_H
 
 #include <string>
-#include <map>
+#include <vector>
 using namespace std;
 
 typedef enum {
   TEXT_DRAW_PATHS,
   TEXT_DRAW_GLYPHS
 } canvas_draw_mode_t;
-
-typedef struct font_data {
-  FT_Face            ft_face;
-  cairo_font_face_t *cr_face;
-  
-  font_data(FT_Face ft_face, cairo_font_face_t *cr_face):
-    ft_face(ft_face), cr_face(cr_face)
-  {
-  }
-};
-
-typedef map<string, font_data*> map_font_entry;
 
 /*
  * State struct.
@@ -90,7 +78,8 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> FillText(const Arguments &args);
     static Handle<Value> StrokeText(const Arguments &args);
     static Handle<Value> SetFont(const Arguments &args);
-    static Handle<Value> LoadFontFace(const Arguments &args);
+    static Handle<Value> SetFontFace(const Arguments &args);
+    static Handle<Value> PrepareTrueTypeFace(const Arguments &args);
     static Handle<Value> SetFillColor(const Arguments &args);
     static Handle<Value> SetStrokeColor(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
@@ -139,6 +128,7 @@ class Context2d: public node::ObjectWrap {
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
+    inline vector<cairo_font_face_t*> font_faces(){ return _font_faces; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void setTextPath(const char *str, double x, double y);
@@ -154,17 +144,13 @@ class Context2d: public node::ObjectWrap {
     void stroke(bool preserve = false);
     void save();
     void restore();
-
-    Handle<Value> loadFontFace(const char *name, const char *path);
-    cairo_font_face_t* lookupLoadedFontFace(const char *name);
-
   private:
     ~Context2d();
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
 
-    map_font_entry _loaded_fonts;
+    vector<cairo_font_face_t*> _font_faces;
     // FT_Library  ft_library; /* handle to library */ 
     // FT_Face     ft_face; /* handle to face object */ 
     // FT_Error    ft_error;

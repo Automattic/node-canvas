@@ -15,10 +15,7 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
-
-#include <ft2build.h> 
-#include <cairo-ft.h>
-#include FT_FREETYPE_H
+#include "TrueTypeFont.h"
 
 Persistent<FunctionTemplate> Context2d::constructor;
 
@@ -95,7 +92,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "loadFontFace", LoadFontFace);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFontFace", SetFontFace);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "prepareTrueTypeFace", PrepareTrueTypeFace);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
@@ -1617,71 +1615,60 @@ Context2d::MoveTo(const Arguments &args) {
   return Undefined();
 }
 
-/*
- * Load font:
- *   - filepath
- */
-
 Handle<Value>
-Context2d::loadFontFace(const char *name, const char *path)
-{
-  FT_Library library; /* handle to library */ 
-  FT_Face    ft_face; /* handle to face object */ 
-  FT_Error   ft_error;
-  
-  ft_error = FT_Init_FreeType( &library ); 
-  if (ft_error) { 
-    return ThrowException(Exception::Error(String::New("Could not load library")));
-  } 
-    
-  ft_error = FT_New_Face( library, path, 0, &ft_face ); 
-  if (ft_error == FT_Err_Unknown_File_Format) { 
-    return ThrowException(Exception::Error(String::New("Could not load font file")));    
-  }
+Context2d::PrepareTrueTypeFace(const Arguments &args) {
+  HandleScope scope;
+
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!TrueTypeFontFace::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("TrueTypeFontFace expected")));
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   cairo_font_face_t *cr_face;
-  cr_face = cairo_ft_font_face_create_for_ft_face(ft_face, 0);
+  TrueTypeFontFace *face = ObjectWrap::Unwrap<TrueTypeFontFace>(obj);
 
-  _loaded_fonts.insert(
-    pair<string, font_data*>(
-      std::string(name), new font_data(ft_face, cr_face)
-    )
-  );
+  cr_face = cairo_ft_font_face_create_for_ft_face(face->face, 0);
+ 
+  vector<cairo_font_face_t*> font_faces = context->font_faces();
+  font_faces.insert(font_faces.end(), cr_face);
 
-  printf("=== Context2d::loadFont - done\n");
-  
-  return Undefined();
+  printf("=== PrepareTrueTypeFace %p %p %d\n", context, &font_faces, int(font_faces.size()));
+
+  return scope.Close(Number::New(font_faces.size() - 1));
 }
 
 Handle<Value>
-Context2d::LoadFontFace(const Arguments &args) {
+Context2d::SetFontFace(const Arguments &args) {
   HandleScope scope;
 
   // Ignore invalid args
-  if (!args[0]->IsString()
-     || !args[1]->IsString()) return Undefined();
+  if (!args[0]->IsNumber()
+    || !args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("Expected number")));
 
-  printf("=== Context2d::LoadFontFace\n");
+  int idx =  int(args[0]->NumberValue());
+  double size = args[1]->NumberValue();
 
-  String::AsciiValue fontName(args[0]);
-  String::AsciiValue filePath(args[1]);
-  
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->loadFontFace(*fontName, *filePath);
-  
-  return Undefined();
-}
+  cairo_t *ctx = context->context();
+  vector<cairo_font_face_t*> font_faces = context->font_faces();
 
-cairo_font_face_t*
-Context2d::lookupLoadedFontFace(const char *name)
-{
-  map_font_entry::iterator iter;
-  iter = _loaded_fonts.find(string(name));
-  if (iter != _loaded_fonts.end()) {
-    return iter->second->cr_face;
-  } else {
-    return NULL;
-  }
+  printf("_setFontFace %p %p %d %d\n", context, &font_faces, int(font_faces.size()), idx);
+
+  if (idx > int(font_faces.size()) || idx < 0) 
+    return ThrowException(Exception::TypeError(String::New("Try to get element out of bound")));
+  
+  cairo_set_font_size(ctx, size);
+
+  printf("_setFontFace::2 %p\n", font_faces[idx]);
+
+  cairo_set_font_face(ctx, font_faces[idx]);
+
+  printf("_setFontFace::3\n");
+
+  return Undefined();
 }
 
 /*
@@ -1730,14 +1717,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_font_face_t *cr_face = context->lookupLoadedFontFace(*family);
-  if (cr_face) {
-    printf("=== Context2d::SetFont: Pickup font\n");
-    cairo_set_font_face(ctx, cr_face);
-  } else {
-    printf("=== Context2d::SetFont: Pickup font NOPE\n");
-    cairo_select_font_face(ctx, *family, s, w);    
-  }
+  cairo_select_font_face(ctx, *family, s, w);    
   
   return Undefined();
 }
