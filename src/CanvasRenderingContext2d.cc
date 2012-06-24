@@ -1631,6 +1631,8 @@ Context2d::PrepareTrueTypeFace(const Arguments &args) {
 
   cr_face = cairo_ft_font_face_create_for_ft_face(face->face, 0);
  
+  cairo_set_font_face(ctx, cr_face);
+
   vector<cairo_font_face_t*> font_faces = context->font_faces();
   font_faces.insert(font_faces.end(), cr_face);
 
