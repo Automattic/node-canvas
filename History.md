@@ -1,4 +1,14 @@
 
+0.12.1 / 2012-06-29 
+==================
+
+  * fix jpeg malloc Image issue. Closes #160 [c-spencer]
+  * Improve Image mode API
+  * Add clearData method to handle reassignment of src, and clean up mime data memory handling.
+  * Improve how _data_len is managed and use to adjust memory, hide more of mime API behind cairo version conditional.
+  * Add optional mime-data tracking to Image.
+  * Refactor JPEG decoding into decodeJPEGIntoSurface
+
 0.12.0 / 2012-05-02 
 ==================
 
