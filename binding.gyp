@@ -1,8 +1,4 @@
 {
-  'variables': {
-    # Set the location of GTK all-in-one bundle
-	'GTK_Root': 'C:/GTK',
-  },
   'targets': [
     {
       'target_name': 'canvas',
@@ -17,13 +13,15 @@
 			'src/init.cc',
 			'src/PixelArray.cc',
 		],
-	  'libraries': ['-l<(GTK_Root)/lib/cairo.lib' ],
-		  'include_dirs': [
-		   '<(GTK_Root)/include/cairo',
-		  ],
-	  'defines': [
-			'snprintf=_snprintf',
-			'_USE_MATH_DEFINES' # for M_PI
+      'conditions': [
+            ['OS=="win"', {
+                'libraries': ['-l$(GTK_BASEPATH)/lib/cairo.lib' ],
+                'include_dirs': [ '$(GTK_BASEPATH)/include/cairo' ],
+                'defines': [ 
+                    'snprintf=_snprintf',
+                    '_USE_MATH_DEFINES' # for M_PI
+                ],
+            }],
 		],
     }
   ]
