@@ -681,7 +681,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(width * 3);
+  uint8_t *src = (uint8_t *) malloc(width * info->output_components);
   if (!src) {
     free(data);
     jpeg_abort_decompress(info);
