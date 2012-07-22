@@ -12,6 +12,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
+#include "TrueTypeFont.h"
 
 extern "C" void
 init (Handle<Object> target) {
@@ -23,7 +24,9 @@ init (Handle<Object> target) {
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
+  TrueTypeFontFace::Initialize(target);
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
 }
 
 NODE_MODULE(canvas,init);
+

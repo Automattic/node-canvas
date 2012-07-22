@@ -15,6 +15,7 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
+#include "TrueTypeFont.h"
 
 Persistent<FunctionTemplate> Context2d::constructor;
 
@@ -44,6 +45,7 @@ enum {
   , TEXT_BASELINE_IDEOGRAPHIC
   , TEXT_BASELINE_HANGING
 };
+
 
 /*
  * Initialize Context2d.
@@ -90,6 +92,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFontFace", SetFontFace);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "prepareTrueTypeFace", PrepareTrueTypeFace);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
@@ -1611,6 +1615,53 @@ Context2d::MoveTo(const Arguments &args) {
   return Undefined();
 }
 
+Handle<Value>
+Context2d::PrepareTrueTypeFace(const Arguments &args) {
+  HandleScope scope;
+
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!TrueTypeFontFace::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("TrueTypeFontFace expected")));
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+
+  cairo_font_face_t *cr_face;
+  TrueTypeFontFace *face = ObjectWrap::Unwrap<TrueTypeFontFace>(obj);
+
+  cr_face = cairo_ft_font_face_create_for_ft_face(face->face, 0);
+ 
+  vector<cairo_font_face_t*> *font_faces = context->font_faces();
+  font_faces->insert(font_faces->end(), cr_face);
+
+  return scope.Close(Number::New(font_faces->size() - 1));
+}
+
+Handle<Value>
+Context2d::SetFontFace(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore invalid args
+  if (!args[0]->IsNumber()
+    || !args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("Expected number")));
+
+  int idx =  int(args[0]->NumberValue());
+  double size = args[1]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+  vector<cairo_font_face_t*> *font_faces = context->font_faces();
+
+  if (idx >= int(font_faces->size()) || idx < 0) 
+    return ThrowException(Exception::TypeError(String::New("Try to get element out of bound")));
+  
+  cairo_set_font_size(ctx, size);
+  cairo_set_font_face(ctx, font_faces->at(idx));
+
+  return Undefined();
+}
+
 /*
  * Set font:
  *   - weight
@@ -1657,7 +1708,7 @@ Context2d::SetFont(const Arguments &args) {
     w = CAIRO_FONT_WEIGHT_BOLD;
   }
 
-  cairo_select_font_face(ctx, *family, s, w);
+  cairo_select_font_face(ctx, *family, s, w); 
   
   return Undefined();
 }
