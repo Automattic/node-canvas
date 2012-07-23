@@ -38,12 +38,34 @@
         }],
         ['with_jpeg=="true"', {
           'defines': [
-            'HAVE_JPEG=1'
+            'HAVE_JPEG'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/jpeg.lib'
+              ]
+            }, {
+              'libraries': [
+                '-ljpeg'
+              ]
+            }]
           ]
         }],
         ['with_gif=="true"', {
           'defines': [
-            'HAVE_GIF=1'
+            'HAVE_GIF'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/gif.lib'
+              ]
+            }, {
+              'libraries': [
+                '-lgif'
+              ]
+            }]
           ]
         }]
       ]
