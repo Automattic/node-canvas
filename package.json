@@ -6,7 +6,7 @@
  , "homepage": "https://github.com/learnboost/node-canvas"
  , "repository": "git://github.com/learnboost/node-canvas"
  , "scripts": {
-   "preinstall": "node-waf configure build"
+   "test": "make test"
  }
  , "devDependencies": {
      "express": ">= 2.3.7 && < 3.0.0"
