@@ -3,7 +3,7 @@ ADDON = build/Release/canvas.node
 REPORTER = dot
 
 $(ADDON): src/*.cc
-	node-gyp rebuild
+	npm install
 
 test: $(ADDON)
 	@./node_modules/.bin/mocha \
@@ -19,6 +19,6 @@ benchmark:
 	@node benchmarks/run.js
 
 clean:
-	node-gyp clean
+	rm -fr build
 
 .PHONY: test test-server benchmark clean
