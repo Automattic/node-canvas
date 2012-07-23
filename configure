@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+#
+# Build flags
+#
+
+cppflags=
+
+#
+# Check for <lib>
+#
+
+has_lib() {
+  local lib=$1
+  for dir in /lib /usr/lib /usr/local/lib /opt/local/lib; do
+    test -d $dir && ls $dir | grep $lib && return 0
+  done
+  return 1
+}
+
+#
+# Check for <lib> and append to cppflags
+#
+
+has() {
+  local lib=$1
+  check $lib
+  has_lib $lib > /dev/null
+  if test $? -eq 0; then
+    found $lib
+    cppflags="$cppflags --with-$lib"
+  else
+    missing $lib
+  fi
+}
+
+#
+# Check pkg-config for <lib>
+#
+
+has_pkg_config() {
+  local lib=$1
+  check $lib
+  pkg-config --libs cairo > /dev/null
+  if test $? -eq 0; then
+    found $lib
+  else
+    missing $lib
+    exit 1
+  fi
+}
+
+#
+# Output check
+#
+
+check() {
+  printf "  \e[90mcheck %s\e[m" $1
+}
+
+#
+# Output found
+#
+
+found() {
+  printf "\r  \e[32m✔ found \e[90m%s\e[m\n" $1
+}
+
+#
+# Output missing
+#
+
+missing() {
+  printf "\r  \e[31m✖ cannot find \e[90m%s\e[m\n" $1
+}
+
+# DO IT
+
+echo
+has gif
+has jpeg
+has_pkg_config cairo
+echo
