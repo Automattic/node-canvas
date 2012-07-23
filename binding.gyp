@@ -1,6 +1,8 @@
 {
   'variables': {
-    'GTK_Root': 'C:/GTK'  # Set the location of GTK all-in-one bundle
+    'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
+    'with_jpeg%': 'false',
+    'with_gif%': 'false'
   },
   'targets': [
     {
@@ -18,13 +20,30 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'libraries': ['-l<(GTK_Root)/lib/cairo.lib' ],
+          'libraries': [
+            '-l<(GTK_Root)/lib/cairo.lib'
+          ],
           'include_dirs': [
             '<(GTK_Root)/include',
           ],
           'defines': [
             'snprintf=_snprintf',
             '_USE_MATH_DEFINES'  # for M_PI
+          ]
+        }, {  # 'OS!="win"'
+          'libraries': [
+            '-lpixman-1',
+            '-lcairo'
+          ],
+        }],
+        ['with_jpeg=="true"', {
+          'defines': [
+            'HAVE_JPEG=1'
+          ]
+        }],
+        ['with_gif=="true"', {
+          'defines': [
+            'HAVE_GIF=1'
           ]
         }]
       ]
