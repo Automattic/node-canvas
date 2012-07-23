@@ -81,3 +81,5 @@ has gif
 has jpeg
 has_pkg_config cairo
 echo
+
+# TODO: output flags and get npm "install" script working
