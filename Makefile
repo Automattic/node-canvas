@@ -3,7 +3,7 @@ ADDON = build/Release/canvas.node
 REPORTER = dot
 
 $(ADDON): src/*.cc
-	node-gyp configure build
+	node-gyp rebuild
 
 test: $(ADDON)
 	@./node_modules/.bin/mocha \
