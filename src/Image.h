@@ -15,6 +15,10 @@
 #include <jerror.h>
 #endif
 
+#ifdef HAVE_GIF
+#include <gif_lib.h>
+#endif
+
 class Image: public node::ObjectWrap {
   public:
     char *filename;
