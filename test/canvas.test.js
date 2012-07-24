@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -6,7 +5,6 @@
 var Canvas = require('../')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
-  , assert = require('assert')
   , fs = require('fs');
 
 console.log();
