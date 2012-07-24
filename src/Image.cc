@@ -13,7 +13,6 @@
 #include <node_buffer.h>
 
 #ifdef HAVE_GIF
-#include <gif_lib.h>
 typedef struct {
   uint8_t *buf;
   unsigned len;
