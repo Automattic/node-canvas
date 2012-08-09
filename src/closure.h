@@ -16,7 +16,7 @@ typedef struct {
   Persistent<Function> pfn;
   Handle<Function> fn;
   unsigned len;
-  int16_t max_len;
+  unsigned max_len;
   uint8_t *data;
   Canvas *canvas;
   cairo_status_t status;
