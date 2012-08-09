@@ -158,11 +158,11 @@ module.exports = {
 
   'test Canvas#type': function(){
     var canvas = new Canvas(10, 10);
-    assert('image' == canvas.type);
+    assert.ok('image' == canvas.type);
     var canvas = new Canvas(10, 10, 'pdf');
-    assert('pdf' == canvas.type);
+    assert.ok('pdf' == canvas.type);
     var canvas = new Canvas(10, 10, 'hey');
-    assert('image' == canvas.type);
+    assert.ok('image' == canvas.type);
   },
 
   'test Canvas#getContext("2d")': function(){
