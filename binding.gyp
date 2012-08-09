@@ -9,9 +9,9 @@
       }
     }, { # 'OS!="win"'
       'variables': {
-        'with_jpeg%': '<!(./has_lib.sh jpeg)',
-        'with_gif%': '<!(./has_lib.sh gif)',
-        'with_pango%': '<!(./has_lib.sh pangocairo)'
+        'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
+        'with_gif%': '<!(./util/has_lib.sh gif)',
+        'with_pango%': '<!(./util/has_lib.sh pangocairo)'
       }
     }]
   ],
