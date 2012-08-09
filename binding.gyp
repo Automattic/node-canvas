@@ -2,7 +2,8 @@
   'variables': {
     'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
     'with_jpeg%': 'false',
-    'with_gif%': 'false'
+    'with_gif%': 'false',
+    'with_pango%': 'false'
   },
   'targets': [
     {
@@ -34,7 +35,18 @@
           'libraries': [
             '-lpixman-1',
             '-lcairo'
+          ]
+        }],
+        ['with_pango=="true"', {
+          'defines': [
+            'HAVE_PANGO'
           ],
+          'include_dirs': [ # tried to pass through cflags but failed
+            '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
+          ],
+          'libraries': [
+            '<!@(pkg-config pangocairo --libs)'
+          ]
         }],
         ['with_jpeg=="true"', {
           'defines': [
