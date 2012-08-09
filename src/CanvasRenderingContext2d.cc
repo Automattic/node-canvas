@@ -53,7 +53,7 @@ enum {
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str) {
   free(state->fontFamily);
-  state->fontFamily = (char *) malloc(strlen(str) + 1);
+  state->fontFamily = strndup(str, 100);
   strcpy(state->fontFamily, str);
 }
 
@@ -203,7 +203,7 @@ Context2d::saveState() {
   states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   memcpy(states[stateno], state, sizeof(canvas_state_t));
 #if HAVE_PANGO
-  states[stateno]->fontFamily = (char *) malloc(strlen(state->fontFamily) + 1);
+  states[stateno]->fontFamily = strndup(state->fontFamily, 100);
   strcpy(states[stateno]->fontFamily, state->fontFamily);
 #endif
   state = states[stateno];
