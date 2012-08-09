@@ -12,7 +12,12 @@
 #include <node.h>
 #include <node_object_wrap.h>
 #include <node_version.h>
+
+#if HAVE_PANGO
+#include <pango/pangocairo.h>
+#else
 #include <cairo/cairo.h>
+#endif
 
 using namespace v8;
 using namespace node;
