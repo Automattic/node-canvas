@@ -178,7 +178,15 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
-  while(stateno >= 0) free(states[stateno--]);
+  while(stateno >= 0) {
+#if HAVE_PANGO
+    free(states[stateno]->fontFamily);
+#endif
+    free(states[stateno--]);
+  }
+#if HAVE_PANGO
+  g_object_unref(_layout);
+#endif
   cairo_destroy(_context);
 }
 
