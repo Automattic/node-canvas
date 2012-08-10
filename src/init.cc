@@ -26,6 +26,12 @@ init (Handle<Object> target) {
   Pattern::Initialize(target);
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
 #ifdef HAVE_JPEG
+
+#ifdef LIBJPEG_TURBO_VERSION
+#define JPEG_LIB_VERSION_MAJOR 8
+#define JPEG_LIB_VERSION_MINOR 4
+#endif
+
   char jpeg_version[10];
   snprintf(jpeg_version, 10, "%d%c", JPEG_LIB_VERSION_MAJOR, JPEG_LIB_VERSION_MINOR + 'a' - 1);
   target->Set(String::New("jpegVersion"), String::New(jpeg_version));

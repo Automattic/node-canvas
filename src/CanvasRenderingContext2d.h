@@ -40,7 +40,19 @@ typedef struct {
   double shadowOffsetX;
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
+
+#if HAVE_PANGO
+  PangoWeight fontWeight;
+  PangoStyle fontStyle;
+  double fontSize;
+  char *fontFamily;
+#endif
+
 } canvas_state_t;
+
+#if HAVE_PANGO
+void state_assign_fontFamily(canvas_state_t *state, const char *str);
+#endif
 
 class Context2d: public node::ObjectWrap {
   public:
@@ -134,11 +146,19 @@ class Context2d: public node::ObjectWrap {
     void save();
     void restore();
 
+#if HAVE_PANGO
+    void setFontFromState();
+    inline PangoLayout *layout(){ return _layout; }
+#endif
+
   private:
     ~Context2d();
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
+#if HAVE_PANGO
+    PangoLayout *_layout;
+#endif
 };
 
 #endif
