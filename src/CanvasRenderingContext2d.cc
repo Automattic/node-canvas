@@ -56,6 +56,16 @@ void state_assign_fontFamily(canvas_state_t *state, const char *str) {
   state->fontFamily = strndup(str, 100);
 }
 
+
+/*
+ * Simple helper macro for a rather verbose function call.
+ */
+
+#define PANGO_LAYOUT_GET_METRICS(LAYOUT) pango_context_get_metrics( \
+   pango_layout_get_context(LAYOUT), \
+   pango_layout_get_font_description(LAYOUT), \
+   pango_context_get_language(pango_layout_get_context(LAYOUT)))
+
 #endif
 
 /*
@@ -1552,13 +1562,6 @@ Context2d::StrokeText(const Arguments &args) {
  * Set text path for the given string at (x, y).
  */
 
-// Define simple macro substitution so we can use these lazily within setTextPath
-#define GET_EXTENTS() pango_layout_get_pixel_extents(_layout, &ink_rect, &logical_rect)
-#define GET_METRICS() metrics = pango_context_get_metrics( \
-   pango_layout_get_context(_layout), \
-   pango_layout_get_font_description(_layout), \
-   pango_context_get_language(pango_layout_get_context(_layout)))
-
 void
 Context2d::setTextPath(const char *str, double x, double y) {
 #if HAVE_PANGO
@@ -1572,27 +1575,27 @@ Context2d::setTextPath(const char *str, double x, double y) {
   switch (state->textAlignment) {
     // center
     case 0:
-      GET_EXTENTS();
+      pango_layout_get_pixel_extents(_layout, &ink_rect, &logical_rect);
       x -= logical_rect.width / 2;
       break;
     // right
     case 1:
-      GET_EXTENTS();
+      pango_layout_get_pixel_extents(_layout, &ink_rect, &logical_rect);
       x -= logical_rect.width;
       break;
   }
 
   switch (state->textBaseline) {
     case TEXT_BASELINE_ALPHABETIC:
-      GET_METRICS();
+      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
       y -= pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
       break;
     case TEXT_BASELINE_MIDDLE:
-      GET_METRICS();
+      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
       y -= (pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE);
       break;
     case TEXT_BASELINE_BOTTOM:
-      GET_METRICS();
+      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
       y -= (pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
       break;
   }
@@ -1834,13 +1837,71 @@ Context2d::MeasureText(const Arguments &args) {
   String::Utf8Value str(args[0]->ToString());
   Local<Object> obj = Object::New();
 
+#if HAVE_PANGO
+
+  PangoRectangle ink_rect, logical_rect;
+  PangoFontMetrics *metrics;
+  PangoLayout *layout = context->layout();
+
+  pango_layout_set_text(layout, *str, -1);
+  pango_cairo_update_layout(ctx, layout);
+
+  pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+  metrics = PANGO_LAYOUT_GET_METRICS(layout);
+
+  double x_offset;
+  switch (context->state->textAlignment) {
+    case 0: // center
+      x_offset = logical_rect.width / 2;
+      break;
+    case 1: // right
+      x_offset = logical_rect.width;
+      break;
+    default: // left
+      x_offset = 0.0;
+  }
+
+  double y_offset;
+  switch (context->state->textBaseline) {
+    case TEXT_BASELINE_ALPHABETIC:
+      y_offset = -pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
+      break;
+    case TEXT_BASELINE_MIDDLE:
+      y_offset = -(pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE);
+      break;
+    case TEXT_BASELINE_BOTTOM:
+      y_offset = -(pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
+      break;
+    default:
+      y_offset = 0.0;
+  }
+
+  obj->Set(String::New("width"), Number::New(logical_rect.width));
+  obj->Set(String::New("actualBoundingBoxLeft"),
+           Number::New(x_offset - PANGO_LBEARING(logical_rect)));
+  obj->Set(String::New("actualBoundingBoxRight"),
+           Number::New(x_offset + PANGO_RBEARING(logical_rect)));
+  obj->Set(String::New("actualBoundingBoxAscent"),
+           Number::New(-(y_offset+ink_rect.y)));
+  obj->Set(String::New("actualBoundingBoxDescent"),
+           Number::New((PANGO_DESCENT(ink_rect) + y_offset)));
+  obj->Set(String::New("emHeightAscent"),
+           Number::New(PANGO_ASCENT(logical_rect) - y_offset));
+  obj->Set(String::New("emHeightDescent"),
+           Number::New(PANGO_DESCENT(logical_rect) + y_offset));
+  obj->Set(String::New("alphabeticBaseline"),
+           Number::New((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
+                       + y_offset));
+
+  pango_font_metrics_unref(metrics);
+
+#else
+
   cairo_text_extents_t te;
   cairo_font_extents_t fe;
 
   cairo_text_extents(ctx, *str, &te);
   cairo_font_extents(ctx, &fe);
-
-  obj->Set(String::New("width"), Number::New(te.x_advance));
 
   double x_offset;
   switch (context->state->textAlignment) {
@@ -1853,9 +1914,6 @@ Context2d::MeasureText(const Arguments &args) {
     default: // left
       x_offset = 0.0;
   }
-
-  obj->Set(String::New("actualBoundingBoxLeft"), Number::New(x_offset - te.x_bearing));
-  obj->Set(String::New("actualBoundingBoxRight"), Number::New((te.x_bearing + te.width) - x_offset));
 
   double y_offset;
   switch (context->state->textBaseline) {
@@ -1872,12 +1930,21 @@ Context2d::MeasureText(const Arguments &args) {
     default:
       y_offset = 0.0;
   }
-  obj->Set(String::New("actualBoundingBoxAscent"), Number::New(-(te.y_bearing + y_offset)));
-  obj->Set(String::New("actualBoundingBoxDescent"), Number::New(te.height + te.y_bearing + y_offset));
-  
+
+  obj->Set(String::New("width"), Number::New(te.x_advance));
+  obj->Set(String::New("actualBoundingBoxLeft"),
+           Number::New(x_offset - te.x_bearing));
+  obj->Set(String::New("actualBoundingBoxRight"),
+           Number::New((te.x_bearing + te.width) - x_offset));
+  obj->Set(String::New("actualBoundingBoxAscent"),
+           Number::New(-(te.y_bearing + y_offset)));
+  obj->Set(String::New("actualBoundingBoxDescent"),
+           Number::New(te.height + te.y_bearing + y_offset));
   obj->Set(String::New("emHeightAscent"), Number::New(fe.ascent - y_offset));
   obj->Set(String::New("emHeightDescent"), Number::New(fe.descent + y_offset));
-  obj->Set(String::New("alphabeticBaseline"), Number::New(-y_offset));
+  obj->Set(String::New("alphabeticBaseline"), Number::New(y_offset));
+
+#endif
 
   return scope.Close(obj);
 }
