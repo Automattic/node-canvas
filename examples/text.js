@@ -33,6 +33,15 @@ ctx.strokeText("Wahoo", 50, 100);
 ctx.fillStyle = '#000';
 ctx.fillText("Wahoo", 49, 99);
 
+var m = ctx.measureText("Wahoo");
+
+ctx.strokeStyle = '#f00';
+
+ctx.strokeRect(49 + m.actualBoundingBoxLeft,
+  99 - m.actualBoundingBoxAscent,
+  m.actualBoundingBoxRight - m.actualBoundingBoxLeft,
+  m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+
 var out = fs.createWriteStream(__dirname + '/text.png')
   , stream = canvas.createPNGStream();
 

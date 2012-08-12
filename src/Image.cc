@@ -881,17 +881,21 @@ Image::loadJPEG(FILE *stream) {
     buf = (uint8_t *) malloc(len);
     if (!buf) return CAIRO_STATUS_NO_MEMORY;
 
-    fread(buf, len, 1, stream);
-    fclose(stream);
-
-    if ((DATA_IMAGE | DATA_MIME) == data_mode) {
+    if (fread(buf, len, 1, stream) != len) {
+      status = CAIRO_STATUS_READ_ERROR;
+    } else if ((DATA_IMAGE | DATA_MIME) == data_mode) {
       status = loadJPEGFromBuffer(buf, len);
       if (!status) status = assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     } else if (DATA_MIME == data_mode) {
       status = decodeJPEGBufferIntoMimeSurface(buf, len);
+    } else {
+      status = CAIRO_STATUS_READ_ERROR;
     }
 
+    fclose(stream);
     free(buf);
+#else
+    status = CAIRO_STATUS_READ_ERROR;
 #endif
   }
 

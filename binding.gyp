@@ -1,9 +1,20 @@
 {
-  'variables': {
-    'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
-    'with_jpeg%': 'false',
-    'with_gif%': 'false'
-  },
+  'conditions': [
+    ['OS=="win"', {
+      'variables': {
+        'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
+        'with_jpeg%': 'false',
+        'with_gif%': 'false',
+        'with_pango%': 'false'
+      }
+    }, { # 'OS!="win"'
+      'variables': {
+        'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
+        'with_gif%': '<!(./util/has_lib.sh gif)',
+        'with_pango%': '<!(./util/has_lib.sh pangocairo)'
+      }
+    }]
+  ],
   'targets': [
     {
       'target_name': 'canvas',
@@ -34,7 +45,26 @@
           'libraries': [
             '-lpixman-1',
             '-lcairo'
+          ]
+        }],
+        ['with_pango=="true"', {
+          'defines': [
+            'HAVE_PANGO'
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/pangocairo.lib'
+              ]
+            }, { # 'OS!="win"'
+              'include_dirs': [ # tried to pass through cflags but failed
+                '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
+              ],
+              'libraries': [
+                '<!@(pkg-config pangocairo --libs)'
+              ]
+            }]
+          ]
         }],
         ['with_jpeg=="true"', {
           'defines': [
