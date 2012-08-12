@@ -1,4 +1,15 @@
 
+0.13.0 / 2012-08-12 
+==================
+
+  * add pango support [c-spencer]
+  * add pango / png / jpeg gyp auto-detection [c-spencer]
+  * add `.gifVersion` [tootallnate]
+  * add `.jpegVersion` [tootallnate]
+  * add moar gyp stuff [tootallnate]
+  * remove wscript
+  * fix `closure_destroy()` with cast for `AdjustAmountOfExternalAllocatedMemory()`
+
 0.12.1 / 2012-06-29 
 ==================
 
