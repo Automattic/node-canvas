@@ -1747,35 +1747,39 @@ Context2d::SetFont(const Arguments &args) {
 
   if (size > 0) context->state->fontSize = size;
 
+  PangoStyle s = PANGO_STYLE_NORMAL;
   if (strlen(*style) > 0) {
     if (0 == strcmp("italic", *style)) {
-      context->state->fontStyle = PANGO_STYLE_ITALIC;
+      s = PANGO_STYLE_ITALIC;
     } else if (0 == strcmp("oblique", *style)) {
-      context->state->fontStyle = PANGO_STYLE_OBLIQUE;
+      s = PANGO_STYLE_OBLIQUE;
     }
   }
+  context->state->fontStyle = s;
 
+  PangoWeight w = PANGO_WEIGHT_NORMAL;
   if (strlen(*weight) > 0) {
     if (0 == strcmp("bold", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_BOLD;
+      w = PANGO_WEIGHT_BOLD;
     } else if (0 == strcmp("200", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_ULTRALIGHT;
+      w = PANGO_WEIGHT_ULTRALIGHT;
     } else if (0 == strcmp("300", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_LIGHT;
+      w = PANGO_WEIGHT_LIGHT;
     } else if (0 == strcmp("400", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_NORMAL;
+      w = PANGO_WEIGHT_NORMAL;
     } else if (0 == strcmp("500", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_MEDIUM;
+      w = PANGO_WEIGHT_MEDIUM;
     } else if (0 == strcmp("600", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_SEMIBOLD;
+      w = PANGO_WEIGHT_SEMIBOLD;
     } else if (0 == strcmp("700", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_BOLD;
+      w = PANGO_WEIGHT_BOLD;
     } else if (0 == strcmp("800", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_ULTRABOLD;
+      w = PANGO_WEIGHT_ULTRABOLD;
     } else if (0 == strcmp("900", *weight)) {
-      context->state->fontWeight = PANGO_WEIGHT_HEAVY;
+      w = PANGO_WEIGHT_HEAVY;
     }
   }
+  context->state->fontWeight = w;
 
   context->setFontFromState();
 
