@@ -27,8 +27,10 @@ init (Handle<Object> target) {
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
 #ifdef HAVE_JPEG
 
-#ifdef LIBJPEG_TURBO_VERSION
+#ifndef JPEG_LIB_VERSION_MAJOR
 #define JPEG_LIB_VERSION_MAJOR 8
+#endif
+#ifndef JPEG_LIB_VERSION_MINOR
 #define JPEG_LIB_VERSION_MINOR 4
 #endif
 
