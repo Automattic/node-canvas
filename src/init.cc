@@ -28,14 +28,27 @@ init (Handle<Object> target) {
 #ifdef HAVE_JPEG
 
 #ifndef JPEG_LIB_VERSION_MAJOR
-#define JPEG_LIB_VERSION_MAJOR 8
+#ifdef JPEG_LIB_VERSION
+#define JPEG_LIB_VERSION_MAJOR (JPEG_LIB_VERSION / 10)
+#else
+#define JPEG_LIB_VERSION_MAJOR 0
 #endif
+#endif
+
 #ifndef JPEG_LIB_VERSION_MINOR
-#define JPEG_LIB_VERSION_MINOR 4
+#ifdef JPEG_LIB_VERSION
+#define JPEG_LIB_VERSION_MINOR (JPEG_LIB_VERSION % 10)
+#else
+#define JPEG_LIB_VERSION_MINOR 0
+#endif
 #endif
 
   char jpeg_version[10];
-  snprintf(jpeg_version, 10, "%d%c", JPEG_LIB_VERSION_MAJOR, JPEG_LIB_VERSION_MINOR + 'a' - 1);
+  if (JPEG_LIB_VERSION_MINOR > 0) {
+    snprintf(jpeg_version, 10, "%d%c", JPEG_LIB_VERSION_MAJOR, JPEG_LIB_VERSION_MINOR + 'a' - 1);
+  } else {
+    snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
+  }
   target->Set(String::New("jpegVersion"), String::New(jpeg_version));
 #endif
 #ifdef HAVE_GIF
