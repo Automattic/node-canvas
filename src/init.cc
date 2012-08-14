@@ -51,8 +51,15 @@ init (Handle<Object> target) {
   }
   target->Set(String::New("jpegVersion"), String::New(jpeg_version));
 #endif
+
 #ifdef HAVE_GIF
+#ifndef GIF_LIB_VERSION
+  char gif_version[10];
+  snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
+  target->Set(String::New("gifVersion"), String::New(gif_version));
+#else
   target->Set(String::New("gifVersion"), String::New(GIF_LIB_VERSION));
+#endif
 #endif
 }
 
