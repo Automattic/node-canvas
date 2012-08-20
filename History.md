@@ -1,4 +1,11 @@
 
+0.13.1 / 2012-08-20 
+==================
+
+  * fix cases where GIF_LIB_VERSION is not defined
+  * fix auto-detection of optional libraries for OS X
+  * fix Context2d::SetFont for pango when setting normal weight/style
+
 0.13.0 / 2012-08-12 
 ==================
 
