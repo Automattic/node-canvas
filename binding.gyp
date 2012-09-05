@@ -43,8 +43,11 @@
           ]
         }, {  # 'OS!="win"'
           'libraries': [
-            '-lpixman-1',
-            '-lcairo'
+            '<!@(pkg-config pixman-1 --libs)',
+            '<!@(pkg-config cairo --libs)'
+          ],
+          'include_dirs': [
+            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
           ]
         }],
         ['with_pango=="true"', {
