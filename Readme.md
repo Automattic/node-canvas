@@ -79,14 +79,14 @@ img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
 
 If image data is not tracked, and the Image is drawn to an image rather than a PDF canvas, the output will be junk. Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
 
-### Canvas#createPNGStream()
+### Canvas#pngStream()
 
-  To create a `PNGStream` simply call `canvas.createPNGStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
+  To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
 
 ```javascript
 var fs = require('fs')
   , out = fs.createWriteStream(__dirname + '/text.png')
-  , stream = canvas.createPNGStream();
+  , stream = canvas.pngStream();
 
 stream.on('data', function(chunk){
   out.write(chunk);
@@ -99,9 +99,9 @@ stream.on('end', function(){
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
 
-### Canvas#createJPEGStream()
+### Canvas#jpegStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.createJPEGStream()` with some optional parameters; functionality is otherwise identical to `createPNGStream()`. See `examples/crop.js` for an example.
+You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with some optional parameters; functionality is otherwise identical to `pngStream()`. See `examples/crop.js` for an example.
 
 ### Canvas#toBuffer()
 
