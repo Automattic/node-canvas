@@ -2,7 +2,7 @@
   'conditions': [
     ['OS=="win"', {
       'variables': {
-        'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
+        'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
@@ -12,8 +12,9 @@
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
+        # disable pango as it causes issues with freetype.
         'with_pango%': 'false',
-        'with_freetype%': 'true'
+        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
       }
     }]
   ],
@@ -41,13 +42,12 @@
           ],
           'defines': [
             'snprintf=_snprintf',
-            '_USE_MATH_DEFINES'  # for M_PI
+            '_USE_MATH_DEFINES' # for M_PI
           ]
-        }, {  # 'OS!="win"'
+        }, { # 'OS!="win"'
           'libraries': [
-            '<!@(./util/lib_lookup.sh pixman-1)',
-            '<!@(./util/lib_lookup.sh cairo)',
-            '<!@(./util/lib_lookup.sh libpng)'
+            '-lpixman-1',
+            '-lcairo'
           ]
         }],
         ['with_freetype=="true"', {
@@ -64,7 +64,7 @@
               'include_dirs': [ # tried to pass through cflags but failed.
                 # Need to include the header files of cairo AND freetype.
                 # Looking up the includes of cairo does both.
-                '<!@(./util/cairo_include.sh)'
+                '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
               ]
             }]
           ]
