@@ -13,7 +13,7 @@
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
         'with_pango%': '<!(./util/has_lib.sh pangocairo)',
-        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
+        'with_freetype%': 'true'
       }
     }]
   ],
@@ -45,8 +45,9 @@
           ]
         }, {  # 'OS!="win"'
           'libraries': [
-            '-lpixman-1',
-            '-lcairo'
+            '<!@(./util/lib_lookup.sh pixman-1)',
+            '<!@(./util/lib_lookup.sh cairo)'
+            '<!@(./util/lib_lookup.sh libpng)'
           ]
         }],
         ['with_freetype=="true"', {
@@ -63,7 +64,7 @@
               'include_dirs': [ # tried to pass through cflags but failed.
                 # Need to include the header files of cairo AND freetype.
                 # Looking up the includes of cairo does both.
-                '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
+                '<!@(./util/cairo_include.sh)'
               ]
             }]
           ]
