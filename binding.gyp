@@ -12,7 +12,7 @@
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
-        'with_pango%': '<!(./util/has_lib.sh pangocairo)',
+        'with_pango%': 'false',
         'with_freetype%': 'true'
       }
     }]
@@ -46,7 +46,7 @@
         }, {  # 'OS!="win"'
           'libraries': [
             '<!@(./util/lib_lookup.sh pixman-1)',
-            '<!@(./util/lib_lookup.sh cairo)'
+            '<!@(./util/lib_lookup.sh cairo)',
             '<!@(./util/lib_lookup.sh libpng)'
           ]
         }],
