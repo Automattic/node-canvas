@@ -39,6 +39,10 @@
 #ifndef __NODE_STRNDUP_H__
 #define __NODE_STRNDUP_H__
 
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
+
 inline size_t
 strnlen(const char *s, size_t len) {
   size_t i;
@@ -50,7 +54,7 @@ strnlen(const char *s, size_t len) {
 
 inline char *
 strndup(const char *old, size_t sz) {
-  size_t len = strnlen (old, sz);
+  size_t len = strnlen(old, sz);
   char *t = (char *)malloc(len + 1);
 
   if (t != NULL) {
