@@ -16,6 +16,10 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 
+#ifndef HAVE_STRNDUP
+#include "strndup.h"
+#endif
+
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
