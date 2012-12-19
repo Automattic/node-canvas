@@ -1,4 +1,3 @@
-
 //
 // Canvas.cc
 //
@@ -406,6 +405,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
 Canvas::~Canvas() {
   switch (type) {
     case CANVAS_TYPE_PDF:
+      cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
       free(_closure);
       cairo_surface_destroy(_surface);
