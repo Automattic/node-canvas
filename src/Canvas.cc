@@ -257,7 +257,7 @@ Canvas::ToBuffer(const Arguments &args) {
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
     req->data = closure;
-    uv_queue_work(uv_default_loop(), req, ToBufferAsync, ToBufferAsyncAfter);
+    uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
 #else
     eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
     ev_ref(EV_DEFAULT_UC);
