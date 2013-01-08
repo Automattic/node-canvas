@@ -14,6 +14,10 @@
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
 
+#ifdef HAVE_FREETYPE
+#include "FontFace.h"
+#endif
+
 extern "C" void
 init (Handle<Object> target) {
   HandleScope scope;
@@ -24,6 +28,10 @@ init (Handle<Object> target) {
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
+#ifdef HAVE_FREETYPE
+  FontFace::Initialize(target);
+#endif
+
   target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
 #ifdef HAVE_JPEG
 

@@ -90,6 +90,8 @@ Gradient::AddColorStop(const Arguments &args) {
       , color.g
       , color.b
       , color.a);
+  } else {
+    return ThrowException(Exception::TypeError(String::New("parse color failed")));
   }
 
   return Undefined();
