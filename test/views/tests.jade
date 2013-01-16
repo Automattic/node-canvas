@@ -1,19 +1,23 @@
-h1 node-canvas
 
-p.msg
-  | The tests below assert visual and api integrity by running the
-  em exact
-  | same code utilizing the client canvas api, as well as node-canvas.
+extend layout
 
-p
-  | Click to
-  a#run(href='#') re-run
-  | the test suite or "r".
+block content
+  h1 node-canvas
 
-table#tests
-  thead
-    tr
-      th node-canvas
-      th target
-      th
-  tbody
+  p.msg
+    | The tests below assert visual and api integrity by running the
+    em &nbsp;exact&nbsp;
+    | same code utilizing the client canvas api, as well as node-canvas.
+
+  p
+    | Click to
+    a#run(href='#') &nbsp;re-run&nbsp;
+    | the test suite or "r".
+
+  table#tests
+    thead
+      tr
+        th node-canvas
+        th target
+        th
+    tbody
