@@ -42,7 +42,7 @@ ctx.fillText('Quo Vaids?', 0, 210);
 ctx.font = 'bold italic 50px pfennigFont';
 ctx.fillText('Quo Vaids?', 0, 280);
 
-var out = fs.createWriteStream(__dirname + '/fontExample.png');
+var out = fs.createWriteStream(__dirname + '/font.png');
 var stream = canvas.createPNGStream();
 
 stream.on('data', function(chunk){
