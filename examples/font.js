@@ -27,9 +27,9 @@ var canvas = new Canvas(320, 320)
 var ctx = canvas.getContext('2d')
 
 // Tell the ctx to use the font.
-ctx.useFont(pfennigFont);
+ctx.addFont(pfennigFont);
 
-ctx.font = 'normal normal 50px "Times", serif';
+ctx.font = 'normal normal 50px Helvetica';
 
 ctx.fillText('Quo Vaids?', 0, 70);
 
