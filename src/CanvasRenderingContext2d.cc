@@ -1720,6 +1720,10 @@ Context2d::MoveTo(const Arguments &args) {
   return Undefined();
 }
 
+/*
+ * Set font face.
+ */
+
 #ifdef HAVE_FREETYPE
 Handle<Value>
 Context2d::SetFontFace(const Arguments &args) {
@@ -1734,7 +1738,6 @@ Context2d::SetFontFace(const Arguments &args) {
 
   if (!FontFace::constructor->HasInstance(obj))
     return ThrowException(Exception::TypeError(String::New("FontFace expected")));
-
 
   FontFace *face = ObjectWrap::Unwrap<FontFace>(obj);
   double size = args[1]->NumberValue();
