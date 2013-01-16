@@ -6,12 +6,10 @@
 var express = require('express')
   , Canvas = require('../lib/canvas')
   , Image = Canvas.Image
-  , jade = require('jade')
-  , app = express.createServer();
+  , app = express();
 
 // Config
 
-app.register('.jade', jade);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
@@ -22,7 +20,7 @@ app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(app.router);
 app.use(express.static(__dirname + '/public'));
-app.use(express.errorHandler({ showStack: true }));
+app.use(express.errorHandler());
 
 // Routes
 
@@ -36,7 +34,7 @@ app.post('/render', function(req, res, next){
   req.body.fn = req.body.fn
     .replace("'state.png'", "'" + __dirname + "/public/state.png'")
     .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'");
-  
+
   // Do not try this at home :)
   var fn = eval('(' + req.body.fn + ')')
     , width = req.body.width
@@ -52,10 +50,11 @@ app.post('/render', function(req, res, next){
     });
   }
 
-  2 == fn.length 
+  2 == fn.length
     ? fn(ctx, done)
     : fn(ctx), done();
 });
 
-app.listen(parseInt(process.argv[2] || '3000', 10));
-console.log('Test server listening on port %d', app.address().port);
+var port = parseInt(process.argv[2] || '4000', 10);
+app.listen(port);
+console.log('Test server listening on port %d', port);
