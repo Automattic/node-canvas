@@ -16,6 +16,10 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 
+#ifdef HAVE_FREETYPE
+#include "FontFace.h"
+#endif
+
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
@@ -113,6 +117,9 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
+#ifdef HAVE_FREETYPE
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFontFace", SetFontFace);
+#endif
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
@@ -272,8 +279,8 @@ Context2d::restorePath() {
 void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
-    cairo_set_source(_context, state->fillPattern); 
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+    cairo_set_source(_context, state->fillPattern);
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
     // TODO repeat/repeat-x/repeat-y
   } else if (state->fillGradient) {
     cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
@@ -300,8 +307,8 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
-    cairo_set_source(_context, state->strokePattern); 
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+    cairo_set_source(_context, state->strokePattern);
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
   } else if (state->strokeGradient) {
     cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
     cairo_set_source(_context, state->strokeGradient);
@@ -396,15 +403,15 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
-  unsigned* precalc = 
+  unsigned* precalc =
       (unsigned*)malloc(width*height*sizeof(unsigned));
   unsigned char* src = cairo_image_surface_get_data( surface );
   double mul=1.f/((radius*2)*(radius*2));
   int channel;
-  
+
   // The number of times to perform the averaging. According to wikipedia,
   // three iterations is good enough to pass for a gaussian.
-  const int MAX_ITERATIONS = 3; 
+  const int MAX_ITERATIONS = 3;
   int iteration;
 
   for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
@@ -435,7 +442,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
                   int t = y < radius ? 0 : y - radius;
                   int r = x + radius >= width ? width - 1 : x + radius;
                   int b = y + radius >= height ? height - 1 : y + radius;
-                  int tot = precalc[r+b*width] + precalc[l+t*width] - 
+                  int tot = precalc[r+b*width] + precalc[l+t*width] -
                       precalc[l+b*width] - precalc[r+t*width];
                   *pix=(unsigned char)(tot*mul);
                   pix += 4;
@@ -498,7 +505,7 @@ Context2d::PutImageData(const Arguments &args) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
   PixelArray *arr = imageData->pixelArray();
-  
+
   uint8_t *src = arr->data();
   uint8_t *dst = context->canvas()->data();
 
@@ -533,8 +540,8 @@ Context2d::PutImageData(const Arguments &args) {
       if (sw <= 0 || sh <= 0) return Undefined();
       cols = sw;
       rows = sh;
-      dx += sx; 
-      dy += sy; 
+      dx += sx;
+      dy += sy;
       break;
     default:
       return ThrowException(Exception::Error(String::New("invalid arguments")));
@@ -1425,7 +1432,7 @@ Context2d::Transform(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_transform(context->context(), &matrix);
-  
+
   return Undefined();
 }
 
@@ -1543,14 +1550,14 @@ Context2d::FillText(const Arguments &args) {
 Handle<Value>
 Context2d::StrokeText(const Arguments &args) {
   HandleScope scope;
-  
+
   if (!args[1]->IsNumber()
     || !args[2]->IsNumber()) return Undefined();
 
   String::Utf8Value str(args[0]->ToString());
   double x = args[1]->NumberValue();
   double y = args[2]->NumberValue();
-  
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
@@ -1679,9 +1686,9 @@ Handle<Value>
 Context2d::LineTo(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[0]->IsNumber()) 
+  if (!args[0]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("lineTo() x must be a number")));
-  if (!args[1]->IsNumber()) 
+  if (!args[1]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("lineTo() y must be a number")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1700,9 +1707,9 @@ Handle<Value>
 Context2d::MoveTo(const Arguments &args) {
   HandleScope scope;
 
-  if (!args[0]->IsNumber()) 
+  if (!args[0]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("moveTo() x must be a number")));
-  if (!args[1]->IsNumber()) 
+  if (!args[1]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("moveTo() y must be a number")));
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1712,6 +1719,38 @@ Context2d::MoveTo(const Arguments &args) {
 
   return Undefined();
 }
+
+/*
+ * Set font face.
+ */
+
+#ifdef HAVE_FREETYPE
+Handle<Value>
+Context2d::SetFontFace(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore invalid args
+  if (!args[0]->IsObject()
+    || !args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("Expected object and number")));
+
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!FontFace::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("FontFace expected")));
+
+  FontFace *face = ObjectWrap::Unwrap<FontFace>(obj);
+  double size = args[1]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+
+  cairo_set_font_size(ctx, size);
+  cairo_set_font_face(ctx, face->cairoFace());
+
+  return Undefined();
+}
+#endif
 
 /*
  * Set font:

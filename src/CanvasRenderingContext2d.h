@@ -12,6 +12,15 @@
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
+#ifdef HAVE_FREETYPE
+#include <ft2build.h>
+#include <cairo-ft.h>
+#include FT_FREETYPE_H
+#endif
+
+#include <vector>
+using namespace std;
+
 typedef enum {
   TEXT_DRAW_PATHS,
   TEXT_DRAW_GLYPHS
@@ -82,6 +91,9 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> FillText(const Arguments &args);
     static Handle<Value> StrokeText(const Arguments &args);
     static Handle<Value> SetFont(const Arguments &args);
+#ifdef HAVE_FREETYPE
+    static Handle<Value> SetFontFace(const Arguments &args);
+#endif
     static Handle<Value> SetFillColor(const Arguments &args);
     static Handle<Value> SetStrokeColor(const Arguments &args);
     static Handle<Value> SetFillPattern(const Arguments &args);
