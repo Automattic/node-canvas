@@ -1,4 +1,10 @@
 
+1.0.1 / 2013-02-25 
+==================
+
+  * travis: test modern node versions
+  * change the node-gyp build to use pkg-config
+
 1.0.0 / 2013-01-16
 ==================
 
