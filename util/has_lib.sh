@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 has_lib() {
-  local regex="lib$1.+(so|dylib)$"
+  local regex="lib$1.+(so|dylib)("$'\033'"\[0m)?$"
 
   # Try using ldconfig on linux systems
-  for LINE in `which ldconfig > /dev/null && ldconfig -p 2>/dev/null | grep -E $regex`; do
+  for LINE in `which ldconfig 2>&1 > /dev/null && ldconfig -p 2>/dev/null | grep -E $regex`; do
     return 0
   done
 
