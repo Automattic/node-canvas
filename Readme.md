@@ -155,6 +155,16 @@ Defaults to _path_.
 
 This property is tracked as part of the canvas state in save/restore.
 
+### CanvasRenderingContext2d#filter
+
+Like `patternQuality`, but applies to transformations effecting more than just patterns. Defaults to _good_.
+
+  - fast
+  - good
+  - best
+  - nearest
+  - bilinear
+
 ### Global Composite Operations
 
 In addition to those specified and commonly implemented by browsers, the following have been added:
