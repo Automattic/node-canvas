@@ -146,6 +146,8 @@ Given one of the values below will alter pattern (gradients, images, etc) render
   - fast
   - good
   - best
+  - nearest
+  - bilinear
 
 ### CanvasRenderingContext2d#textDrawingMode
 

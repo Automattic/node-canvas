@@ -777,6 +777,10 @@ Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const Accesso
     context->state->patternQuality = CAIRO_FILTER_GOOD;
   } else if (0 == strcmp("best", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_BEST;
+  } else if (0 == strcmp("nearest", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_NEAREST;
+  } else if (0 == strcmp("bilinear", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_BILINEAR;
   }
 }
 
@@ -792,6 +796,8 @@ Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
   switch (context->state->patternQuality) {
     case CAIRO_FILTER_FAST: quality = "fast"; break;
     case CAIRO_FILTER_BEST: quality = "best"; break;
+    case CAIRO_FILTER_NEAREST: quality = "nearest"; break;
+    case CAIRO_FILTER_BILINEAR: quality = "bilinear"; break;
     default: quality = "good";
   }
   return scope.Close(String::NewSymbol(quality));
