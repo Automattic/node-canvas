@@ -126,6 +126,7 @@ class Context2d: public node::ObjectWrap {
     static Handle<Value> GetShadowBlur(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetAntiAlias(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetTextDrawingMode(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetFilter(Local<String> prop, const AccessorInfo &info);
     static void SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
@@ -139,6 +140,7 @@ class Context2d: public node::ObjectWrap {
     static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }

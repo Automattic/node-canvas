@@ -141,6 +141,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   proto->SetAccessor(String::NewSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
+  proto->SetAccessor(String::NewSymbol("filter"), GetFilter, SetFilter);
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
 }
 
@@ -1013,6 +1014,48 @@ Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const Access
   } else if (0 == strcmp("glyph", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_GLYPHS;
   }
+}
+
+/*
+ * Get filter.
+ */
+
+Handle<Value>
+Context2d::GetFilter(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  const char *filter;
+  switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
+    case CAIRO_FILTER_FAST: filter = "fast"; break;
+    case CAIRO_FILTER_BEST: filter = "best"; break;
+    case CAIRO_FILTER_NEAREST: filter = "nearest"; break;
+    case CAIRO_FILTER_BILINEAR: filter = "bilinear"; break;
+    default: filter = "good";
+  }
+  return scope.Close(String::NewSymbol(filter));
+}
+
+/*
+ * Set filter.
+ */
+
+void
+Context2d::SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+  String::AsciiValue str(val->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_filter_t filter;
+  if (0 == strcmp("fast", *str)) {
+    filter = CAIRO_FILTER_FAST;
+  } else if (0 == strcmp("best", *str)) {
+    filter = CAIRO_FILTER_BEST;
+  } else if (0 == strcmp("nearest", *str)) {
+    filter = CAIRO_FILTER_NEAREST;
+  } else if (0 == strcmp("bilinear", *str)) {
+    filter = CAIRO_FILTER_BILINEAR;
+  } else {
+    filter = CAIRO_FILTER_GOOD;
+  }
+  cairo_pattern_set_filter(cairo_get_source(context->context()), filter);
 }
 
 /*
