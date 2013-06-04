@@ -1,4 +1,11 @@
 
+1.0.3 / 2013-06-04 
+==================
+
+ * add "nearest" and "bilinear" to patternQuality
+ * fix fread() retval check (items not bytes)
+ * removed unneeded private fields
+
 1.0.2 / 2013-03-22 
 ==================
 
