@@ -1,4 +1,3 @@
-
 //
 // Image.cc
 //
@@ -889,7 +888,7 @@ Image::loadJPEG(FILE *stream) {
     buf = (uint8_t *) malloc(len);
     if (!buf) return CAIRO_STATUS_NO_MEMORY;
 
-    if (fread(buf, len, 1, stream) != len) {
+    if (fread(buf, len, 1, stream) != 1) {
       status = CAIRO_STATUS_READ_ERROR;
     } else if ((DATA_IMAGE | DATA_MIME) == data_mode) {
       status = loadJPEGFromBuffer(buf, len);
