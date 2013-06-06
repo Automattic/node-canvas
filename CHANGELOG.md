@@ -9,7 +9,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Add support for multiple PDF page sizes
+
 ### Fixed
+* Don't crash when font string is invalid (bug since 2.2.0) (#1328)
 
 2.2.0
 ==================
