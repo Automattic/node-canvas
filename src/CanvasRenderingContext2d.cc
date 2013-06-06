@@ -8,6 +8,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <cairo/cairo-pdf.h>
 #include "Canvas.h"
 #include "Point.h"
 #include "Image.h"
