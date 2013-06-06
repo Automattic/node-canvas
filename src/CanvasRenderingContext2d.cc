@@ -479,11 +479,18 @@ Context2d::New(const Arguments &args) {
 Handle<Value>
 Context2d::AddPage(const Arguments &args) {
   HandleScope scope;
+  int width, height;
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  if (!context->canvas()->isPDF()) {
+  Canvas * canvas = context->canvas();
+  if (!canvas->isPDF()) {
     return ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()")));
   }
   cairo_show_page(context->context());
+
+  width = args[0]->IsNumber() ? args[0]->Uint32Value() : canvas->width;
+  height = args[1]->IsNumber() ? args[1]->Uint32Value() : canvas->height;
+  cairo_pdf_surface_set_size(canvas->surface(), width, height);
   return Undefined();
 }
 

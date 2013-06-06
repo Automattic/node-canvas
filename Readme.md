@@ -222,6 +222,16 @@ ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
 ```
 
+ It is also possible to create pages with different sizes by passing `witdh` and `height` to the `.addPage()` method:
+
+```js
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World', 50, 80);
+ctx.addPage(400, 800);
+
+ctx.fillText('Hello World 2', 50, 80);
+```
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
