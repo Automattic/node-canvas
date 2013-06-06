@@ -22,6 +22,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "backend/ImageBackend.h"
+#include <cairo/cairo-pdf.h>
 
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
@@ -756,6 +757,11 @@ NAN_METHOD(Context2d::AddPage) {
     return Nan::ThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
+  int width = Nan::To<int32_t>(info[0]).FromMaybe(0);
+  int height = Nan::To<int32_t>(info[1]).FromMaybe(0);
+  if (width < 1) width = context->canvas()->getWidth();
+  if (height < 1) height = context->canvas()->getHeight();
+  cairo_pdf_surface_set_size(context->canvas()->surface(), width, height);
   return;
 }
 
