@@ -48,12 +48,14 @@ class Canvas: public node::ObjectWrap {
   public:
     int width;
     int height;
+    char * output_path;
     canvas_type_t type;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> ToBuffer(const Arguments &args);
     static Handle<Value> GetType(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetOutputPath(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
     static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
@@ -80,7 +82,7 @@ class Canvas: public node::ObjectWrap {
     inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
-    Canvas(int width, int height, canvas_type_t type);
+    Canvas(int width, int height, canvas_type_t type, char * output_path);
     void resurface(Handle<Object> canvas);
 
   private:

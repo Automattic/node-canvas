@@ -41,6 +41,7 @@ Canvas::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
 #endif
   proto->SetAccessor(String::NewSymbol("type"), GetType);
+  proto->SetAccessor(String::NewSymbol("output_path"), GetOutputPath);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
@@ -55,13 +56,21 @@ Canvas::New(const Arguments &args) {
   HandleScope scope;
   int width = 0, height = 0;
   canvas_type_t type = CANVAS_TYPE_IMAGE;
+  char * output = NULL;
+  char * output_path = NULL;
+
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
-    ? CANVAS_TYPE_PDF
-    : CANVAS_TYPE_IMAGE;
-  Canvas *canvas = new Canvas(width, height, type);
+  if (args[2]->IsString()) {
+    output = strdup(*String::AsciiValue(args[2]));
+    if (!strncmp("pdf", output, 3)) {
+      type = CANVAS_TYPE_PDF;
+      output_path = output[3] == ':' ? &output[4] : NULL;
+    }
+  }
+  Canvas *canvas = new Canvas(width, height, type, output_path);
   canvas->Wrap(args.This());
+  free(output);
   return args.This();
 }
 
@@ -74,6 +83,20 @@ Canvas::GetType(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
   return scope.Close(String::New(canvas->isPDF() ? "pdf" : "image"));
+}
+
+/*
+ * Get output path.
+ */
+
+Handle<Value>
+Canvas::GetOutputPath(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+  if (canvas->output_path)
+    return scope.Close(String::New(canvas->output_path));
+  else
+    return scope.Close(Null());
 }
 
 /*
@@ -378,10 +401,11 @@ Canvas::StreamJPEGSync(const Arguments &args) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
+Canvas::Canvas(int w, int h, canvas_type_t t, char * op): ObjectWrap() {
   type = t;
   width = w;
   height = h;
+  output_path = op ? strdup(op) : NULL;
   _surface = NULL;
   _closure = NULL;
 
@@ -390,7 +414,10 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
     assert(_closure);
     cairo_status_t status = closure_init((closure_t *) _closure, this);
     assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
+    if (output_path)
+      _surface = cairo_pdf_surface_create(output_path, w, h);
+    else
+      _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
@@ -408,6 +435,7 @@ Canvas::~Canvas() {
       cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
       free(_closure);
+      free(output_path);
       cairo_surface_destroy(_surface);
       break;
     case CANVAS_TYPE_IMAGE:
