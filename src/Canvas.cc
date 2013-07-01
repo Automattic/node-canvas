@@ -36,6 +36,7 @@ Canvas::Initialize(Handle<Object> target) {
   // Prototype
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "end", EndSurface);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
 #ifdef HAVE_JPEG
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
@@ -314,6 +315,20 @@ Canvas::ToBuffer(const Arguments &args) {
       return buf->handle_;
     }
   }
+}
+
+/*
+ * Finish canvas surface
+ */
+
+Handle<Value>
+Canvas::EndSurface(const Arguments &args) {
+  HandleScope scope;
+
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  cairo_surface_finish(canvas->surface());
+
+  return scope.Close(Null());
 }
 
 /*
