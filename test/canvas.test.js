@@ -165,6 +165,15 @@ module.exports = {
     assert('image' == canvas.type);
   },
 
+  'test Canvas#output_path': function(){
+    var canvas = new Canvas(10, 10);
+    assert(undefined == canvas.output_path);
+    var canvas = new Canvas(10, 10, 'pdf');
+    assert(undefined == canvas.output_path);
+    var canvas = new Canvas(10, 10, 'pdf:/tmp/output.pdf');
+    assert('/tmp/output.pdf' == canvas.output_path);
+  },
+
   'test Canvas#getContext("2d")': function(){
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');

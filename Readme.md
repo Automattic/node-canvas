@@ -205,6 +205,12 @@ ctx.antialias = 'none';
 var canvas = new Canvas(200, 500, 'pdf');
 ```
 
+ An optional path can be passed along with the "pdf" string:
+
+```js
+var canvas = new Canvas(200, 500, 'pdf:/tmp/output.pdf');
+```
+
  An additional method `.addPage()` is then available to create 
  multiple page PDFs:
 
@@ -220,6 +226,18 @@ ctx.addPage();
 ctx.font = '22px Helvetica';
 ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
+```
+
+ The `.end()` method flush the underlying document after the last
+ page.
+
+```js
+var canvas = new Canvas(200, 500, 'pdf:/tmp/output.pdf');
+
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World', 50, 80);
+
+canvas.end();
 ```
 
 ## Benchmarks
