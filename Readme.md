@@ -228,6 +228,18 @@ ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
 ```
 
+ The `.end()` method flush the underlying document after the last
+ page.
+
+```js
+var canvas = new Canvas(200, 500, 'pdf:/tmp/output.pdf');
+
+ctx.font = '22px Helvetica';
+ctx.fillText('Hello World', 50, 80);
+
+canvas.end();
+```
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
