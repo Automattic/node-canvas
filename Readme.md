@@ -167,6 +167,20 @@ Like `patternQuality`, but applies to transformations effecting more than just p
   - nearest
   - bilinear
 
+### CanvasRenderingContext2d#drawImage() async
+
+A callback may be passed as the last argument to `Context2d#drawImage()` to
+cause the drawing to occur asynchronously. It will `callback(err)`.
+
+```javascript
+var canvas = new Canvas(20, 20),
+    ctx = canvas.getContext('2d'),
+    img = ...;
+ctx.drawImage(img, 20, 20, function(err) {
+  // canvas will have had img drawn on it
+});
+```
+
 ### Global Composite Operations
 
 In addition to those specified and commonly implemented by browsers, the following have been added:
