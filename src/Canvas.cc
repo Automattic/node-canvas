@@ -29,7 +29,11 @@ Canvas::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Canvas::New));
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Canvas::New));
+  #else
+    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
+  #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Canvas"));
 
@@ -202,9 +206,17 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
-    Local<Object> buf = Buffer::New(closure->len);
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      Local<Object> buf = Buffer::New(closure->len);
+    #else
+      Buffer *buf = Buffer::New(closure->len);
+    #endif
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
+    #else
+      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
+    #endif
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
   }
 
@@ -233,9 +245,20 @@ Canvas::ToBuffer(const Arguments &args) {
   if (canvas->isPDF()) {
     cairo_surface_finish(canvas->surface());
     closure_t *closure = (closure_t *) canvas->closure();
-    Local<Object> buf = Buffer::New(closure->len);
+
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      Local<Object> buf = Buffer::New(closure->len);
+    #else
+      Buffer *buf = Buffer::New(closure->len);
+    #endif
+
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    return buf;
+
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      return buf;
+    #else
+      return buf->handle_;
+    #endif
   }
 
   // Async
@@ -252,7 +275,11 @@ Canvas::ToBuffer(const Arguments &args) {
 
     // TODO: only one callback fn in closure
     canvas->Ref();
-    closure->pfn = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(args[0]));
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      closure->pfn = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(args[0]));
+    #else
+      closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    #endif
     
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
@@ -285,10 +312,18 @@ Canvas::ToBuffer(const Arguments &args) {
       closure_destroy(&closure);
       return ThrowException(Canvas::Error(status));
     } else {
-      Local<Object> buf = Buffer::New(closure.len);
+      #if NODE_VERSION_AT_LEAST(0, 11, 3)
+        Local<Object> buf = Buffer::New(closure.len);
+      #else
+        Buffer *buf = Buffer::New(closure.len);
+      #endif
       memcpy(Buffer::Data(buf), closure.data, closure.len);
       closure_destroy(&closure);
-      return buf;
+      #if NODE_VERSION_AT_LEAST(0, 11, 3)
+        return buf;
+      #else
+        return buf->handle_;
+      #endif
     }
   }
 }
@@ -301,11 +336,20 @@ static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   HandleScope scope;
   closure_t *closure = (closure_t *) c;
-  Local<Object> buf = Buffer::New(len);
-  memcpy(Buffer::Data(buf), data, len);
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    Local<Object> buf = Buffer::New(len);
+    memcpy(Buffer::Data(buf), data, len);
+  #else
+    Local<Buffer> buf = Buffer::New(len);
+    memcpy(Buffer::Data(buf->handle_), data, len);
+  #endif
   Local<Value> argv[3] = {
       Local<Value>::New(Null())
-    , Local<Value>::New(buf)
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      , Local<Value>::New(buf)
+    #else
+      , Local<Value>::New(buf->handle_)
+    #endif
     , Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;

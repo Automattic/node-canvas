@@ -39,7 +39,11 @@ Image::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Image::New));
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Image::New));
+  #else
+    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
+  #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Image"));
 
@@ -274,7 +278,11 @@ void
 Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->onload = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      img->onload = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
+    #else
+      img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
+    #endif
   }
 }
 
@@ -296,7 +304,11 @@ void
 Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->onerror = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      img->onerror = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
+    #else
+      img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
+    #endif
   }
 }
 

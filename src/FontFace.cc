@@ -28,7 +28,11 @@ FontFace::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(FontFace::New));
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(FontFace::New));
+  #else
+    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(FontFace::New));
+  #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("FontFace"));
 

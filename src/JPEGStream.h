@@ -30,11 +30,20 @@ init_closure_destination(j_compress_ptr cinfo){
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
-  Local<Object> buf = Buffer::New(dest->bufsize);
-  memcpy(Buffer::Data(buf), dest->buffer, dest->bufsize);
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    Local<Object> buf = Buffer::New(dest->bufsize);
+    memcpy(Buffer::Data(buf), dest->buffer, dest->bufsize);
+  #else
+    Local<Buffer> buf = Buffer::New(dest->bufsize);
+    memcpy(Buffer::Data(buf->handle_), dest->buffer, dest->bufsize);
+  #endif
   Local<Value> argv[3] = {
       Local<Value>::New(Null())
-    , Local<Value>::New(buf)
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      , Local<Value>::New(buf)
+    #else
+      , Local<Value>::New(buf->handle_)
+    #endif
     , Integer::New(dest->bufsize)
   };
   dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
@@ -48,12 +57,21 @@ term_closure_destination(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
-  Local<Object> buf = Buffer::New(remaining);
-  memcpy(Buffer::Data(buf), dest->buffer, remaining);
+  #if NODE_VERSION_AT_LEAST(0, 11, 3)
+    Local<Object> buf = Buffer::New(remaining);
+    memcpy(Buffer::Data(buf), dest->buffer, remaining);
+  #else
+    Local<Buffer> buf = Buffer::New(remaining);
+    memcpy(Buffer::Data(buf->handle_), dest->buffer, remaining);
+  #endif
 
   Local<Value> data_argv[3] = {
       Local<Value>::New(Null())
-    , Local<Value>::New(buf)
+    #if NODE_VERSION_AT_LEAST(0, 11, 3)
+      , Local<Value>::New(buf)
+    #else
+      , Local<Value>::New(buf->handle_)
+    #endif
     , Integer::New(remaining)
   };
 
