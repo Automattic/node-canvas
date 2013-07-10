@@ -81,7 +81,7 @@ Context2d::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Context2d::New));
+  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Context2d::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
 

@@ -20,7 +20,7 @@ Pattern::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Pattern::New));
+  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Pattern::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("CanvasPattern"));
 

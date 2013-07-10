@@ -39,7 +39,7 @@ Image::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
+  constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Image::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Image"));
 
@@ -274,7 +274,7 @@ void
 Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
+    img->onload = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
   }
 }
 
@@ -296,7 +296,7 @@ void
 Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
+    img->onerror = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
   }
 }
 
