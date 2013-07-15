@@ -508,7 +508,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   gif_data_t gifd = { buf, len, 0 };
 
-  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory, (int*) i)) == NULL)
+  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
 
   if (GIF_OK != DGifSlurp(gif)) {
