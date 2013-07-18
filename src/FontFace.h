@@ -17,7 +17,7 @@ class FontFace: public node::ObjectWrap {
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
+    template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
     FontFace(FT_Face ftFace, cairo_font_face_t *crFace)
       :_ftFace(ftFace), _crFace(crFace) {}
 

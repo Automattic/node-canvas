@@ -17,88 +17,98 @@ Persistent<FunctionTemplate> Gradient::constructor;
 
 void
 Gradient::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Gradient::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Gradient::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasGradient"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Gradient::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("CanvasGradient"));
+
 
   // Prototype
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addColorStop", AddColorStop);
-  target->Set(String::NewSymbol("CanvasGradient"), constructor->GetFunction());
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "addColorStop", AddColorStop);
+
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("CanvasGradient"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a new CanvasGradient.
  */
 
-Handle<Value>
-Gradient::New(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Gradient::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Linear
-  if (4 == args.Length()) {
+  if (4 == info.Length()) {
     Gradient *grad = new Gradient(
-        args[0]->NumberValue()
-      , args[1]->NumberValue()
-      , args[2]->NumberValue()
-      , args[3]->NumberValue());
-    grad->Wrap(args.This());
-    return args.This();
+        info[0]->NumberValue()
+      , info[1]->NumberValue()
+      , info[2]->NumberValue()
+      , info[3]->NumberValue());
+    grad->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
+    return;
   }
 
   // Radial
-  if (6 == args.Length()) {
+  if (6 == info.Length()) {
     Gradient *grad = new Gradient(
-        args[0]->NumberValue()
-      , args[1]->NumberValue()
-      , args[2]->NumberValue()
-      , args[3]->NumberValue()
-      , args[4]->NumberValue()
-      , args[5]->NumberValue());
-    grad->Wrap(args.This());
-    return args.This();
+        info[0]->NumberValue()
+      , info[1]->NumberValue()
+      , info[2]->NumberValue()
+      , info[3]->NumberValue()
+      , info[4]->NumberValue()
+      , info[5]->NumberValue());
+    grad->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
+    return;
   }
   
-  return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid arguments"))));
 }
 
 /*
  * Add color stop.
  */
 
-Handle<Value>
-Gradient::AddColorStop(const Arguments &args) {
+template<class T> void
+Gradient::AddColorStop(const v8::FunctionCallbackInfo<T> &info) {
   HandleScope scope;
-  if (!args[0]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("offset required")));
-  if (!args[1]->IsString())
-    return ThrowException(Exception::TypeError(String::New("color string required")));
+  if (!info[0]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("offset required"))));
+    return;
+  }
 
-  Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
+  if (!info[1]->IsString()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("color string required"))));
+    return;
+  }
+
+  Gradient *grad = ObjectWrap::Unwrap<Gradient>(info.This());
   short ok;
-  String::AsciiValue str(args[1]);
+  String::AsciiValue str(info[1]);
   uint32_t rgba = rgba_from_string(*str, &ok);
 
   if (ok) {
     rgba_t color = rgba_create(rgba);
     cairo_pattern_add_color_stop_rgba(
         grad->pattern()
-      , args[0]->NumberValue()
+      , info[0]->NumberValue()
       , color.r
       , color.g
       , color.b
       , color.a);
   } else {
-    return ThrowException(Exception::TypeError(String::New("parse color failed")));
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("parse color failed"))));
+    return;
   }
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*

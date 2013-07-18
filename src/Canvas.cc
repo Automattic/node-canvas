@@ -26,69 +26,72 @@ Persistent<FunctionTemplate> Canvas::constructor;
 
 void
 Canvas::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Canvas::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("Canvas"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Canvas::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("Canvas"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
+  Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "toBuffer", ToBuffer);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "streamPNGSync", StreamPNGSync);
 #ifdef HAVE_JPEG
-  NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "streamJPEGSync", StreamJPEGSync);
 #endif
   proto->SetAccessor(String::NewSymbol("type"), GetType);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
-  target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
+
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("Canvas"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a Canvas with the given width and height.
  */
 
-Handle<Value>
-Canvas::New(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Canvas::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   int width = 0, height = 0;
   canvas_type_t type = CANVAS_TYPE_IMAGE;
-  if (args[0]->IsNumber()) width = args[0]->Uint32Value();
-  if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
+  if (info[0]->IsNumber()) width = info[0]->Uint32Value();
+  if (info[1]->IsNumber()) height = info[1]->Uint32Value();
+  if (info[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(info[2]))
     ? CANVAS_TYPE_PDF
     : CANVAS_TYPE_IMAGE;
   Canvas *canvas = new Canvas(width, height, type);
-  canvas->Wrap(args.This());
-  return args.This();
+  canvas->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
  * Get type string.
  */
 
-Handle<Value>
-Canvas::GetType(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Canvas::GetType(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
-  return scope.Close(String::New(canvas->isPDF() ? "pdf" : "image"));
+  info.GetReturnValue().Set(String::New(canvas->isPDF() ? "pdf" : "image"));
 }
 
 /*
  * Get width.
  */
 
-Handle<Value>
-Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Canvas::GetWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
-  return scope.Close(Number::New(canvas->width));
+  info.GetReturnValue().Set(Number::New(canvas->width));
 }
 
 /*
@@ -96,7 +99,7 @@ Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Canvas::SetWidth(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->width = val->Uint32Value();
@@ -108,11 +111,12 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
  * Get height.
  */
 
-Handle<Value>
-Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Canvas::GetHeight(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
-  return scope.Close(Number::New(canvas->height));
+  info.GetReturnValue().Set(Number::New(canvas->height));
 }
 
 /*
@@ -120,7 +124,7 @@ Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Canvas::SetHeight(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->height = val->Uint32Value();
@@ -135,99 +139,68 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info
 static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  
+
   // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
     unsigned max = closure->max_len;
-  
+
     // round to the nearest multiple of 1024 bytes
     max = (closure->max_len + len + 1023) & ~1023;
-  
+
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
     closure->data = data;
     closure->max_len = max;
   }
-  
+
   memcpy(closure->data + closure->len, data, len);
   closure->len += len;
-  
+
   return CAIRO_STATUS_SUCCESS;
 }
 
 /*
  * EIO toBuffer callback.
  */
- 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
+
 void
 Canvas::ToBufferAsync(uv_work_t *req) {
-#elif NODE_VERSION_AT_LEAST(0, 5, 4)
-void
-Canvas::EIO_ToBuffer(eio_req *req) {
-#else
-int
-Canvas::EIO_ToBuffer(eio_req *req) {
-#endif
   closure_t *closure = (closure_t *) req->data;
 
   closure->status = cairo_surface_write_to_png_stream(
       closure->canvas->surface()
     , toBuffer
     , closure);
-    
-#if !NODE_VERSION_AT_LEAST(0, 5, 4)
-  return 0;
-#endif
 }
 
 /*
  * EIO after toBuffer callback.
  */
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
-#else
-int
-Canvas::EIO_AfterToBuffer(eio_req *req) {
-#endif
-
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   closure_t *closure = (closure_t *) req->data;
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
   delete req;
-#else
-  ev_unref(EV_DEFAULT_UC);
-#endif
+
+  Local<Function> cb = Local<Function>::New(isolate, closure->pfn);
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
+    cb->Call(Context::GetCurrent()->Global(), 1, argv);
   } else {
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Object> buf = Buffer::New(closure->len);
-    #else
-      Buffer *buf = Buffer::New(closure->len);
-    #endif
+    Local<Object> buf = Buffer::New(closure->len);
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
-    #else
-      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
-    #endif
-    closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
+    Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
+    cb->Call(Context::GetCurrent()->Global(), 2, argv);
   }
 
   closure->canvas->Unref();
   closure->pfn.Dispose();
   closure_destroy(closure);
   free(closure);
-  
-#if !NODE_VERSION_AT_LEAST(0, 6, 0)
-  return 0;
-#endif
 }
 
 /*
@@ -235,34 +208,28 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
  * callback function is passed.
  */
 
-Handle<Value>
-Canvas::ToBuffer(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   cairo_status_t status;
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
 
   // TODO: async / move this out
   if (canvas->isPDF()) {
     cairo_surface_finish(canvas->surface());
     closure_t *closure = (closure_t *) canvas->closure();
 
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Object> buf = Buffer::New(closure->len);
-    #else
-      Buffer *buf = Buffer::New(closure->len);
-    #endif
+    Local<Object> buf = Buffer::New(closure->len);
 
     memcpy(Buffer::Data(buf), closure->data, closure->len);
 
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      return buf;
-    #else
-      return buf->handle_;
-    #endif
+      info.GetReturnValue().Set(buf);
+      return;
   }
 
   // Async
-  if (args[0]->IsFunction()) {
+  if (info[0]->IsFunction()) {
     closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
     status = closure_init(closure, canvas);
 
@@ -270,27 +237,20 @@ Canvas::ToBuffer(const Arguments &args) {
     if (status) {
       closure_destroy(closure);
       free(closure);
-      return Canvas::Error(status);
+      info.GetReturnValue().Set(Canvas::Error(status));
+      return;
     }
 
     // TODO: only one callback fn in closure
     canvas->Ref();
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      closure->pfn = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(args[0]));
-    #else
-      closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    #endif
-    
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
+    closure->pfn.Reset(isolate, Handle<Function>::Cast(info[0]));
+
     uv_work_t* req = new uv_work_t;
     req->data = closure;
     uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
-#else
-    eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
-    ev_ref(EV_DEFAULT_UC);
-#endif
-    
-    return Undefined();
+
+    info.GetReturnValue().SetUndefined();
+    return;
   // Sync
   } else {
     closure_t closure;
@@ -299,7 +259,8 @@ Canvas::ToBuffer(const Arguments &args) {
     // ensure closure is ok
     if (status) {
       closure_destroy(&closure);
-      return Canvas::Error(status);
+      info.GetReturnValue().Set(Canvas::Error(status));
+      return;
     }
 
     TryCatch try_catch;
@@ -307,23 +268,15 @@ Canvas::ToBuffer(const Arguments &args) {
 
     if (try_catch.HasCaught()) {
       closure_destroy(&closure);
-      return try_catch.ReThrow();
+      info.GetReturnValue().Set(try_catch.ReThrow());
     } else if (status) {
       closure_destroy(&closure);
-      return ThrowException(Canvas::Error(status));
+      info.GetReturnValue().Set(ThrowException(Canvas::Error(status)));
     } else {
-      #if NODE_VERSION_AT_LEAST(0, 11, 3)
-        Local<Object> buf = Buffer::New(closure.len);
-      #else
-        Buffer *buf = Buffer::New(closure.len);
-      #endif
+      Local<Object> buf = Buffer::New(closure.len);
       memcpy(Buffer::Data(buf), closure.data, closure.len);
       closure_destroy(&closure);
-      #if NODE_VERSION_AT_LEAST(0, 11, 3)
-        return buf;
-      #else
-        return buf->handle_;
-      #endif
+      info.GetReturnValue().Set(buf);
     }
   }
 }
@@ -334,22 +287,14 @@ Canvas::ToBuffer(const Arguments &args) {
 
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   closure_t *closure = (closure_t *) c;
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    Local<Object> buf = Buffer::New(len);
-    memcpy(Buffer::Data(buf), data, len);
-  #else
-    Local<Buffer> buf = Buffer::New(len);
-    memcpy(Buffer::Data(buf->handle_), data, len);
-  #endif
+  Local<Object> buf = Buffer::New(len);
+  memcpy(Buffer::Data(buf), data, len);
   Local<Value> argv[3] = {
       Local<Value>::New(Null())
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      , Local<Value>::New(buf)
-    #else
-      , Local<Value>::New(buf->handle_)
-    #endif
+    , Local<Value>::New(buf)
     , Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;
@@ -359,22 +304,26 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
  * Stream PNG data synchronously.
  */
 
-Handle<Value>
-Canvas::StreamPNGSync(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Canvas::StreamPNGSync(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   // TODO: async as well
-  if (!args[0]->IsFunction())
-    return ThrowException(Exception::TypeError(String::New("callback function required")));
+  if (!info[0]->IsFunction()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("callback function required"))));
+    return;
+  }
 
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
-  closure.fn = Handle<Function>::Cast(args[0]);
+  closure.fn = Handle<Function>::Cast(info[0]);
 
   TryCatch try_catch;
   cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
-    return try_catch.ReThrow();
+    info.GetReturnValue().Set(try_catch.ReThrow());
+    return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
     closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
@@ -385,7 +334,7 @@ Canvas::StreamPNGSync(const Arguments &args) {
       , Integer::New(0) };
     closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
   }
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -394,26 +343,38 @@ Canvas::StreamPNGSync(const Arguments &args) {
 
 #ifdef HAVE_JPEG
 
-Handle<Value>
-Canvas::StreamJPEGSync(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Canvas::StreamJPEGSync(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   // TODO: async as well
-  if (!args[0]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("buffer size required")));
-  if (!args[1]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("quality setting required")));
-  if (!args[2]->IsFunction())
-    return ThrowException(Exception::TypeError(String::New("callback function required")));
+  if (!info[0]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("buffer size required"))));
+    return;
+  }
+  if (!info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("quality setting required"))));
+    return;
+  }
 
-  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+  if (!info[2]->IsFunction()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("callback function required"))));
+    return;
+  }
+
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
-  closure.fn = Handle<Function>::Cast(args[2]);
+  closure.fn = Handle<Function>::Cast(info[2]);
 
   TryCatch try_catch;
-  write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), &closure);
 
-  if (try_catch.HasCaught()) return try_catch.ReThrow();
-  return Undefined();
+  if (try_catch.HasCaught()) {
+     info.GetReturnValue().Set(try_catch.ReThrow());
+     return;
+  }
+
+  info.GetReturnValue().SetUndefined();
 }
 
 #endif

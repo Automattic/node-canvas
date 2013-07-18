@@ -17,75 +17,80 @@ Persistent<FunctionTemplate> PixelArray::constructor;
 
 void
 PixelArray::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(PixelArray::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(PixelArray::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(PixelArray::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->InstanceTemplate();
+  Local<ObjectTemplate> proto = lconstructor->InstanceTemplate();
   proto->SetAccessor(String::NewSymbol("length"), GetLength);
-  target->Set(String::NewSymbol("CanvasPixelArray"), constructor->GetFunction());
+
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("CanvasPixelArray"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a new PixelArray.
  */
 
-Handle<Value>
-PixelArray::New(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+PixelArray::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   PixelArray *arr;
-  Local<Object> obj = args[0]->ToObject();
+  Local<Object> obj = info[0]->ToObject();
 
-  switch (args.Length()) {
+  switch (info.Length()) {
     // width, height
     case 2:
       arr = new PixelArray(
-          args[0]->Int32Value()
-        , args[1]->Int32Value());
+          info[0]->Int32Value()
+        , info[1]->Int32Value());
       break;
     // canvas, x, y, width, height
     case 5: {
-      if (!Canvas::constructor->HasInstance(obj))
-        return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+      if (!Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj)) {
+        info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Canvas expected"))));
+        return;
+      }
 
       Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
       arr = new PixelArray(
           canvas
-        , args[1]->Int32Value()
-        , args[2]->Int32Value()
-        , args[3]->Int32Value()
-        , args[4]->Int32Value());
+        , info[1]->Int32Value()
+        , info[2]->Int32Value()
+        , info[3]->Int32Value()
+        , info[4]->Int32Value());
       }
       break;
     default:
-      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+      info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid arguments"))));
+      return;
   }
 
   // Let v8 handle accessors (and clamping)
-  args.This()->SetIndexedPropertiesToPixelData(
+  info.This()->SetIndexedPropertiesToPixelData(
       arr->data()
     , arr->length());
 
-  arr->Wrap(args.This());
-  return args.This();
+  arr->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
  * Get length.
  */
 
-Handle<Value>
-PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  return scope.Close(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
+void
+PixelArray::GetLength(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  info.GetReturnValue().Set(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*

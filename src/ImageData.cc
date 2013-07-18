@@ -15,59 +15,68 @@ Persistent<FunctionTemplate> ImageData::constructor;
 
 void
 ImageData::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(ImageData::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ImageData::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("ImageData"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(ImageData::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("ImageData"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+  Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight);
-  target->Set(String::NewSymbol("ImageData"), constructor->GetFunction());
+
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("ImageData"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a new ImageData object.
  */
 
-Handle<Value>
-ImageData::New(const Arguments &args) {
-  HandleScope scope;
-  Local<Object> obj = args[0]->ToObject();
+template<class T> void
+ImageData::New(const v8::FunctionCallbackInfo<T>  &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Local<Object> obj = info[0]->ToObject();
 
-  if (!PixelArray::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("CanvasPixelArray expected")));
+  if (!Local<FunctionTemplate>::New(isolate, PixelArray::constructor)->HasInstance(obj)) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("CanvasPixelArray expected"))));
+    return;
+  }
 
   PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(obj);
   ImageData *imageData = new ImageData(arr);
-  args.This()->Set(String::NewSymbol("data"), args[0]);
-  imageData->Wrap(args.This());
-  return args.This();
+  info.This()->Set(String::NewSymbol("data"), info[0]);
+  imageData->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
  * Get width.
  */
 
-Handle<Value>
-ImageData::GetWidth(Local<String> prop, const AccessorInfo &info) {
+void
+ImageData::GetWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(info.This());
-  return Number::New(imageData->pixelArray()->width());
+  info.GetReturnValue().Set(Number::New(imageData->pixelArray()->width()));
 }
 
 /*
  * Get height.
  */
 
-Handle<Value>
-ImageData::GetHeight(Local<String> prop, const AccessorInfo &info) {
+void
+ImageData::GetHeight(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(info.This());
-  return Number::New(imageData->pixelArray()->height());
+  info.GetReturnValue().Set(Number::New(imageData->pixelArray()->height()));
 }

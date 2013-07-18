@@ -36,19 +36,16 @@ typedef struct {
 
 void
 Image::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Image::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("Image"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Image::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("Image"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+  Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
   proto->SetAccessor(String::NewSymbol("source"), GetSource, SetSource);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
@@ -57,34 +54,39 @@ Image::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
   proto->SetAccessor(String::NewSymbol("dataMode"), GetDataMode, SetDataMode);
-  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
-  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
+  lconstructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
+  lconstructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
 #endif
-  target->Set(String::NewSymbol("Image"), constructor->GetFunction());
+
+  constructor.Reset(Isolate::GetCurrent(), lconstructor);
+
+  target->Set(String::NewSymbol("Image"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a new Image.
  */
 
-Handle<Value>
-Image::New(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Image::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
-  img->Wrap(args.This());
-  return args.This();
+  img->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
  * Get complete boolean.
  */
 
-Handle<Value>
-Image::GetComplete(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Image::GetComplete(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Boolean::New(Image::COMPLETE == img->state));
+  info.GetReturnValue().Set(Boolean::New(Image::COMPLETE == img->state));
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -93,11 +95,12 @@ Image::GetComplete(Local<String>, const AccessorInfo &info) {
  * Get dataMode.
  */
 
-Handle<Value>
-Image::GetDataMode(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Image::GetDataMode(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->data_mode));
+  info.GetReturnValue().Set(Number::New(img->data_mode));
 }
 
 /*
@@ -105,7 +108,9 @@ Image::GetDataMode(Local<String>, const AccessorInfo &info) {
  */
 
 void
-Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
+Image::SetDataMode(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (val->IsNumber()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
     int mode = val->Uint32Value();
@@ -119,32 +124,35 @@ Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
  * Get width.
  */
 
-Handle<Value>
-Image::GetWidth(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Image::GetWidth(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->width));
+  info.GetReturnValue().Set(Number::New(img->width));
 }
 /*
  * Get height.
  */
 
-Handle<Value>
-Image::GetHeight(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Image::GetHeight(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->height));
+  info.GetReturnValue().Set(Number::New(img->height));
 }
 
 /*
  * Get src path.
  */
 
-Handle<Value>
-Image::GetSource(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Image::GetSource(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(String::New(img->filename ? img->filename : ""));
+  info.GetReturnValue().Set(String::New(img->filename ? img->filename : ""));
 }
 
 /*
@@ -175,8 +183,9 @@ Image::clearData() {
  */
 
 void
-Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
-  HandleScope scope;
+Image::SetSource(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
@@ -264,10 +273,12 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
  * Get onload callback.
  */
 
-Handle<Value>
-Image::GetOnload(Local<String>, const AccessorInfo &info) {
+void
+Image::GetOnload(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return img->onload;
+  info.GetReturnValue().Set(img->onload);
 }
 
 /*
@@ -275,14 +286,13 @@ Image::GetOnload(Local<String>, const AccessorInfo &info) {
  */
 
 void
-Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
+Image::SetOnload(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      img->onload = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
-    #else
-      img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
-    #endif
+    img->onload.Reset(isolate, Handle<Function>::Cast(val));
   }
 }
 
@@ -290,10 +300,12 @@ Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
  * Get onerror callback.
  */
 
-Handle<Value>
-Image::GetOnerror(Local<String>, const AccessorInfo &info) {
+void
+Image::GetOnerror(Local<String>, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return img->onerror;
+  info.GetReturnValue().Set(img->onerror);
 }
 
 /*
@@ -301,14 +313,12 @@ Image::GetOnerror(Local<String>, const AccessorInfo &info) {
  */
 
 void
-Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
+Image::SetOnerror(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      img->onerror = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
-    #else
-      img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
-    #endif
+    img->onerror.Reset(isolate, Handle<Function>::Cast(val));
   }
 }
 
@@ -352,7 +362,8 @@ Image::load() {
 
 void
 Image::loaded() {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   state = COMPLETE;
 
   width = cairo_image_surface_get_width(_surface);
@@ -362,7 +373,7 @@ Image::loaded() {
 
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
-    onload->Call(Context::GetCurrent()->Global(), 0, NULL);
+    Local<Function>::New(isolate, onload)->Call(Context::GetCurrent()->Global(), 0, NULL);
     onload.Dispose();
     if (try_catch.HasCaught()) {
       error(try_catch.Exception());
@@ -376,11 +387,12 @@ Image::loaded() {
 
 void
 Image::error(Local<Value> err) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   if (!onerror.IsEmpty()) {
     Local<Value> argv[1] = { err };
     TryCatch try_catch;
-    onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+    Local<Function>::New(isolate, onerror)->Call(Context::GetCurrent()->Global(), 1, argv);
     onerror.Dispose();
     if (try_catch.HasCaught()) {
       FatalException(try_catch);

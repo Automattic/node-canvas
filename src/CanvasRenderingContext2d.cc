@@ -23,18 +23,18 @@
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
- * Rectangle arg assertions.
+ * Rectangle info assertions.
  */
 
-#define RECT_ARGS \
-  if (!args[0]->IsNumber() \
-    ||!args[1]->IsNumber() \
-    ||!args[2]->IsNumber() \
-    ||!args[3]->IsNumber()) return Undefined(); \
-  double x = args[0]->NumberValue(); \
-  double y = args[1]->NumberValue(); \
-  double width = args[2]->NumberValue(); \
-  double height = args[3]->NumberValue();
+#define RECT_INFO \
+  if (!info[0]->IsNumber() \
+    ||!info[1]->IsNumber() \
+    ||!info[2]->IsNumber() \
+    ||!info[3]->IsNumber()) {info.GetReturnValue().SetUndefined(); return;}\
+  double x = info[0]->NumberValue(); \
+  double y = info[1]->NumberValue(); \
+  double width = info[2]->NumberValue(); \
+  double height = info[3]->NumberValue();
 
 /*
  * Text baselines.
@@ -78,58 +78,55 @@ void state_assign_fontFamily(canvas_state_t *state, const char *str) {
 
 void
 Context2d::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Context2d::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Context2d::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Context2d::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addPage", AddPage);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "translate", Translate);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "transform", Transform);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "resetTransform", ResetTransform);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "isPointInPath", IsPointInPath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "scale", Scale);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "clip", Clip);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fill", Fill);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "stroke", Stroke);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fillText", FillText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeText", StrokeText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fillRect", FillRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeRect", StrokeRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "clearRect", ClearRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "rect", Rect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "measureText", MeasureText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "moveTo", MoveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "lineTo", LineTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "bezierCurveTo", BezierCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "quadraticCurveTo", QuadraticCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "beginPath", BeginPath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "closePath", ClosePath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
+  Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "addPage", AddPage);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "transform", Transform);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "resetTransform", ResetTransform);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "isPointInPath", IsPointInPath);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "scale", Scale);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "clip", Clip);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "fill", Fill);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "stroke", Stroke);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "fillText", FillText);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "strokeText", StrokeText);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "fillRect", FillRect);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "strokeRect", StrokeRect);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "clearRect", ClearRect);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "measureText", MeasureText);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "moveTo", MoveTo);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "lineTo", LineTo);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "bezierCurveTo", BezierCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "quadraticCurveTo", QuadraticCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "beginPath", BeginPath);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "closePath", ClosePath);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "arcTo", ArcTo);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFont", SetFont);
 #ifdef HAVE_FREETYPE
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFontFace", SetFontFace);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFontFace", SetFontFace);
 #endif
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokePattern", SetStrokePattern);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextBaseline", SetTextBaseline);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextAlignment", SetTextAlignment);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setStrokeColor", SetStrokeColor);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setStrokePattern", SetStrokePattern);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setTextBaseline", SetTextBaseline);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setTextAlignment", SetTextAlignment);
   proto->SetAccessor(String::NewSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
@@ -146,7 +143,10 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   proto->SetAccessor(String::NewSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
   proto->SetAccessor(String::NewSymbol("filter"), GetFilter, SetFilter);
-  target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
+
+  constructor.Reset(Isolate::GetCurrent(), lconstructor);
+
+  target->Set(String::NewSymbol("CanvasRenderingContext2d"), lconstructor->GetFunction());
 }
 
 /*
@@ -464,31 +464,36 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
  * Initialize a new Context2d with the given canvas.
  */
 
-Handle<Value>
-Context2d::New(const Arguments &args) {
-  HandleScope scope;
-  Local<Object> obj = args[0]->ToObject();
-  if (!Canvas::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+template<class T> void
+Context2d::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Local<Object> obj = info[0]->ToObject();
+  if (!Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj))  {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Canvas expected"))));
+    return;
+  }
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
   Context2d *context = new Context2d(canvas);
-  context->Wrap(args.This());
-  return args.This();
+  context->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
  * Create a new page.
  */
 
-Handle<Value>
-Context2d::AddPage(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::AddPage(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   if (!context->canvas()->isPDF()) {
-    return ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()")));
+   info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()"))));
+   return;
   }
   cairo_show_page(context->context());
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -499,15 +504,18 @@ Context2d::AddPage(const Arguments &args) {
  *
  */
 
-Handle<Value>
-Context2d::PutImageData(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  Local<Object> obj = args[0]->ToObject();
-  if (!ImageData::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("ImageData expected")));
+  Local<Object> obj = info[0]->ToObject();
+  if (!Local<FunctionTemplate>::New(isolate, ImageData::constructor)->HasInstance(obj)) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("ImageData expected"))));
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
   PixelArray *arr = imageData->pixelArray();
 
@@ -521,12 +529,12 @@ Context2d::PutImageData(const Arguments &args) {
     , sy = 0
     , sw = 0
     , sh = 0
-    , dx = args[1]->Int32Value()
-    , dy = args[2]->Int32Value()
+    , dx = info[1]->Int32Value()
+    , dy = info[2]->Int32Value()
     , rows
     , cols;
 
-  switch (args.Length()) {
+  switch (info.Length()) {
     // imageData, dx, dy
     case 3:
       cols = arr->width();
@@ -534,22 +542,26 @@ Context2d::PutImageData(const Arguments &args) {
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
-      sx = args[3]->Int32Value();
-      sy = args[4]->Int32Value();
-      sw = args[5]->Int32Value();
-      sh = args[6]->Int32Value();
+      sx = info[3]->Int32Value();
+      sy = info[4]->Int32Value();
+      sw = info[5]->Int32Value();
+      sh = info[6]->Int32Value();
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
       if (sy + sh > arr->height()) sh = arr->height() - sy;
-      if (sw <= 0 || sh <= 0) return Undefined();
+      if (sw <= 0 || sh <= 0) {
+        info.GetReturnValue().SetUndefined();
+        return;
+      }
       cols = sw;
       rows = sh;
       dx += sx;
       dy += sy;
       break;
     default:
-      return ThrowException(Exception::Error(String::New("invalid arguments")));
+      info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("invalid v8::FunctionCallbackInfo<T>"))));
+      return;
   }
 
   uint8_t *srcRows = src + sy * srcStride + sx * 4;
@@ -582,7 +594,7 @@ Context2d::PutImageData(const Arguments &args) {
     , cols
     , rows);
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -594,12 +606,15 @@ Context2d::PutImageData(const Arguments &args) {
  *
  */
 
-Handle<Value>
-Context2d::DrawImage(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (args.Length() < 3)
-    return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  if (info.Length() < 3) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid v8::FunctionCallbackInfo<T>"))));
+    return;
+  }
 
   int sx = 0
     , sy = 0
@@ -609,20 +624,21 @@ Context2d::DrawImage(const Arguments &args) {
 
   cairo_surface_t *surface;
 
-  Local<Object> obj = args[0]->ToObject();
+  Local<Object> obj = info[0]->ToObject();
 
   // Image
-  if (Image::constructor->HasInstance(obj)) {
+  if (Local<FunctionTemplate>::New(isolate, Image::constructor)->HasInstance(obj)) {
     Image *img = ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
-      return ThrowException(Exception::Error(String::New("Image given has not completed loading")));
+      info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Image given has not completed loading"))));
+      return;
     }
     sw = img->width;
     sh = img->height;
     surface = img->surface();
 
   // Canvas
-  } else if (Canvas::constructor->HasInstance(obj)) {
+  } else if (Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
     sw = canvas->width;
     sh = canvas->height;
@@ -630,41 +646,43 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Invalid
   } else {
-    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Image or Canvas expected"))));
+    return;
   }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  // Arguments
-  switch (args.Length()) {
+  // v8::FunctionCallbackInfo<T>
+  switch (info.Length()) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = args[1]->NumberValue();
-      sy = args[2]->NumberValue();
-      sw = args[3]->NumberValue();
-      sh = args[4]->NumberValue();
-      dx = args[5]->NumberValue();
-      dy = args[6]->NumberValue();
-      dw = args[7]->NumberValue();
-      dh = args[8]->NumberValue();
+      sx = info[1]->NumberValue();
+      sy = info[2]->NumberValue();
+      sw = info[3]->NumberValue();
+      sh = info[4]->NumberValue();
+      dx = info[5]->NumberValue();
+      dy = info[6]->NumberValue();
+      dw = info[7]->NumberValue();
+      dh = info[8]->NumberValue();
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
-      dw = args[3]->NumberValue();
-      dh = args[4]->NumberValue();
+      dx = info[1]->NumberValue();
+      dy = info[2]->NumberValue();
+      dw = info[3]->NumberValue();
+      dh = info[4]->NumberValue();
       break;
     // img, dx, dy
     case 3:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
+      dx = info[1]->NumberValue();
+      dy = info[2]->NumberValue();
       dw = sw;
       dh = sh;
       break;
     default:
-      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+      info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid v8::FunctionCallbackInfo<T>"))));
+      return;
   }
 
   // Start draw
@@ -691,18 +709,19 @@ Context2d::DrawImage(const Arguments &args) {
 
   cairo_restore(ctx);
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Get global alpha.
  */
 
-Handle<Value>
-Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetGlobalAlpha(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->globalAlpha));
+  info.GetReturnValue().Set(Number::New(context->state->globalAlpha));
 }
 
 /*
@@ -710,7 +729,7 @@ Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   double n = val->NumberValue();
   if (n >= 0 && n <= 1) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -722,9 +741,10 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorIn
  * Get global composite operation.
  */
 
-Handle<Value>
-Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetGlobalCompositeOperation(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
@@ -765,7 +785,7 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
 #endif
   }
 
-  return scope.Close(String::NewSymbol(op));
+  info.GetReturnValue().Set(String::NewSymbol(op));
 }
 
 /*
@@ -773,7 +793,7 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
  */
 
 void
-Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   String::AsciiValue quality(val->ToString());
   if (0 == strcmp("fast", *quality)) {
@@ -793,9 +813,10 @@ Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const Accesso
  * Get pattern quality.
  */
 
-Handle<Value>
-Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetPatternQuality(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *quality;
   switch (context->state->patternQuality) {
@@ -805,7 +826,7 @@ Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_FILTER_BILINEAR: quality = "bilinear"; break;
     default: quality = "good";
   }
-  return scope.Close(String::NewSymbol(quality));
+  info.GetReturnValue().Set(String::NewSymbol(quality));
 }
 
 /*
@@ -813,7 +834,7 @@ Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -888,11 +909,12 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
  * Get shadow offset x.
  */
 
-Handle<Value>
-Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetShadowOffsetX(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowOffsetX));
+  info.GetReturnValue().Set(Number::New(context->state->shadowOffsetX));
 }
 
 /*
@@ -900,7 +922,7 @@ Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetX = val->NumberValue();
 }
@@ -909,11 +931,12 @@ Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const Accessor
  * Get shadow offset y.
  */
 
-Handle<Value>
-Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetShadowOffsetY(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowOffsetY));
+  info.GetReturnValue().Set(Number::New(context->state->shadowOffsetY));
 }
 
 /*
@@ -921,7 +944,7 @@ Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetY = val->NumberValue();
 }
@@ -930,11 +953,12 @@ Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const Accessor
  * Get shadow blur.
  */
 
-Handle<Value>
-Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetShadowBlur(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowBlur));
+  info.GetReturnValue().Set(Number::New(context->state->shadowBlur));
 }
 
 /*
@@ -942,7 +966,7 @@ Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   int n = val->NumberValue();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -954,9 +978,10 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
  * Get current antialiasing setting.
  */
 
-Handle<Value>
-Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetAntiAlias(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *aa;
   switch (cairo_get_antialias(context->context())) {
@@ -965,7 +990,7 @@ Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_ANTIALIAS_SUBPIXEL: aa = "subpixel"; break;
     default: aa = "default";
   }
-  return scope.Close(String::NewSymbol(aa));
+  info.GetReturnValue().Set(String::NewSymbol(aa));
 }
 
 /*
@@ -973,7 +998,7 @@ Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
@@ -996,9 +1021,10 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo
  * Get text drawing mode.
  */
 
-Handle<Value>
-Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetTextDrawingMode(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *mode;
   if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -1008,7 +1034,7 @@ Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
   } else {
     mode = "unknown";
   }
-  return scope.Close(String::NewSymbol(mode));
+  info.GetReturnValue().Set(String::NewSymbol(mode));
 }
 
 /*
@@ -1016,7 +1042,7 @@ Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
@@ -1030,9 +1056,10 @@ Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const Access
  * Get filter.
  */
 
-Handle<Value>
-Context2d::GetFilter(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetFilter(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *filter;
   switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
@@ -1042,7 +1069,7 @@ Context2d::GetFilter(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_FILTER_BILINEAR: filter = "bilinear"; break;
     default: filter = "good";
   }
-  return scope.Close(String::NewSymbol(filter));
+  info.GetReturnValue().Set(String::NewSymbol(filter));
 }
 
 /*
@@ -1050,7 +1077,7 @@ Context2d::GetFilter(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetFilter(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
@@ -1072,11 +1099,12 @@ Context2d::SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &i
  * Get miter limit.
  */
 
-Handle<Value>
-Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetMiterLimit(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(cairo_get_miter_limit(context->context())));
+  info.GetReturnValue().Set(Number::New(cairo_get_miter_limit(context->context())));
 }
 
 /*
@@ -1084,7 +1112,7 @@ Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1096,11 +1124,12 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInf
  * Get line width.
  */
 
-Handle<Value>
-Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetLineWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(cairo_get_line_width(context->context())));
+  info.GetReturnValue().Set(Number::New(cairo_get_line_width(context->context())));
 }
 
 /*
@@ -1108,7 +1137,7 @@ Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1120,9 +1149,10 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
  * Get line join.
  */
 
-Handle<Value>
-Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetLineJoin(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *join;
   switch (cairo_get_line_join(context->context())) {
@@ -1130,7 +1160,7 @@ Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_LINE_JOIN_ROUND: join = "round"; break;
     default: join = "miter";
   }
-  return scope.Close(String::NewSymbol(join));
+  info.GetReturnValue().Set(String::NewSymbol(join));
 }
 
 /*
@@ -1138,7 +1168,7 @@ Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -1155,9 +1185,10 @@ Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo 
  * Get line cap.
  */
 
-Handle<Value>
-Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetLineCap(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *cap;
   switch (cairo_get_line_cap(context->context())) {
@@ -1165,7 +1196,7 @@ Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_LINE_CAP_SQUARE: cap = "square"; break;
     default: cap = "butt";
   }
-  return scope.Close(String::NewSymbol(cap));
+  info.GetReturnValue().Set(String::NewSymbol(cap));
 }
 
 /*
@@ -1173,7 +1204,7 @@ Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
-Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetLineCap(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -1190,64 +1221,70 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
  * Check if the given point is within the current path.
  */
 
-Handle<Value>
-Context2d::IsPointInPath(const Arguments &args) {
-  HandleScope scope;
-  if (args[0]->IsNumber() && args[1]->IsNumber()) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::IsPointInPath(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  if (info[0]->IsNumber() && info[1]->IsNumber()) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     cairo_t *ctx = context->context();
-    double x = args[0]->NumberValue()
-         , y = args[1]->NumberValue();
-    return scope.Close(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+    double x = info[0]->NumberValue()
+         , y = info[1]->NumberValue();
+    info.GetReturnValue().Set(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+  } else {
+    info.GetReturnValue().Set(False());
   }
-  return False();
 }
 
 /*
  * Set fill pattern, used internally for fillStyle=
  */
 
-Handle<Value>
-Context2d::SetFillPattern(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetFillPattern(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  Local<Object> obj = args[0]->ToObject();
-  if (Gradient::constructor->HasInstance(obj)){
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Local<Object> obj = info[0]->ToObject();
+  if (Local<FunctionTemplate>::New(isolate, Gradient::constructor)->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->fillGradient = grad->pattern();
-  } else if(Pattern::constructor->HasInstance(obj)){
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  } else if(Local<FunctionTemplate>::New(isolate, Pattern::constructor)->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->fillPattern = pattern->pattern();
   } else {
-    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected"))));
+    return;
   }
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Set stroke pattern, used internally for strokeStyle=
  */
 
-Handle<Value>
-Context2d::SetStrokePattern(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetStrokePattern(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  Local<Object> obj = args[0]->ToObject();
-  if (Gradient::constructor->HasInstance(obj)){
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Local<Object> obj = info[0]->ToObject();
+  if (Local<FunctionTemplate>::New(isolate, Gradient::constructor)->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->strokeGradient = grad->pattern();
-  } else if(Pattern::constructor->HasInstance(obj)){
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  } else if(Local<FunctionTemplate>::New(isolate, Pattern::constructor)->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->strokePattern = pattern->pattern();
   } else {
-    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected"))));
+    return;
   }
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -1255,7 +1292,7 @@ Context2d::SetStrokePattern(const Arguments &args) {
  */
 
 void
-Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   short ok;
   String::AsciiValue str(val->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
@@ -1269,125 +1306,150 @@ Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorIn
  * Get shadow color.
  */
 
-Handle<Value>
-Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetShadowColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  info.GetReturnValue().Set(String::New(buf));
 }
 
 /*
  * Set fill color, used internally for fillStyle=
  */
 
-Handle<Value>
-Context2d::SetFillColor(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetFillColor(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   short ok;
-  if (!args[0]->IsString()) return Undefined();
-  String::AsciiValue str(args[0]);
+  if (!info[0]->IsString()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  String::AsciiValue str(info[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
-  if (!ok) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  if (!ok) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->fillPattern = context->state->fillGradient = NULL;
   context->state->fill = rgba_create(rgba);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Get fill color.
  */
 
-Handle<Value>
-Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetFillColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->fill, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  info.GetReturnValue().Set(String::New(buf));
 }
 
 /*
  * Set stroke color, used internally for strokeStyle=
  */
 
-Handle<Value>
-Context2d::SetStrokeColor(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetStrokeColor(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   short ok;
-  if (!args[0]->IsString()) return Undefined();
-  String::AsciiValue str(args[0]);
+  if (!info[0]->IsString()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  String::AsciiValue str(info[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
-  if (!ok) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  if (!ok) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->strokePattern = context->state->strokeGradient = NULL;
   context->state->stroke = rgba_create(rgba);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Get stroke color.
  */
 
-Handle<Value>
-Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+void
+Context2d::GetStrokeColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->stroke, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  info.GetReturnValue().Set(String::New(buf));
 }
 
 /*
  * Bezier curve.
  */
 
-Handle<Value>
-Context2d::BezierCurveTo(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::BezierCurveTo(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber()
-    ||!args[1]->IsNumber()
-    ||!args[2]->IsNumber()
-    ||!args[3]->IsNumber()
-    ||!args[4]->IsNumber()
-    ||!args[5]->IsNumber()) return Undefined();
+  if (!info[0]->IsNumber()
+    ||!info[1]->IsNumber()
+    ||!info[2]->IsNumber()
+    ||!info[3]->IsNumber()
+    ||!info[4]->IsNumber()
+    ||!info[5]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_curve_to(context->context()
-    , args[0]->NumberValue()
-    , args[1]->NumberValue()
-    , args[2]->NumberValue()
-    , args[3]->NumberValue()
-    , args[4]->NumberValue()
-    , args[5]->NumberValue());
+    , info[0]->NumberValue()
+    , info[1]->NumberValue()
+    , info[2]->NumberValue()
+    , info[3]->NumberValue()
+    , info[4]->NumberValue()
+    , info[5]->NumberValue());
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Quadratic curve approximation from libsvg-cairo.
  */
 
-Handle<Value>
-Context2d::QuadraticCurveTo(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::QuadraticCurveTo(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber()
-    ||!args[1]->IsNumber()
-    ||!args[2]->IsNumber()
-    ||!args[3]->IsNumber()) return Undefined();
+  if (!info[0]->IsNumber()
+    ||!info[1]->IsNumber()
+    ||!info[2]->IsNumber()
+    ||!info[3]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
   double x, y
-    , x1 = args[0]->NumberValue()
-    , y1 = args[1]->NumberValue()
-    , x2 = args[2]->NumberValue()
-    , y2 = args[3]->NumberValue();
+    , x1 = info[0]->NumberValue()
+    , y1 = info[1]->NumberValue()
+    , x2 = info[2]->NumberValue()
+    , y2 = info[3]->NumberValue();
 
   cairo_get_current_point(ctx, &x, &y);
 
@@ -1402,186 +1464,202 @@ Context2d::QuadraticCurveTo(const Arguments &args) {
     , x2
     , y2);
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Save state.
  */
 
-Handle<Value>
-Context2d::Save(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Save(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->save();
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Restore state.
  */
 
-Handle<Value>
-Context2d::Restore(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Restore(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->restore();
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Creates a new subpath.
  */
 
-Handle<Value>
-Context2d::BeginPath(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::BeginPath(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_new_path(context->context());
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Marks the subpath as closed.
  */
 
-Handle<Value>
-Context2d::ClosePath(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::ClosePath(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_close_path(context->context());
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Rotate transformation.
  */
 
-Handle<Value>
-Context2d::Rotate(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Rotate(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_rotate(context->context()
-    , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
-  return Undefined();
+    , info[0]->IsNumber() ? info[0]->NumberValue() : 0);
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Modify the CTM.
  */
 
-Handle<Value>
-Context2d::Transform(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::Transform(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix
-    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
-    , args[1]->IsNumber() ? args[1]->NumberValue() : 0
-    , args[2]->IsNumber() ? args[2]->NumberValue() : 0
-    , args[3]->IsNumber() ? args[3]->NumberValue() : 0
-    , args[4]->IsNumber() ? args[4]->NumberValue() : 0
-    , args[5]->IsNumber() ? args[5]->NumberValue() : 0);
+    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
+    , info[1]->IsNumber() ? info[1]->NumberValue() : 0
+    , info[2]->IsNumber() ? info[2]->NumberValue() : 0
+    , info[3]->IsNumber() ? info[3]->NumberValue() : 0
+    , info[4]->IsNumber() ? info[4]->NumberValue() : 0
+    , info[5]->IsNumber() ? info[5]->NumberValue() : 0);
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_transform(context->context(), &matrix);
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Reset the CTM, used internally by setTransform().
  */
 
-Handle<Value>
-Context2d::ResetTransform(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::ResetTransform(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_identity_matrix(context->context());
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Translate transformation.
  */
 
-Handle<Value>
-Context2d::Translate(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Translate(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_translate(context->context()
-    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
-    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
-  return Undefined();
+    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
+    , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Scale transformation.
  */
 
-Handle<Value>
-Context2d::Scale(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Scale(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_scale(context->context()
-    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
-    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
-  return Undefined();
+    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
+    , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Use path as clipping region.
  */
 
-Handle<Value>
-Context2d::Clip(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Clip(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Fill the path.
  */
 
-Handle<Value>
-Context2d::Fill(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Fill(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->fill(true);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Stroke the path.
  */
 
-Handle<Value>
-Context2d::Stroke(const Arguments &args) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Stroke(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->stroke(true);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Fill text at (x, y).
  */
 
-Handle<Value>
-Context2d::FillText(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::FillText(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
+  if (!info[1]->IsNumber()
+    || !info[2]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
-  String::Utf8Value str(args[0]->ToString());
-  double x = args[1]->NumberValue();
-  double y = args[2]->NumberValue();
+  String::Utf8Value str(info[0]->ToString());
+  double x = info[1]->NumberValue();
+  double y = info[2]->NumberValue();
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1593,25 +1671,29 @@ Context2d::FillText(const Arguments &args) {
   }
   context->restorePath();
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Stroke text at (x ,y).
  */
 
-Handle<Value>
-Context2d::StrokeText(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::StrokeText(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
+  if (!info[1]->IsNumber()
+    || !info[2]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
-  String::Utf8Value str(args[0]->ToString());
-  double x = args[1]->NumberValue();
-  double y = args[2]->NumberValue();
+  String::Utf8Value str(info[0]->ToString());
+  double x = info[1]->NumberValue();
+  double y = info[2]->NumberValue();
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1623,7 +1705,7 @@ Context2d::StrokeText(const Arguments &args) {
   }
   context->restorePath();
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -1735,42 +1817,52 @@ Context2d::setTextPath(const char *str, double x, double y) {
  * Adds a point to the current subpath.
  */
 
-Handle<Value>
-Context2d::LineTo(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::LineTo(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("lineTo() x must be a number")));
-  if (!args[1]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("lineTo() y must be a number")));
+  if (!info[0]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("lineTo() x must be a number"))));
+    return;
+  }
+  if (!info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("lineTo() y must be a number"))));
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_line_to(context->context()
-    , args[0]->NumberValue()
-    , args[1]->NumberValue());
+    , info[0]->NumberValue()
+    , info[1]->NumberValue());
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Creates a new subpath at the given point.
  */
 
-Handle<Value>
-Context2d::MoveTo(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::MoveTo(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("moveTo() x must be a number")));
-  if (!args[1]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("moveTo() y must be a number")));
+  if (!info[0]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("moveTo() x must be a number"))));
+    return;
+  }
+  if (!info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("moveTo() y must be a number"))));
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_move_to(context->context()
-    , args[0]->NumberValue()
-    , args[1]->NumberValue());
+    , info[0]->NumberValue()
+    , info[1]->NumberValue());
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -1778,30 +1870,35 @@ Context2d::MoveTo(const Arguments &args) {
  */
 
 #ifdef HAVE_FREETYPE
-Handle<Value>
-Context2d::SetFontFace(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetFontFace(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  // Ignore invalid args
-  if (!args[0]->IsObject()
-    || !args[1]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("Expected object and number")));
+  // Ignore invalid info
+  if (!info[0]->IsObject()
+    || !info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Expected object and number"))));
+    return;
+  }
 
-  Local<Object> obj = args[0]->ToObject();
+  Local<Object> obj = info[0]->ToObject();
 
-  if (!FontFace::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("FontFace expected")));
+  if (!Local<FunctionTemplate>::New(isolate, FontFace::constructor)->HasInstance(obj)) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("FontFace expected"))));
+    return;
+  }
 
   FontFace *face = ObjectWrap::Unwrap<FontFace>(obj);
-  double size = args[1]->NumberValue();
+  double size = info[1]->NumberValue();
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
   cairo_set_font_size(ctx, size);
   cairo_set_font_face(ctx, face->cairoFace());
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 #endif
 
@@ -1814,24 +1911,27 @@ Context2d::SetFontFace(const Arguments &args) {
  *   - family
  */
 
-Handle<Value>
-Context2d::SetFont(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetFont(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  // Ignore invalid args
-  if (!args[0]->IsString()
-    || !args[1]->IsString()
-    || !args[2]->IsNumber()
-    || !args[3]->IsString()
-    || !args[4]->IsString()) return Undefined();
+  // Ignore invalid info
+  if (!info[0]->IsString()
+    || !info[1]->IsString()
+    || !info[2]->IsNumber()
+    || !info[3]->IsString()
+    || !info[4]->IsString()) {
+    info.GetReturnValue().SetUndefined();
+  }
 
-  String::AsciiValue weight(args[0]);
-  String::AsciiValue style(args[1]);
-  double size = args[2]->NumberValue();
-  String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
+  String::AsciiValue weight(info[0]);
+  String::AsciiValue style(info[1]);
+  double size = info[2]->NumberValue();
+  String::AsciiValue unit(info[3]);
+  String::AsciiValue family(info[4]);
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
 
 #if HAVE_PANGO
 
@@ -1900,7 +2000,7 @@ Context2d::SetFont(const Arguments &args) {
 
 #endif
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 #if HAVE_PANGO
@@ -1931,14 +2031,15 @@ Context2d::setFontFromState() {
  * fontBoundingBoxAscent, fontBoundingBoxDescent
  */
 
-Handle<Value>
-Context2d::MeasureText(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::MeasureText(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  String::Utf8Value str(args[0]->ToString());
+  String::Utf8Value str(info[0]->ToString());
   Local<Object> obj = Object::New();
 
 #if HAVE_PANGO
@@ -2050,85 +2151,105 @@ Context2d::MeasureText(const Arguments &args) {
 
 #endif
 
-  return scope.Close(obj);
+  info.GetReturnValue().Set(obj);
 }
 
 /*
  * Set text baseline.
  */
 
-Handle<Value>
-Context2d::SetTextBaseline(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetTextBaseline(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsInt32()) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->state->textBaseline = args[0]->Int32Value();
+  if (!info[0]->IsInt32()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->state->textBaseline = info[0]->Int32Value();
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Set text alignment. -1 0 1
  */
 
-Handle<Value>
-Context2d::SetTextAlignment(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::SetTextAlignment(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsInt32()) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  context->state->textAlignment = args[0]->Int32Value();
+  if (!info[0]->IsInt32()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  context->state->textAlignment = info[0]->Int32Value();
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Fill the rectangle defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::FillRect(const Arguments &args) {
-  HandleScope scope;
-  RECT_ARGS;
-  if (0 == width || 0 == height) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::FillRect(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  RECT_INFO;
+  if (0 == width || 0 == height) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->fill();
   context->restorePath();
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Stroke the rectangle defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::StrokeRect(const Arguments &args) {
-  HandleScope scope;
-  RECT_ARGS;
-  if (0 == width && 0 == height) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::StrokeRect(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  RECT_INFO;
+  if (0 == width && 0 == height) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->stroke();
   context->restorePath();
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Clears all pixels defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::ClearRect(const Arguments &args) {
-  HandleScope scope;
-  RECT_ARGS;
-  if (0 == width || 0 == height) return Undefined();
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::ClearRect(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  RECT_INFO;
+  if (0 == width || 0 == height) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   cairo_save(ctx);
   context->savePath();
@@ -2137,18 +2258,19 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_fill(ctx);
   context->restorePath();
   cairo_restore(ctx);
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Adds a rectangle subpath.
  */
 
-Handle<Value>
-Context2d::Rect(const Arguments &args) {
-  HandleScope scope;
-  RECT_ARGS;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+template<class T> void
+Context2d::Rect(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+  RECT_INFO;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   if (width == 0) {
     cairo_move_to(ctx, x, y);
@@ -2159,45 +2281,49 @@ Context2d::Rect(const Arguments &args) {
   } else {
     cairo_rectangle(ctx, x, y, width, height);
   }
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
  * Adds an arc at x, y with the given radis and start/end angles.
  */
 
-Handle<Value>
-Context2d::Arc(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::Arc(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber()
-    || !args[1]->IsNumber()
-    || !args[2]->IsNumber()
-    || !args[3]->IsNumber()
-    || !args[4]->IsNumber()) return Undefined();
-
-  bool anticlockwise = args[5]->BooleanValue();
-
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  cairo_t *ctx = context->context();
-
-  if (anticlockwise && M_PI * 2 != args[4]->NumberValue()) {
-    cairo_arc_negative(ctx
-      , args[0]->NumberValue()
-      , args[1]->NumberValue()
-      , args[2]->NumberValue()
-      , args[3]->NumberValue()
-      , args[4]->NumberValue());
-  } else {
-    cairo_arc(ctx
-      , args[0]->NumberValue()
-      , args[1]->NumberValue()
-      , args[2]->NumberValue()
-      , args[3]->NumberValue()
-      , args[4]->NumberValue());
+  if (!info[0]->IsNumber()
+    || !info[1]->IsNumber()
+    || !info[2]->IsNumber()
+    || !info[3]->IsNumber()
+    || !info[4]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
   }
 
-  return Undefined();
+  bool anticlockwise = info[5]->BooleanValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->context();
+
+  if (anticlockwise && M_PI * 2 != info[4]->NumberValue()) {
+    cairo_arc_negative(ctx
+      , info[0]->NumberValue()
+      , info[1]->NumberValue()
+      , info[2]->NumberValue()
+      , info[3]->NumberValue()
+      , info[4]->NumberValue());
+  } else {
+    cairo_arc(ctx
+      , info[0]->NumberValue()
+      , info[1]->NumberValue()
+      , info[2]->NumberValue()
+      , info[3]->NumberValue()
+      , info[4]->NumberValue());
+  }
+
+  info.GetReturnValue().SetUndefined();
 }
 
 /*
@@ -2206,17 +2332,21 @@ Context2d::Arc(const Arguments &args) {
  * Implementation influenced by WebKit.
  */
 
-Handle<Value>
-Context2d::ArcTo(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
-  if (!args[0]->IsNumber()
-    || !args[1]->IsNumber()
-    || !args[2]->IsNumber()
-    || !args[3]->IsNumber()
-    || !args[4]->IsNumber()) return Undefined();
+  if (!info[0]->IsNumber()
+    || !info[1]->IsNumber()
+    || !info[2]->IsNumber()
+    || !info[3]->IsNumber()
+    || !info[4]->IsNumber()) {
+    info.GetReturnValue().SetUndefined();
+    return;
+  }
 
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
   // Current path point
@@ -2225,18 +2355,19 @@ Context2d::ArcTo(const Arguments &args) {
   Point<float> p0(x, y);
 
   // Point (x0,y0)
-  Point<float> p1(args[0]->NumberValue(), args[1]->NumberValue());
+  Point<float> p1(info[0]->NumberValue(), info[1]->NumberValue());
 
   // Point (x1,y1)
-  Point<float> p2(args[2]->NumberValue(), args[3]->NumberValue());
+  Point<float> p2(info[2]->NumberValue(), info[3]->NumberValue());
 
-  float radius = args[4]->NumberValue();
+  float radius = info[4]->NumberValue();
 
   if ((p1.x == p0.x && p1.y == p0.y)
     || (p1.x == p2.x && p1.y == p2.y)
     || radius == 0.f) {
     cairo_line_to(ctx, p1.x, p1.y);
-    return Undefined();
+    info.GetReturnValue().SetUndefined();
+    return;
   }
 
   Point<float> p1p0((p0.x - p1.x),(p0.y - p1.y));
@@ -2248,7 +2379,8 @@ Context2d::ArcTo(const Arguments &args) {
   // all points on a line logic
   if (-1 == cos_phi) {
     cairo_line_to(ctx, p1.x, p1.y);
-    return Undefined();
+    info.GetReturnValue().SetUndefined();
+    return;
   }
 
   if (1 == cos_phi) {
@@ -2257,7 +2389,8 @@ Context2d::ArcTo(const Arguments &args) {
     double factor_max = max_length / p1p0_length;
     Point<float> ep((p0.x + factor_max * p1p0.x), (p0.y + factor_max * p1p0.y));
     cairo_line_to(ctx, ep.x, ep.y);
-    return Undefined();
+    info.GetReturnValue().SetUndefined();
+    return;
   }
 
   float tangent = radius / tan(acos(cos_phi) / 2);
@@ -2309,5 +2442,5 @@ Context2d::ArcTo(const Arguments &args) {
       , ea);
   }
 
-  return Undefined();
+  info.GetReturnValue().SetUndefined();
 }

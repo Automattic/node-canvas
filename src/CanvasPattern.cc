@@ -17,47 +17,47 @@ Persistent<FunctionTemplate> Pattern::constructor;
 
 void
 Pattern::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Pattern::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Pattern::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasPattern"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Pattern::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("CanvasPattern"));
 
   // Prototype
-  target->Set(String::NewSymbol("CanvasPattern"), constructor->GetFunction());
+  constructor.Reset(isolate, lconstructor);
+  target->Set(String::NewSymbol("CanvasPattern"), lconstructor->GetFunction());
 }
 
 /*
  * Initialize a new CanvasPattern.
  */
 
-Handle<Value>
-Pattern::New(const Arguments &args) {
-  HandleScope scope;
+template<class T> void
+Pattern::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   int w = 0
     , h = 0;
   cairo_surface_t *surface;
 
-  Local<Object> obj = args[0]->ToObject();
+  Local<Object> obj = info[0]->ToObject();
 
   // Image
-  if (Image::constructor->HasInstance(obj)) {
+  if (Local<FunctionTemplate>::New(isolate, Image::constructor)->HasInstance(obj)) {
     Image *img = ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
-      return ThrowException(Exception::Error(String::New("Image given has not completed loading")));
+      info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Image given has not completed loading"))));
+      return;
     }
     w = img->width;
     h = img->height;
     surface = img->surface();
 
   // Canvas
-  } else if (Canvas::constructor->HasInstance(obj)) {
+  } else if (Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
     w = canvas->width;
     h = canvas->height;
@@ -65,12 +65,13 @@ Pattern::New(const Arguments &args) {
 
   // Invalid
   } else {
-    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Image or Canvas expected"))));
+    return;
   }
 
   Pattern *pattern = new Pattern(surface,w,h);
-  pattern->Wrap(args.This());
-  return args.This();
+  pattern->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 

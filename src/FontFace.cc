@@ -25,19 +25,18 @@ FontFace::~FontFace() {
 
 void
 FontFace::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(FontFace::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(FontFace::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("FontFace"));
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(FontFace::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("FontFace"));
 
   // Prototype
-  target->Set(String::NewSymbol("FontFace"), constructor->GetFunction());
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("FontFace"), lconstructor->GetFunction());
 }
 
 /*
@@ -53,17 +52,18 @@ static cairo_user_data_key_t key;
  * Initialize a new FontFace.
  */
 
-Handle<Value>
-FontFace::New(const Arguments &args) {
+template<class T> void
+FontFace::New(const v8::FunctionCallbackInfo<T> &info) {
   HandleScope scope;
 
-  if (!args[0]->IsString()
-    || !args[1]->IsNumber()) {
-    return ThrowException(Exception::Error(String::New("Wrong argument types passed to FontFace constructor")));
+  if (!info[0]->IsString()
+    || !info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Wrong argument types passed to FontFace constructor"))));
+    return;
   }
 
-  String::AsciiValue filePath(args[0]);
-  int faceIdx = int(args[1]->NumberValue());
+  String::AsciiValue filePath(info[0]);
+  int faceIdx = int(info[1]->NumberValue());
 
   FT_Face ftFace;
   FT_Error ftError;
@@ -73,14 +73,16 @@ FontFace::New(const Arguments &args) {
     _initLibrary = false;
     ftError = FT_Init_FreeType(&library);
     if (ftError) {
-      return ThrowException(Exception::Error(String::New("Could not load library")));
+      info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Could not load library"))));
+      return;
     }
   }
 
   // Create new freetype font face.
   ftError = FT_New_Face(library, *filePath, faceIdx, &ftFace);
   if (ftError) {
-    return ThrowException(Exception::Error(String::New("Could not load font file")));
+    info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Could not load font file"))));
+    return;
   }
 
   // Create new cairo font face.
@@ -92,7 +94,8 @@ FontFace::New(const Arguments &args) {
   if (status) {
     cairo_font_face_destroy (crFace);
     FT_Done_Face (ftFace);
-    return ThrowException(Exception::Error(String::New("Failed to setup cairo font face user data")));
+    info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Failed to setup cairo font face user data"))));
+    return;
   }
 
   // Explicit reference count the cairo font face. Otherwise the font face might
@@ -100,7 +103,7 @@ FontFace::New(const Arguments &args) {
   cairo_font_face_reference(crFace);
 
   FontFace *face = new FontFace(ftFace, crFace);
-  face->Wrap(args.This());
-  return args.This();
+  face->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
