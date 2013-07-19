@@ -26,69 +26,133 @@ Persistent<FunctionTemplate> Canvas::constructor;
 
 void
 Canvas::Initialize(Handle<Object> target) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Canvas::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
-  #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Canvas::New));
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(String::NewSymbol("Canvas"));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Canvas::New));
+  lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
+  lconstructor->SetClassName(String::NewSymbol("Canvas"));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Prototype
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamPNGSync", StreamPNGSync);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "toBuffer", ToBuffer);
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "streamPNGSync", StreamPNGSync);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #ifdef HAVE_JPEG
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   NODE_SET_PROTOTYPE_METHOD(constructor, "streamJPEGSync", StreamJPEGSync);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  NODE_SET_PROTOTYPE_METHOD(lconstructor, "streamJPEGSync", StreamJPEGSync);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #endif
   proto->SetAccessor(String::NewSymbol("type"), GetType);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(String::NewSymbol("height"), GetHeight, SetHeight);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   target->Set(String::NewSymbol("Canvas"), constructor->GetFunction());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+
+  constructor.Reset(isolate, lconstructor);
+
+  target->Set(String::NewSymbol("Canvas"), lconstructor->GetFunction());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Initialize a Canvas with the given width and height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::New(const Arguments &args) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+template<class T> void
+Canvas::New(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   int width = 0, height = 0;
   canvas_type_t type = CANVAS_TYPE_IMAGE;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
   if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  if (info[0]->IsNumber()) width = info[0]->Uint32Value();
+  if (info[1]->IsNumber()) height = info[1]->Uint32Value();
+  if (info[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(info[2]))
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     ? CANVAS_TYPE_PDF
     : CANVAS_TYPE_IMAGE;
   Canvas *canvas = new Canvas(width, height, type);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   canvas->Wrap(args.This());
   return args.This();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  canvas->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get type string.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::GetType(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+void
+Canvas::GetType(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   return scope.Close(String::New(canvas->isPDF() ? "pdf" : "image"));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  info.GetReturnValue().Set(String::New(canvas->isPDF() ? "pdf" : "image"));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get width.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+void
+Canvas::GetWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   return scope.Close(Number::New(canvas->width));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  info.GetReturnValue().Set(Number::New(canvas->width));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -96,7 +160,11 @@ Canvas::GetWidth(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+Canvas::SetWidth(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->width = val->Uint32Value();
@@ -108,11 +176,22 @@ Canvas::SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info)
  * Get height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+void
+Canvas::GetHeight(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   return scope.Close(Number::New(canvas->height));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  info.GetReturnValue().Set(Number::New(canvas->height));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -120,7 +199,11 @@ Canvas::GetHeight(Local<String> prop, const AccessorInfo &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Canvas::SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+Canvas::SetHeight(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (val->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->height = val->Uint32Value();
@@ -194,7 +277,12 @@ int
 Canvas::EIO_AfterToBuffer(eio_req *req) {
 #endif
 
+#if NODE_VERSION_AT_LEAST(0, 11, 4)
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   HandleScope scope;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   closure_t *closure = (closure_t *) req->data;
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
   delete req;
@@ -202,28 +290,41 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   ev_unref(EV_DEFAULT_UC);
 #endif
 
+#if NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<Function> cb = Local<Function>::New(isolate, closure->pfn);
+
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     closure->pfn->Call(Context::GetCurrent()->Global(), 1, argv);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    cb->Call(Context::GetCurrent()->Global(), 1, argv);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else {
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Object> buf = Buffer::New(closure->len);
-    #else
-      Buffer *buf = Buffer::New(closure->len);
-    #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    Buffer *buf = Buffer::New(closure->len);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    Local<Object> buf = Buffer::New(closure->len);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
-    #else
-      Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
-    #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf->handle_) };
     closure->pfn->Call(Context::GetCurrent()->Global(), 2, argv);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(buf) };
+    cb->Call(Context::GetCurrent()->Global(), 2, argv);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   closure->canvas->Unref();
   closure->pfn.Dispose();
   closure_destroy(closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   free(closure);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  delete closure;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   
 #if !NODE_VERSION_AT_LEAST(0, 6, 0)
   return 0;
@@ -235,51 +336,74 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
  * callback function is passed.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::ToBuffer(const Arguments &args) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+template<class T> void
+Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_status_t status;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // TODO: async / move this out
   if (canvas->isPDF()) {
     cairo_surface_finish(canvas->surface());
     closure_t *closure = (closure_t *) canvas->closure();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    Buffer *buf = Buffer::New(closure->len);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      Local<Object> buf = Buffer::New(closure->len);
-    #else
-      Buffer *buf = Buffer::New(closure->len);
-    #endif
+    Local<Object> buf = Buffer::New(closure->len);
 
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     memcpy(Buffer::Data(buf), closure->data, closure->len);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return buf->handle_;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      return buf;
-    #else
-      return buf->handle_;
-    #endif
+      info.GetReturnValue().Set(buf);
+      return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   // Async
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   if (args[0]->IsFunction()) {
     closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  if (info[0]->IsFunction()) {
+    closure_t *closure = new closure_t;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     status = closure_init(closure, canvas);
 
     // ensure closure is ok
     if (status) {
       closure_destroy(closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
       free(closure);
       return Canvas::Error(status);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      delete closure;
+      info.GetReturnValue().Set(Canvas::Error(status));
+      return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     }
 
     // TODO: only one callback fn in closure
     canvas->Ref();
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      closure->pfn = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(args[0]));
-    #else
-      closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    closure->pfn.Reset(isolate, Handle<Function>::Cast(info[0]));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
@@ -290,7 +414,12 @@ Canvas::ToBuffer(const Arguments &args) {
     ev_ref(EV_DEFAULT_UC);
 #endif
     
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    info.GetReturnValue().SetUndefined();
+    return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   // Sync
   } else {
     closure_t closure;
@@ -299,7 +428,12 @@ Canvas::ToBuffer(const Arguments &args) {
     // ensure closure is ok
     if (status) {
       closure_destroy(&closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
       return Canvas::Error(status);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      info.GetReturnValue().Set(Canvas::Error(status));
+      return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     }
 
     TryCatch try_catch;
@@ -307,23 +441,31 @@ Canvas::ToBuffer(const Arguments &args) {
 
     if (try_catch.HasCaught()) {
       closure_destroy(&closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
       return try_catch.ReThrow();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      info.GetReturnValue().Set(try_catch.ReThrow());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     } else if (status) {
       closure_destroy(&closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
       return ThrowException(Canvas::Error(status));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      info.GetReturnValue().Set(ThrowException(Canvas::Error(status)));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     } else {
-      #if NODE_VERSION_AT_LEAST(0, 11, 3)
-        Local<Object> buf = Buffer::New(closure.len);
-      #else
-        Buffer *buf = Buffer::New(closure.len);
-      #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      Buffer *buf = Buffer::New(closure.len);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      Local<Object> buf = Buffer::New(closure.len);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       memcpy(Buffer::Data(buf), closure.data, closure.len);
       closure_destroy(&closure);
-      #if NODE_VERSION_AT_LEAST(0, 11, 3)
-        return buf;
-      #else
-        return buf->handle_;
-      #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      return buf->handle_;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+      info.GetReturnValue().Set(buf);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     }
   }
 }
@@ -334,22 +476,27 @@ Canvas::ToBuffer(const Arguments &args) {
 
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   closure_t *closure = (closure_t *) c;
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    Local<Object> buf = Buffer::New(len);
-    memcpy(Buffer::Data(buf), data, len);
-  #else
-    Local<Buffer> buf = Buffer::New(len);
-    memcpy(Buffer::Data(buf->handle_), data, len);
-  #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<Buffer> buf = Buffer::New(len);
+  memcpy(Buffer::Data(buf->handle_), data, len);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Local<Object> buf = Buffer::New(len);
+  memcpy(Buffer::Data(buf), data, len);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<Value> argv[3] = {
       Local<Value>::New(Null())
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      , Local<Value>::New(buf)
-    #else
-      , Local<Value>::New(buf->handle_)
-    #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , Local<Value>::New(buf->handle_)
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    , Local<Value>::New(buf)
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , Integer::New(len) };
   closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
   return CAIRO_STATUS_SUCCESS;
@@ -359,22 +506,49 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
  * Stream PNG data synchronously.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::StreamPNGSync(const Arguments &args) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+template<class T> void
+Canvas::StreamPNGSync(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   // TODO: async as well
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   if (!args[0]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  if (!info[0]->IsFunction()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("callback function required"))));
+    return;
+  }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   closure_t closure;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   closure.fn = Handle<Function>::Cast(args[0]);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  closure.fn = Handle<Function>::Cast(info[0]);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   TryCatch try_catch;
   cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     return try_catch.ReThrow();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    info.GetReturnValue().Set(try_catch.ReThrow());
+    return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
     closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
@@ -385,7 +559,11 @@ Canvas::StreamPNGSync(const Arguments &args) {
       , Integer::New(0) };
     closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -394,26 +572,70 @@ Canvas::StreamPNGSync(const Arguments &args) {
 
 #ifdef HAVE_JPEG
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 Handle<Value>
 Canvas::StreamJPEGSync(const Arguments &args) {
   HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+template<class T> void
+Canvas::StreamJPEGSync(const v8::FunctionCallbackInfo<T> &info) {
+  Isolate *isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   // TODO: async as well
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   if (!args[0]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("buffer size required")));
   if (!args[1]->IsNumber())
     return ThrowException(Exception::TypeError(String::New("quality setting required")));
   if (!args[2]->IsFunction())
     return ThrowException(Exception::TypeError(String::New("callback function required")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  if (!info[0]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("buffer size required"))));
+    return;
+  }
+  if (!info[1]->IsNumber()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("quality setting required"))));
+    return;
+  }
 
+  if (!info[2]->IsFunction()) {
+    info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("callback function required"))));
+    return;
+  }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   closure_t closure;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   closure.fn = Handle<Function>::Cast(args[2]);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  closure.fn = Handle<Function>::Cast(info[2]);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   TryCatch try_catch;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), &closure);
 
+  if (try_catch.HasCaught()) {
+     info.GetReturnValue().Set(try_catch.ReThrow());
+     return;
+  }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
   if (try_catch.HasCaught()) return try_catch.ReThrow();
   return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 #endif
@@ -430,7 +652,11 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
   _closure = NULL;
 
   if (CANVAS_TYPE_PDF == t) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     _closure = malloc(sizeof(closure_t));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    _closure = new closure_t;;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     assert(_closure);
     cairo_status_t status = closure_init((closure_t *) _closure, this);
     assert(status == CAIRO_STATUS_SUCCESS);
@@ -451,8 +677,13 @@ Canvas::~Canvas() {
     case CANVAS_TYPE_PDF:
       cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
       free(_closure);
+#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
       cairo_surface_destroy(_surface);
+#if NODE_VERSION_AT_LEAST(0, 11, 4)
+      delete (closure_t *) _closure;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       break;
     case CANVAS_TYPE_IMAGE:
       cairo_surface_destroy(_surface);

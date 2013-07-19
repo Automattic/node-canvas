@@ -51,6 +51,7 @@ class Canvas: public node::ObjectWrap {
     canvas_type_t type;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> ToBuffer(const Arguments &args);
     static Handle<Value> GetType(Local<String> prop, const AccessorInfo &info);
@@ -60,6 +61,17 @@ class Canvas: public node::ObjectWrap {
     static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static Handle<Value> StreamPNGSync(const Arguments &args);
     static Handle<Value> StreamJPEGSync(const Arguments &args);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
+    template<class T> static void ToBuffer(const v8::FunctionCallbackInfo<T> &info);
+    static void GetType(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetHeight(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void SetWidth(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+    static void SetHeight(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+    template<class T> static void StreamPNGSync(const v8::FunctionCallbackInfo<T> &info);
+    template<class T> static void StreamJPEGSync(const v8::FunctionCallbackInfo<T> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     static Local<Value> Error(cairo_status_t status);
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsync(uv_work_t *req);

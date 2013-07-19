@@ -27,6 +27,7 @@ class Image: public node::ObjectWrap {
     Persistent<Function> onerror;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> GetSource(Local<String> prop, const AccessorInfo &info);
     static Handle<Value> GetOnload(Local<String> prop, const AccessorInfo &info);
@@ -39,6 +40,20 @@ class Image: public node::ObjectWrap {
     static void SetOnload(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);
     static void SetDataMode(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
+    static void GetSource(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetOnload(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetOnerror(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetComplete(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetHeight(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void GetDataMode(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+    static void SetSource(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+    static void SetOnload(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+    static void SetOnerror(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+    static void SetDataMode(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 

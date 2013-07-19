@@ -14,8 +14,13 @@ class PixelArray: public node::ObjectWrap {
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
     static Handle<Value> New(const Arguments &args);
     static Handle<Value> GetLength(Local<String> prop, const AccessorInfo &info);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
+    static void GetLength(Local<String> prop, const PropertyCallbackInfo<Value> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     inline int length(){ return _width * _height * 4; }
     inline int width(){ return _width; }
     inline int height(){ return _height; }
