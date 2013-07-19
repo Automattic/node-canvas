@@ -200,11 +200,11 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
   closure->canvas->Unref();
   closure->pfn.Dispose();
   closure_destroy(closure);
-  free(closure);
+  delete closure;
 }
 
 /*
- * Convert PNG data to a node::Buffer, async when a 
+ * Convert PNG data to a node::Buffer, async when a
  * callback function is passed.
  */
 
@@ -230,13 +230,13 @@ Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
 
   // Async
   if (info[0]->IsFunction()) {
-    closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
+    closure_t *closure = new closure_t;//(closure_t *) malloc(sizeof(closure_t));
     status = closure_init(closure, canvas);
 
     // ensure closure is ok
     if (status) {
       closure_destroy(closure);
-      free(closure);
+      delete closure;
       info.GetReturnValue().Set(Canvas::Error(status));
       return;
     }
