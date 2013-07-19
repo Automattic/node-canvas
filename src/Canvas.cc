@@ -230,7 +230,7 @@ Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
 
   // Async
   if (info[0]->IsFunction()) {
-    closure_t *closure = new closure_t;//(closure_t *) malloc(sizeof(closure_t));
+    closure_t *closure = new closure_t;
     status = closure_init(closure, canvas);
 
     // ensure closure is ok
@@ -391,7 +391,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
   _closure = NULL;
 
   if (CANVAS_TYPE_PDF == t) {
-    _closure = malloc(sizeof(closure_t));
+    _closure = new closure_t;;
     assert(_closure);
     cairo_status_t status = closure_init((closure_t *) _closure, this);
     assert(status == CAIRO_STATUS_SUCCESS);
@@ -412,8 +412,8 @@ Canvas::~Canvas() {
     case CANVAS_TYPE_PDF:
       cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
-      free(_closure);
       cairo_surface_destroy(_surface);
+      delete (closure_t *) _closure;
       break;
     case CANVAS_TYPE_IMAGE:
       cairo_surface_destroy(_surface);
