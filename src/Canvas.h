@@ -51,6 +51,17 @@ class Canvas: public node::ObjectWrap {
     canvas_type_t type;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    static Handle<Value> New(const Arguments &args);
+    static Handle<Value> ToBuffer(const Arguments &args);
+    static Handle<Value> GetType(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
+    static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static Handle<Value> StreamPNGSync(const Arguments &args);
+    static Handle<Value> StreamJPEGSync(const Arguments &args);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void ToBuffer(const v8::FunctionCallbackInfo<T> &info);
     static void GetType(Local<String> prop, const PropertyCallbackInfo<Value> &info);
@@ -60,9 +71,26 @@ class Canvas: public node::ObjectWrap {
     static void SetHeight(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
     template<class T> static void StreamPNGSync(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void StreamJPEGSync(const v8::FunctionCallbackInfo<T> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     static Local<Value> Error(cairo_status_t status);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+#if NODE_VERSION_AT_LEAST(0, 6, 0)
+#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
     static void ToBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+#else
+    static
+#if NODE_VERSION_AT_LEAST(0, 5, 4)
+      void
+#else
+      int
+#endif
+      EIO_ToBuffer(eio_req *req);
+    static int EIO_AfterToBuffer(eio_req *req);
+#endif
+
+#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
     inline cairo_surface_t *surface(){ return _surface; }
     inline void *closure(){ return _closure; }

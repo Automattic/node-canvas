@@ -1,4 +1,4 @@
-
+w
 //
 // CanvasRenderingContext2d.cc
 //
@@ -23,9 +23,24 @@
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+ * Rectangle arg assertions.
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
  * Rectangle info assertions.
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+#define RECT_ARGS \
+  if (!args[0]->IsNumber() \
+    ||!args[1]->IsNumber() \
+    ||!args[2]->IsNumber() \
+    ||!args[3]->IsNumber()) return Undefined(); \
+  double x = args[0]->NumberValue(); \
+  double y = args[1]->NumberValue(); \
+  double width = args[2]->NumberValue(); \
+  double height = args[3]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #define RECT_INFO \
   if (!info[0]->IsNumber() \
     ||!info[1]->IsNumber() \
@@ -35,6 +50,7 @@ Persistent<FunctionTemplate> Context2d::constructor;
   double y = info[1]->NumberValue(); \
   double width = info[2]->NumberValue(); \
   double height = info[3]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
 /*
  * Text baselines.
@@ -78,15 +94,58 @@ void state_assign_fontFamily(canvas_state_t *state, const char *str) {
 
 void
 Context2d::Initialize(Handle<Object> target) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Constructor
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Context2d::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Context2d::New));
   lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
   lconstructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Prototype
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "addPage", AddPage);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "transform", Transform);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "resetTransform", ResetTransform);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "isPointInPath", IsPointInPath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "scale", Scale);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "clip", Clip);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fill", Fill);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "stroke", Stroke);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fillText", FillText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeText", StrokeText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "fillRect", FillRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeRect", StrokeRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "clearRect", ClearRect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "measureText", MeasureText);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "moveTo", MoveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "lineTo", LineTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "bezierCurveTo", BezierCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "quadraticCurveTo", QuadraticCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "beginPath", BeginPath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "closePath", ClosePath);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "putImageData", PutImageData);
@@ -118,15 +177,29 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "arcTo", ArcTo);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFont", SetFont);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #ifdef HAVE_FREETYPE
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFontFace", SetFontFace);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFontFace", SetFontFace);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokePattern", SetStrokePattern);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextBaseline", SetTextBaseline);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextAlignment", SetTextAlignment);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFillColor", SetFillColor);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setStrokeColor", SetStrokeColor);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setFillPattern", SetFillPattern);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setStrokePattern", SetStrokePattern);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setTextBaseline", SetTextBaseline);
   NODE_SET_PROTOTYPE_METHOD(lconstructor, "_setTextAlignment", SetTextAlignment);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   proto->SetAccessor(String::NewSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
   proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
@@ -143,10 +216,14 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
   proto->SetAccessor(String::NewSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
   proto->SetAccessor(String::NewSymbol("filter"), GetFilter, SetFilter);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   constructor.Reset(Isolate::GetCurrent(), lconstructor);
 
   target->Set(String::NewSymbol("CanvasRenderingContext2d"), lconstructor->GetFunction());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -464,6 +541,14 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
  * Initialize a new Context2d with the given canvas.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::New(const Arguments &args) {
+  HandleScope scope;
+  Local<Object> obj = args[0]->ToObject();
+  if (!Canvas::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::New(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -473,27 +558,48 @@ Context2d::New(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Canvas expected"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
   Context2d *context = new Context2d(canvas);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  context->Wrap(args.This());
+  return args.This();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Create a new page.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::AddPage(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::AddPage(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!context->canvas()->isPDF()) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
    info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()"))));
    return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
   cairo_show_page(context->context());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -504,6 +610,15 @@ Context2d::AddPage(const v8::FunctionCallbackInfo<T> &info) {
  *
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::PutImageData(const Arguments &args) {
+  HandleScope scope;
+
+  Local<Object> obj = args[0]->ToObject();
+  if (!ImageData::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("ImageData expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -514,8 +629,13 @@ Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("ImageData expected"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
   PixelArray *arr = imageData->pixelArray();
 
@@ -529,12 +649,21 @@ Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
     , sy = 0
     , sw = 0
     , sh = 0
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , dx = args[1]->Int32Value()
+    , dy = args[2]->Int32Value()
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , dx = info[1]->Int32Value()
     , dy = info[2]->Int32Value()
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , rows
     , cols;
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  switch (args.Length()) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   switch (info.Length()) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     // imageData, dx, dy
     case 3:
       cols = arr->width();
@@ -542,26 +671,41 @@ Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      sx = args[3]->Int32Value();
+      sy = args[4]->Int32Value();
+      sw = args[5]->Int32Value();
+      sh = args[6]->Int32Value();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       sx = info[3]->Int32Value();
       sy = info[4]->Int32Value();
       sw = info[5]->Int32Value();
       sh = info[6]->Int32Value();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
       if (sy + sh > arr->height()) sh = arr->height() - sy;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      if (sw <= 0 || sh <= 0) return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       if (sw <= 0 || sh <= 0) {
         info.GetReturnValue().SetUndefined();
         return;
       }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       cols = sw;
       rows = sh;
       dx += sx;
       dy += sy;
       break;
     default:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      return ThrowException(Exception::Error(String::New("invalid arguments")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("invalid v8::FunctionCallbackInfo<T>"))));
       return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   uint8_t *srcRows = src + sy * srcStride + sx * 4;
@@ -594,7 +738,11 @@ Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
     , cols
     , rows);
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -606,6 +754,14 @@ Context2d::PutImageData(const v8::FunctionCallbackInfo<T> &info) {
  *
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::DrawImage(const Arguments &args) {
+  HandleScope scope;
+
+  if (args.Length() < 3)
+    return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -615,6 +771,7 @@ Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid v8::FunctionCallbackInfo<T>"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   int sx = 0
     , sy = 0
@@ -624,21 +781,37 @@ Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
 
   cairo_surface_t *surface;
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<Object> obj = args[0]->ToObject();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<Object> obj = info[0]->ToObject();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Image
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (Image::constructor->HasInstance(obj)) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (Local<FunctionTemplate>::New(isolate, Image::constructor)->HasInstance(obj)) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Image *img = ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      return ThrowException(Exception::Error(String::New("Image given has not completed loading")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       info.GetReturnValue().Set(ThrowException(Exception::Error(String::New("Image given has not completed loading"))));
       return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     }
     sw = img->width;
     sh = img->height;
     surface = img->surface();
 
   // Canvas
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  } else if (Canvas::constructor->HasInstance(obj)) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else if (Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj)) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
     sw = canvas->width;
     sh = canvas->height;
@@ -646,17 +819,40 @@ Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
 
   // Invalid
   } else {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Image or Canvas expected"))));
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  // Arguments
+  switch (args.Length()) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   // v8::FunctionCallbackInfo<T>
   switch (info.Length()) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       sx = info[1]->NumberValue();
       sy = info[2]->NumberValue();
       sw = info[3]->NumberValue();
@@ -665,24 +861,41 @@ Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
       dy = info[6]->NumberValue();
       dw = info[7]->NumberValue();
       dh = info[8]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       break;
     // img, dx, dy, dw, dh
     case 5:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       dx = info[1]->NumberValue();
       dy = info[2]->NumberValue();
       dw = info[3]->NumberValue();
       dh = info[4]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       break;
     // img, dx, dy
     case 3:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       dx = info[1]->NumberValue();
       dy = info[2]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       dw = sw;
       dh = sh;
       break;
     default:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid v8::FunctionCallbackInfo<T>"))));
       return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   // Start draw
@@ -709,19 +922,33 @@ Context2d::DrawImage(const v8::FunctionCallbackInfo<T> &info) {
 
   cairo_restore(ctx);
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get global alpha.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetGlobalAlpha(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(context->state->globalAlpha));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(context->state->globalAlpha));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -729,7 +956,11 @@ Context2d::GetGlobalAlpha(Local<String> prop, const PropertyCallbackInfo<Value> 
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   double n = val->NumberValue();
   if (n >= 0 && n <= 1) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -741,10 +972,16 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const PropertyCa
  * Get global composite operation.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetGlobalCompositeOperation(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
@@ -785,7 +1022,11 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const PropertyCallbac
 #endif
   }
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(op));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(op));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -793,7 +1034,11 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const PropertyCallbac
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   String::AsciiValue quality(val->ToString());
   if (0 == strcmp("fast", *quality)) {
@@ -813,10 +1058,16 @@ Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const Propert
  * Get pattern quality.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetPatternQuality(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *quality;
   switch (context->state->patternQuality) {
@@ -826,7 +1077,11 @@ Context2d::GetPatternQuality(Local<String> prop, const PropertyCallbackInfo<Valu
     case CAIRO_FILTER_BILINEAR: quality = "bilinear"; break;
     default: quality = "good";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(quality));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(quality));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -834,7 +1089,11 @@ Context2d::GetPatternQuality(Local<String> prop, const PropertyCallbackInfo<Valu
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -909,12 +1168,22 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
  * Get shadow offset x.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetShadowOffsetX(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(context->state->shadowOffsetX));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(context->state->shadowOffsetX));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -922,7 +1191,11 @@ Context2d::GetShadowOffsetX(Local<String> prop, const PropertyCallbackInfo<Value
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetX = val->NumberValue();
 }
@@ -931,12 +1204,22 @@ Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const Property
  * Get shadow offset y.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetShadowOffsetY(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(context->state->shadowOffsetY));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(context->state->shadowOffsetY));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -944,7 +1227,11 @@ Context2d::GetShadowOffsetY(Local<String> prop, const PropertyCallbackInfo<Value
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetY = val->NumberValue();
 }
@@ -953,12 +1240,22 @@ Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const Property
  * Get shadow blur.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetShadowBlur(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(context->state->shadowBlur));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(context->state->shadowBlur));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -966,7 +1263,11 @@ Context2d::GetShadowBlur(Local<String> prop, const PropertyCallbackInfo<Value> &
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   int n = val->NumberValue();
   if (n >= 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -978,10 +1279,16 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const PropertyCal
  * Get current antialiasing setting.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetAntiAlias(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *aa;
   switch (cairo_get_antialias(context->context())) {
@@ -990,7 +1297,11 @@ Context2d::GetAntiAlias(Local<String> prop, const PropertyCallbackInfo<Value> &i
     case CAIRO_ANTIALIAS_SUBPIXEL: aa = "subpixel"; break;
     default: aa = "default";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(aa));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(aa));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -998,7 +1309,11 @@ Context2d::GetAntiAlias(Local<String> prop, const PropertyCallbackInfo<Value> &i
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
@@ -1021,10 +1336,16 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const PropertyCall
  * Get text drawing mode.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetTextDrawingMode(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *mode;
   if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -1034,7 +1355,11 @@ Context2d::GetTextDrawingMode(Local<String> prop, const PropertyCallbackInfo<Val
   } else {
     mode = "unknown";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(mode));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(mode));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1042,7 +1367,11 @@ Context2d::GetTextDrawingMode(Local<String> prop, const PropertyCallbackInfo<Val
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
@@ -1056,10 +1385,16 @@ Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const Proper
  * Get filter.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetFilter(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetFilter(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *filter;
   switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
@@ -1069,7 +1404,11 @@ Context2d::GetFilter(Local<String> prop, const PropertyCallbackInfo<Value> &info
     case CAIRO_FILTER_BILINEAR: filter = "bilinear"; break;
     default: filter = "good";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(filter));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(filter));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1077,7 +1416,11 @@ Context2d::GetFilter(Local<String> prop, const PropertyCallbackInfo<Value> &info
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetFilter(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   String::AsciiValue str(val->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
@@ -1099,12 +1442,22 @@ Context2d::SetFilter(Local<String> prop, Local<Value> val, const PropertyCallbac
  * Get miter limit.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetMiterLimit(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(cairo_get_miter_limit(context->context())));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(cairo_get_miter_limit(context->context())));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1112,7 +1465,11 @@ Context2d::GetMiterLimit(Local<String> prop, const PropertyCallbackInfo<Value> &
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1124,12 +1481,22 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const PropertyCal
  * Get line width.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetLineWidth(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(cairo_get_line_width(context->context())));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(cairo_get_line_width(context->context())));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1137,7 +1504,11 @@ Context2d::GetLineWidth(Local<String> prop, const PropertyCallbackInfo<Value> &i
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   double n = val->NumberValue();
   if (n > 0) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1149,10 +1520,16 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const PropertyCall
  * Get line join.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetLineJoin(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *join;
   switch (cairo_get_line_join(context->context())) {
@@ -1160,7 +1537,11 @@ Context2d::GetLineJoin(Local<String> prop, const PropertyCallbackInfo<Value> &in
     case CAIRO_LINE_JOIN_ROUND: join = "round"; break;
     default: join = "miter";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(join));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(join));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1168,7 +1549,11 @@ Context2d::GetLineJoin(Local<String> prop, const PropertyCallbackInfo<Value> &in
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -1185,10 +1570,16 @@ Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const PropertyCallb
  * Get line cap.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetLineCap(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   const char *cap;
   switch (cairo_get_line_cap(context->context())) {
@@ -1196,7 +1587,11 @@ Context2d::GetLineCap(Local<String> prop, const PropertyCallbackInfo<Value> &inf
     case CAIRO_LINE_CAP_SQUARE: cap = "square"; break;
     default: cap = "butt";
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::NewSymbol(cap));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::NewSymbol(cap));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1204,7 +1599,11 @@ Context2d::GetLineCap(Local<String> prop, const PropertyCallbackInfo<Value> &inf
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetLineCap(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   String::AsciiValue type(val->ToString());
@@ -1221,25 +1620,51 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const PropertyCallba
  * Check if the given point is within the current path.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::IsPointInPath(const Arguments &args) {
+  HandleScope scope;
+  if (args[0]->IsNumber() && args[1]->IsNumber()) {
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::IsPointInPath(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   if (info[0]->IsNumber() && info[1]->IsNumber()) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     cairo_t *ctx = context->context();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    double x = args[0]->NumberValue()
+         , y = args[1]->NumberValue();
+    return scope.Close(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     double x = info[0]->NumberValue()
          , y = info[1]->NumberValue();
     info.GetReturnValue().Set(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   } else {
     info.GetReturnValue().Set(False());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return False();
+#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set fill pattern, used internally for fillStyle=
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetFillPattern(const Arguments &args) {
+  HandleScope scope;
+
+  Local<Object> obj = args[0]->ToObject();
+  if (Gradient::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetFillPattern(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1248,23 +1673,46 @@ Context2d::SetFillPattern(const v8::FunctionCallbackInfo<T> &info) {
   Local<Object> obj = info[0]->ToObject();
   if (Local<FunctionTemplate>::New(isolate, Gradient::constructor)->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->fillGradient = grad->pattern();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  } else if(Pattern::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else if(Local<FunctionTemplate>::New(isolate, Pattern::constructor)->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->fillPattern = pattern->pattern();
   } else {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected"))));
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set stroke pattern, used internally for strokeStyle=
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetStrokePattern(const Arguments &args) {
+  HandleScope scope;
+
+  Local<Object> obj = args[0]->ToObject();
+  if (Gradient::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetStrokePattern(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1273,18 +1721,32 @@ Context2d::SetStrokePattern(const v8::FunctionCallbackInfo<T> &info) {
   Local<Object> obj = info[0]->ToObject();
   if (Local<FunctionTemplate>::New(isolate, Gradient::constructor)->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->strokeGradient = grad->pattern();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  } else if(Pattern::constructor->HasInstance(obj)){
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else if(Local<FunctionTemplate>::New(isolate, Pattern::constructor)->HasInstance(obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->strokePattern = pattern->pattern();
   } else {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected"))));
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1292,7 +1754,11 @@ Context2d::SetStrokePattern(const v8::FunctionCallbackInfo<T> &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   short ok;
   String::AsciiValue str(val->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
@@ -1306,98 +1772,180 @@ Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const PropertyCa
  * Get shadow color.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetShadowColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::New(buf));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::New(buf));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set fill color, used internally for fillStyle=
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetFillColor(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetFillColor(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   short ok;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!info[0]->IsString()) {
     info.GetReturnValue().SetUndefined();
     return;
   }
   String::AsciiValue str(info[0]);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   uint32_t rgba = rgba_from_string(*str, &ok);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (!ok) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!ok) {
     info.GetReturnValue().SetUndefined();
     return;
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->state->fillPattern = context->state->fillGradient = NULL;
   context->state->fill = rgba_create(rgba);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get fill color.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetFillColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->fill, buf, sizeof(buf));
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::New(buf));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::New(buf));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set stroke color, used internally for strokeStyle=
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetStrokeColor(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetStrokeColor(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   short ok;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (!args[0]->IsString()) return Undefined();
+  String::AsciiValue str(args[0]);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!info[0]->IsString()) {
     info.GetReturnValue().SetUndefined();
     return;
   }
   String::AsciiValue str(info[0]);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   uint32_t rgba = rgba_from_string(*str, &ok);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (!ok) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!ok) {
     info.GetReturnValue().SetUndefined();
     return;
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->state->strokePattern = context->state->strokeGradient = NULL;
   context->state->stroke = rgba_create(rgba);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get stroke color.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Context2d::GetStrokeColor(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->stroke, buf, sizeof(buf));
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::New(buf));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::New(buf));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Bezier curve.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::BezierCurveTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()
+    ||!args[1]->IsNumber()
+    ||!args[2]->IsNumber()
+    ||!args[3]->IsNumber()
+    ||!args[4]->IsNumber()
+    ||!args[5]->IsNumber()) return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::BezierCurveTo(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1412,23 +1960,51 @@ Context2d::BezierCurveTo(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().SetUndefined();
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_curve_to(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->NumberValue()
+    , args[1]->NumberValue()
+    , args[2]->NumberValue()
+    , args[3]->NumberValue()
+    , args[4]->NumberValue()
+    , args[5]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->NumberValue()
     , info[1]->NumberValue()
     , info[2]->NumberValue()
     , info[3]->NumberValue()
     , info[4]->NumberValue()
     , info[5]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Quadratic curve approximation from libsvg-cairo.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::QuadraticCurveTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()
+    ||!args[1]->IsNumber()
+    ||!args[2]->IsNumber()
+    ||!args[3]->IsNumber()) return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::QuadraticCurveTo(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1441,15 +2017,27 @@ Context2d::QuadraticCurveTo(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().SetUndefined();
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
   double x, y
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , x1 = args[0]->NumberValue()
+    , y1 = args[1]->NumberValue()
+    , x2 = args[2]->NumberValue()
+    , y2 = args[3]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , x1 = info[0]->NumberValue()
     , y1 = info[1]->NumberValue()
     , x2 = info[2]->NumberValue()
     , y2 = info[3]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   cairo_get_current_point(ctx, &x, &y);
 
@@ -1464,186 +2052,351 @@ Context2d::QuadraticCurveTo(const v8::FunctionCallbackInfo<T> &info) {
     , x2
     , y2);
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Save state.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Save(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Save(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->save();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Restore state.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Restore(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Restore(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->restore();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Creates a new subpath.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::BeginPath(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::BeginPath(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_new_path(context->context());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Marks the subpath as closed.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::ClosePath(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::ClosePath(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_close_path(context->context());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Rotate transformation.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Rotate(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Rotate(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_rotate(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->IsNumber() ? info[0]->NumberValue() : 0);
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Modify the CTM.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Transform(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Transform(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0
+    , args[2]->IsNumber() ? args[2]->NumberValue() : 0
+    , args[3]->IsNumber() ? args[3]->NumberValue() : 0
+    , args[4]->IsNumber() ? args[4]->NumberValue() : 0
+    , args[5]->IsNumber() ? args[5]->NumberValue() : 0);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->IsNumber() ? info[0]->NumberValue() : 0
     , info[1]->IsNumber() ? info[1]->NumberValue() : 0
     , info[2]->IsNumber() ? info[2]->NumberValue() : 0
     , info[3]->IsNumber() ? info[3]->NumberValue() : 0
     , info[4]->IsNumber() ? info[4]->NumberValue() : 0
     , info[5]->IsNumber() ? info[5]->NumberValue() : 0);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_transform(context->context(), &matrix);
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Reset the CTM, used internally by setTransform().
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::ResetTransform(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::ResetTransform(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_identity_matrix(context->context());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Translate transformation.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Translate(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Translate(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_translate(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->IsNumber() ? info[0]->NumberValue() : 0
     , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Scale transformation.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Scale(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Scale(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_scale(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->IsNumber() ? args[0]->NumberValue() : 0
+    , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->IsNumber() ? info[0]->NumberValue() : 0
     , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Use path as clipping region.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Clip(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Clip(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Fill the path.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Fill(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Fill(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->fill(true);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Stroke the path.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Stroke(const Arguments &args) {
+  HandleScope scope;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Stroke(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   context->stroke(true);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Fill text at (x, y).
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::FillText(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]->ToString());
+  double x = args[1]->NumberValue();
+  double y = args[2]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::FillText(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1658,8 +2411,13 @@ Context2d::FillText(const v8::FunctionCallbackInfo<T> &info) {
   String::Utf8Value str(info[0]->ToString());
   double x = info[1]->NumberValue();
   double y = info[2]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1671,13 +2429,29 @@ Context2d::FillText(const v8::FunctionCallbackInfo<T> &info) {
   }
   context->restorePath();
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Stroke text at (x ,y).
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::StrokeText(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[1]->IsNumber()
+    || !args[2]->IsNumber()) return Undefined();
+
+  String::Utf8Value str(args[0]->ToString());
+  double x = args[1]->NumberValue();
+  double y = args[2]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::StrokeText(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1692,8 +2466,13 @@ Context2d::StrokeText(const v8::FunctionCallbackInfo<T> &info) {
   String::Utf8Value str(info[0]->ToString());
   double x = info[1]->NumberValue();
   double y = info[2]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1705,7 +2484,11 @@ Context2d::StrokeText(const v8::FunctionCallbackInfo<T> &info) {
   }
   context->restorePath();
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1817,6 +2600,16 @@ Context2d::setTextPath(const char *str, double x, double y) {
  * Adds a point to the current subpath.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::LineTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("lineTo() x must be a number")));
+  if (!args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("lineTo() y must be a number")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::LineTo(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1830,19 +2623,43 @@ Context2d::LineTo(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("lineTo() y must be a number"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_line_to(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->NumberValue()
+    , args[1]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->NumberValue()
     , info[1]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Creates a new subpath at the given point.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::MoveTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("moveTo() x must be a number")));
+  if (!args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("moveTo() y must be a number")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::MoveTo(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1856,13 +2673,27 @@ Context2d::MoveTo(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("moveTo() y must be a number"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_move_to(context->context()
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    , args[0]->NumberValue()
+    , args[1]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     , info[0]->NumberValue()
     , info[1]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -1870,6 +2701,21 @@ Context2d::MoveTo(const v8::FunctionCallbackInfo<T> &info) {
  */
 
 #ifdef HAVE_FREETYPE
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetFontFace(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore invalid args
+  if (!args[0]->IsObject()
+    || !args[1]->IsNumber())
+    return ThrowException(Exception::TypeError(String::New("Expected object and number")));
+
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!FontFace::constructor->HasInstance(obj))
+    return ThrowException(Exception::TypeError(String::New("FontFace expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetFontFace(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1888,17 +2734,30 @@ Context2d::SetFontFace(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("FontFace expected"))));
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   FontFace *face = ObjectWrap::Unwrap<FontFace>(obj);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  double size = args[1]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   double size = info[1]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
   cairo_set_font_size(ctx, size);
   cairo_set_font_face(ctx, face->cairoFace());
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 #endif
 
@@ -1911,6 +2770,24 @@ Context2d::SetFontFace(const v8::FunctionCallbackInfo<T> &info) {
  *   - family
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetFont(const Arguments &args) {
+  HandleScope scope;
+
+  // Ignore invalid args
+  if (!args[0]->IsString()
+    || !args[1]->IsString()
+    || !args[2]->IsNumber()
+    || !args[3]->IsString()
+    || !args[4]->IsString()) return Undefined();
+
+  String::AsciiValue weight(args[0]);
+  String::AsciiValue style(args[1]);
+  double size = args[2]->NumberValue();
+  String::AsciiValue unit(args[3]);
+  String::AsciiValue family(args[4]);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetFont(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -1930,8 +2807,13 @@ Context2d::SetFont(const v8::FunctionCallbackInfo<T> &info) {
   double size = info[2]->NumberValue();
   String::AsciiValue unit(info[3]);
   String::AsciiValue family(info[4]);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
 #if HAVE_PANGO
 
@@ -2000,7 +2882,11 @@ Context2d::SetFont(const v8::FunctionCallbackInfo<T> &info) {
 
 #endif
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 #if HAVE_PANGO
@@ -2031,15 +2917,29 @@ Context2d::setFontFromState() {
  * fontBoundingBoxAscent, fontBoundingBoxDescent
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::MeasureText(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::MeasureText(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  String::Utf8Value str(args[0]->ToString());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   String::Utf8Value str(info[0]->ToString());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<Object> obj = Object::New();
 
 #if HAVE_PANGO
@@ -2151,18 +3051,35 @@ Context2d::MeasureText(const v8::FunctionCallbackInfo<T> &info) {
 
 #endif
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(obj);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(obj);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set text baseline.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetTextBaseline(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsInt32()) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->textBaseline = args[0]->Int32Value();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetTextBaseline(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!info[0]->IsInt32()) {
     info.GetReturnValue().SetUndefined();
     return;
@@ -2171,12 +3088,22 @@ Context2d::SetTextBaseline(const v8::FunctionCallbackInfo<T> &info) {
   context->state->textBaseline = info[0]->Int32Value();
 
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Set text alignment. -1 0 1
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::SetTextAlignment(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsInt32()) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->textAlignment = args[0]->Int32Value();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::SetTextAlignment(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2188,14 +3115,27 @@ Context2d::SetTextAlignment(const v8::FunctionCallbackInfo<T> &info) {
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->textAlignment = info[0]->Int32Value();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Fill the rectangle defined by x, y, width and height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::FillRect(const Arguments &args) {
+  HandleScope scope;
+  RECT_ARGS;
+  if (0 == width || 0 == height) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::FillRect(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2206,18 +3146,31 @@ Context2d::FillRect(const v8::FunctionCallbackInfo<T> &info) {
     return;
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->fill();
   context->restorePath();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Stroke the rectangle defined by x, y, width and height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::StrokeRect(const Arguments &args) {
+  HandleScope scope;
+  RECT_ARGS;
+  if (0 == width && 0 == height) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::StrokeRect(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2228,18 +3181,31 @@ Context2d::StrokeRect(const v8::FunctionCallbackInfo<T> &info) {
     return;
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->stroke();
   context->restorePath();
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Clears all pixels defined by x, y, width and height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::ClearRect(const Arguments &args) {
+  HandleScope scope;
+  RECT_ARGS;
+  if (0 == width || 0 == height) return Undefined();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::ClearRect(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2250,6 +3216,7 @@ Context2d::ClearRect(const v8::FunctionCallbackInfo<T> &info) {
     return;
   }
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
   cairo_save(ctx);
   context->savePath();
@@ -2258,19 +3225,31 @@ Context2d::ClearRect(const v8::FunctionCallbackInfo<T> &info) {
   cairo_fill(ctx);
   context->restorePath();
   cairo_restore(ctx);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Adds a rectangle subpath.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Rect(const Arguments &args) {
+  HandleScope scope;
+  RECT_ARGS;
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Rect(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   RECT_INFO;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
   if (width == 0) {
     cairo_move_to(ctx, x, y);
@@ -2281,13 +3260,28 @@ Context2d::Rect(const v8::FunctionCallbackInfo<T> &info) {
   } else {
     cairo_rectangle(ctx, x, y, width, height);
   }
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Adds an arc at x, y with the given radis and start/end angles.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::Arc(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()
+    || !args[3]->IsNumber()
+    || !args[4]->IsNumber()) return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::Arc(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2301,29 +3295,62 @@ Context2d::Arc(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().SetUndefined();
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  bool anticlockwise = args[5]->BooleanValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   bool anticlockwise = info[5]->BooleanValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  if (anticlockwise && M_PI * 2 != args[4]->NumberValue()) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (anticlockwise && M_PI * 2 != info[4]->NumberValue()) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     cairo_arc_negative(ctx
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      , args[0]->NumberValue()
+      , args[1]->NumberValue()
+      , args[2]->NumberValue()
+      , args[3]->NumberValue()
+      , args[4]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       , info[0]->NumberValue()
       , info[1]->NumberValue()
       , info[2]->NumberValue()
       , info[3]->NumberValue()
       , info[4]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   } else {
     cairo_arc(ctx
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      , args[0]->NumberValue()
+      , args[1]->NumberValue()
+      , args[2]->NumberValue()
+      , args[3]->NumberValue()
+      , args[4]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       , info[0]->NumberValue()
       , info[1]->NumberValue()
       , info[2]->NumberValue()
       , info[3]->NumberValue()
       , info[4]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -2332,6 +3359,17 @@ Context2d::Arc(const v8::FunctionCallbackInfo<T> &info) {
  * Implementation influenced by WebKit.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Context2d::ArcTo(const Arguments &args) {
+  HandleScope scope;
+
+  if (!args[0]->IsNumber()
+    || !args[1]->IsNumber()
+    || !args[2]->IsNumber()
+    || !args[3]->IsNumber()
+    || !args[4]->IsNumber()) return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
@@ -2345,8 +3383,13 @@ Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
     info.GetReturnValue().SetUndefined();
     return;
   }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   cairo_t *ctx = context->context();
 
   // Current path point
@@ -2355,19 +3398,35 @@ Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
   Point<float> p0(x, y);
 
   // Point (x0,y0)
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Point<float> p1(args[0]->NumberValue(), args[1]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Point<float> p1(info[0]->NumberValue(), info[1]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Point (x1,y1)
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Point<float> p2(args[2]->NumberValue(), args[3]->NumberValue());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Point<float> p2(info[2]->NumberValue(), info[3]->NumberValue());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  float radius = args[4]->NumberValue();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   float radius = info[4]->NumberValue();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   if ((p1.x == p0.x && p1.y == p0.y)
     || (p1.x == p2.x && p1.y == p2.y)
     || radius == 0.f) {
     cairo_line_to(ctx, p1.x, p1.y);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().SetUndefined();
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   Point<float> p1p0((p0.x - p1.x),(p0.y - p1.y));
@@ -2379,8 +3438,12 @@ Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
   // all points on a line logic
   if (-1 == cos_phi) {
     cairo_line_to(ctx, p1.x, p1.y);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().SetUndefined();
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   if (1 == cos_phi) {
@@ -2389,8 +3452,12 @@ Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
     double factor_max = max_length / p1p0_length;
     Point<float> ep((p0.x + factor_max * p1p0.x), (p0.y + factor_max * p1p0.y));
     cairo_line_to(ctx, ep.x, ep.y);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     info.GetReturnValue().SetUndefined();
     return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   float tangent = radius / tan(acos(cos_phi) / 2);
@@ -2442,5 +3509,9 @@ Context2d::ArcTo(const v8::FunctionCallbackInfo<T> &info) {
       , ea);
   }
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return Undefined();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().SetUndefined();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }

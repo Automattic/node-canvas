@@ -17,80 +17,149 @@ Persistent<FunctionTemplate> PixelArray::constructor;
 
 void
 PixelArray::Initialize(Handle<Object> target) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Constructor
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(PixelArray::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(PixelArray::New));
   lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
   lconstructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Prototype
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<ObjectTemplate> proto = constructor->InstanceTemplate();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<ObjectTemplate> proto = lconstructor->InstanceTemplate();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   proto->SetAccessor(String::NewSymbol("length"), GetLength);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  target->Set(String::NewSymbol("CanvasPixelArray"), constructor->GetFunction());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   constructor.Reset(isolate, lconstructor);
 
   target->Set(String::NewSymbol("CanvasPixelArray"), lconstructor->GetFunction());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Initialize a new PixelArray.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+PixelArray::New(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 PixelArray::New(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   PixelArray *arr;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<Object> obj = args[0]->ToObject();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<Object> obj = info[0]->ToObject();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  switch (args.Length()) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   switch (info.Length()) {
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     // width, height
     case 2:
       arr = new PixelArray(
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+          args[0]->Int32Value()
+        , args[1]->Int32Value());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
           info[0]->Int32Value()
         , info[1]->Int32Value());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       break;
     // canvas, x, y, width, height
     case 5: {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      if (!Canvas::constructor->HasInstance(obj))
+        return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       if (!Local<FunctionTemplate>::New(isolate, Canvas::constructor)->HasInstance(obj)) {
         info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("Canvas expected"))));
         return;
       }
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
       Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
       arr = new PixelArray(
           canvas
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+        , args[1]->Int32Value()
+        , args[2]->Int32Value()
+        , args[3]->Int32Value()
+        , args[4]->Int32Value());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
         , info[1]->Int32Value()
         , info[2]->Int32Value()
         , info[3]->Int32Value()
         , info[4]->Int32Value());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       }
       break;
     default:
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       info.GetReturnValue().Set(ThrowException(Exception::TypeError(String::New("invalid arguments"))));
       return;
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 
   // Let v8 handle accessors (and clamping)
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  args.This()->SetIndexedPropertiesToPixelData(
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.This()->SetIndexedPropertiesToPixelData(
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
       arr->data()
     , arr->length());
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  arr->Wrap(args.This());
+  return args.This();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   arr->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get length.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
+  HandleScope scope;
+  return scope.Close(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 PixelArray::GetLength(Local<String> prop, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   info.GetReturnValue().Set(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*

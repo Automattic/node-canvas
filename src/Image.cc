@@ -36,16 +36,30 @@ typedef struct {
 
 void
 Image::Initialize(Handle<Object> target) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Constructor
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
+  constructor->InstanceTemplate()->SetInternalFieldCount(1);
+  constructor->SetClassName(String::NewSymbol("Image"));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<FunctionTemplate> lconstructor = Local<FunctionTemplate>::New(isolate, FunctionTemplate::New(Image::New));
   lconstructor->InstanceTemplate()->SetInternalFieldCount(1);
   lconstructor->SetClassName(String::NewSymbol("Image"));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   // Prototype
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Local<ObjectTemplate> proto = lconstructor->PrototypeTemplate();
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   proto->SetAccessor(String::NewSymbol("source"), GetSource, SetSource);
   proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
   proto->SetAccessor(String::NewSymbol("width"), GetWidth);
@@ -54,39 +68,69 @@ Image::Initialize(Handle<Object> target) {
   proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
   proto->SetAccessor(String::NewSymbol("dataMode"), GetDataMode, SetDataMode);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
+  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   lconstructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
   lconstructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  target->Set(String::NewSymbol("Image"), constructor->GetFunction());
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
   constructor.Reset(Isolate::GetCurrent(), lconstructor);
 
   target->Set(String::NewSymbol("Image"), lconstructor->GetFunction());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Initialize a new Image.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::New(const Arguments &args) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 template<class T> void
 Image::New(const v8::FunctionCallbackInfo<T> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  img->Wrap(args.This());
+  return args.This();
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   img->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get complete boolean.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetComplete(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetComplete(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Boolean::New(Image::COMPLETE == img->state));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Boolean::New(Image::COMPLETE == img->state));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -95,12 +139,22 @@ Image::GetComplete(Local<String>, const PropertyCallbackInfo<Value> &info) {
  * Get dataMode.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetDataMode(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetDataMode(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(img->data_mode));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(img->data_mode));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -108,9 +162,13 @@ Image::GetDataMode(Local<String>, const PropertyCallbackInfo<Value> &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Image::SetDataMode(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (val->IsNumber()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
     int mode = val->Uint32Value();
@@ -124,35 +182,65 @@ Image::SetDataMode(Local<String>, Local<Value> val, const PropertyCallbackInfo<v
  * Get width.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetWidth(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetWidth(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(img->width));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(img->width));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 /*
  * Get height.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetHeight(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetHeight(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(Number::New(img->height));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(Number::New(img->height));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
  * Get src path.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetSource(Local<String>, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetSource(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return scope.Close(String::New(img->filename ? img->filename : ""));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(String::New(img->filename ? img->filename : ""));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -183,9 +271,14 @@ Image::clearData() {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Image::SetSource(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
@@ -273,12 +366,21 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
  * Get onload callback.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetOnload(Local<String>, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetOnload(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return img->onload;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(img->onload);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -286,13 +388,21 @@ Image::GetOnload(Local<String>, const PropertyCallbackInfo<Value> &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Image::SetOnload(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     img->onload.Reset(isolate, Handle<Function>::Cast(val));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 }
 
@@ -300,12 +410,21 @@ Image::SetOnload(Local<String>, Local<Value> val, const PropertyCallbackInfo<voi
  * Get onerror callback.
  */
 
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Handle<Value>
+Image::GetOnerror(Local<String>, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 void
 Image::GetOnerror(Local<String>, const PropertyCallbackInfo<Value> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  return img->onerror;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   info.GetReturnValue().Set(img->onerror);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 }
 
 /*
@@ -313,12 +432,20 @@ Image::GetOnerror(Local<String>, const PropertyCallbackInfo<Value> &info) {
  */
 
 void
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 Image::SetOnerror(Local<String>, Local<Value> val, const PropertyCallbackInfo<void> &info) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (val->IsFunction()) {
     Image *img = ObjectWrap::Unwrap<Image>(info.This());
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     img->onerror.Reset(isolate, Handle<Function>::Cast(val));
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   }
 }
 
@@ -362,8 +489,12 @@ Image::load() {
 
 void
 Image::loaded() {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   state = COMPLETE;
 
   width = cairo_image_surface_get_width(_surface);
@@ -373,7 +504,11 @@ Image::loaded() {
 
   if (!onload.IsEmpty()) {
     TryCatch try_catch;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    onload->Call(Context::GetCurrent()->Global(), 0, NULL);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Local<Function>::New(isolate, onload)->Call(Context::GetCurrent()->Global(), 0, NULL);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     onload.Dispose();
     if (try_catch.HasCaught()) {
       error(try_catch.Exception());
@@ -387,12 +522,20 @@ Image::loaded() {
 
 void
 Image::error(Local<Value> err) {
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+  HandleScope scope;
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (!onerror.IsEmpty()) {
     Local<Value> argv[1] = { err };
     TryCatch try_catch;
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    onerror->Call(Context::GetCurrent()->Global(), 1, argv);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     Local<Function>::New(isolate, onerror)->Call(Context::GetCurrent()->Global(), 1, argv);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     onerror.Dispose();
     if (try_catch.HasCaught()) {
       FatalException(try_catch);

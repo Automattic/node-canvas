@@ -71,6 +71,28 @@ class Context2d: public node::ObjectWrap {
     Context2d(Canvas *canvas);
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    static Handle<Value> New(const Arguments &args);
+    static Handle<Value> DrawImage(const Arguments &args);
+    static Handle<Value> PutImageData(const Arguments &args);
+    static Handle<Value> Save(const Arguments &args);
+    static Handle<Value> Restore(const Arguments &args);
+    static Handle<Value> Rotate(const Arguments &args);
+    static Handle<Value> Translate(const Arguments &args);
+    static Handle<Value> Scale(const Arguments &args);
+    static Handle<Value> Transform(const Arguments &args);
+    static Handle<Value> ResetTransform(const Arguments &args);
+    static Handle<Value> IsPointInPath(const Arguments &args);
+    static Handle<Value> BeginPath(const Arguments &args);
+    static Handle<Value> ClosePath(const Arguments &args);
+    static Handle<Value> AddPage(const Arguments &args);
+    static Handle<Value> Clip(const Arguments &args);
+    static Handle<Value> Fill(const Arguments &args);
+    static Handle<Value> Stroke(const Arguments &args);
+    static Handle<Value> FillText(const Arguments &args);
+    static Handle<Value> StrokeText(const Arguments &args);
+    static Handle<Value> SetFont(const Arguments &args);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     template<class T> static void New(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void DrawImage(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void PutImageData(const v8::FunctionCallbackInfo<T> &info);
@@ -91,9 +113,63 @@ class Context2d: public node::ObjectWrap {
     template<class T> static void FillText(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void StrokeText(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void SetFont(const v8::FunctionCallbackInfo<T> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #ifdef HAVE_FREETYPE
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    static Handle<Value> SetFontFace(const Arguments &args);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     template<class T> static void SetFontFace(const v8::FunctionCallbackInfo<T> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 #endif
+#if !NODE_VERSION_AT_LEAST(0, 11, 4)
+    static Handle<Value> SetFillColor(const Arguments &args);
+    static Handle<Value> SetStrokeColor(const Arguments &args);
+    static Handle<Value> SetFillPattern(const Arguments &args);
+    static Handle<Value> SetStrokePattern(const Arguments &args);
+    static Handle<Value> SetTextBaseline(const Arguments &args);
+    static Handle<Value> SetTextAlignment(const Arguments &args);
+    static Handle<Value> MeasureText(const Arguments &args);
+    static Handle<Value> BezierCurveTo(const Arguments &args);
+    static Handle<Value> QuadraticCurveTo(const Arguments &args);
+    static Handle<Value> LineTo(const Arguments &args);
+    static Handle<Value> MoveTo(const Arguments &args);
+    static Handle<Value> FillRect(const Arguments &args);
+    static Handle<Value> StrokeRect(const Arguments &args);
+    static Handle<Value> ClearRect(const Arguments &args);
+    static Handle<Value> Rect(const Arguments &args);
+    static Handle<Value> Arc(const Arguments &args);
+    static Handle<Value> ArcTo(const Arguments &args);
+    static Handle<Value> GetPatternQuality(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetGlobalAlpha(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetFillColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetStrokeColor(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetMiterLimit(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetLineCap(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetLineJoin(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetLineWidth(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowOffsetX(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowOffsetY(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetShadowBlur(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetAntiAlias(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetTextDrawingMode(Local<String> prop, const AccessorInfo &info);
+    static Handle<Value> GetFilter(Local<String> prop, const AccessorInfo &info);
+    static void SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static void SetFilter(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     template<class T> static void SetFillColor(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void SetStrokeColor(const v8::FunctionCallbackInfo<T> &info);
     template<class T> static void SetFillPattern(const v8::FunctionCallbackInfo<T> &info);
@@ -141,6 +217,7 @@ class Context2d: public node::ObjectWrap {
     static void SetAntiAlias(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
     static void SetTextDrawingMode(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
     static void SetFilter(Local<String> prop, Local<Value> val, const PropertyCallbackInfo<void> &info);
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
