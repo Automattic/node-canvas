@@ -218,25 +218,31 @@ Canvas::SetHeight(Local<String> prop, Local<Value> val, const PropertyCallbackIn
 static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
+  
   // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
     unsigned max = closure->max_len;
+  
     // round to the nearest multiple of 1024 bytes
     max = (closure->max_len + len + 1023) & ~1023;
+  
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
     closure->data = data;
     closure->max_len = max;
   }
+  
   memcpy(closure->data + closure->len, data, len);
   closure->len += len;
+  
   return CAIRO_STATUS_SUCCESS;
 }
 
 /*
  * EIO toBuffer callback.
  */
+ 
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsync(uv_work_t *req) {
@@ -253,6 +259,7 @@ Canvas::EIO_ToBuffer(eio_req *req) {
       closure->canvas->surface()
     , toBuffer
     , closure);
+    
 #if !NODE_VERSION_AT_LEAST(0, 5, 4)
   return 0;
 #endif
@@ -269,11 +276,12 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 int
 Canvas::EIO_AfterToBuffer(eio_req *req) {
 #endif
-#if !NODE_VERSION_AT_LEAST(0, 11, 4)
-  HandleScope scope;
-#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+
+#if NODE_VERSION_AT_LEAST(0, 11, 4)
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  HandleScope scope;
 #endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   closure_t *closure = (closure_t *) req->data;
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
@@ -281,8 +289,11 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
 #else
   ev_unref(EV_DEFAULT_UC);
 #endif
+
+#if NODE_VERSION_AT_LEAST(0, 11, 4)
   Local<Function> cb = Local<Function>::New(isolate, closure->pfn);
 
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
@@ -311,17 +322,17 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   closure_destroy(closure);
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
   free(closure);
-#else
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
   delete closure;
-#endif
-
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+  
 #if !NODE_VERSION_AT_LEAST(0, 6, 0)
   return 0;
 #endif
 }
 
 /*
- * Convert PNG data to a node::Buffer, async when a
+ * Convert PNG data to a node::Buffer, async when a 
  * callback function is passed.
  */
 
@@ -390,10 +401,10 @@ Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
     canvas->Ref();
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
     closure->pfn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-
 #else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     closure->pfn.Reset(isolate, Handle<Function>::Cast(info[0]));
 #endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+    
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -402,10 +413,10 @@ Canvas::ToBuffer(const v8::FunctionCallbackInfo<T> &info) {
     eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
     ev_ref(EV_DEFAULT_UC);
 #endif
+    
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
     return Undefined();
 #else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
-
     info.GetReturnValue().SetUndefined();
     return;
 #endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */

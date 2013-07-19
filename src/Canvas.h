@@ -73,12 +73,9 @@ class Canvas: public node::ObjectWrap {
     template<class T> static void StreamJPEGSync(const v8::FunctionCallbackInfo<T> &info);
 #endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
     static Local<Value> Error(cairo_status_t status);
-#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
-#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
     static void ToBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
-#if !NODE_VERSION_AT_LEAST(0, 11, 4)
 #else
     static
 #if NODE_VERSION_AT_LEAST(0, 5, 4)
@@ -90,7 +87,6 @@ class Canvas: public node::ObjectWrap {
     static int EIO_AfterToBuffer(eio_req *req);
 #endif
 
-#endif /* ! NODE_VERSION_AT_LEAST(0, 11, 4) */
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
     inline cairo_surface_t *surface(){ return _surface; }
     inline void *closure(){ return _closure; }

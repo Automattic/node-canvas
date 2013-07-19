@@ -1,4 +1,3 @@
-w
 //
 // CanvasRenderingContext2d.cc
 //
@@ -22,13 +21,15 @@ w
 
 Persistent<FunctionTemplate> Context2d::constructor;
 
-/*
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
+/*
  * Rectangle arg assertions.
-#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
- * Rectangle info assertions.
-#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
  */
+#else /* NODE_VERSION_AT_LEAST(0, 11, 4) */
+/*
+ * Rectangle info assertions.
+ */
+#endif /* NODE_VERSION_AT_LEAST(0, 11, 4) */
 
 #if !NODE_VERSION_AT_LEAST(0, 11, 4)
 #define RECT_ARGS \
