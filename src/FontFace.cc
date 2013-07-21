@@ -6,6 +6,8 @@
 
 #include "FontFace.h"
 
+#include "nan.h"
+
 Persistent<FunctionTemplate> FontFace::constructor;
 
 /*
@@ -25,19 +27,16 @@ FontFace::~FontFace() {
 
 void
 FontFace::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(FontFace::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(FontFace::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("FontFace"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(FontFace::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("FontFace"));
 
   // Prototype
-  target->Set(String::NewSymbol("FontFace"), constructor->GetFunction());
+  target->Set(NanSymbol("FontFace"), ctor->GetFunction());
 }
 
 /*
@@ -53,13 +52,12 @@ static cairo_user_data_key_t key;
  * Initialize a new FontFace.
  */
 
-Handle<Value>
-FontFace::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(FontFace::New) {
+  NanScope();
 
   if (!args[0]->IsString()
     || !args[1]->IsNumber()) {
-    return ThrowException(Exception::Error(String::New("Wrong argument types passed to FontFace constructor")));
+    return NanThrowError("Wrong argument types passed to FontFace constructor");
   }
 
   String::AsciiValue filePath(args[0]);
@@ -73,14 +71,14 @@ FontFace::New(const Arguments &args) {
     _initLibrary = false;
     ftError = FT_Init_FreeType(&library);
     if (ftError) {
-      return ThrowException(Exception::Error(String::New("Could not load library")));
+      return NanThrowError("Could not load library");
     }
   }
 
   // Create new freetype font face.
   ftError = FT_New_Face(library, *filePath, faceIdx, &ftFace);
   if (ftError) {
-    return ThrowException(Exception::Error(String::New("Could not load font file")));
+    return NanThrowError("Could not load font file");
   }
 
   // Create new cairo font face.
@@ -92,7 +90,7 @@ FontFace::New(const Arguments &args) {
   if (status) {
     cairo_font_face_destroy (crFace);
     FT_Done_Face (ftFace);
-    return ThrowException(Exception::Error(String::New("Failed to setup cairo font face user data")));
+    return NanThrowError("Failed to setup cairo font face user data");
   }
 
   // Explicit reference count the cairo font face. Otherwise the font face might
@@ -101,6 +99,6 @@ FontFace::New(const Arguments &args) {
 
   FontFace *face = new FontFace(ftFace, crFace);
   face->Wrap(args.This());
-  return args.This();
+  NanReturnValue(args.This());
 }
 

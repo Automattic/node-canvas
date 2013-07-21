@@ -20,25 +20,24 @@ Pattern::Initialize(Handle<Object> target) {
   HandleScope scope;
 
   // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Pattern::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Pattern::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasPattern"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(Pattern::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("CanvasPattern"));
+
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("CanvasPattern"));
 
   // Prototype
-  target->Set(String::NewSymbol("CanvasPattern"), constructor->GetFunction());
+  target->Set(NanSymbol("CanvasPattern"), ctor->GetFunction());
 }
 
 /*
  * Initialize a new CanvasPattern.
  */
 
-Handle<Value>
-Pattern::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Pattern::New) {
+  NanScope();
 
   int w = 0
     , h = 0;
@@ -47,17 +46,17 @@ Pattern::New(const Arguments &args) {
   Local<Object> obj = args[0]->ToObject();
 
   // Image
-  if (Image::constructor->HasInstance(obj)) {
+  if (NanHasInstance(Image::constructor, obj)) {
     Image *img = ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
-      return ThrowException(Exception::Error(String::New("Image given has not completed loading")));
+      return NanThrowError("Image given has not completed loading");
     }
     w = img->width;
     h = img->height;
     surface = img->surface();
 
   // Canvas
-  } else if (Canvas::constructor->HasInstance(obj)) {
+  } else if (NanHasInstance(Canvas::constructor, obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
     w = canvas->width;
     h = canvas->height;
@@ -65,12 +64,12 @@ Pattern::New(const Arguments &args) {
 
   // Invalid
   } else {
-    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+    return NanThrowTypeError("Image or Canvas expected");
   }
 
   Pattern *pattern = new Pattern(surface,w,h);
   pattern->Wrap(args.This());
-  return args.This();
+  NanReturnValue(args.This());
 }
 
 

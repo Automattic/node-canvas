@@ -8,12 +8,14 @@
 #ifndef __NODE_CLOSURE_H__
 #define __NODE_CLOSURE_H__
 
+#include "nan.h"
+
 /*
  * PNG stream closure.
  */
 
 typedef struct {
-  Persistent<Function> pfn;
+  NanCallback *pfn;
   Handle<Function> fn;
   unsigned len;
   unsigned max_len;

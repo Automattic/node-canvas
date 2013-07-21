@@ -19,8 +19,6 @@ typedef struct {
 } gif_data_t;
 #endif
 
-Persistent<FunctionTemplate> Image::constructor;
-
 /*
  * Read closure used by loadFromBuffer.
  */
@@ -30,61 +28,60 @@ typedef struct {
   uint8_t *buf;
 } read_closure_t;
 
+Persistent<FunctionTemplate> Image::constructor;
+
 /*
  * Initialize Image.
  */
 
 void
 Image::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
-  // Constructor
-  #if NODE_VERSION_AT_LEAST(0, 11, 3)
-    constructor = Persistent<FunctionTemplate>::New(Isolate::GetCurrent(), FunctionTemplate::New(Image::New));
-  #else
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Image::New));
-  #endif
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("Image"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(Image::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("Image"));
+
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("Image"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
-  proto->SetAccessor(String::NewSymbol("source"), GetSource, SetSource);
-  proto->SetAccessor(String::NewSymbol("complete"), GetComplete);
-  proto->SetAccessor(String::NewSymbol("width"), GetWidth);
-  proto->SetAccessor(String::NewSymbol("height"), GetHeight);
-  proto->SetAccessor(String::NewSymbol("onload"), GetOnload, SetOnload);
-  proto->SetAccessor(String::NewSymbol("onerror"), GetOnerror, SetOnerror);
+  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  proto->SetAccessor(NanSymbol("source"), GetSource, SetSource);
+  proto->SetAccessor(NanSymbol("complete"), GetComplete);
+  proto->SetAccessor(NanSymbol("width"), GetWidth);
+  proto->SetAccessor(NanSymbol("height"), GetHeight);
+  proto->SetAccessor(NanSymbol("onload"), GetOnload, SetOnload);
+  proto->SetAccessor(NanSymbol("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
-  proto->SetAccessor(String::NewSymbol("dataMode"), GetDataMode, SetDataMode);
-  constructor->Set(String::NewSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
-  constructor->Set(String::NewSymbol("MODE_MIME"), Number::New(DATA_MIME));
+  proto->SetAccessor(NanSymbol("dataMode"), GetDataMode, SetDataMode);
+  ctor->Set(NanSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
+  ctor->Set(NanSymbol("MODE_MIME"), Number::New(DATA_MIME));
 #endif
-  target->Set(String::NewSymbol("Image"), constructor->GetFunction());
+  target->Set(NanSymbol("Image"), ctor->GetFunction());
 }
 
 /*
  * Initialize a new Image.
  */
 
-Handle<Value>
-Image::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Image::New) {
+  NanScope();
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
   img->Wrap(args.This());
-  return args.This();
+  NanReturnValue(args.This());
 }
 
 /*
  * Get complete boolean.
  */
 
-Handle<Value>
-Image::GetComplete(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Boolean::New(Image::COMPLETE == img->state));
+NAN_GETTER(Image::GetComplete) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(Boolean::New(Image::COMPLETE == img->state));
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -93,22 +90,20 @@ Image::GetComplete(Local<String>, const AccessorInfo &info) {
  * Get dataMode.
  */
 
-Handle<Value>
-Image::GetDataMode(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->data_mode));
+NAN_GETTER(Image::GetDataMode) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(Number::New(img->data_mode));
 }
 
 /*
  * Set dataMode.
  */
 
-void
-Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
-  if (val->IsNumber()) {
-    Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    int mode = val->Uint32Value();
+NAN_SETTER(Image::SetDataMode) {
+  if (value->IsNumber()) {
+    Image *img = ObjectWrap::Unwrap<Image>(args.This());
+    int mode = value->Uint32Value();
     img->data_mode = (data_mode_t) mode;
   }
 }
@@ -119,32 +114,29 @@ Image::SetDataMode(Local<String>, Local<Value> val, const AccessorInfo &info) {
  * Get width.
  */
 
-Handle<Value>
-Image::GetWidth(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->width));
+NAN_GETTER(Image::GetWidth) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(Number::New(img->width));
 }
 /*
  * Get height.
  */
 
-Handle<Value>
-Image::GetHeight(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(Number::New(img->height));
+NAN_GETTER(Image::GetHeight) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(Number::New(img->height));
 }
 
 /*
  * Get src path.
  */
 
-Handle<Value>
-Image::GetSource(Local<String>, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return scope.Close(String::New(img->filename ? img->filename : ""));
+NAN_GETTER(Image::GetSource) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(String::New(img->filename ? img->filename : ""));
 }
 
 /*
@@ -174,24 +166,23 @@ Image::clearData() {
  * Set src path.
  */
 
-void
-Image::SetSource(Local<String>, Local<Value> val, const AccessorInfo &info) {
-  HandleScope scope;
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
+NAN_SETTER(Image::SetSource) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
   img->clearData();
 
   // url string
-  if (val->IsString()) {
-    String::AsciiValue src(val);
+  if (value->IsString()) {
+    String::AsciiValue src(value);
     if (img->filename) free(img->filename);
     img->filename = strdup(*src);
     status = img->load();
   // Buffer
-  } else if (Buffer::HasInstance(val)) {
-    uint8_t *buf = (uint8_t *) Buffer::Data(val->ToObject());
-    unsigned len = Buffer::Length(val->ToObject());
+  } else if (Buffer::HasInstance(value)) {
+    uint8_t *buf = (uint8_t *) Buffer::Data(value->ToObject());
+    unsigned len = Buffer::Length(value->ToObject());
     status = img->loadFromBuffer(buf, len);
   }
 
@@ -264,25 +255,20 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
  * Get onload callback.
  */
 
-Handle<Value>
-Image::GetOnload(Local<String>, const AccessorInfo &info) {
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return img->onload;
+NAN_GETTER(Image::GetOnload) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(img->onload->GetFunction());
 }
 
 /*
  * Set onload callback.
  */
 
-void
-Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
-  if (val->IsFunction()) {
-    Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      img->onload = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
-    #else
-      img->onload = Persistent<Function>::New(Handle<Function>::Cast(val));
-    #endif
+NAN_SETTER(Image::SetOnload) {
+  if (value->IsFunction()) {
+    Image *img = ObjectWrap::Unwrap<Image>(args.This());
+    img->onload = new NanCallback(value.As<Function>());
   }
 }
 
@@ -290,25 +276,20 @@ Image::SetOnload(Local<String>, Local<Value> val, const AccessorInfo &info) {
  * Get onerror callback.
  */
 
-Handle<Value>
-Image::GetOnerror(Local<String>, const AccessorInfo &info) {
-  Image *img = ObjectWrap::Unwrap<Image>(info.This());
-  return img->onerror;
+NAN_GETTER(Image::GetOnerror) {
+  NanScope();
+  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  NanReturnValue(img->onerror->GetFunction());
 }
 
 /*
  * Set onerror callback.
  */
 
-void
-Image::SetOnerror(Local<String>, Local<Value> val, const AccessorInfo &info) {
-  if (val->IsFunction()) {
-    Image *img = ObjectWrap::Unwrap<Image>(info.This());
-    #if NODE_VERSION_AT_LEAST(0, 11, 3)
-      img->onerror = Persistent<Function>::New(Isolate::GetCurrent(), Handle<Function>::Cast(val));
-    #else
-      img->onerror = Persistent<Function>::New(Handle<Function>::Cast(val));
-    #endif
+NAN_SETTER(Image::SetOnerror) {
+  if (value->IsFunction()) {
+    Image *img = ObjectWrap::Unwrap<Image>(args.This());
+    img->onerror = new NanCallback(value.As<Function>());
   }
 }
 
@@ -323,6 +304,8 @@ Image::Image() {
   _surface = NULL;
   width = height = 0;
   state = DEFAULT;
+  onload = NULL;
+  onerror = NULL;
 }
 
 /*
@@ -352,7 +335,7 @@ Image::load() {
 
 void
 Image::loaded() {
-  HandleScope scope;
+  NanScope();
   state = COMPLETE;
 
   width = cairo_image_surface_get_width(_surface);
@@ -360,13 +343,9 @@ Image::loaded() {
   _data_len = height * cairo_image_surface_get_stride(_surface);
   V8::AdjustAmountOfExternalAllocatedMemory(_data_len);
 
-  if (!onload.IsEmpty()) {
-    TryCatch try_catch;
-    onload->Call(Context::GetCurrent()->Global(), 0, NULL);
-    onload.Dispose();
-    if (try_catch.HasCaught()) {
-      error(try_catch.Exception());
-    }
+  if (onload != NULL) {
+    onload->Call(0, NULL);
+    delete onload;
   }
 }
 
@@ -376,15 +355,11 @@ Image::loaded() {
 
 void
 Image::error(Local<Value> err) {
-  HandleScope scope;
-  if (!onerror.IsEmpty()) {
+  NanScope();
+  if (onerror != NULL) {
     Local<Value> argv[1] = { err };
-    TryCatch try_catch;
-    onerror->Call(Context::GetCurrent()->Global(), 1, argv);
-    onerror.Dispose();
-    if (try_catch.HasCaught()) {
-      FatalException(try_catch);
-    }
+    onerror->Call(1, argv);
+    delete onerror;
   }
 }
 
@@ -680,30 +655,30 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
  */
 
 cairo_status_t
-Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
+Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   int stride = width * 4;
   cairo_status_t status;
 
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
-    jpeg_abort_decompress(info);
-    jpeg_destroy_decompress(info);
+    jpeg_abort_decompress(args);
+    jpeg_destroy_decompress(args);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(width * info->output_components);
+  uint8_t *src = (uint8_t *) malloc(width * args->output_components);
   if (!src) {
     free(data);
-    jpeg_abort_decompress(info);
-    jpeg_destroy_decompress(info);
+    jpeg_abort_decompress(args);
+    jpeg_destroy_decompress(args);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
   for (int y = 0; y < height; ++y) {
-    jpeg_read_scanlines(info, &src, 1);
+    jpeg_read_scanlines(args, &src, 1);
     uint32_t *row = (uint32_t *)(data + stride * y);
     for (int x = 0; x < width; ++x) {
-      if (info->jpeg_color_space == 1) {
+      if (args->jpeg_color_space == 1) {
         uint32_t *pixel = row + x;
         *pixel = 255 << 24
           | src[x] << 16
@@ -727,8 +702,8 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *info) {
     , height
     , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
 
-  jpeg_finish_decompress(info);
-  jpeg_destroy_decompress(info);
+  jpeg_finish_decompress(args);
+  jpeg_destroy_decompress(args);
   status = cairo_surface_status(_surface);
 
   if (status) {
@@ -755,17 +730,17 @@ cairo_status_t
 Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
-  struct jpeg_decompress_struct info;
+  struct jpeg_decompress_struct args;
   struct jpeg_error_mgr err;
-  info.err = jpeg_std_error(&err);
-  jpeg_create_decompress(&info);
+  args.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&args);
 
-  jpeg_mem_src(&info, buf, len);
+  jpeg_mem_src(&args, buf, len);
 
-  jpeg_read_header(&info, 1);
-  jpeg_start_decompress(&info);
-  width = info.output_width;
-  height = info.output_height;
+  jpeg_read_header(&args, 1);
+  jpeg_start_decompress(&args);
+  width = args.output_width;
+  height = args.output_height;
 
   // Data alloc
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
@@ -782,8 +757,8 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
     , cairo_format_stride_for_width(CAIRO_FORMAT_A1, width));
 
   // Cleanup
-  jpeg_abort_decompress(&info);
-  jpeg_destroy_decompress(&info);
+  jpeg_abort_decompress(&args);
+  jpeg_destroy_decompress(&args);
   cairo_status_t status = cairo_surface_status(_surface);
 
   if (status) {
@@ -849,19 +824,19 @@ cairo_status_t
 Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
-  struct jpeg_decompress_struct info;
+  struct jpeg_decompress_struct args;
   struct jpeg_error_mgr err;
-  info.err = jpeg_std_error(&err);
-  jpeg_create_decompress(&info);
+  args.err = jpeg_std_error(&err);
+  jpeg_create_decompress(&args);
 
-  jpeg_mem_src(&info, buf, len);
+  jpeg_mem_src(&args, buf, len);
 
-  jpeg_read_header(&info, 1);
-  jpeg_start_decompress(&info);
-  width = info.output_width;
-  height = info.output_height;
+  jpeg_read_header(&args, 1);
+  jpeg_start_decompress(&args);
+  width = args.output_width;
+  height = args.output_height;
 
-  return decodeJPEGIntoSurface(&info);
+  return decodeJPEGIntoSurface(&args);
 }
 
 /*
@@ -874,19 +849,19 @@ Image::loadJPEG(FILE *stream) {
 
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
     // JPEG setup
-    struct jpeg_decompress_struct info;
+    struct jpeg_decompress_struct args;
     struct jpeg_error_mgr err;
-    info.err = jpeg_std_error(&err);
-    jpeg_create_decompress(&info);
+    args.err = jpeg_std_error(&err);
+    jpeg_create_decompress(&args);
 
-    jpeg_stdio_src(&info, stream);
+    jpeg_stdio_src(&args, stream);
 
-    jpeg_read_header(&info, 1);
-    jpeg_start_decompress(&info);
-    width = info.output_width;
-    height = info.output_height;
+    jpeg_read_header(&args, 1);
+    jpeg_start_decompress(&args);
+    width = args.output_width;
+    height = args.output_height;
 
-    status = decodeJPEGIntoSurface(&info);
+    status = decodeJPEGIntoSurface(&args);
     fclose(stream);
   } else { // We'll need the actual source jpeg data, so read fully.
 #if CAIRO_VERSION_MINOR >= 10
