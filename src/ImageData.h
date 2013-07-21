@@ -16,9 +16,9 @@ class ImageData: public node::ObjectWrap {
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
-    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
+    static NAN_METHOD(New);
+    static NAN_GETTER(GetWidth);
+    static NAN_GETTER(GetHeight);
     inline PixelArray *pixelArray(){ return _arr; }
     ImageData(PixelArray *arr): _arr(arr) {}
   private:
