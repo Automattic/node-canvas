@@ -1,4 +1,10 @@
 
+1.0.4 / 2013-07-23 
+==================
+
+ * 0.11.4+ compatibility using NAN
+ * fix typo in context2d for imageSmoothingEnabled
+
 1.0.3 / 2013-06-04 
 ==================
 
