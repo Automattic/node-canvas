@@ -375,7 +375,10 @@ Image::loadSurface() {
   FILE *stream = fopen(filename, "r");
   if (!stream) return CAIRO_STATUS_READ_ERROR;
   uint8_t buf[5];
-  if (1 != fread(&buf, 5, 1, stream)) return CAIRO_STATUS_READ_ERROR;
+  if (1 != fread(&buf, 5, 1, stream)) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
   fseek(stream, 0, SEEK_SET);
 
   // png
@@ -394,6 +397,7 @@ Image::loadSurface() {
   if (isJPEG(buf)) return loadJPEG(stream);
 #endif
 
+  fclose(stream);
   return CAIRO_STATUS_READ_ERROR;
 }
 
