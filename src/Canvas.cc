@@ -132,7 +132,7 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
   // Olaf: grow buffer
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
-    unsigned max = closure->max_len;
+    unsigned max;
   
     // round to the nearest multiple of 1024 bytes
     max = (closure->max_len + len + 1023) & ~1023;
