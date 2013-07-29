@@ -236,15 +236,32 @@ NAN_METHOD(Canvas::ToBuffer) {
     NanReturnValue(buf);
   }
 
-  if (args.Length() == 2) {
-    if(args[1]->IsUint32()) {
-      compression_level = args[1]->Uint32Value();
-      if (compression_level > 9) {
-        return NanThrowRangeError("Allowed compression levels lie in the range [0, 9].");
-      }
-    } else {
-      return NanThrowTypeError("Compression level has to be an unsigned integer.");
-    }
+  if (args.Length() == 2 && !args[1]->StrictEquals(Undefined())) {
+      bool good = true;
+      if (args[1]->IsNumber()) {
+        compression_level = args[1]->Uint32Value();
+      } else if (args[1]->IsString()) {
+        if (args[1]->StrictEquals(String::New("0"))) {
+          compression_level = 0;
+        } else {
+          uint32_t tmp = args[1]->Uint32Value();
+          if (tmp == 0) {
+            good = false;
+          } else {
+            compression_level = tmp;
+          }
+        }
+     } else {
+       good = false;
+     }
+
+     if (good) {
+       if (compression_level > 9) {
+         return NanThrowRangeError("Allowed compression levels lie in the range [0, 9].");
+       }
+     } else {
+      return NanThrowTypeError("Compression level must be a number.");
+     }
   }
 
   // Async
@@ -324,17 +341,47 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 
 NAN_METHOD(Canvas::StreamPNGSync) {
   NanScope();
+  uint32_t compression_level = 6;
   // TODO: async as well
   if (!args[0]->IsFunction())
     return NanThrowTypeError("callback function required");
 
+  if (args.Length() == 2 && !args[1]->StrictEquals(Undefined())) {
+      bool good = true;
+      if (args[1]->IsNumber()) {
+        compression_level = args[1]->Uint32Value();
+      } else if (args[1]->IsString()) {
+        if (args[1]->StrictEquals(String::New("0"))) {
+          compression_level = 0;
+        } else {
+          uint32_t tmp = args[1]->Uint32Value();
+          if (tmp == 0) {
+            good = false;
+          } else {
+            compression_level = tmp;
+          }
+        }
+     } else {
+       good = false;
+     }
+
+     if (good) {
+       if (compression_level > 9) {
+         return NanThrowRangeError("Allowed compression levels lie in the range [0, 9].");
+       }
+     } else {
+      return NanThrowTypeError("Compression level must be a number.");
+     }
+  }
+
+
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
   closure.fn = Handle<Function>::Cast(args[0]);
+  closure.compression_level = compression_level;
 
   TryCatch try_catch;
 
-  //TODO: use libpng directly
   cairo_status_t status = canvas_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
