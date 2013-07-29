@@ -30,6 +30,7 @@ typedef struct {
   uint8_t *data;
   Canvas *canvas;
   cairo_status_t status;
+  unsigned int compression_level;
 } closure_t;
 
 /*
@@ -37,11 +38,12 @@ typedef struct {
  */
 
 cairo_status_t
-closure_init(closure_t *closure, Canvas *canvas) {
+closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level) {
   closure->len = 0;
   closure->canvas = canvas;
   closure->data = (uint8_t *) malloc(closure->max_len = PAGE_SIZE);
   if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
+  closure->compression_level = compression_level;
   return CAIRO_STATUS_SUCCESS;
 }
 

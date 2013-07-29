@@ -166,7 +166,7 @@ Canvas::EIO_ToBuffer(eio_req *req) {
 #endif
   closure_t *closure = (closure_t *) req->data;
 
-  closure->status = cairo_surface_write_to_png_stream(
+  closure->status = canvas_write_to_png_stream(
       closure->canvas->surface()
     , toBuffer
     , closure);
@@ -224,6 +224,7 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
 NAN_METHOD(Canvas::ToBuffer) {
   NanScope();
   cairo_status_t status;
+  uint32_t compression_level = 6;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
 
   // TODO: async / move this out
@@ -235,10 +236,21 @@ NAN_METHOD(Canvas::ToBuffer) {
     NanReturnValue(buf);
   }
 
+  if (args.Length() == 2) {
+    if(args[1]->IsUint32()) {
+      compression_level = args[1]->Uint32Value();
+      if (compression_level > 9) {
+        return NanThrowRangeError("Allowed compression levels lie in the range [0, 9].");
+      }
+    } else {
+      return NanThrowTypeError("Compression level has to be an unsigned integer.");
+    }
+  }
+
   // Async
   if (args[0]->IsFunction()) {
     closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
-    status = closure_init(closure, canvas);
+    status = closure_init(closure, canvas, compression_level);
 
     // ensure closure is ok
     if (status) {
@@ -264,7 +276,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   // Sync
   } else {
     closure_t closure;
-    status = closure_init(&closure, canvas);
+    status = closure_init(&closure, canvas, compression_level);
 
     // ensure closure is ok
     if (status) {
@@ -384,7 +396,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
   if (CANVAS_TYPE_PDF == t) {
     _closure = malloc(sizeof(closure_t));
     assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this);
+    cairo_status_t status = closure_init((closure_t *) _closure, this, 0);
     assert(status == CAIRO_STATUS_SUCCESS);
     _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
   } else {
