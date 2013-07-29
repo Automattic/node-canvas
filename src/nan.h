@@ -3,24 +3,39 @@
  *
  * Copyright (c) 2013 NAN contributors:
  *   - Rod Vagg <https://github.com/rvagg>
- *   - King Koopa <https://github.com/kkoopa>
+ *   - Benjamin Byholm <https://github.com/kkoopa>
  *   - Trevor Norris <https://github.com/trevnorris>
  *
  * MIT +no-false-attribs License <https://github.com/rvagg/nan/blob/master/LICENSE>
  *
- * Version 0.2.0 (current Node unstable: 0.11.4)
+ * Version 0.2.0-wip (current Node unstable: 0.11.4)
  *
- * Changelog:
- *  * 0.2.0 .... TODO
+ * ChangeLog:
+ *  * 0.2.0 .... work in progress
+ *    - Added NAN_PROPERTY_GETTER, NAN_PROPERTY_SETTER, NAN_PROPERTY_ENUMERATOR,
+ *      NAN_PROPERTY_DELETER, NAN_PROPERTY_QUERY
+ *    - Extracted _NAN_METHOD_ARGS, _NAN_GETTER_ARGS, _NAN_SETTER_ARGS,
+ *      _NAN_PROPERTY_GETTER_ARGS, _NAN_PROPERTY_SETTER_ARGS,
+ *      _NAN_PROPERTY_ENUMERATOR_ARGS, _NAN_PROPERTY_DELETER_ARGS,
+ *      _NAN_PROPERTY_QUERY_ARGS
+ *    - Added NanGetInternalFieldPointer, NanSetInternalFieldPointer
+ *    - Added NAN_WEAK_CALLBACK, NAN_WEAK_CALLBACK_OBJECT,
+ *      NAN_WEAK_CALLBACK_DATA, NanMakeWeak
+ *    - Renamed THROW_ERROR to _NAN_THROW_ERROR
+ *    - Added NanNewBufferHandle(char*, size_t, node::smalloc::FreeCallback, void*)
+ *    - Added NanBufferUse(char*, uint32_t)
+ *    - Added NanNewContextHandle(v8::ExtensionConfiguration*,
+ *        v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Value>)
+ *    - Fixed broken NanCallback#GetFunction()
  *
  *  * 0.1.0 Jul 21 2013
- *           - Added `NAN_GETTER`, `NAN_SETTER`
- *           - Added `NanThrowError` with single Local<Value> argument
- *           - Added `NanNewBufferHandle` with single uint32_t argument
- *           - Added `NanHasInstance(Persistent<FunctionTemplate>&, Handle<Value>)`
- *           - Added `Local<Function> NanCallback#GetFunction()`
- *           - Added `NanCallback#Call(int, Local<Value>[])`
- *           - Deprecated `NanCallback#Run(int, Local<Value>[])` in favour of Call
+ *    - Added `NAN_GETTER`, `NAN_SETTER`
+ *    - Added `NanThrowError` with single Local<Value> argument
+ *    - Added `NanNewBufferHandle` with single uint32_t argument
+ *    - Added `NanHasInstance(Persistent<FunctionTemplate>&, Handle<Value>)`
+ *    - Added `Local<Function> NanCallback#GetFunction()`
+ *    - Added `NanCallback#Call(int, Local<Value>[])`
+ *    - Deprecated `NanCallback#Run(int, Local<Value>[])` in favour of Call
  *
  * See https://github.com/rvagg/nan for the latest update to this file
  **********************************************************************************/
@@ -302,7 +317,8 @@ static v8::Isolate* nan_isolate = v8::Isolate::GetCurrent();
       size_t length,
       node::Buffer::free_callback callback,
       void *hint) {
-    return v8::Local<v8::Object>::New(node::Buffer::New(data, length, callback, hint)->handle_);
+    return v8::Local<v8::Object>::New(
+        node::Buffer::New(data, length, callback, hint)->handle_);
   }
 
   static inline v8::Local<v8::Object> NanNewBufferHandle (
@@ -341,10 +357,13 @@ static v8::Isolate* nan_isolate = v8::Isolate::GetCurrent();
   }
 
   static inline v8::Local<v8::Context> NanNewContextHandle(
-    v8::ExtensionConfiguration* extensions = NULL,
-    v8::Handle<v8::ObjectTemplate> g_template = v8::Handle<v8::ObjectTemplate>(),
-    v8::Handle<v8::Value> g_object = v8::Handle<v8::Value>()) {
-      v8::Persistent<v8::Context> ctx = v8::Context::New(extensions, g_template, g_object);
+        v8::ExtensionConfiguration* extensions = NULL
+      , v8::Handle<v8::ObjectTemplate> g_template =
+            v8::Handle<v8::ObjectTemplate>()
+      , v8::Handle<v8::Value> g_object = v8::Handle<v8::Value>()
+    ) {
+      v8::Persistent<v8::Context> ctx =
+          v8::Context::New(extensions, g_template, g_object);
       v8::Local<v8::Context> lctx = v8::Local<v8::Context>::New(ctx);
       ctx.Dispose();
       return lctx;
@@ -366,9 +385,9 @@ class NanCallback {
    handle.Dispose();
   }
 
-  v8::Local<v8::Function> GetFunction () {
-    NanScope();
-    return NanPersistentToLocal(handle).As<v8::Function>();
+  inline v8::Local<v8::Function> GetFunction () {
+    return NanPersistentToLocal(handle)->Get(NanSymbol("callback"))
+        .As<v8::Function>();
   }
 
   // deprecated
