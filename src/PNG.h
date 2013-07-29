@@ -129,6 +129,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 
     png_set_write_fn(png, closure, write_func, canvas_png_flush);
     png_set_compression_level(png, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->compression_level);
+    png_set_filter(png, 0, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->filter);
 
     switch (cairo_image_surface_get_format(surface)) {
     case CAIRO_FORMAT_ARGB32:
