@@ -8,6 +8,14 @@
 #ifndef __NODE_CLOSURE_H__
 #define __NODE_CLOSURE_H__
 
+#ifdef __unix__
+  #include<sys/user.h>
+#endif
+
+#ifndef PAGE_SIZE
+  #define PAGE_SIZE 4096
+#endif
+
 #include "nan.h"
 
 /*
@@ -32,7 +40,7 @@ cairo_status_t
 closure_init(closure_t *closure, Canvas *canvas) {
   closure->len = 0;
   closure->canvas = canvas;
-  closure->data = (uint8_t *) malloc(closure->max_len = 1024);
+  closure->data = (uint8_t *) malloc(closure->max_len = PAGE_SIZE);
   if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
   return CAIRO_STATUS_SUCCESS;
 }
