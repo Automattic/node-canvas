@@ -14,16 +14,13 @@
 #define unlikely(expr) (expr)
 #endif
 
-
-
 static void canvas_png_flush(png_structp png_ptr) {
-//    fprintf(stderr, "Pngtest_flush called");
     /* Do nothing; fflush() is said to be just a waste of energy. */
     (void) png_ptr;   /* Stifle compiler warning */
 }
 
 /* Converts native endian xRGB => RGBx bytes */
-static void canvas_convert_data_to_bytes (png_structp png, png_row_infop row_info, png_bytep data) {
+static void canvas_convert_data_to_bytes(png_structp png, png_row_infop row_info, png_bytep data) {
     unsigned int i;
 
     for (i = 0; i < row_info->rowbytes; i += 4) {
@@ -72,7 +69,6 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     uint8_t *data;
     png_structp png;
     png_infop info;
-//    png_infop end_info;
     png_bytep *volatile rows = NULL;
     png_color_16 white;
     int png_color_type;
@@ -118,7 +114,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     if (unlikely(info == NULL)) {
         status = CAIRO_STATUS_NO_MEMORY;
         png_destroy_write_struct(&png, &info);
-	free(rows);
+        free(rows);
         return status;
 
     }
