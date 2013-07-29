@@ -5,6 +5,7 @@
 //
 
 #include "Canvas.h"
+#include "PNG.h"
 #include "CanvasRenderingContext2d.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -128,31 +129,31 @@ NAN_SETTER(Canvas::SetHeight) {
 static cairo_status_t
 toBuffer(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
-  
-  // Olaf: grow buffer
+
   if (closure->len + len > closure->max_len) {
     uint8_t *data;
-    unsigned max;
-  
-    // round to the nearest multiple of 1024 bytes
-    max = (closure->max_len + len + 1023) & ~1023;
-  
+    unsigned max = closure->max_len;
+
+    do {
+      max *= 2;
+    } while (closure->len + len > max);
+
     data = (uint8_t *) realloc(closure->data, max);
     if (!data) return CAIRO_STATUS_NO_MEMORY;
     closure->data = data;
     closure->max_len = max;
   }
-  
+
   memcpy(closure->data + closure->len, data, len);
   closure->len += len;
-  
+
   return CAIRO_STATUS_SUCCESS;
 }
 
 /*
  * EIO toBuffer callback.
  */
- 
+
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsync(uv_work_t *req) {
@@ -169,7 +170,7 @@ Canvas::EIO_ToBuffer(eio_req *req) {
       closure->canvas->surface()
     , toBuffer
     , closure);
-    
+
 #if !NODE_VERSION_AT_LEAST(0, 5, 4)
   return 0;
 #endif
@@ -209,14 +210,14 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   delete closure->pfn;
   closure_destroy(closure);
   free(closure);
-  
+
 #if !NODE_VERSION_AT_LEAST(0, 6, 0)
   return 0;
 #endif
 }
 
 /*
- * Convert PNG data to a node::Buffer, async when a 
+ * Convert PNG data to a node::Buffer, async when a
  * callback function is passed.
  */
 
@@ -249,7 +250,7 @@ NAN_METHOD(Canvas::ToBuffer) {
     // TODO: only one callback fn in closure
     canvas->Ref();
     closure->pfn = new NanCallback(args[0].As<Function>());
-    
+
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -258,7 +259,7 @@ NAN_METHOD(Canvas::ToBuffer) {
     eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
     ev_ref(EV_DEFAULT_UC);
 #endif
-    
+
     NanReturnUndefined();
   // Sync
   } else {
@@ -272,7 +273,7 @@ NAN_METHOD(Canvas::ToBuffer) {
     }
 
     TryCatch try_catch;
-    status = cairo_surface_write_to_png_stream(canvas->surface(), toBuffer, &closure);
+    status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
 
     if (try_catch.HasCaught()) {
       closure_destroy(&closure);
@@ -320,7 +321,9 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   closure.fn = Handle<Function>::Cast(args[0]);
 
   TryCatch try_catch;
-  cairo_status_t status = cairo_surface_write_to_png_stream(canvas->surface(), streamPNG, &closure);
+
+  //TODO: use libpng directly
+  cairo_status_t status = canvas_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
   if (try_catch.HasCaught()) {
     NanReturnValue(try_catch.ReThrow());
