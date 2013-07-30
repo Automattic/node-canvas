@@ -99,9 +99,22 @@ stream.on('end', function(){
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
 
-### Canvas#jpegStream()
+### Canvas#jpegStream() and Canvas#syncJPEGStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with some optional parameters; functionality is otherwise identical to `pngStream()`. See `examples/crop.js` for an example.
+You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with
+some optional parameters; functionality is otherwise identical to
+`pngStream()`. See `examples/crop.js` for an example.
+
+_Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
+are synchronous_
+
+```javascript
+var stream = canvas.JPEGStream({
+    bufsize: 4096 // output buffer size in bytes, default: 4096 
+  , quality: 75 // JPEG quality (0-100) default: 75
+  , progressive: false // true for progressive compression, default: false
+});
+```
 
 ### Canvas#toBuffer()
 
