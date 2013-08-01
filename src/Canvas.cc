@@ -444,15 +444,17 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
     return NanThrowTypeError("buffer size required");
   if (!args[1]->IsNumber())
     return NanThrowTypeError("quality setting required");
-  if (!args[2]->IsFunction())
+  if (!args[2]->IsBoolean())
+    return NanThrowTypeError("progressive setting required");
+  if (!args[3]->IsFunction())
     return NanThrowTypeError("callback function required");
 
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
   closure_t closure;
-  closure.fn = Handle<Function>::Cast(args[2]);
+  closure.fn = Handle<Function>::Cast(args[3]);
 
   TryCatch try_catch;
-  write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), &closure);
+  write_to_jpeg_stream(canvas->surface(), args[0]->NumberValue(), args[1]->NumberValue(), args[2]->BooleanValue(), &closure);
 
   if (try_catch.HasCaught())
     NanReturnValue(try_catch.ReThrow());
