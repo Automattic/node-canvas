@@ -1,4 +1,11 @@
 
+1.1.0 / 2013-08-01 
+==================
+
+ * add png compression options 
+ * add jpeg stream progressive mode option 
+ * fix resource leaks on read errors
+
 1.0.4 / 2013-07-23 
 ==================
 
