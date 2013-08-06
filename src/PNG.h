@@ -4,6 +4,7 @@
 #include <pngconf.h>
 #include <cairo.h>
 #include <stdlib.h>
+#include <string.h>
 #include "closure.h"
 
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)

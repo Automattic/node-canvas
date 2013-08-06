@@ -487,8 +487,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   gif_data_t gifd = { buf, len, 0 };
 
+#if GIFLIB_MAJOR >= 5
+  int errorcode;
+  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory, &errorcode)) == NULL)
+    return CAIRO_STATUS_READ_ERROR; 
+#else
   if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
     return CAIRO_STATUS_READ_ERROR; 
+#endif
 
   if (GIF_OK != DGifSlurp(gif)) {
     DGifCloseFile(gif);
