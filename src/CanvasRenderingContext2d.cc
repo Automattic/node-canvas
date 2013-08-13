@@ -1,4 +1,3 @@
-
 //
 // CanvasRenderingContext2d.cc
 //
@@ -205,6 +204,7 @@ Context2d::~Context2d() {
 
 void
 Context2d::save() {
+  if (stateno == CANVAS_MAX_STATES) return;
   cairo_save(_context);
   saveState();
 }
@@ -215,6 +215,7 @@ Context2d::save() {
 
 void
 Context2d::restore() {
+  if (0 == stateno) return;
   cairo_restore(_context);
   restoreState();
 }
@@ -225,7 +226,6 @@ Context2d::restore() {
 
 void
 Context2d::saveState() {
-  if (stateno == CANVAS_MAX_STATES) return;
   states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   memcpy(states[stateno], state, sizeof(canvas_state_t));
 #if HAVE_PANGO
@@ -240,7 +240,6 @@ Context2d::saveState() {
 
 void
 Context2d::restoreState() {
-  if (0 == stateno) return;
   // Olaf (2011-02-21): Free old state data
 #if HAVE_PANGO
   free(states[stateno]->fontFamily);
