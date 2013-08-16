@@ -96,6 +96,13 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 }
 
 void
+jpeg_free_custom_allocations(j_compress_ptr cinfo){
+  closure_destination_mgr * dest;
+  dest = (closure_destination_mgr *) cinfo->dest;
+  free(dest->buffer);
+}
+
+void
 write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, closure_t *closure){
   int w = cairo_image_surface_get_width(surface);
   int h = cairo_image_surface_get_height(surface);
@@ -136,6 +143,7 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
     sl++;
   }
   free(dst);
+  jpeg_free_custom_allocations(&cinfo);
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
