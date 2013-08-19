@@ -8,6 +8,9 @@
  , "scripts": {
      "test": "make test"
  }
+ , "dependencies": {
+     "nan": "~0.3.0"
+ }
  , "devDependencies": {
      "express": "3.0"
    , "jade": "0.28.1"
