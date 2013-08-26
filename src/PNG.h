@@ -2,7 +2,7 @@
 #define _CANVAS_PNG_H
 #include <png.h>
 #include <pngconf.h>
-#include <cairo.h>
+#include <cairo/cairo.h>
 #include <stdlib.h>
 #include <string.h>
 #include "closure.h"
@@ -137,10 +137,12 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         break;
+#ifdef CAIRO_FORMAT_RGB30
     case CAIRO_FORMAT_RGB30:
         bpc = 10;
         png_color_type = PNG_COLOR_TYPE_RGB;
         break;
+#endif
     case CAIRO_FORMAT_RGB24:
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB;
