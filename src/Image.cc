@@ -207,7 +207,7 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 #endif
 #ifdef HAVE_JPEG
 #if CAIRO_VERSION_MINOR < 10
-  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);    
+  if (isJPEG(buf)) return loadJPEGFromBuffer(buf, len);
 #else
   if (isJPEG(buf)) {
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
@@ -314,6 +314,16 @@ Image::Image() {
 
 Image::~Image() {
   clearData();
+
+  if (onerror) {
+    delete onerror;
+    onerror = NULL;
+  }
+
+  if (onload) {
+    delete onload;
+    onload = NULL;
+  }
 }
 
 /*
@@ -348,10 +358,6 @@ Image::loaded() {
     delete onload;
     onload = NULL;
   }
-  if (onerror != NULL) {
-    delete onerror;
-    onerror = NULL;
-  }
 }
 
 /*
@@ -367,15 +373,11 @@ Image::error(Local<Value> err) {
     delete onerror;
     onerror = NULL;
   }
-  if (onload != NULL) {
-    delete onload;
-    onload = NULL;
-  }
 }
 
 /*
  * Load cairo surface from the image src.
- * 
+ *
  * TODO: support more formats
  * TODO: use node IO or at least thread pool
  */
@@ -467,7 +469,7 @@ Image::loadGIF(FILE *stream) {
   if (fstat(fd, &s) < 0) {
     fclose(stream);
     return CAIRO_STATUS_READ_ERROR;
-  } 
+  }
 
   uint8_t *buf = (uint8_t *) malloc(s.st_size);
 
@@ -500,10 +502,10 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 #if GIFLIB_MAJOR >= 5
   int errorcode;
   if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory, &errorcode)) == NULL)
-    return CAIRO_STATUS_READ_ERROR; 
+    return CAIRO_STATUS_READ_ERROR;
 #else
   if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
-    return CAIRO_STATUS_READ_ERROR; 
+    return CAIRO_STATUS_READ_ERROR;
 #endif
 
   if (GIF_OK != DGifSlurp(gif)) {
@@ -710,7 +712,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
         *pixel = 255 << 24
           | src[bx + 0] << 16
           | src[bx + 1] << 8
-          | src[bx + 2];	
+          | src[bx + 2];
       }
     }
   }
