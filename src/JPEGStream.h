@@ -30,6 +30,7 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
@@ -45,6 +46,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
@@ -146,8 +148,8 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
     sl++;
   }
   free(dst);
-  jpeg_free_custom_allocations(&cinfo);
   jpeg_finish_compress(&cinfo);
+  jpeg_free_custom_allocations(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
 

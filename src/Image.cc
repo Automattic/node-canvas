@@ -572,9 +572,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
           dst_data++;
           src_data++;
         }
-      } 
+      }
     }
-  } else { 
+  } else {
     // Image is interlaced so that it streams nice over 14.4k and 28.8k modems :)
     // We first load in 1/8 of the image, followed by another 1/8, followed by
     // 1/4 and finally the remaining 1/2.
