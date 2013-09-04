@@ -36,10 +36,12 @@
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-            '-l<(GTK_Root)/lib/cairo.lib'
+            '-l<(GTK_Root)/lib/cairo.lib',
+            '-l<(GTK_Root)/lib/libpng.lib'
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
+            '<(GTK_Root)/include/cairo',
           ],
           'defines': [
             'snprintf=_snprintf',

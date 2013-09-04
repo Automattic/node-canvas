@@ -137,10 +137,12 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         break;
+#if CAIRO_VERSION_MINOR > 10
     case CAIRO_FORMAT_RGB30:
         bpc = 10;
         png_color_type = PNG_COLOR_TYPE_RGB;
         break;
+#endif
     case CAIRO_FORMAT_RGB24:
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB;
