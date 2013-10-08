@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 has_lib() {
-  local regex="lib$1.+(so|dylib)$"
+  local regex="lib$1.+(so|dylib)(\.*.*)*$"
 
   # Try using ldconfig on linux systems
   for LINE in `which ldconfig > /dev/null && ldconfig -p 2>/dev/null | grep -E $regex`; do
