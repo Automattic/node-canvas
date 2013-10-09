@@ -1,30 +1,35 @@
 
-1.1.0 / 2013-08-01 
+1.1.1 / 2013-10-09
 ==================
 
- * add png compression options 
- * add jpeg stream progressive mode option 
+ * add better support for outdated versions of Cairo
+
+1.1.0 / 2013-08-01
+==================
+
+ * add png compression options
+ * add jpeg stream progressive mode option
  * fix resource leaks on read errors
 
-1.0.4 / 2013-07-23 
+1.0.4 / 2013-07-23
 ==================
 
  * 0.11.4+ compatibility using NAN
  * fix typo in context2d for imageSmoothingEnabled
 
-1.0.3 / 2013-06-04 
+1.0.3 / 2013-06-04
 ==================
 
  * add "nearest" and "bilinear" to patternQuality
  * fix fread() retval check (items not bytes)
  * removed unneeded private fields
 
-1.0.2 / 2013-03-22 
+1.0.2 / 2013-03-22
 ==================
 
   * add Context2d#imageSmoothingEnabled=
 
-1.0.1 / 2013-02-25 
+1.0.1 / 2013-02-25
 ==================
 
   * travis: test modern node versions
