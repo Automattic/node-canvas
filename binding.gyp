@@ -15,7 +15,7 @@
         }, { # 'OS!="win"'
           'variables': {
             'with_jpeg%': 'true', #'<!(./util/has_lib.sh jpeg)',
-            'with_gif%': '<!(./util/has_lib.sh gif)',
+            'with_gif%': 'true',  #'<!(./util/has_lib.sh gif)',
             'with_pango%': 'false',
             'with_freetype%': 'true'  # '<!(./util/has_cairo_freetype.sh)'
           }
