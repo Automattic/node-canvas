@@ -41,12 +41,14 @@ if [ ! -d "libpng-1.2.49" ]; then
   tar -xf "libpng-1.2.49.tar.gz"
 fi
 
-if [ ! -d "jpeg-6b" ]; then
-  if [ ! -f "jpegsrc.v6b.tar.gz" ]; then
-    wget "http://www.ijg.org/files/jpegsrc.v6b.tar.gz" > /dev/null 2>&1
+if [ ! -d "libjpeg-turbo-1.2.1" ]; then
+  if [ ! -f "libjpeg-turbo-1.2.1.tar.gz" ]; then
+    wget "http://downloads.sourceforge.net/project/libjpeg-turbo/1.2.1/libjpeg-turbo-1.2.1.tar.gz" > /dev/null 2>&1
   fi
-  tar -xf "jpegsrc.v6b.tar.gz"
+  tar -xf "libjpeg-turbo-1.2.1.tar.gz"
 fi
+
+
 
 if [ ! -d "giflib-4.2.3" ]; then
   if [ ! -f "giflib-4.2.3.tar.gz" ]; then
@@ -56,9 +58,7 @@ if [ ! -d "giflib-4.2.3" ]; then
 fi
 
 
-
-
-if [ ! -d "cairo-1.12.16" ] || [ ! -d "pixman-0.30.2" ] || [ ! -d "freetype-2.5.0" ] || [ ! -d "zlib-1.2.8" ] || [ ! -d "libpng-1.2.49" ] || [ ! -d "jpeg-6b" ] ||  [ ! -d "giflib-4.2.3" ]; then
+if [ ! -d "cairo-1.12.16" ] || [ ! -d "pixman-0.30.2" ] || [ ! -d "freetype-2.5.0" ] || [ ! -d "zlib-1.2.8" ] || [ ! -d "libpng-1.2.49" ] || [ ! -d "libjpeg-turbo-1.2.1" ] ||  [ ! -d "giflib-4.2.3" ]; then
     echo false
 else
     echo true

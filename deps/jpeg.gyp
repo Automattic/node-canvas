@@ -21,7 +21,8 @@
             #"<(jpeg_root)djpeg.c",
             #"<(jpeg_root)example.c",
             
-        
+            "<(jpeg_root)jsimd_none.c",
+            
             "<(jpeg_root)jcapimin.c",
             "<(jpeg_root)jcapistd.c",
             "<(jpeg_root)jccoefct.c",
@@ -69,7 +70,7 @@
             "<(jpeg_root)jidctint.c",
             "<(jpeg_root)jinclude.h",
             
-            #"<(jpeg_root)jidctred.c",
+            "<(jpeg_root)jidctred.c",
             
             #"<(jpeg_root)jmemansi.c",
             #"<(jpeg_root)jmemdos.c",

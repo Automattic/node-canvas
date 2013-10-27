@@ -59,10 +59,12 @@
 	          'deps/libpng.gyp:png',
 	          'deps/jpeg.gyp:libjpeg',
 	          'deps/gif.gyp:gif',
+	          
 	    ]  ,
           'include_dirs': [
-               # './deps/<(jpeg_root)',
-               # './deps/custom-include/jpeg/',
+               
+                './deps/<(jpeg_root)',
+                #'./deps/custom-include/jpeg/',
                 './deps/<(cairo_root)' ,
                 './deps/<(cairo_root)cairo/' ,
                 './deps/<(pixman_root)pixman/'
@@ -118,7 +120,7 @@
               ]
             }, {
               'libraries': [
-                '-ljpeg'
+                #'-ljpeg'
               ]
             }]
           ]

@@ -8,7 +8,8 @@
 	  'zlib_root%': "./zlib-1.2.8/",
 	  'libpng_root%': "./libpng-1.2.49/",
 	  'gif_root%': "./giflib-4.2.3/",
-	  'jpeg_root%': "./jpeg-6b/",
+	  'jpeg_root%': "./libjpeg-turbo-1.2.1/",
+	 
   }
   
 }
