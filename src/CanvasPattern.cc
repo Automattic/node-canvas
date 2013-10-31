@@ -17,7 +17,7 @@ Persistent<FunctionTemplate> Pattern::constructor;
 
 void
 Pattern::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
   Local<FunctionTemplate> ctor = FunctionTemplate::New(Pattern::New);

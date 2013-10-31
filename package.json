@@ -9,7 +9,7 @@
      "test": "make test"
  }
  , "dependencies": {
-     "nan": "~0.3.0"
+     "nan": "~0.4.1"
  }
  , "devDependencies": {
      "express": "3.0"
