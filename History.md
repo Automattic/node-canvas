@@ -1,3 +1,10 @@
+1.1.2 / 2013-10-31
+==================
+
+ * NAN dep upgrade, full node@<=0.11.8 compatibility
+ * Use node::MakeCallback() instead of v8::Function::Call()
+ * Improve nan location discovery
+ * Fix enabling gif/jpeg options on Ubuntu 13.04
 
 1.1.1 / 2013-10-09
 ==================
