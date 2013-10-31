@@ -20,7 +20,7 @@
 
 extern "C" void
 init (Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
