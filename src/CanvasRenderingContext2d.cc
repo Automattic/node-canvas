@@ -580,7 +580,7 @@ NAN_METHOD(Context2d::PutImageData) {
 }
 
 /*
- * Baton encapsulation drawImage arguments.
+ * Baton encapsulating drawImage arguments.
  */
 
 struct Baton {
