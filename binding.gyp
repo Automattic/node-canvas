@@ -21,6 +21,7 @@
   'targets': [
     {
       'target_name': 'canvas',
+      'include_dirs': ["<!(node -p -e \"require('path').relative('.', require('path').dirname(require.resolve('nan')))\")"],
       'sources': [
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
@@ -35,7 +36,8 @@
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-            '-l<(GTK_Root)/lib/cairo.lib'
+            '-l<(GTK_Root)/lib/cairo.lib',
+            '-l<(GTK_Root)/lib/libpng.lib'
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
@@ -47,10 +49,12 @@
         }, { # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
-            '<!@(pkg-config cairo --libs)'
+            '<!@(pkg-config cairo --libs)',
+            '<!@(pkg-config libpng --libs)'
           ],
           'include_dirs': [
-            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
+            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
+            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
           ]
         }],
         ['with_freetype=="true"', {

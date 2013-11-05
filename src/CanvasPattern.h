@@ -8,13 +8,14 @@
 #ifndef __NODE_PATTERN_H__
 #define __NODE_PATTERN_H__
 
+#include "nan.h"
 #include "Canvas.h"
 
 class Pattern: public node::ObjectWrap {
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
+    static NAN_METHOD(New);
     Pattern(cairo_surface_t *surface, int w, int h);
     inline cairo_pattern_t *pattern(){ return _pattern; }
 

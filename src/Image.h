@@ -8,6 +8,7 @@
 #ifndef __NODE_IMAGE_H__
 #define __NODE_IMAGE_H__
 
+#include "nan.h"
 #include "Canvas.h"
 
 #ifdef HAVE_JPEG
@@ -23,22 +24,22 @@ class Image: public node::ObjectWrap {
   public:
     char *filename;
     int width, height;
-    Persistent<Function> onload;
-    Persistent<Function> onerror;
+    NanCallback *onload;
+    NanCallback *onerror;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
-    static Handle<Value> GetSource(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetOnload(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetOnerror(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetComplete(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetDataMode(Local<String> prop, const AccessorInfo &info);
-    static void SetSource(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    static void SetOnload(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    static void SetOnerror(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    static void SetDataMode(Local<String> prop, Local<Value> val, const AccessorInfo &info);
+    static NAN_METHOD(New);
+    static NAN_GETTER(GetSource);
+    static NAN_GETTER(GetOnload);
+    static NAN_GETTER(GetOnerror);
+    static NAN_GETTER(GetComplete);
+    static NAN_GETTER(GetWidth);
+    static NAN_GETTER(GetHeight);
+    static NAN_GETTER(GetDataMode);
+    static NAN_SETTER(SetSource);
+    static NAN_SETTER(SetOnload);
+    static NAN_SETTER(SetOnerror);
+    static NAN_SETTER(SetDataMode);
     inline cairo_surface_t *surface(){ return _surface; } 
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
     inline int stride(){ return cairo_image_surface_get_stride(_surface); } 

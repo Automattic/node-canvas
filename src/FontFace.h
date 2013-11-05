@@ -17,7 +17,7 @@ class FontFace: public node::ObjectWrap {
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
+    static NAN_METHOD(New);
     FontFace(FT_Face ftFace, cairo_font_face_t *crFace)
       :_ftFace(ftFace), _crFace(crFace) {}
 

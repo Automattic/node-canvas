@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "nan.h"
+
 Persistent<FunctionTemplate> PixelArray::constructor;
 
 /*
@@ -17,26 +19,26 @@ Persistent<FunctionTemplate> PixelArray::constructor;
 
 void
 PixelArray::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(PixelArray::New));
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasPixelArray"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(PixelArray::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("CanvasPixelArray"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->InstanceTemplate();
-  proto->SetAccessor(String::NewSymbol("length"), GetLength);
-  target->Set(String::NewSymbol("CanvasPixelArray"), constructor->GetFunction());
+  Local<ObjectTemplate> proto = ctor->InstanceTemplate();
+  proto->SetAccessor(NanSymbol("length"), GetLength);
+  target->Set(NanSymbol("CanvasPixelArray"), ctor->GetFunction());
 }
 
 /*
  * Initialize a new PixelArray.
  */
 
-Handle<Value>
-PixelArray::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(PixelArray::New) {
+  NanScope();
   PixelArray *arr;
   Local<Object> obj = args[0]->ToObject();
 
@@ -49,8 +51,8 @@ PixelArray::New(const Arguments &args) {
       break;
     // canvas, x, y, width, height
     case 5: {
-      if (!Canvas::constructor->HasInstance(obj))
-        return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+      if (!NanHasInstance(Canvas::constructor, obj))
+        return NanThrowTypeError("Canvas expected");
 
       Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
       arr = new PixelArray(
@@ -62,7 +64,7 @@ PixelArray::New(const Arguments &args) {
       }
       break;
     default:
-      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+      return NanThrowTypeError("invalid arguments");
   }
 
   // Let v8 handle accessors (and clamping)
@@ -71,17 +73,16 @@ PixelArray::New(const Arguments &args) {
     , arr->length());
 
   arr->Wrap(args.This());
-  return args.This();
+  NanReturnValue(args.This());
 }
 
 /*
  * Get length.
  */
 
-Handle<Value>
-PixelArray::GetLength(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  return scope.Close(Number::New(info.This()->GetIndexedPropertiesPixelDataLength()));
+NAN_GETTER(PixelArray::GetLength) {
+  NanScope();
+  NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*
