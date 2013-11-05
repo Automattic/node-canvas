@@ -109,7 +109,7 @@ _Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
 are synchronous_
 
 ```javascript
-var stream = canvas.JPEGStream({
+var stream = canvas.jpegStream({
     bufsize: 4096 // output buffer size in bytes, default: 4096 
   , quality: 75 // JPEG quality (0-100) default: 75
   , progressive: false // true for progressive compression, default: false
