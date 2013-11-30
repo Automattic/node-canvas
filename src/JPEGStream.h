@@ -34,8 +34,8 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(buf)
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(buf)
     , Integer::New(dest->bufsize)
   };
   dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
@@ -53,8 +53,8 @@ term_closure_destination(j_compress_ptr cinfo){
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, remaining);
 
   Local<Value> data_argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(buf)
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(buf)
     , Integer::New(remaining)
   };
 
@@ -62,8 +62,8 @@ term_closure_destination(j_compress_ptr cinfo){
 
   // emit "end"
   Local<Value> end_argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(Null())
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(Null())
     , Integer::New(0)
   };
 
