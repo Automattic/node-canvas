@@ -351,7 +351,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
       Local<Value>::New(Null())
     , buf
     , Integer::New(len) };
-  closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
+  MakeCallback(Context::GetCurrent()->Global(), closure->fn, 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -420,13 +420,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     NanReturnValue(try_catch.ReThrow());
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
+    MakeCallback(Context::GetCurrent()->Global(), closure.fn, 1, argv);
   } else {
     Local<Value> argv[3] = {
         Local<Value>::New(Null())
       , Local<Value>::New(Null())
       , Integer::New(0) };
-    closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
+    MakeCallback(Context::GetCurrent()->Global(), closure.fn, 3, argv);
   }
   NanReturnUndefined();
 }
