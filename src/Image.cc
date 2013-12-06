@@ -346,6 +346,11 @@ Image::loaded() {
   if (onload != NULL) {
     onload->Call(0, NULL);
     delete onload;
+    onload = NULL;
+  }
+  if (onerror != NULL) {
+    delete onerror;
+    onerror = NULL;
   }
 }
 
@@ -360,6 +365,11 @@ Image::error(Local<Value> err) {
     Local<Value> argv[1] = { err };
     onerror->Call(1, argv);
     delete onerror;
+    onerror = NULL;
+  }
+  if (onload != NULL) {
+    delete onload;
+    onload = NULL;
   }
 }
 
