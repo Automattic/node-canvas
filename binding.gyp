@@ -21,7 +21,7 @@
   'targets': [
     {
       'target_name': 'canvas',
-      'include_dirs': ["<!(node -p -e \"require('path').dirname(require.resolve('nan'))\")"],
+      'include_dirs': ["<!(node -p -e \"require('path').relative('.', require('path').dirname(require.resolve('nan')))\")"],
       'sources': [
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
