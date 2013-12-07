@@ -30,6 +30,7 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
@@ -45,6 +46,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
@@ -80,7 +82,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
          sizeof(closure_destination_mgr));
   }
-  
+
   dest  = (closure_destination_mgr *) cinfo->dest;
 
   cinfo->dest->init_destination = &init_closure_destination;
@@ -93,6 +95,16 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
+}
+
+void
+jpeg_free_custom_allocations(j_compress_ptr cinfo){
+  closure_destination_mgr * dest;
+  dest = (closure_destination_mgr *) cinfo->dest;
+  if (dest->buffer) {
+    free(dest->buffer);
+    dest->buffer = NULL;
+  }
 }
 
 void
@@ -137,6 +149,7 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
   }
   free(dst);
   jpeg_finish_compress(&cinfo);
+  jpeg_free_custom_allocations(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
 
