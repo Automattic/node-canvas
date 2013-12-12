@@ -501,6 +501,7 @@ Canvas::~Canvas() {
       break;
     case CANVAS_TYPE_IMAGE:
       cairo_surface_destroy(_surface);
+      V8::AdjustAmountOfExternalAllocatedMemory(-4 * width * height);
       break;
   }
 }
