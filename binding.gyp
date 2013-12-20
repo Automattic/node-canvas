@@ -53,7 +53,7 @@
             '<!@(pkg-config libpng --libs)'
           ],
           'include_dirs': [
-            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g | sed "s/include\/cairo/include/g")',
+            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
             '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
           ]
         }],
