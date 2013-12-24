@@ -15,6 +15,10 @@
 #define unlikely(expr) (expr)
 #endif
 
+#ifndef CAIRO_FORMAT_INVALID
+#define CAIRO_FORMAT_INVALID -1
+#endif
+
 static void canvas_png_flush(png_structp png_ptr) {
     /* Do nothing; fflush() is said to be just a waste of energy. */
     (void) png_ptr;   /* Stifle compiler warning */
