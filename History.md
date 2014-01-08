@@ -1,3 +1,11 @@
+1.1.3 / 2014-01-08
+==================
+
+* Add CAIRO_FORMAT_INVALID
+* Readjust the amount of allocated memory
+* Fix argument index for filter parameter
+* Make has_lib.sh work properly on Debian 64bit
+
 1.1.2 / 2013-10-31
 ==================
 
