@@ -1,3 +1,5 @@
+[![Dependency Status](https://gemnasium.com/LearnBoost/node-canvas.png)](https://gemnasium.com/LearnBoost/node-canvas)
+
 # node-canvas
 
  Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
@@ -110,7 +112,7 @@ are synchronous_
 
 ```javascript
 var stream = canvas.jpegStream({
-    bufsize: 4096 // output buffer size in bytes, default: 4096 
+    bufsize: 4096 // output buffer size in bytes, default: 4096
   , quality: 75 // JPEG quality (0-100) default: 75
   , progressive: false // true for progressive compression, default: false
 });
@@ -218,7 +220,7 @@ ctx.antialias = 'none';
 var canvas = new Canvas(200, 500, 'pdf');
 ```
 
- An additional method `.addPage()` is then available to create 
+ An additional method `.addPage()` is then available to create
  multiple page PDFs:
 
 ```js
@@ -283,7 +285,7 @@ project  : node-canvas
  active   : 120 days
  commits  : 963
  files    : 72
- authors  : 
+ authors  :
    816	Tj Holowaychuk          84.7%
     58	TJ Holowaychuk          6.0%
     23	c-spencer               2.4%
