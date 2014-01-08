@@ -1,3 +1,4 @@
+[![NPM version](https://badge.fury.io/js/canvas.png)](http://badge.fury.io/js/canvas)
 [![Dependency Status](https://gemnasium.com/LearnBoost/node-canvas.png)](https://gemnasium.com/LearnBoost/node-canvas)
 
 # node-canvas
