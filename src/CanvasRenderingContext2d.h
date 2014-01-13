@@ -100,6 +100,8 @@ class Context2d: public node::ObjectWrap {
     static NAN_METHOD(SetStrokePattern);
     static NAN_METHOD(SetTextBaseline);
     static NAN_METHOD(SetTextAlignment);
+    static NAN_METHOD(SetLineDash);
+    static NAN_METHOD(GetLineDash);
     static NAN_METHOD(MeasureText);
     static NAN_METHOD(BezierCurveTo);
     static NAN_METHOD(QuadraticCurveTo);
@@ -121,6 +123,7 @@ class Context2d: public node::ObjectWrap {
     static NAN_GETTER(GetLineCap);
     static NAN_GETTER(GetLineJoin);
     static NAN_GETTER(GetLineWidth);
+    static NAN_GETTER(GetLineDashOffset);
     static NAN_GETTER(GetShadowOffsetX);
     static NAN_GETTER(GetShadowOffsetY);
     static NAN_GETTER(GetShadowBlur);
@@ -135,6 +138,7 @@ class Context2d: public node::ObjectWrap {
     static NAN_SETTER(SetLineCap);
     static NAN_SETTER(SetLineJoin);
     static NAN_SETTER(SetLineWidth);
+    static NAN_SETTER(SetLineDashOffset);
     static NAN_SETTER(SetShadowOffsetX);
     static NAN_SETTER(SetShadowOffsetY);
     static NAN_SETTER(SetShadowBlur);
