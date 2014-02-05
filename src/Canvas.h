@@ -39,6 +39,7 @@ using namespace node;
 
 typedef enum {
   CANVAS_TYPE_IMAGE,
+  CANVAS_TYPE_SVG,
   CANVAS_TYPE_PDF
 } canvas_type_t;
 
@@ -77,7 +78,6 @@ class Canvas: public node::ObjectWrap {
     static int EIO_AfterToBuffer(eio_req *req);
 #endif
 
-    inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
     inline cairo_surface_t *surface(){ return _surface; }
     inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }

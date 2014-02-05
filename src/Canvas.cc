@@ -13,6 +13,7 @@
 #include <node_buffer.h>
 #include <node_version.h>
 #include <cairo/cairo-pdf.h>
+#include <cairo/cairo-svg.h>
 #include "closure.h"
 
 #ifdef HAVE_JPEG
@@ -67,9 +68,16 @@ NAN_METHOD(Canvas::New) {
   canvas_type_t type = CANVAS_TYPE_IMAGE;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
-    ? CANVAS_TYPE_PDF
-    : CANVAS_TYPE_IMAGE;
+  if (args[2]->IsString()) {
+    const char *t = *String::AsciiValue(args[2]);
+    if(!strcmp("pdf",t)) {
+      type = CANVAS_TYPE_PDF;
+    } else if(!strcmp("svg",t)) {
+      type = CANVAS_TYPE_SVG;
+    } else {
+      type = CANVAS_TYPE_IMAGE;
+    }
+  }
   Canvas *canvas = new Canvas(width, height, type);
   canvas->Wrap(args.This());
   NanReturnValue(args.This());
@@ -82,7 +90,20 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(String::New(canvas->isPDF() ? "pdf" : "image"));
+  const char *typeStr;
+  switch(canvas->type) {
+    default:
+    case CANVAS_TYPE_IMAGE:
+      typeStr = "image";
+      break;
+    case CANVAS_TYPE_PDF:
+      typeStr = "pdf";
+      break;
+    case CANVAS_TYPE_SVG:
+      typeStr = "svg";
+      break;
+  }
+  NanReturnValue(String::New(typeStr));
 }
 
 /*
@@ -238,7 +259,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
 
   // TODO: async / move this out
-  if (canvas->isPDF()) {
+  if (canvas->type != CANVAS_TYPE_IMAGE) {
     cairo_surface_finish(canvas->surface());
     closure_t *closure = (closure_t *) canvas->closure();
 
@@ -474,16 +495,20 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
   _surface = NULL;
   _closure = NULL;
 
-  if (CANVAS_TYPE_PDF == t) {
+  if(CANVAS_TYPE_IMAGE == t) {
+    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+    assert(_surface);
+    V8::AdjustAmountOfExternalAllocatedMemory(4 * w * h);
+  } else {
     _closure = malloc(sizeof(closure_t));
     assert(_closure);
     cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
     assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else {
-    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-    assert(_surface);
-    V8::AdjustAmountOfExternalAllocatedMemory(4 * w * h);
+    if (CANVAS_TYPE_SVG == t) {
+      _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
+    } else {
+      _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
+    }
   }
 }
 
@@ -493,6 +518,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
 
 Canvas::~Canvas() {
   switch (type) {
+    case CANVAS_TYPE_SVG:
     case CANVAS_TYPE_PDF:
       cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
@@ -513,6 +539,10 @@ Canvas::~Canvas() {
 void
 Canvas::resurface(Handle<Object> canvas) {
   switch (type) {
+    case CANVAS_TYPE_SVG:
+      cairo_surface_destroy(_surface);
+      _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, width, height);
+      break;
     case CANVAS_TYPE_PDF:
       cairo_pdf_surface_set_size(_surface, width, height);
       break;
@@ -523,7 +553,10 @@ Canvas::resurface(Handle<Object> canvas) {
       cairo_surface_destroy(_surface);
       _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
       V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
+      break;
+    }
 
+    if(CANVAS_TYPE_PDF != type) {
       // Reset context
       Handle<Value> context = canvas->Get(String::New("context"));
       if (!context->IsUndefined()) {
@@ -532,7 +565,6 @@ Canvas::resurface(Handle<Object> canvas) {
         context2d->setContext(cairo_create(surface()));
         cairo_destroy(prev);
       }
-      break;
   }
 }
 

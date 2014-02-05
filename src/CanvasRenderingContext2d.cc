@@ -479,7 +479,7 @@ NAN_METHOD(Context2d::New) {
 NAN_METHOD(Context2d::AddPage) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  if (!context->canvas()->isPDF()) {
+  if (context->canvas()->type != CANVAS_TYPE_PDF) {
     return NanThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
