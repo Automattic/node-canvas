@@ -258,7 +258,11 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
 NAN_GETTER(Image::GetOnload) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(img->onload->GetFunction());
+  if (img->onload) {
+    NanReturnValue(img->onload->GetFunction());
+  } else {
+    NanReturnNull();
+  }
 }
 
 /*
@@ -279,7 +283,11 @@ NAN_SETTER(Image::SetOnload) {
 NAN_GETTER(Image::GetOnerror) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(img->onerror->GetFunction());
+  if (img->onerror) {
+    NanReturnValue(img->onerror->GetFunction());
+  } else {
+    NanReturnNull();
+  }
 }
 
 /*

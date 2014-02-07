@@ -18,6 +18,8 @@ module.exports = {
     var img = new Image
       , n = 0;
 
+    assert.strictEqual(null, img.onload);
+
     assert.strictEqual(false, img.complete);
     img.onload = function(){
       ++n;
@@ -38,6 +40,8 @@ module.exports = {
     var img = new Image
       , error
       , n = 0;
+
+    assert.strictEqual(null, img.onerror);
 
     assert.strictEqual(false, img.complete);
     img.onload = function(){
