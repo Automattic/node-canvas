@@ -580,5 +580,66 @@ module.exports = {
     assert.equal(0, imageData.data[i+2]);
     assert.equal(255, imageData.data[i+3]);
 
+  },
+
+  'test Context2d#drawImage()': function(){
+    var img = new Canvas.Image();
+    img.src = __dirname + '/fixtures/clock.png';
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0, 20, 20);
+  },
+
+  'test Context2d#drawImage() async without a function': function(){
+    var img = new Canvas.Image();
+    img.src = __dirname + '/fixtures/clock.png';
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+
+    try {
+      ctx.drawImage(img, 0, 0, 20, 20, {});
+    } catch(e) {
+      return;
+    }
+
+    assert.fail("Exception expected.");
+  },
+
+  'test Context2d#drawImage() async': function(done){
+    var img = new Canvas.Image();
+    img.src = __dirname + '/fixtures/clock.png';
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0, 20, 20, function() {
+      done();
+    });
+  },
+
+  'test Context2d#drawImage() async with throwing callback': function(done){
+    var img = new Canvas.Image();
+    img.src = __dirname + '/fixtures/clock.png';
+
+    var canvas = new Canvas(20, 20)
+      , ctx = canvas.getContext('2d');
+
+    var error = Error("Random error!");
+
+    // use a domain to do the equivalent of process.on('uncaughtException')
+    // without Mocha seeing it
+    var d = require('domain').create();
+
+    d.on('error', function(err) {
+      assert.equal(error, err);
+      done();
+    });
+
+    ctx.drawImage(img, 0, 0, 20, 20, d.bind(function(err) {
+      throw error;
+    }));
   }
 }

@@ -580,85 +580,34 @@ NAN_METHOD(Context2d::PutImageData) {
 }
 
 /*
- * Draw image src image to the destination (context).
- *
- *  - dx, dy
- *  - dx, dy, dw, dh
- *  - sx, sy, sw, sh, dx, dy, dw, dh
- *
+ * Baton encapsulating drawImage arguments.
  */
 
-NAN_METHOD(Context2d::DrawImage) {
-  NanScope();
+struct Baton {
+  uv_work_t request;
+  Persistent<Function> callback;
 
-  if (args.Length() < 3)
-    return NanThrowTypeError("invalid arguments");
-
-  int sx = 0
-    , sy = 0
-    , sw = 0
-    , sh = 0
-    , dx, dy, dw, dh;
-
+  Context2d *context;
   cairo_surface_t *surface;
+  int sx, sy, sw, sh;
+  int dx, dy, dw, dh;
+};
 
-  Local<Object> obj = args[0]->ToObject();
+/*
+ * drawImage implementation.
+ */
+void Draw(Context2d *context,
+          cairo_surface_t *surface,
+          int sx,
+          int sy,
+          int sw,
+          int sh,
+          int dx,
+          int dy,
+          int dw,
+          int dh) {
 
-  // Image
-  if (NanHasInstance(Image::constructor, obj)) {
-    Image *img = ObjectWrap::Unwrap<Image>(obj);
-    if (!img->isComplete()) {
-      return NanThrowError("Image given has not completed loading");
-    }
-    sw = img->width;
-    sh = img->height;
-    surface = img->surface();
-
-  // Canvas
-  } else if (NanHasInstance(Canvas::constructor, obj)) {
-    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->width;
-    sh = canvas->height;
-    surface = canvas->surface();
-
-  // Invalid
-  } else {
-    return NanThrowTypeError("Image or Canvas expected");
-  }
-
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-
-  // Arguments
-  switch (args.Length()) {
-    // img, sx, sy, sw, sh, dx, dy, dw, dh
-    case 9:
-      sx = args[1]->NumberValue();
-      sy = args[2]->NumberValue();
-      sw = args[3]->NumberValue();
-      sh = args[4]->NumberValue();
-      dx = args[5]->NumberValue();
-      dy = args[6]->NumberValue();
-      dw = args[7]->NumberValue();
-      dh = args[8]->NumberValue();
-      break;
-    // img, dx, dy, dw, dh
-    case 5:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
-      dw = args[3]->NumberValue();
-      dh = args[4]->NumberValue();
-      break;
-    // img, dx, dy
-    case 3:
-      dx = args[1]->NumberValue();
-      dy = args[2]->NumberValue();
-      dw = sw;
-      dh = sh;
-      break;
-    default:
-      return NanThrowTypeError("invalid arguments");
-  }
 
   // Start draw
   cairo_save(ctx);
@@ -683,6 +632,176 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
+}
+
+/*
+ * Execute drawImage (Draw) in the thread pool.
+ */
+void AsyncDrawImage(uv_work_t *req) {
+  Baton *baton = static_cast<Baton *>(req->data);
+
+  Draw(baton->context,
+       baton->surface,
+       baton->sx,
+       baton->sy,
+       baton->sw,
+       baton->sh,
+       baton->dx,
+       baton->dy,
+       baton->dw,
+       baton->dh);
+}
+
+/*
+ * Call drawImage's callback when complete.
+ */
+void AfterAsyncDrawImage(uv_work_t *req, int status) {
+  HandleScope scope;
+  Baton *baton = static_cast<Baton *>(req->data);
+
+  // Draw doesn't do any error checking, so err should be undefined for now
+  Local<Value> argv[] = {};
+
+  TryCatch try_catch;
+  baton->callback->Call(Context::GetCurrent()->Global(), 0, argv);
+
+  if (try_catch.HasCaught()) {
+    node::FatalException(try_catch);
+  }
+
+  baton->callback.Dispose();
+  delete baton;
+}
+
+/*
+ * Draw image src image to the destination (context).
+ *
+ *  - dx, dy
+ *  - dx, dy, callback
+ *  - dx, dy, dw, dh
+ *  - dx, dy, dw, dh, callback
+ *  - sx, sy, sw, sh, dx, dy, dw, dh
+ *  - sx, sy, sw, sh, dx, dy, dw, dh, callback
+ *
+ */
+
+NAN_METHOD(Context2d::DrawImage) {
+  NanScope();
+
+  if (args.Length() < 3)
+    return NanThrowTypeError("invalid arguments");
+
+  int sx = 0
+    , sy = 0
+    , sw = 0
+    , sh = 0
+    , dx, dy, dw, dh;
+
+  cairo_surface_t *surface;
+
+  Local<Object> obj = args[0]->ToObject();
+  bool callbackProvided = false;
+
+  // Image
+  if (NanHasInstance(Image::constructor, obj)) {
+    Image *img = ObjectWrap::Unwrap<Image>(obj);
+    if (!img->isComplete()) {
+      return NanThrowError("Image given has not completed loading");
+    }
+    sw = img->width;
+    sh = img->height;
+    surface = img->surface();
+
+  // Canvas
+  } else if (NanHasInstance(Canvas::constructor, obj)) {
+    Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
+    sw = canvas->width;
+    sh = canvas->height;
+    surface = canvas->surface();
+
+  // Invalid
+  } else {
+    return NanThrowTypeError("Image or Canvas expected");
+  }
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+
+  // Arguments
+  switch (args.Length()) {
+    // img, sx, sy, sw, sh, dx, dy, dw, dh
+    case 10:
+      callbackProvided = true;
+      // fall through
+    case 9:
+      sx = args[1]->NumberValue();
+      sy = args[2]->NumberValue();
+      sw = args[3]->NumberValue();
+      sh = args[4]->NumberValue();
+      dx = args[5]->NumberValue();
+      dy = args[6]->NumberValue();
+      dw = args[7]->NumberValue();
+      dh = args[8]->NumberValue();
+      break;
+
+    // img, dx, dy, dw, dh
+    case 6:
+      callbackProvided = true;
+      // fall through
+    case 5:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = args[3]->NumberValue();
+      dh = args[4]->NumberValue();
+      break;
+
+    // img, dx, dy
+    case 4:
+      callbackProvided = true;
+      // fall through
+    case 3:
+      dx = args[1]->NumberValue();
+      dy = args[2]->NumberValue();
+      dw = sw;
+      dh = sh;
+      break;
+    default:
+      return NanThrowTypeError("invalid arguments");
+  }
+
+  if (callbackProvided) {
+    if (!args[args.Length() - 1]->IsFunction()) {
+      return ThrowException(Exception::TypeError(String::New("callback must be a function.")));
+    }
+
+    // callback is valid
+    Local<Function> callback = Local<Function>::Cast(args[args.Length() - 1]);
+
+    // initialize the baton
+    Baton *baton = new Baton();
+    baton->request.data = baton;
+
+    // populate necessary properties
+    baton->callback = Persistent<Function>::New(callback);
+    baton->context = context;
+    baton->surface = surface;
+
+    baton->sx = sx;
+    baton->sy = sy;
+    baton->sw = sw;
+    baton->sh = sh;
+
+    baton->dx = dx;
+    baton->dy = dy;
+    baton->dw = dw;
+    baton->dh = dh;
+
+    // do the drawing in the thread pool
+    uv_queue_work(uv_default_loop(), &baton->request, AsyncDrawImage, AfterAsyncDrawImage);
+
+    return Undefined();
+  }
+
+  Draw(context, surface, sx, sy, sw, sh, dx, dy, dw, dh);
 
   NanReturnUndefined();
 }
