@@ -728,7 +728,6 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     case CAIRO_OPERATOR_DEST_IN: op = "destination-in"; break;
     case CAIRO_OPERATOR_DEST_OUT: op = "destination-out"; break;
     case CAIRO_OPERATOR_DEST_OVER: op = "destination-over"; break;
-    case CAIRO_OPERATOR_ADD: op = "lighter"; break;
     case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
     case CAIRO_OPERATOR_SOURCE: op = "source"; break;
     case CAIRO_OPERATOR_DEST: op = "dest"; break;
@@ -737,6 +736,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     // Non-standard
     // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
+    case CAIRO_OPERATOR_ADD: op = "add"; break;
     case CAIRO_OPERATOR_LIGHTEN: op = "lighter"; break;
     case CAIRO_OPERATOR_DARKEN: op = "darker"; break;
     case CAIRO_OPERATOR_MULTIPLY: op = "multiply"; break;
@@ -752,6 +752,8 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     case CAIRO_OPERATOR_COLOR_BURN: op = "color-burn"; break;
     case CAIRO_OPERATOR_DIFFERENCE: op = "difference"; break;
     case CAIRO_OPERATOR_EXCLUSION: op = "exclusion"; break;
+#else
+    case CAIRO_OPERATOR_ADD: op = "lighter"; break;
 #endif
   }
 
@@ -833,6 +835,8 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   // Non-standard
   // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
+  } else if (0 == strcmp("add", *type)) {
+    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
   } else if (0 == strcmp("lighter", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
   } else if (0 == strcmp("darker", *type)) {
