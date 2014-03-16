@@ -14,7 +14,7 @@
      "test": "make test"
  }
  , "dependencies": {
-     "nan": "~0.7.0"
+     "nan": "git://github.com/rvagg/nan.git#cleanup"
  }
  , "devDependencies": {
      "express": "3.0"

@@ -6,7 +6,7 @@
 
 #include "FontFace.h"
 
-#include "nan.h"
+#include <nan.h>
 
 Persistent<FunctionTemplate> FontFace::constructor;
 
@@ -30,8 +30,8 @@ FontFace::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(FontFace::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(FontFace::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(NanSymbol("FontFace"));
 
@@ -60,7 +60,7 @@ NAN_METHOD(FontFace::New) {
     return NanThrowError("Wrong argument types passed to FontFace constructor");
   }
 
-  String::AsciiValue filePath(args[0]);
+  String::Utf8Value filePath(args[0]);
   int faceIdx = int(args[1]->NumberValue());
 
   FT_Face ftFace;
