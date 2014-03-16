@@ -46,13 +46,13 @@ Canvas::Initialize(Handle<Object> target) {
   proto->SetAccessor(NanSymbol("width"), GetWidth, SetWidth);
   proto->SetAccessor(NanSymbol("height"), GetHeight, SetHeight);
 
-  NanSetTemplate(proto, "PNG_NO_FILTERS", NanNew<Integer>(PNG_NO_FILTERS));
-  NanSetTemplate(proto, "PNG_FILTER_NONE", NanNew<Integer>(PNG_FILTER_NONE));
-  NanSetTemplate(proto, "PNG_FILTER_SUB", NanNew<Integer>(PNG_FILTER_SUB));
-  NanSetTemplate(proto, "PNG_FILTER_UP", NanNew<Integer>(PNG_FILTER_UP));
-  NanSetTemplate(proto, "PNG_FILTER_AVG", NanNew<Integer>(PNG_FILTER_AVG));
-  NanSetTemplate(proto, "PNG_FILTER_PAETH", NanNew<Integer>(PNG_FILTER_PAETH));
-  NanSetTemplate(proto, "PNG_ALL_FILTERS", NanNew<Integer>(PNG_ALL_FILTERS));
+  NanSetTemplate(proto, "PNG_NO_FILTERS", NanNew<Uint32>(PNG_NO_FILTERS));
+  NanSetTemplate(proto, "PNG_FILTER_NONE", NanNew<Uint32>(PNG_FILTER_NONE));
+  NanSetTemplate(proto, "PNG_FILTER_SUB", NanNew<Uint32>(PNG_FILTER_SUB));
+  NanSetTemplate(proto, "PNG_FILTER_UP", NanNew<Uint32>(PNG_FILTER_UP));
+  NanSetTemplate(proto, "PNG_FILTER_AVG", NanNew<Uint32>(PNG_FILTER_AVG));
+  NanSetTemplate(proto, "PNG_FILTER_PAETH", NanNew<Uint32>(PNG_FILTER_PAETH));
+  NanSetTemplate(proto, "PNG_ALL_FILTERS", NanNew<Uint32>(PNG_ALL_FILTERS));
 
   target->Set(NanSymbol("Canvas"), ctor->GetFunction());
 }
@@ -350,7 +350,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
   Local<Value> argv[3] = {
       NanNew(NanNull())
     , buf
-    , NanNew<Integer>(len) };
+    , NanNew<Uint32>(len) };
   NanMakeCallback(NanGetCurrentContext()->Global(), closure->fn, 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
@@ -425,7 +425,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     Local<Value> argv[3] = {
         NanNew(NanNull())
       , NanNew(NanNull())
-      , NanNew<Integer>(0) };
+      , NanNew<Uint32>(0) };
     NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 3, argv);
   }
   NanReturnUndefined();
