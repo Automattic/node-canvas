@@ -20,6 +20,10 @@
 #include <gif_lib.h>
 #endif
 
+#ifdef HAVE_RSVG
+#include "librsvg/rsvg.h"
+#endif
+
 class Image: public node::ObjectWrap {
   public:
     char *filename;
