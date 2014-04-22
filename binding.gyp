@@ -6,7 +6,9 @@
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
-        'with_freetype%': 'false'
+        'with_freetype%': 'false',
+        # disable svg as it is uncertain if GTK provides librsvg
+        'with_rsvg%': 'false'
       }
     }, { # 'OS!="win"'
       'variables': {
@@ -14,7 +16,8 @@
         'with_gif%': '<!(./util/has_lib.sh gif)',
         # disable pango as it causes issues with freetype.
         'with_pango%': 'false',
-        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
+        'with_freetype%': '<!(./util/has_cairo_freetype.sh)',
+        'with_rsvg%': '<!(./util/has_lib.sh rsvg)'
       }
     }]
   ],
@@ -50,13 +53,11 @@
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
             '<!@(pkg-config cairo --libs)',
-            '<!@(pkg-config libpng --libs)',
-            '<!@(pkg-config librsvg-2.0 --libs)'
+            '<!@(pkg-config libpng --libs)'
           ],
           'include_dirs': [
             '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
-            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
-            '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
           ]
         }],
         ['with_freetype=="true"', {
@@ -128,7 +129,24 @@
               ]
             }]
           ]
-        }]
+        }],
+        ['with_rsvg=="true"', {
+          'defines': [
+            'HAVE_RSVG'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              # No support for windows right now.
+            }, { # 'OS!="win"'
+              'libraries': [
+                '<!@(pkg-config librsvg-2.0 --libs)'
+              ],            
+              'include_dirs': [
+                '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+              ]
+            }]
+          ]
+        }]        
       ]
     }
   ]
