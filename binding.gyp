@@ -50,11 +50,13 @@
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
             '<!@(pkg-config cairo --libs)',
-            '<!@(pkg-config libpng --libs)'
+            '<!@(pkg-config libpng --libs)',
+            '<!@(pkg-config librsvg-2.0 --libs)'
           ],
           'include_dirs': [
             '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
-            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
+            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
+            '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
           ]
         }],
         ['with_freetype=="true"', {
