@@ -10,7 +10,7 @@ var Canvas = require('../')
 var png = __dirname + '/fixtures/clock.png';
 
 module.exports = {
-  'tset Image': function(){
+  'test Image': function(){
     assert.ok(Image instanceof Function);
   },
 
