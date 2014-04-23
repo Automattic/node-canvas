@@ -20,6 +20,10 @@
 #include <gif_lib.h>
 #endif
 
+#ifdef HAVE_RSVG
+#include "librsvg/rsvg.h"
+#endif
+
 class Image: public node::ObjectWrap {
   public:
     char *filename;
@@ -46,6 +50,7 @@ class Image: public node::ObjectWrap {
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
+    static int isSVG(uint8_t *data);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
     cairo_status_t loadSurface();
@@ -64,8 +69,12 @@ class Image: public node::ObjectWrap {
 #if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
+#endif    
 #endif
-#endif
+#ifdef HAVE_RSVG
+    cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadSVG(FILE *stream);
+#endif    
     void error(Local<Value> error);
     void loaded();
     cairo_status_t load();
@@ -87,6 +96,7 @@ class Image: public node::ObjectWrap {
       , GIF
       , JPEG
       , PNG
+      , SVG
     } type;
 
     static type extension(const char *filename);

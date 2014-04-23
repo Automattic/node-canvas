@@ -1554,6 +1554,26 @@ tests['drawImage(img) jpeg'] = function(ctx, done){
   img.src = 'face.jpeg';
 };
 
+tests['drawImage(img) svg01'] = function(ctx, done){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img,0,0);
+    done();
+  };
+  img.onerror = function(err){console.log(err);}
+  img.src = '1398275113_SDKs_copy_nodeJS.svg';
+};
+
+tests['drawImage(img) svg02'] = function(ctx, done){
+  var img = new Image;
+  img.onload = function(){
+    ctx.drawImage(img,0,0);
+    done();
+  };
+  img.onerror = function(err){console.log(err);}
+  img.src = 'black_7_music_node.svg';
+};
+
 tests['drawImage(img,x,y)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){

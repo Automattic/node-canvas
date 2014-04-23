@@ -221,6 +221,9 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   }
 #endif
 #endif
+#ifdef HAVE_RSVG
+  if (isSVG(buf)) return loadSVGFromBuffer(buf, len);
+#endif
   return CAIRO_STATUS_READ_ERROR;
 }
 
@@ -415,6 +418,11 @@ Image::loadSurface() {
   // jpeg
 #ifdef HAVE_JPEG
   if (isJPEG(buf)) return loadJPEG(stream);
+#endif
+
+ // svg
+#ifdef HAVE_RSVG
+  if (isSVG(buf)) return loadSVG(stream);
 #endif
 
   fclose(stream);
@@ -928,6 +936,88 @@ Image::loadJPEG(FILE *stream) {
 
 #endif /* HAVE_JPEG */
 
+#ifdef HAVE_RSVG
+
+/*
+ * Load svg from buffer.
+ */
+
+cairo_status_t
+Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  cairo_status_t status;
+  GError *gerr = NULL;
+  RsvgHandle *rsvg;
+
+  if (NULL == (rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  RsvgDimensionData dimensions;
+  rsvg_handle_get_dimensions(rsvg, &dimensions);
+
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 
+    dimensions.width, dimensions.height);
+  status = cairo_surface_status(_surface);
+  if (status) { // CAIRO_STATUS_SUCCESS = 0
+    g_object_unref(rsvg);
+    return status;
+  }
+
+  // create new cairo rendering device
+  cairo_t *cr = cairo_create(_surface);
+  status = cairo_status(cr);
+  if (status) {
+    g_object_unref(rsvg);
+    return status;
+  }
+
+  if (!rsvg_handle_render_cairo(rsvg, cr)) {
+    g_object_unref(rsvg);
+    cairo_destroy(cr);
+    return CAIRO_STATUS_WRITE_ERROR;
+  }
+
+  // Cleanup
+  g_object_unref(rsvg);
+  cairo_destroy(cr);
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Load svg
+ */
+
+cairo_status_t
+Image::loadSVG(FILE *stream) {
+  struct stat s;
+  int fd = fileno(stream);
+
+  // stat
+  if (fstat(fd, &s) < 0) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  uint8_t *buf = (uint8_t *) malloc(s.st_size);
+
+  if (!buf) {
+    fclose(stream);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t read = fread(buf, s.st_size, 1, stream);
+  fclose(stream);
+
+  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
+  if (1 == read) result = loadSVGFromBuffer(buf, s.st_size);
+  free(buf);
+
+  return result;
+}
+
+#endif
+
 /*
  * Return UNKNOWN, JPEG, or PNG based on the filename.
  */
@@ -940,6 +1030,7 @@ Image::extension(const char *filename) {
   if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return Image::GIF;
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
+  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return Image::SVG;
   return Image::UNKNOWN;
 }
 
@@ -968,4 +1059,19 @@ Image::isGIF(uint8_t *data) {
 int
 Image::isPNG(uint8_t *data) {
   return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
+}
+
+/*
+ * Sniff bytes 1..3 for "svg".
+ * Sniff bytes 2..4 for "xml"
+ */
+
+int
+Image::isSVG(uint8_t *data) {
+  return ('s' == data[1] && 'v' == data[2] && 'g' == data[3]) ||
+    /*
+     * TODO: Sniffing just for 'xml' might not be good enough!
+     * We should probably consider checking also the 'svg' bytes.
+     */
+    ('x' == data[2] && 'm' == data[3] && 'l' == data[4]);
 }
