@@ -5,7 +5,8 @@
 
 var Canvas = require('../')
   , Image = Canvas.Image
-  , assert = require('assert');
+  , assert = require('assert')
+  , fs = require('fs');
 
 var png = __dirname + '/fixtures/clock.png';
 var svg01 = __dirname + '/fixtures/1398275113_SDKs_copy_nodeJS.svg';
@@ -38,7 +39,7 @@ module.exports = {
     assert.equal(1, n);
   },
 
-  'test Image#onload SVG': function(){
+  'test Image#onload svg': function(){
     test_onLoad(svg01, 100, 100);
     test_onLoad(svg02, 32, 32);
   },  
@@ -87,10 +88,15 @@ module.exports = {
     img.src = png;
 
     assert.equal(1, n);
+  },
+
+  'test Image#onload svg2png': function(){
+    test_svg2png(svg01, 100, 100);
+    test_svg2png(svg02, 32, 32);
   }
 };
 
-function test_onLoad(src, w, h) {
+function test_onLoad(imgSrc, w, h) {
   var img = new Image
     , n = 0;
 
@@ -99,15 +105,42 @@ function test_onLoad(src, w, h) {
   assert.strictEqual(false, img.complete);
   img.onload = function(){
     ++n;
-    assert.equal(img.src, src);
+    assert.equal(img.src, imgSrc);
   };
 
-  img.src = src;
-  assert.equal(img.src, src);
+  img.src = imgSrc;
+  assert.equal(img.src, imgSrc);
 
-  assert.equal(img.src, src);
+  assert.equal(img.src, imgSrc);
   assert.strictEqual(true, img.complete);
   assert.strictEqual(w, img.width);
   assert.strictEqual(h, img.height);
   assert.equal(1, n); 
+}
+
+function test_svg2png(imgSrc, w, h) {
+    var data = fs.readFileSync(imgSrc);
+    assert.notStrictEqual(null, data);
+
+    var b64data = data.toString('base64');
+    var src = "data:image/svg+xml;base64," + b64data;
+
+    var canvas = new Canvas(w, h)
+       , ctx = canvas.getContext('2d');
+
+    var img = new Image;
+    img.onload = function(){
+      assert.equal(img.src, '');
+      assert.strictEqual(w, img.width);
+      assert.strictEqual(h, img.height);
+
+      ctx.drawImage(img, 0, 0);
+      assert.ok(-1 != canvas.toBuffer().toString().indexOf('PNG'));
+      assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
+      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    };
+
+    img.src = src;
+    // since we read from buffer the 'src' attribute will be an empty string
+    assert.equal(img.src, '');
 }
