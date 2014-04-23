@@ -8,6 +8,8 @@ var Canvas = require('../')
   , assert = require('assert');
 
 var png = __dirname + '/fixtures/clock.png';
+var svg01 = __dirname + '/fixtures/1398275113_SDKs_copy_nodeJS.svg';
+var svg02 = __dirname + '/fixtures/black_7_music_node.svg';
 
 module.exports = {
   'test Image': function(){
@@ -35,6 +37,11 @@ module.exports = {
     assert.strictEqual(320, img.height);
     assert.equal(1, n);
   },
+
+  'test Image#onload SVG': function(){
+    test_onLoad(svg01, 100, 100);
+    test_onLoad(svg02, 32, 32);
+  },  
   
   'test Image#onerror': function(){
     var img = new Image
@@ -82,3 +89,25 @@ module.exports = {
     assert.equal(1, n);
   }
 };
+
+function test_onLoad(src, w, h) {
+  var img = new Image
+    , n = 0;
+
+  assert.strictEqual(null, img.onload);
+
+  assert.strictEqual(false, img.complete);
+  img.onload = function(){
+    ++n;
+    assert.equal(img.src, src);
+  };
+
+  img.src = src;
+  assert.equal(img.src, src);
+
+  assert.equal(img.src, src);
+  assert.strictEqual(true, img.complete);
+  assert.strictEqual(w, img.width);
+  assert.strictEqual(h, img.height);
+  assert.equal(1, n); 
+}
