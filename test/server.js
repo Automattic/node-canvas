@@ -33,7 +33,11 @@ app.post('/render', function(req, res, next){
   // no good way around this at the moment
   req.body.fn = req.body.fn
     .replace("'state.png'", "'" + __dirname + "/public/state.png'")
-    .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'");
+    .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'")
+    .replace("'1398275113_SDKs_copy_nodeJS.svg'", 
+      "'" + __dirname + "/public/1398275113_SDKs_copy_nodeJS.svg'")
+    .replace("'black_7_music_node.svg'", 
+      "'" + __dirname + "/public/black_7_music_node.svg'");
 
   // Do not try this at home :)
   var fn = eval('(' + req.body.fn + ')')

@@ -957,9 +957,8 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
 
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 
     dimensions.width, dimensions.height);
-
   status = cairo_surface_status(_surface);
-  if (status) { // / CAIRO_STATUS_SUCCESS = 0
+  if (status) { // CAIRO_STATUS_SUCCESS = 0
     g_object_unref(rsvg);
     return status;
   }
@@ -971,7 +970,7 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
     g_object_unref(rsvg);
     return status;
   }
-  
+
   if (!rsvg_handle_render_cairo(rsvg, cr)) {
     g_object_unref(rsvg);
     cairo_destroy(cr);
