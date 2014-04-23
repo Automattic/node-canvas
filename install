@@ -5,6 +5,7 @@ PIXMAN="http://www.cairographics.org/releases/pixman-0.28.0.tar.gz"
 CAIRO="http://cairographics.org/releases/cairo-1.12.8.tar.xz"
 FREETYPE="http://download.savannah.gnu.org/releases/freetype/freetype-2.4.10.tar.gz"
 LIBPNG="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng-1.5.13.tar.gz"
+LIBRSVG="http://ftp.gnome.org/pub/GNOME/sources/librsvg/2.40/librsvg-2.40.2.tar.xz"
 PREFIX=${1-/usr/local}
 
 require() {
@@ -61,3 +62,4 @@ fetch $LIBPNG
 fetch $FREETYPE
 fetch $PIXMAN
 fetch_xz $CAIRO
+fetch_xz $LIBRSVG
