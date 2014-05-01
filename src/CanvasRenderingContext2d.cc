@@ -16,6 +16,10 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 
+#ifdef HAVE_FREETYPE
+#include "FontFace.h"
+#endif
+
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
@@ -26,7 +30,7 @@ Persistent<FunctionTemplate> Context2d::constructor;
   if (!args[0]->IsNumber() \
     ||!args[1]->IsNumber() \
     ||!args[2]->IsNumber() \
-    ||!args[3]->IsNumber()) return Undefined(); \
+    ||!args[3]->IsNumber()) NanReturnUndefined(); \
   double x = args[0]->NumberValue(); \
   double y = args[1]->NumberValue(); \
   double width = args[2]->NumberValue(); \
@@ -74,67 +78,72 @@ void state_assign_fontFamily(canvas_state_t *state, const char *str) {
 
 void
 Context2d::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Context2d::New));
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasRenderingContext2d"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(Context2d::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("CanvasRenderingContext2d"));
 
   // Prototype
-  Local<ObjectTemplate> proto = constructor->PrototypeTemplate();
-  NODE_SET_PROTOTYPE_METHOD(constructor, "drawImage", DrawImage);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "putImageData", PutImageData);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addPage", AddPage);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "restore", Restore);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "rotate", Rotate);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "translate", Translate);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "transform", Transform);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "resetTransform", ResetTransform);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "isPointInPath", IsPointInPath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "scale", Scale);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "clip", Clip);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fill", Fill);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "stroke", Stroke);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fillText", FillText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeText", StrokeText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "fillRect", FillRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "strokeRect", StrokeRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "clearRect", ClearRect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "rect", Rect);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "measureText", MeasureText);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "moveTo", MoveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "lineTo", LineTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "bezierCurveTo", BezierCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "quadraticCurveTo", QuadraticCurveTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "beginPath", BeginPath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "closePath", ClosePath);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "arc", Arc);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "arcTo", ArcTo);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFont", SetFont);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillColor", SetFillColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokeColor", SetStrokeColor);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setFillPattern", SetFillPattern);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setStrokePattern", SetStrokePattern);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextBaseline", SetTextBaseline);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "_setTextAlignment", SetTextAlignment);
-  proto->SetAccessor(String::NewSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
-  proto->SetAccessor(String::NewSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
-  proto->SetAccessor(String::NewSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
-  proto->SetAccessor(String::NewSymbol("shadowColor"), GetShadowColor, SetShadowColor);
-  proto->SetAccessor(String::NewSymbol("fillColor"), GetFillColor);
-  proto->SetAccessor(String::NewSymbol("strokeColor"), GetStrokeColor);
-  proto->SetAccessor(String::NewSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
-  proto->SetAccessor(String::NewSymbol("lineWidth"), GetLineWidth, SetLineWidth);
-  proto->SetAccessor(String::NewSymbol("lineCap"), GetLineCap, SetLineCap);
-  proto->SetAccessor(String::NewSymbol("lineJoin"), GetLineJoin, SetLineJoin);
-  proto->SetAccessor(String::NewSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
-  proto->SetAccessor(String::NewSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
-  proto->SetAccessor(String::NewSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
-  proto->SetAccessor(String::NewSymbol("antialias"), GetAntiAlias, SetAntiAlias);
-  proto->SetAccessor(String::NewSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
-  target->Set(String::NewSymbol("CanvasRenderingContext2d"), constructor->GetFunction());
+  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  NODE_SET_PROTOTYPE_METHOD(ctor, "drawImage", DrawImage);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "addPage", AddPage);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "save", Save);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "restore", Restore);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "rotate", Rotate);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "translate", Translate);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "transform", Transform);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "resetTransform", ResetTransform);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "isPointInPath", IsPointInPath);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "scale", Scale);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "clip", Clip);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "fill", Fill);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "stroke", Stroke);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "fillText", FillText);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "strokeText", StrokeText);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "fillRect", FillRect);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "strokeRect", StrokeRect);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "clearRect", ClearRect);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "rect", Rect);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "measureText", MeasureText);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "moveTo", MoveTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "lineTo", LineTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "bezierCurveTo", BezierCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "quadraticCurveTo", QuadraticCurveTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "beginPath", BeginPath);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "closePath", ClosePath);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "arc", Arc);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "arcTo", ArcTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setFont", SetFont);
+#ifdef HAVE_FREETYPE
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setFontFace", SetFontFace);
+#endif
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setFillColor", SetFillColor);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setStrokeColor", SetStrokeColor);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setFillPattern", SetFillPattern);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setStrokePattern", SetStrokePattern);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setTextBaseline", SetTextBaseline);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "_setTextAlignment", SetTextAlignment);
+  proto->SetAccessor(NanSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
+  proto->SetAccessor(NanSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
+  proto->SetAccessor(NanSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
+  proto->SetAccessor(NanSymbol("shadowColor"), GetShadowColor, SetShadowColor);
+  proto->SetAccessor(NanSymbol("fillColor"), GetFillColor);
+  proto->SetAccessor(NanSymbol("strokeColor"), GetStrokeColor);
+  proto->SetAccessor(NanSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
+  proto->SetAccessor(NanSymbol("lineWidth"), GetLineWidth, SetLineWidth);
+  proto->SetAccessor(NanSymbol("lineCap"), GetLineCap, SetLineCap);
+  proto->SetAccessor(NanSymbol("lineJoin"), GetLineJoin, SetLineJoin);
+  proto->SetAccessor(NanSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
+  proto->SetAccessor(NanSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
+  proto->SetAccessor(NanSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
+  proto->SetAccessor(NanSymbol("antialias"), GetAntiAlias, SetAntiAlias);
+  proto->SetAccessor(NanSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
+  proto->SetAccessor(NanSymbol("filter"), GetFilter, SetFilter);
+  target->Set(NanSymbol("CanvasRenderingContext2d"), ctor->GetFunction());
 }
 
 /*
@@ -272,8 +281,8 @@ Context2d::restorePath() {
 void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
-    cairo_set_source(_context, state->fillPattern); 
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+    cairo_set_source(_context, state->fillPattern);
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
     // TODO repeat/repeat-x/repeat-y
   } else if (state->fillGradient) {
     cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
@@ -300,8 +309,8 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
-    cairo_set_source(_context, state->strokePattern); 
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT); 
+    cairo_set_source(_context, state->strokePattern);
+    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
   } else if (state->strokeGradient) {
     cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
     cairo_set_source(_context, state->strokeGradient);
@@ -396,15 +405,15 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
-  unsigned* precalc = 
+  unsigned* precalc =
       (unsigned*)malloc(width*height*sizeof(unsigned));
   unsigned char* src = cairo_image_surface_get_data( surface );
   double mul=1.f/((radius*2)*(radius*2));
   int channel;
-  
+
   // The number of times to perform the averaging. According to wikipedia,
   // three iterations is good enough to pass for a gaussian.
-  const int MAX_ITERATIONS = 3; 
+  const int MAX_ITERATIONS = 3;
   int iteration;
 
   for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
@@ -435,7 +444,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
                   int t = y < radius ? 0 : y - radius;
                   int r = x + radius >= width ? width - 1 : x + radius;
                   int b = y + radius >= height ? height - 1 : y + radius;
-                  int tot = precalc[r+b*width] + precalc[l+t*width] - 
+                  int tot = precalc[r+b*width] + precalc[l+t*width] -
                       precalc[l+b*width] - precalc[r+t*width];
                   *pix=(unsigned char)(tot*mul);
                   pix += 4;
@@ -452,31 +461,29 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
  * Initialize a new Context2d with the given canvas.
  */
 
-Handle<Value>
-Context2d::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::New) {
+  NanScope();
   Local<Object> obj = args[0]->ToObject();
-  if (!Canvas::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("Canvas expected")));
+  if (!NanHasInstance(Canvas::constructor, obj))
+    return NanThrowTypeError("Canvas expected");
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
   Context2d *context = new Context2d(canvas);
   context->Wrap(args.This());
-  return args.This();
+  NanReturnValue(args.This());
 }
 
 /*
  * Create a new page.
  */
 
-Handle<Value>
-Context2d::AddPage(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::AddPage) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   if (!context->canvas()->isPDF()) {
-    return ThrowException(Exception::Error(String::New("only PDF canvases support .nextPage()")));
+    return NanThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
@@ -487,18 +494,17 @@ Context2d::AddPage(const Arguments &args) {
  *
  */
 
-Handle<Value>
-Context2d::PutImageData(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::PutImageData) {
+  NanScope();
 
   Local<Object> obj = args[0]->ToObject();
-  if (!ImageData::constructor->HasInstance(obj))
-    return ThrowException(Exception::TypeError(String::New("ImageData expected")));
+  if (!NanHasInstance(ImageData::constructor, obj))
+    return NanThrowTypeError("ImageData expected");
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
   PixelArray *arr = imageData->pixelArray();
-  
+
   uint8_t *src = arr->data();
   uint8_t *dst = context->canvas()->data();
 
@@ -530,14 +536,14 @@ Context2d::PutImageData(const Arguments &args) {
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
       if (sy + sh > arr->height()) sh = arr->height() - sy;
-      if (sw <= 0 || sh <= 0) return Undefined();
+      if (sw <= 0 || sh <= 0) NanReturnUndefined();
       cols = sw;
       rows = sh;
-      dx += sx; 
-      dy += sy; 
+      dx += sx;
+      dy += sy;
       break;
     default:
-      return ThrowException(Exception::Error(String::New("invalid arguments")));
+      return NanThrowError("invalid arguments");
   }
 
   uint8_t *srcRows = src + sy * srcStride + sx * 4;
@@ -570,7 +576,7 @@ Context2d::PutImageData(const Arguments &args) {
     , cols
     , rows);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
@@ -582,12 +588,11 @@ Context2d::PutImageData(const Arguments &args) {
  *
  */
 
-Handle<Value>
-Context2d::DrawImage(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::DrawImage) {
+  NanScope();
 
   if (args.Length() < 3)
-    return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+    return NanThrowTypeError("invalid arguments");
 
   int sx = 0
     , sy = 0
@@ -600,17 +605,17 @@ Context2d::DrawImage(const Arguments &args) {
   Local<Object> obj = args[0]->ToObject();
 
   // Image
-  if (Image::constructor->HasInstance(obj)) {
+  if (NanHasInstance(Image::constructor, obj)) {
     Image *img = ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
-      return ThrowException(Exception::Error(String::New("Image given has not completed loading")));
+      return NanThrowError("Image given has not completed loading");
     }
     sw = img->width;
     sh = img->height;
     surface = img->surface();
 
   // Canvas
-  } else if (Canvas::constructor->HasInstance(obj)) {
+  } else if (NanHasInstance(Canvas::constructor, obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
     sw = canvas->width;
     sh = canvas->height;
@@ -618,7 +623,7 @@ Context2d::DrawImage(const Arguments &args) {
 
   // Invalid
   } else {
-    return ThrowException(Exception::TypeError(String::New("Image or Canvas expected")));
+    return NanThrowTypeError("Image or Canvas expected");
   }
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -652,7 +657,7 @@ Context2d::DrawImage(const Arguments &args) {
       dh = sh;
       break;
     default:
-      return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+      return NanThrowTypeError("invalid arguments");
   }
 
   // Start draw
@@ -679,29 +684,27 @@ Context2d::DrawImage(const Arguments &args) {
 
   cairo_restore(ctx);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Get global alpha.
  */
 
-Handle<Value>
-Context2d::GetGlobalAlpha(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->globalAlpha));
+NAN_GETTER(Context2d::GetGlobalAlpha) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(context->state->globalAlpha));
 }
 
 /*
  * Set global alpha.
  */
 
-void
-Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  double n = val->NumberValue();
+NAN_SETTER(Context2d::SetGlobalAlpha) {
+  double n = value->NumberValue();
   if (n >= 0 && n <= 1) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     context->state->globalAlpha = n;
   }
 }
@@ -710,10 +713,9 @@ Context2d::SetGlobalAlpha(Local<String> prop, Local<Value> val, const AccessorIn
  * Get global composite operation.
  */
 
-Handle<Value>
-Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
 
   const char *op = "source-over";
@@ -753,23 +755,26 @@ Context2d::GetGlobalCompositeOperation(Local<String> prop, const AccessorInfo &i
 #endif
   }
 
-  return scope.Close(String::NewSymbol(op));
+  NanReturnValue(NanSymbol(op));
 }
 
 /*
  * Set pattern quality.
  */
 
-void
-Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  String::AsciiValue quality(val->ToString());
+NAN_SETTER(Context2d::SetPatternQuality) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  String::AsciiValue quality(value->ToString());
   if (0 == strcmp("fast", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_FAST;
   } else if (0 == strcmp("good", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_GOOD;
   } else if (0 == strcmp("best", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_BEST;
+  } else if (0 == strcmp("nearest", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_NEAREST;
+  } else if (0 == strcmp("bilinear", *quality)) {
+    context->state->patternQuality = CAIRO_FILTER_BILINEAR;
   }
 }
 
@@ -777,28 +782,28 @@ Context2d::SetPatternQuality(Local<String> prop, Local<Value> val, const Accesso
  * Get pattern quality.
  */
 
-Handle<Value>
-Context2d::GetPatternQuality(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetPatternQuality) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   const char *quality;
   switch (context->state->patternQuality) {
     case CAIRO_FILTER_FAST: quality = "fast"; break;
     case CAIRO_FILTER_BEST: quality = "best"; break;
+    case CAIRO_FILTER_NEAREST: quality = "nearest"; break;
+    case CAIRO_FILTER_BILINEAR: quality = "bilinear"; break;
     default: quality = "good";
   }
-  return scope.Close(String::NewSymbol(quality));
+  NanReturnValue(NanSymbol(quality));
 }
 
 /*
  * Set global composite operation.
  */
 
-void
-Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(val->ToString());
+  String::AsciiValue type(value->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   } else if (0 == strcmp("source-atop", *type)) {
@@ -870,64 +875,58 @@ Context2d::SetGlobalCompositeOperation(Local<String> prop, Local<Value> val, con
  * Get shadow offset x.
  */
 
-Handle<Value>
-Context2d::GetShadowOffsetX(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowOffsetX));
+NAN_GETTER(Context2d::GetShadowOffsetX) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(context->state->shadowOffsetX));
 }
 
 /*
  * Set shadow offset x.
  */
 
-void
-Context2d::SetShadowOffsetX(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->shadowOffsetX = val->NumberValue();
+NAN_SETTER(Context2d::SetShadowOffsetX) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->shadowOffsetX = value->NumberValue();
 }
 
 /*
  * Get shadow offset y.
  */
 
-Handle<Value>
-Context2d::GetShadowOffsetY(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowOffsetY));
+NAN_GETTER(Context2d::GetShadowOffsetY) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(context->state->shadowOffsetY));
 }
 
 /*
  * Set shadow offset y.
  */
 
-void
-Context2d::SetShadowOffsetY(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->shadowOffsetY = val->NumberValue();
+NAN_SETTER(Context2d::SetShadowOffsetY) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  context->state->shadowOffsetY = value->NumberValue();
 }
 
 /*
  * Get shadow blur.
  */
 
-Handle<Value>
-Context2d::GetShadowBlur(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(context->state->shadowBlur));
+NAN_GETTER(Context2d::GetShadowBlur) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(context->state->shadowBlur));
 }
 
 /*
  * Set shadow blur.
  */
 
-void
-Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  int n = val->NumberValue();
+NAN_SETTER(Context2d::SetShadowBlur) {
+  int n = value->NumberValue();
   if (n >= 0) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     context->state->shadowBlur = n;
   }
 }
@@ -936,10 +935,9 @@ Context2d::SetShadowBlur(Local<String> prop, Local<Value> val, const AccessorInf
  * Get current antialiasing setting.
  */
 
-Handle<Value>
-Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetAntiAlias) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   const char *aa;
   switch (cairo_get_antialias(context->context())) {
     case CAIRO_ANTIALIAS_NONE: aa = "none"; break;
@@ -947,17 +945,16 @@ Context2d::GetAntiAlias(Local<String> prop, const AccessorInfo &info) {
     case CAIRO_ANTIALIAS_SUBPIXEL: aa = "subpixel"; break;
     default: aa = "default";
   }
-  return scope.Close(String::NewSymbol(aa));
+  NanReturnValue(NanSymbol(aa));
 }
 
 /*
  * Set antialiasing.
  */
 
-void
-Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  String::AsciiValue str(val->ToString());
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_SETTER(Context2d::SetAntiAlias) {
+  String::AsciiValue str(value->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_antialias_t a;
   if (0 == strcmp("none", *str)) {
@@ -978,10 +975,9 @@ Context2d::SetAntiAlias(Local<String> prop, Local<Value> val, const AccessorInfo
  * Get text drawing mode.
  */
 
-Handle<Value>
-Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetTextDrawingMode) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   const char *mode;
   if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
     mode = "path";
@@ -990,17 +986,16 @@ Context2d::GetTextDrawingMode(Local<String> prop, const AccessorInfo &info) {
   } else {
     mode = "unknown";
   }
-  return scope.Close(String::NewSymbol(mode));
+  NanReturnValue(NanSymbol(mode));
 }
 
 /*
  * Set text drawing mode.
  */
 
-void
-Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  String::AsciiValue str(val->ToString());
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_SETTER(Context2d::SetTextDrawingMode) {
+  String::AsciiValue str(value->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   if (0 == strcmp("path", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_PATHS;
   } else if (0 == strcmp("glyph", *str)) {
@@ -1009,25 +1004,63 @@ Context2d::SetTextDrawingMode(Local<String> prop, Local<Value> val, const Access
 }
 
 /*
+ * Get filter.
+ */
+
+NAN_GETTER(Context2d::GetFilter) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  const char *filter;
+  switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
+    case CAIRO_FILTER_FAST: filter = "fast"; break;
+    case CAIRO_FILTER_BEST: filter = "best"; break;
+    case CAIRO_FILTER_NEAREST: filter = "nearest"; break;
+    case CAIRO_FILTER_BILINEAR: filter = "bilinear"; break;
+    default: filter = "good";
+  }
+  NanReturnValue(NanSymbol(filter));
+}
+
+/*
+ * Set filter.
+ */
+
+NAN_SETTER(Context2d::SetFilter) {
+  String::AsciiValue str(value->ToString());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_filter_t filter;
+  if (0 == strcmp("fast", *str)) {
+    filter = CAIRO_FILTER_FAST;
+  } else if (0 == strcmp("best", *str)) {
+    filter = CAIRO_FILTER_BEST;
+  } else if (0 == strcmp("nearest", *str)) {
+    filter = CAIRO_FILTER_NEAREST;
+  } else if (0 == strcmp("bilinear", *str)) {
+    filter = CAIRO_FILTER_BILINEAR;
+  } else {
+    filter = CAIRO_FILTER_GOOD;
+  }
+  cairo_pattern_set_filter(cairo_get_source(context->context()), filter);
+}
+
+/*
  * Get miter limit.
  */
 
-Handle<Value>
-Context2d::GetMiterLimit(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(cairo_get_miter_limit(context->context())));
+NAN_GETTER(Context2d::GetMiterLimit) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(cairo_get_miter_limit(context->context())));
 }
 
 /*
  * Set miter limit.
  */
 
-void
-Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  double n = val->NumberValue();
+NAN_SETTER(Context2d::SetMiterLimit) {
+  double n = value->NumberValue();
   if (n > 0) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     cairo_set_miter_limit(context->context(), n);
   }
 }
@@ -1036,22 +1069,20 @@ Context2d::SetMiterLimit(Local<String> prop, Local<Value> val, const AccessorInf
  * Get line width.
  */
 
-Handle<Value>
-Context2d::GetLineWidth(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
-  return scope.Close(Number::New(cairo_get_line_width(context->context())));
+NAN_GETTER(Context2d::GetLineWidth) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  NanReturnValue(Number::New(cairo_get_line_width(context->context())));
 }
 
 /*
  * Set line width.
  */
 
-void
-Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  double n = val->NumberValue();
+NAN_SETTER(Context2d::SetLineWidth) {
+  double n = value->NumberValue();
   if (n > 0) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     cairo_set_line_width(context->context(), n);
   }
 }
@@ -1060,28 +1091,26 @@ Context2d::SetLineWidth(Local<String> prop, Local<Value> val, const AccessorInfo
  * Get line join.
  */
 
-Handle<Value>
-Context2d::GetLineJoin(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetLineJoin) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   const char *join;
   switch (cairo_get_line_join(context->context())) {
     case CAIRO_LINE_JOIN_BEVEL: join = "bevel"; break;
     case CAIRO_LINE_JOIN_ROUND: join = "round"; break;
     default: join = "miter";
   }
-  return scope.Close(String::NewSymbol(join));
+  NanReturnValue(NanSymbol(join));
 }
 
 /*
  * Set line join.
  */
 
-void
-Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_SETTER(Context2d::SetLineJoin) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(val->ToString());
+  String::AsciiValue type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -1095,28 +1124,26 @@ Context2d::SetLineJoin(Local<String> prop, Local<Value> val, const AccessorInfo 
  * Get line cap.
  */
 
-Handle<Value>
-Context2d::GetLineCap(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_GETTER(Context2d::GetLineCap) {
+  NanScope();
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   const char *cap;
   switch (cairo_get_line_cap(context->context())) {
     case CAIRO_LINE_CAP_ROUND: cap = "round"; break;
     case CAIRO_LINE_CAP_SQUARE: cap = "square"; break;
     default: cap = "butt";
   }
-  return scope.Close(String::NewSymbol(cap));
+  NanReturnValue(NanSymbol(cap));
 }
 
 /*
  * Set line cap.
  */
 
-void
-Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+NAN_SETTER(Context2d::SetLineCap) {
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(val->ToString());
+  String::AsciiValue type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
@@ -1130,77 +1157,73 @@ Context2d::SetLineCap(Local<String> prop, Local<Value> val, const AccessorInfo &
  * Check if the given point is within the current path.
  */
 
-Handle<Value>
-Context2d::IsPointInPath(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::IsPointInPath) {
+  NanScope();
   if (args[0]->IsNumber() && args[1]->IsNumber()) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     cairo_t *ctx = context->context();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
-    return scope.Close(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+    NanReturnValue(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   }
-  return False();
+  NanReturnValue(False());
 }
 
 /*
- * Set fill pattern, used internally for fillStyle=
+ * Set fill pattern, useV internally for fillStyle=
  */
 
-Handle<Value>
-Context2d::SetFillPattern(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetFillPattern) {
+  NanScope();
 
   Local<Object> obj = args[0]->ToObject();
-  if (Gradient::constructor->HasInstance(obj)){
+  if (NanHasInstance(Gradient::constructor, obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->fillGradient = grad->pattern();
-  } else if(Pattern::constructor->HasInstance(obj)){
+  } else if(NanHasInstance(Pattern::constructor, obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->fillPattern = pattern->pattern();
   } else {
-    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+    return NanThrowTypeError("Gradient or Pattern expected");
   }
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Set stroke pattern, used internally for strokeStyle=
  */
 
-Handle<Value>
-Context2d::SetStrokePattern(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetStrokePattern) {
+  NanScope();
 
   Local<Object> obj = args[0]->ToObject();
-  if (Gradient::constructor->HasInstance(obj)){
+  if (NanHasInstance(Gradient::constructor, obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Gradient *grad = ObjectWrap::Unwrap<Gradient>(obj);
     context->state->strokeGradient = grad->pattern();
-  } else if(Pattern::constructor->HasInstance(obj)){
+  } else if(NanHasInstance(Pattern::constructor, obj)){
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     Pattern *pattern = ObjectWrap::Unwrap<Pattern>(obj);
     context->state->strokePattern = pattern->pattern();
   } else {
-    return ThrowException(Exception::TypeError(String::New("Gradient or Pattern expected")));
+    return NanThrowTypeError("Gradient or Pattern expected");
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Set shadow color.
  */
 
-void
-Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorInfo &info) {
+NAN_SETTER(Context2d::SetShadowColor) {
   short ok;
-  String::AsciiValue str(val->ToString());
+  String::AsciiValue str(value->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (ok) {
-    Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+    Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     context->state->shadow = rgba_create(rgba);
   }
 }
@@ -1209,91 +1232,85 @@ Context2d::SetShadowColor(Local<String> prop, Local<Value> val, const AccessorIn
  * Get shadow color.
  */
 
-Handle<Value>
-Context2d::GetShadowColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+NAN_GETTER(Context2d::GetShadowColor) {
+  NanScope();
   char buf[64];
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  NanReturnValue(String::New(buf));
 }
 
 /*
  * Set fill color, used internally for fillStyle=
  */
 
-Handle<Value>
-Context2d::SetFillColor(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetFillColor) {
+  NanScope();
   short ok;
-  if (!args[0]->IsString()) return Undefined();
+  if (!args[0]->IsString()) NanReturnUndefined();
   String::AsciiValue str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
-  if (!ok) return Undefined();
+  if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->fillPattern = context->state->fillGradient = NULL;
   context->state->fill = rgba_create(rgba);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Get fill color.
  */
 
-Handle<Value>
-Context2d::GetFillColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+NAN_GETTER(Context2d::GetFillColor) {
+  NanScope();
   char buf[64];
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->fill, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  NanReturnValue(String::New(buf));
 }
 
 /*
  * Set stroke color, used internally for strokeStyle=
  */
 
-Handle<Value>
-Context2d::SetStrokeColor(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetStrokeColor) {
+  NanScope();
   short ok;
-  if (!args[0]->IsString()) return Undefined();
+  if (!args[0]->IsString()) NanReturnUndefined();
   String::AsciiValue str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
-  if (!ok) return Undefined();
+  if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->strokePattern = context->state->strokeGradient = NULL;
   context->state->stroke = rgba_create(rgba);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Get stroke color.
  */
 
-Handle<Value>
-Context2d::GetStrokeColor(Local<String> prop, const AccessorInfo &info) {
-  HandleScope scope;
+NAN_GETTER(Context2d::GetStrokeColor) {
+  NanScope();
   char buf[64];
-  Context2d *context = ObjectWrap::Unwrap<Context2d>(info.This());
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->stroke, buf, sizeof(buf));
-  return scope.Close(String::New(buf));
+  NanReturnValue(String::New(buf));
 }
 
 /*
  * Bezier curve.
  */
 
-Handle<Value>
-Context2d::BezierCurveTo(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::BezierCurveTo) {
+  NanScope();
 
   if (!args[0]->IsNumber()
     ||!args[1]->IsNumber()
     ||!args[2]->IsNumber()
     ||!args[3]->IsNumber()
     ||!args[4]->IsNumber()
-    ||!args[5]->IsNumber()) return Undefined();
+    ||!args[5]->IsNumber()) NanReturnUndefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_curve_to(context->context()
@@ -1304,21 +1321,20 @@ Context2d::BezierCurveTo(const Arguments &args) {
     , args[4]->NumberValue()
     , args[5]->NumberValue());
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Quadratic curve approximation from libsvg-cairo.
  */
 
-Handle<Value>
-Context2d::QuadraticCurveTo(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::QuadraticCurveTo) {
+  NanScope();
 
   if (!args[0]->IsNumber()
     ||!args[1]->IsNumber()
     ||!args[2]->IsNumber()
-    ||!args[3]->IsNumber()) return Undefined();
+    ||!args[3]->IsNumber()) NanReturnUndefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -1342,77 +1358,71 @@ Context2d::QuadraticCurveTo(const Arguments &args) {
     , x2
     , y2);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Save state.
  */
 
-Handle<Value>
-Context2d::Save(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Save) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->save();
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Restore state.
  */
 
-Handle<Value>
-Context2d::Restore(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Restore) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->restore();
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Creates a new subpath.
  */
 
-Handle<Value>
-Context2d::BeginPath(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::BeginPath) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_new_path(context->context());
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Marks the subpath as closed.
  */
 
-Handle<Value>
-Context2d::ClosePath(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::ClosePath) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_close_path(context->context());
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Rotate transformation.
  */
 
-Handle<Value>
-Context2d::Rotate(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Rotate) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_rotate(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Modify the CTM.
  */
 
-Handle<Value>
-Context2d::Transform(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Transform) {
+  NanScope();
 
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix
@@ -1425,97 +1435,90 @@ Context2d::Transform(const Arguments &args) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_transform(context->context(), &matrix);
-  
-  return Undefined();
+
+  NanReturnUndefined();
 }
 
 /*
  * Reset the CTM, used internally by setTransform().
  */
 
-Handle<Value>
-Context2d::ResetTransform(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::ResetTransform) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_identity_matrix(context->context());
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Translate transformation.
  */
 
-Handle<Value>
-Context2d::Translate(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Translate) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_translate(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0
     , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Scale transformation.
  */
 
-Handle<Value>
-Context2d::Scale(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Scale) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_scale(context->context()
     , args[0]->IsNumber() ? args[0]->NumberValue() : 0
     , args[1]->IsNumber() ? args[1]->NumberValue() : 0);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Use path as clipping region.
  */
 
-Handle<Value>
-Context2d::Clip(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Clip) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Fill the path.
  */
 
-Handle<Value>
-Context2d::Fill(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Fill) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->fill(true);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Stroke the path.
  */
 
-Handle<Value>
-Context2d::Stroke(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Stroke) {
+  NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->stroke(true);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Fill text at (x, y).
  */
 
-Handle<Value>
-Context2d::FillText(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::FillText) {
+  NanScope();
 
   if (!args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
+    || !args[2]->IsNumber()) NanReturnUndefined();
 
   String::Utf8Value str(args[0]->ToString());
   double x = args[1]->NumberValue();
@@ -1533,24 +1536,23 @@ Context2d::FillText(const Arguments &args) {
   }
   context->restorePath();
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Stroke text at (x ,y).
  */
 
-Handle<Value>
-Context2d::StrokeText(const Arguments &args) {
-  HandleScope scope;
-  
+NAN_METHOD(Context2d::StrokeText) {
+  NanScope();
+
   if (!args[1]->IsNumber()
-    || !args[2]->IsNumber()) return Undefined();
+    || !args[2]->IsNumber()) NanReturnUndefined();
 
   String::Utf8Value str(args[0]->ToString());
   double x = args[1]->NumberValue();
   double y = args[2]->NumberValue();
-  
+
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
   context->savePath();
@@ -1563,7 +1565,7 @@ Context2d::StrokeText(const Arguments &args) {
   }
   context->restorePath();
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
@@ -1675,43 +1677,72 @@ Context2d::setTextPath(const char *str, double x, double y) {
  * Adds a point to the current subpath.
  */
 
-Handle<Value>
-Context2d::LineTo(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::LineTo) {
+  NanScope();
 
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("lineTo() x must be a number")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("lineTo() y must be a number")));
+  if (!args[0]->IsNumber())
+    return NanThrowTypeError("lineTo() x must be a number");
+  if (!args[1]->IsNumber())
+    return NanThrowTypeError("lineTo() y must be a number");
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_line_to(context->context()
     , args[0]->NumberValue()
     , args[1]->NumberValue());
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Creates a new subpath at the given point.
  */
 
-Handle<Value>
-Context2d::MoveTo(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::MoveTo) {
+  NanScope();
 
-  if (!args[0]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("moveTo() x must be a number")));
-  if (!args[1]->IsNumber()) 
-    return ThrowException(Exception::TypeError(String::New("moveTo() y must be a number")));
+  if (!args[0]->IsNumber())
+    return NanThrowTypeError("moveTo() x must be a number");
+  if (!args[1]->IsNumber())
+    return NanThrowTypeError("moveTo() y must be a number");
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_move_to(context->context()
     , args[0]->NumberValue()
     , args[1]->NumberValue());
 
-  return Undefined();
+  NanReturnUndefined();
 }
+
+/*
+ * Set font face.
+ */
+
+#ifdef HAVE_FREETYPE
+NAN_METHOD(Context2d::SetFontFace) {
+  NanScope();
+
+  // Ignore invalid args
+  if (!args[0]->IsObject()
+    || !args[1]->IsNumber())
+    return NanThrowTypeError("Expected object and number");
+
+  Local<Object> obj = args[0]->ToObject();
+
+  if (!NanHasInstance(FontFace::constructor, obj))
+    return NanThrowTypeError("FontFace expected");
+
+  FontFace *face = ObjectWrap::Unwrap<FontFace>(obj);
+  double size = args[1]->NumberValue();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+
+  cairo_set_font_size(ctx, size);
+  cairo_set_font_face(ctx, face->cairoFace());
+
+  NanReturnUndefined();
+}
+#endif
 
 /*
  * Set font:
@@ -1722,16 +1753,15 @@ Context2d::MoveTo(const Arguments &args) {
  *   - family
  */
 
-Handle<Value>
-Context2d::SetFont(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetFont) {
+  NanScope();
 
   // Ignore invalid args
   if (!args[0]->IsString()
     || !args[1]->IsString()
     || !args[2]->IsNumber()
     || !args[3]->IsString()
-    || !args[4]->IsString()) return Undefined();
+    || !args[4]->IsString()) NanReturnUndefined();
 
   String::AsciiValue weight(args[0]);
   String::AsciiValue style(args[1]);
@@ -1808,7 +1838,7 @@ Context2d::SetFont(const Arguments &args) {
 
 #endif
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 #if HAVE_PANGO
@@ -1839,9 +1869,8 @@ Context2d::setFontFromState() {
  * fontBoundingBoxAscent, fontBoundingBoxDescent
  */
 
-Handle<Value>
-Context2d::MeasureText(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::MeasureText) {
+  NanScope();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -1958,84 +1987,79 @@ Context2d::MeasureText(const Arguments &args) {
 
 #endif
 
-  return scope.Close(obj);
+  NanReturnValue(obj);
 }
 
 /*
  * Set text baseline.
  */
 
-Handle<Value>
-Context2d::SetTextBaseline(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetTextBaseline) {
+  NanScope();
 
-  if (!args[0]->IsInt32()) return Undefined();
+  if (!args[0]->IsInt32()) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->textBaseline = args[0]->Int32Value();
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Set text alignment. -1 0 1
  */
 
-Handle<Value>
-Context2d::SetTextAlignment(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::SetTextAlignment) {
+  NanScope();
 
-  if (!args[0]->IsInt32()) return Undefined();
+  if (!args[0]->IsInt32()) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   context->state->textAlignment = args[0]->Int32Value();
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Fill the rectangle defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::FillRect(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::FillRect) {
+  NanScope();
   RECT_ARGS;
-  if (0 == width || 0 == height) return Undefined();
+  if (0 == width || 0 == height) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->fill();
   context->restorePath();
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Stroke the rectangle defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::StrokeRect(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::StrokeRect) {
+  NanScope();
   RECT_ARGS;
-  if (0 == width && 0 == height) return Undefined();
+  if (0 == width && 0 == height) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   context->savePath();
   cairo_rectangle(ctx, x, y, width, height);
   context->stroke();
   context->restorePath();
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Clears all pixels defined by x, y, width and height.
  */
 
-Handle<Value>
-Context2d::ClearRect(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::ClearRect) {
+  NanScope();
   RECT_ARGS;
-  if (0 == width || 0 == height) return Undefined();
+  if (0 == width || 0 == height) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_save(ctx);
@@ -2045,16 +2069,15 @@ Context2d::ClearRect(const Arguments &args) {
   cairo_fill(ctx);
   context->restorePath();
   cairo_restore(ctx);
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Adds a rectangle subpath.
  */
 
-Handle<Value>
-Context2d::Rect(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Rect) {
+  NanScope();
   RECT_ARGS;
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -2067,22 +2090,21 @@ Context2d::Rect(const Arguments &args) {
   } else {
     cairo_rectangle(ctx, x, y, width, height);
   }
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Adds an arc at x, y with the given radis and start/end angles.
  */
 
-Handle<Value>
-Context2d::Arc(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::Arc) {
+  NanScope();
 
   if (!args[0]->IsNumber()
     || !args[1]->IsNumber()
     || !args[2]->IsNumber()
     || !args[3]->IsNumber()
-    || !args[4]->IsNumber()) return Undefined();
+    || !args[4]->IsNumber()) NanReturnUndefined();
 
   bool anticlockwise = args[5]->BooleanValue();
 
@@ -2105,7 +2127,7 @@ Context2d::Arc(const Arguments &args) {
       , args[4]->NumberValue());
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
@@ -2114,15 +2136,14 @@ Context2d::Arc(const Arguments &args) {
  * Implementation influenced by WebKit.
  */
 
-Handle<Value>
-Context2d::ArcTo(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Context2d::ArcTo) {
+  NanScope();
 
   if (!args[0]->IsNumber()
     || !args[1]->IsNumber()
     || !args[2]->IsNumber()
     || !args[3]->IsNumber()
-    || !args[4]->IsNumber()) return Undefined();
+    || !args[4]->IsNumber()) NanReturnUndefined();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
@@ -2144,7 +2165,7 @@ Context2d::ArcTo(const Arguments &args) {
     || (p1.x == p2.x && p1.y == p2.y)
     || radius == 0.f) {
     cairo_line_to(ctx, p1.x, p1.y);
-    return Undefined();
+    NanReturnUndefined();
   }
 
   Point<float> p1p0((p0.x - p1.x),(p0.y - p1.y));
@@ -2156,7 +2177,7 @@ Context2d::ArcTo(const Arguments &args) {
   // all points on a line logic
   if (-1 == cos_phi) {
     cairo_line_to(ctx, p1.x, p1.y);
-    return Undefined();
+    NanReturnUndefined();
   }
 
   if (1 == cos_phi) {
@@ -2165,7 +2186,7 @@ Context2d::ArcTo(const Arguments &args) {
     double factor_max = max_length / p1p0_length;
     Point<float> ep((p0.x + factor_max * p1p0.x), (p0.y + factor_max * p1p0.y));
     cairo_line_to(ctx, ep.x, ep.y);
-    return Undefined();
+    NanReturnUndefined();
   }
 
   float tangent = radius / tan(acos(cos_phi) / 2);
@@ -2217,5 +2238,5 @@ Context2d::ArcTo(const Arguments &args) {
       , ea);
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }

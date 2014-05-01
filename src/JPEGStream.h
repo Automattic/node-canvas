@@ -6,6 +6,7 @@
 #ifndef __NODE_JPEG_STREAM_H__
 #define __NODE_JPEG_STREAM_H__
 
+#include "nan.h"
 #include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
@@ -29,12 +30,12 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
-  Local<Buffer> buf = Buffer::New(dest->bufsize);
-  memcpy(Buffer::Data(buf->handle_), dest->buffer, dest->bufsize);
+  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(buf->handle_)
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(buf)
     , Integer::New(dest->bufsize)
   };
   dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
@@ -45,15 +46,15 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
+  NanScope();
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
-  Local<Buffer> buf = Buffer::New(remaining);
-  memcpy(Buffer::Data(buf->handle_), dest->buffer, remaining);
+  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, remaining);
 
   Local<Value> data_argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(buf->handle_)
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(buf)
     , Integer::New(remaining)
   };
 
@@ -61,8 +62,8 @@ term_closure_destination(j_compress_ptr cinfo){
 
   // emit "end"
   Local<Value> end_argv[3] = {
-      Local<Value>::New(Null())
-    , Local<Value>::New(Null())
+      NanNewLocal<Value>(Null())
+    , NanNewLocal<Value>(Null())
     , Integer::New(0)
   };
 
@@ -81,7 +82,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
          sizeof(closure_destination_mgr));
   }
-  
+
   dest  = (closure_destination_mgr *) cinfo->dest;
 
   cinfo->dest->init_destination = &init_closure_destination;
@@ -97,7 +98,17 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 }
 
 void
-write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure_t *closure){
+jpeg_free_custom_allocations(j_compress_ptr cinfo){
+  closure_destination_mgr * dest;
+  dest = (closure_destination_mgr *) cinfo->dest;
+  if (dest->buffer) {
+    free(dest->buffer);
+    dest->buffer = NULL;
+  }
+}
+
+void
+write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, closure_t *closure){
   int w = cairo_image_surface_get_width(surface);
   int h = cairo_image_surface_get_height(surface);
   struct jpeg_compress_struct cinfo;
@@ -111,6 +122,8 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure
   cinfo.image_width = w;
   cinfo.image_height = h;
   jpeg_set_defaults(&cinfo);
+  if (progressive)
+     jpeg_simple_progression(&cinfo);
   jpeg_set_quality(&cinfo, quality, (quality<25)?0:1);
   jpeg_closure_dest(&cinfo, closure, bufsize);
 
@@ -136,6 +149,7 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, closure
   }
   free(dst);
   jpeg_finish_compress(&cinfo);
+  jpeg_free_custom_allocations(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
 

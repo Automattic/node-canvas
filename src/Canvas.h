@@ -19,6 +19,8 @@
 #include <cairo/cairo.h>
 #endif
 
+#include "nan.h"
+
 using namespace v8;
 using namespace node;
 
@@ -51,15 +53,15 @@ class Canvas: public node::ObjectWrap {
     canvas_type_t type;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
-    static Handle<Value> New(const Arguments &args);
-    static Handle<Value> ToBuffer(const Arguments &args);
-    static Handle<Value> GetType(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetWidth(Local<String> prop, const AccessorInfo &info);
-    static Handle<Value> GetHeight(Local<String> prop, const AccessorInfo &info);
-    static void SetWidth(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    static void SetHeight(Local<String> prop, Local<Value> val, const AccessorInfo &info);
-    static Handle<Value> StreamPNGSync(const Arguments &args);
-    static Handle<Value> StreamJPEGSync(const Arguments &args);
+    static NAN_METHOD(New);
+    static NAN_METHOD(ToBuffer);
+    static NAN_GETTER(GetType);
+    static NAN_GETTER(GetWidth);
+    static NAN_GETTER(GetHeight);
+    static NAN_SETTER(SetWidth);
+    static NAN_SETTER(SetHeight);
+    static NAN_METHOD(StreamPNGSync);
+    static NAN_METHOD(StreamJPEGSync);
     static Local<Value> Error(cairo_status_t status);
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsync(uv_work_t *req);

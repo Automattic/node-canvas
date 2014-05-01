@@ -2,23 +2,27 @@
   'conditions': [
     ['OS=="win"', {
       'variables': {
-        'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
+        'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
         'with_gif%': 'false',
-        'with_pango%': 'false'
+        'with_pango%': 'false',
+        'with_freetype%': 'false'
       }
     }, { # 'OS!="win"'
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
-        'with_pango%': '<!(./util/has_lib.sh pangocairo)'
+        # disable pango as it causes issues with freetype.
+        'with_pango%': 'false',
+        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
       }
     }]
   ],
   'targets': [
     {
       'target_name': 'canvas',
-      'sources': [ 
+      'include_dirs': ["<!(node -e \"require('nan')\")"],
+      'sources': [
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
@@ -27,24 +31,49 @@
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
-        'src/PixelArray.cc',
+        'src/PixelArray.cc'
       ],
       'conditions': [
         ['OS=="win"', {
           'libraries': [
-            '-l<(GTK_Root)/lib/cairo.lib'
+            '-l<(GTK_Root)/lib/cairo.lib',
+            '-l<(GTK_Root)/lib/libpng.lib'
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
           ],
           'defines': [
             'snprintf=_snprintf',
-            '_USE_MATH_DEFINES'  # for M_PI
+            '_USE_MATH_DEFINES' # for M_PI
           ]
-        }, {  # 'OS!="win"'
+        }, { # 'OS!="win"'
           'libraries': [
-            '-lpixman-1',
-            '-lcairo'
+            '<!@(pkg-config pixman-1 --libs)',
+            '<!@(pkg-config cairo --libs)',
+            '<!@(pkg-config libpng --libs)'
+          ],
+          'include_dirs': [
+            '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
+            '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
+          ]
+        }],
+        ['with_freetype=="true"', {
+          'defines': [
+            'HAVE_FREETYPE'
+          ],
+          'sources': [
+            'src/FontFace.cc'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              # No support for windows right now.
+            }, { # 'OS!="win"'
+              'include_dirs': [ # tried to pass through cflags but failed.
+                # Need to include the header files of cairo AND freetype.
+                # Looking up the includes of cairo does both.
+                '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
+              ]
+            }]
           ]
         }],
         ['with_pango=="true"', {

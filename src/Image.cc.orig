@@ -786,9 +786,10 @@ cairo_status_t
 Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
-  struct jpeg_decompress_struct args;
+<<<<<<< HEAD
+  struct jpeg_decompress_struct info;
   struct canvas_jpeg_error_mgr err;
-  args.err = jpeg_std_error(&err.pub);
+  info.err = jpeg_std_error(&err.pub);
 
   err.pub.error_exit = canvas_jpeg_error_exit;
 
@@ -797,11 +798,17 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   if (setjmp(err.setjmp_buffer)) {
     // If we get here, the JPEG code has signaled an error.
     // We need to clean up the JPEG object, close the input file, and return.
-    jpeg_destroy_decompress(&args);
+    jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_READ_ERROR;
   }
 
+  jpeg_create_decompress(&info);
+=======
+  struct jpeg_decompress_struct args;
+  struct jpeg_error_mgr err;
+  args.err = jpeg_std_error(&err);
   jpeg_create_decompress(&args);
+>>>>>>> upstream/master
 
   jpeg_mem_src(&args, buf, len);
 
@@ -892,9 +899,10 @@ cairo_status_t
 Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
-  struct jpeg_decompress_struct args;
+<<<<<<< HEAD
+  struct jpeg_decompress_struct info;
   struct canvas_jpeg_error_mgr err;
-  args.err = jpeg_std_error(&err.pub);
+  info.err = jpeg_std_error(&err.pub);
 
   err.pub.error_exit = canvas_jpeg_error_exit;
 
@@ -903,11 +911,17 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   if (setjmp(err.setjmp_buffer)) {
     // If we get here, the JPEG code has signaled an error.
     // We need to clean up the JPEG object, close the input file, and return.
-    jpeg_destroy_decompress(&args);
+    jpeg_destroy_decompress(&info);
     return CAIRO_STATUS_READ_ERROR;
   }
 
+  jpeg_create_decompress(&info);
+=======
+  struct jpeg_decompress_struct args;
+  struct jpeg_error_mgr err;
+  args.err = jpeg_std_error(&err);
   jpeg_create_decompress(&args);
+>>>>>>> upstream/master
 
   jpeg_mem_src(&args, buf, len);
 
@@ -929,9 +943,10 @@ Image::loadJPEG(FILE *stream) {
 
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
     // JPEG setup
-    struct jpeg_decompress_struct args;
+<<<<<<< HEAD
+    struct jpeg_decompress_struct info;
     struct canvas_jpeg_error_mgr err;
-    args.err = jpeg_std_error(&err.pub);
+    info.err = jpeg_std_error(&err.pub);
 
     err.pub.error_exit = canvas_jpeg_error_exit;
 
@@ -940,11 +955,17 @@ Image::loadJPEG(FILE *stream) {
     if (setjmp(err.setjmp_buffer)) {
       // If we get here, the JPEG code has signaled an error.
       // We need to clean up the JPEG object, close the input file, and return.
-      jpeg_destroy_decompress(&args);
+      jpeg_destroy_decompress(&info);
       return CAIRO_STATUS_READ_ERROR;
     }
 
+    jpeg_create_decompress(&info);
+=======
+    struct jpeg_decompress_struct args;
+    struct jpeg_error_mgr err;
+    args.err = jpeg_std_error(&err);
     jpeg_create_decompress(&args);
+>>>>>>> upstream/master
 
     jpeg_stdio_src(&args, stream);
 

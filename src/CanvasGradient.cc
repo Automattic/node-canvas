@@ -17,25 +17,25 @@ Persistent<FunctionTemplate> Gradient::constructor;
 
 void
 Gradient::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
-  constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Gradient::New));
-  constructor->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor->SetClassName(String::NewSymbol("CanvasGradient"));
+  Local<FunctionTemplate> ctor = FunctionTemplate::New(Gradient::New);
+  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  ctor->SetClassName(NanSymbol("CanvasGradient"));
 
   // Prototype
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addColorStop", AddColorStop);
-  target->Set(String::NewSymbol("CanvasGradient"), constructor->GetFunction());
+  NODE_SET_PROTOTYPE_METHOD(ctor, "addColorStop", AddColorStop);
+  target->Set(NanSymbol("CanvasGradient"), ctor->GetFunction());
 }
 
 /*
  * Initialize a new CanvasGradient.
  */
 
-Handle<Value>
-Gradient::New(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Gradient::New) {
+  NanScope();
 
   // Linear
   if (4 == args.Length()) {
@@ -45,7 +45,7 @@ Gradient::New(const Arguments &args) {
       , args[2]->NumberValue()
       , args[3]->NumberValue());
     grad->Wrap(args.This());
-    return args.This();
+    NanReturnValue(args.This());
   }
 
   // Radial
@@ -58,23 +58,22 @@ Gradient::New(const Arguments &args) {
       , args[4]->NumberValue()
       , args[5]->NumberValue());
     grad->Wrap(args.This());
-    return args.This();
+    NanReturnValue(args.This());
   }
   
-  return ThrowException(Exception::TypeError(String::New("invalid arguments")));
+  return NanThrowTypeError("invalid arguments");
 }
 
 /*
  * Add color stop.
  */
 
-Handle<Value>
-Gradient::AddColorStop(const Arguments &args) {
-  HandleScope scope;
+NAN_METHOD(Gradient::AddColorStop) {
+  NanScope();
   if (!args[0]->IsNumber())
-    return ThrowException(Exception::TypeError(String::New("offset required")));
+    return NanThrowTypeError("offset required");
   if (!args[1]->IsString())
-    return ThrowException(Exception::TypeError(String::New("color string required")));
+    return NanThrowTypeError("color string required");
 
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
   short ok;
@@ -90,17 +89,18 @@ Gradient::AddColorStop(const Arguments &args) {
       , color.g
       , color.b
       , color.a);
+  } else {
+    return NanThrowTypeError("parse color failed");
   }
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 /*
  * Initialize linear gradient.
  */
 
-Gradient::Gradient(double x0, double y0, double x1, double y1):
-  _x0(x0), _y0(y0), _x1(x1), _y1(y1) {
+Gradient::Gradient(double x0, double y0, double x1, double y1) {
   _pattern = cairo_pattern_create_linear(x0, y0, x1, y1);
 }
 
@@ -108,8 +108,7 @@ Gradient::Gradient(double x0, double y0, double x1, double y1):
  * Initialize radial gradient.
  */
 
-Gradient::Gradient(double x0, double y0, double r0, double x1, double y1, double r1):
-  _x0(x0), _y0(y0), _x1(x1), _y1(y1), _r0(r0), _r1(r1) {
+Gradient::Gradient(double x0, double y0, double r0, double x1, double y1, double r1) {
   _pattern = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
 }
 

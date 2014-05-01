@@ -1,3 +1,6 @@
+[![NPM version](https://badge.fury.io/js/canvas.png)](http://badge.fury.io/js/canvas)
+[![Dependency Status](https://gemnasium.com/LearnBoost/node-canvas.png)](https://gemnasium.com/LearnBoost/node-canvas)
+
 # node-canvas
 
  Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
@@ -99,9 +102,22 @@ stream.on('end', function(){
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
 
-### Canvas#jpegStream()
+### Canvas#jpegStream() and Canvas#syncJPEGStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with some optional parameters; functionality is otherwise identical to `pngStream()`. See `examples/crop.js` for an example.
+You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with
+some optional parameters; functionality is otherwise identical to
+`pngStream()`. See `examples/crop.js` for an example.
+
+_Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
+are synchronous_
+
+```javascript
+var stream = canvas.jpegStream({
+    bufsize: 4096 // output buffer size in bytes, default: 4096
+  , quality: 75 // JPEG quality (0-100) default: 75
+  , progressive: false // true for progressive compression, default: false
+});
+```
 
 ### Canvas#toBuffer()
 
@@ -146,6 +162,8 @@ Given one of the values below will alter pattern (gradients, images, etc) render
   - fast
   - good
   - best
+  - nearest
+  - bilinear
 
 ### CanvasRenderingContext2d#textDrawingMode
 
@@ -154,6 +172,16 @@ Can be either `path` or `glyph`. Using `glyph` is much faster than `path` for dr
 Defaults to _path_.
 
 This property is tracked as part of the canvas state in save/restore.
+
+### CanvasRenderingContext2d#filter
+
+Like `patternQuality`, but applies to transformations effecting more than just patterns. Defaults to _good_.
+
+  - fast
+  - good
+  - best
+  - nearest
+  - bilinear
 
 ### Global Composite Operations
 
@@ -193,7 +221,7 @@ ctx.antialias = 'none';
 var canvas = new Canvas(200, 500, 'pdf');
 ```
 
- An additional method `.addPage()` is then available to create 
+ An additional method `.addPage()` is then available to create
  multiple page PDFs:
 
 ```js
@@ -258,7 +286,7 @@ project  : node-canvas
  active   : 120 days
  commits  : 963
  files    : 72
- authors  : 
+ authors  :
    816	Tj Holowaychuk          84.7%
     58	TJ Holowaychuk          6.0%
     23	c-spencer               2.4%
