@@ -35,7 +35,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
       NanNull()
-    , NanNew<Value>(buf)
+    , NanNew(buf)
     , NanNew<Integer>(dest->bufsize)
   };
   NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, argv);
