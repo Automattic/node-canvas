@@ -34,7 +34,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
-      NanNull()
+      NanNew(NanNull())
     , NanNew(buf)
     , NanNew<Integer>(dest->bufsize)
   };

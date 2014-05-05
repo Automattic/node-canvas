@@ -211,7 +211,7 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   } else {
     Local<Object> buf = NanNewBufferHandle((char*)closure->data, closure->len);
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    Local<Value> argv[2] = { NanNull(), buf };
+    Local<Value> argv[2] = { NanNew(NanNull()), buf };
     closure->pfn->Call(2, argv);
   }
 
@@ -348,7 +348,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   Local<Object> buf = NanNewBufferHandle((char *)data, len);
   Local<Value> argv[3] = {
-      NanNull()
+      NanNew(NanNull())
     , buf
     , NanNew<Integer>(len) };
   NanMakeCallback(NanGetCurrentContext()->Global(), closure->fn, 3, argv);
@@ -423,8 +423,8 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   } else {
     Local<Value> argv[3] = {
-        NanNull()
-      , NanNull()
+        NanNew(NanNull())
+      , NanNew(NanNull())
       , NanNew<Uint32>(0) };
     NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   }
