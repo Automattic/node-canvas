@@ -19,7 +19,7 @@
 #include <cairo/cairo.h>
 #endif
 
-#include "nan.h"
+#include <nan.h>
 
 using namespace v8;
 using namespace node;

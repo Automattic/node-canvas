@@ -6,7 +6,7 @@
 #ifndef __NODE_JPEG_STREAM_H__
 #define __NODE_JPEG_STREAM_H__
 
-#include "nan.h"
+#include <nan.h>
 #include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
@@ -34,11 +34,11 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
   Local<Value> argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(buf)
-    , Integer::New(dest->bufsize)
+      NanNew(NanNull())
+    , NanNew(buf)
+    , NanNew<Integer>(dest->bufsize)
   };
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
+  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, argv);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
   return true;
@@ -53,21 +53,21 @@ term_closure_destination(j_compress_ptr cinfo){
   Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, remaining);
 
   Local<Value> data_argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(buf)
-    , Integer::New(remaining)
+      NanNew(NanNull())
+    , NanNew(buf)
+    , NanNew<Integer>(remaining)
   };
 
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, data_argv);
+  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, data_argv);
 
   // emit "end"
   Local<Value> end_argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(Null())
-    , Integer::New(0)
+      NanNew(NanNull())
+    , NanNew(NanNull())
+    , NanNew<Integer>(0)
   };
 
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, end_argv);
+  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, end_argv);
 }
 
 void

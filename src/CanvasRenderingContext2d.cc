@@ -81,8 +81,8 @@ Context2d::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Context2d::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Context2d::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(NanSymbol("CanvasRenderingContext2d"));
 
@@ -694,7 +694,7 @@ NAN_METHOD(Context2d::DrawImage) {
 NAN_GETTER(Context2d::GetGlobalAlpha) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->globalAlpha));
+  NanReturnValue(NanNew<Number>(context->state->globalAlpha));
 }
 
 /*
@@ -764,7 +764,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 
 NAN_SETTER(Context2d::SetPatternQuality) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  String::AsciiValue quality(value->ToString());
+  String::Utf8Value quality(value->ToString());
   if (0 == strcmp("fast", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_FAST;
   } else if (0 == strcmp("good", *quality)) {
@@ -803,7 +803,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   } else if (0 == strcmp("source-atop", *type)) {
@@ -878,7 +878,7 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
 NAN_GETTER(Context2d::GetShadowOffsetX) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowOffsetX));
+  NanReturnValue(NanNew<Number>(context->state->shadowOffsetX));
 }
 
 /*
@@ -897,7 +897,7 @@ NAN_SETTER(Context2d::SetShadowOffsetX) {
 NAN_GETTER(Context2d::GetShadowOffsetY) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowOffsetY));
+  NanReturnValue(NanNew<Number>(context->state->shadowOffsetY));
 }
 
 /*
@@ -916,7 +916,7 @@ NAN_SETTER(Context2d::SetShadowOffsetY) {
 NAN_GETTER(Context2d::GetShadowBlur) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowBlur));
+  NanReturnValue(NanNew<Number>(context->state->shadowBlur));
 }
 
 /*
@@ -953,7 +953,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_antialias_t a;
@@ -994,7 +994,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   if (0 == strcmp("path", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_PATHS;
@@ -1026,7 +1026,7 @@ NAN_GETTER(Context2d::GetFilter) {
  */
 
 NAN_SETTER(Context2d::SetFilter) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_filter_t filter;
   if (0 == strcmp("fast", *str)) {
@@ -1050,7 +1050,7 @@ NAN_SETTER(Context2d::SetFilter) {
 NAN_GETTER(Context2d::GetMiterLimit) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(cairo_get_miter_limit(context->context())));
+  NanReturnValue(NanNew<Number>(cairo_get_miter_limit(context->context())));
 }
 
 /*
@@ -1072,7 +1072,7 @@ NAN_SETTER(Context2d::SetMiterLimit) {
 NAN_GETTER(Context2d::GetLineWidth) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(cairo_get_line_width(context->context())));
+  NanReturnValue(NanNew<Number>(cairo_get_line_width(context->context())));
 }
 
 /*
@@ -1110,7 +1110,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
 NAN_SETTER(Context2d::SetLineJoin) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -1143,7 +1143,7 @@ NAN_GETTER(Context2d::GetLineCap) {
 NAN_SETTER(Context2d::SetLineCap) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
@@ -1164,9 +1164,9 @@ NAN_METHOD(Context2d::IsPointInPath) {
     cairo_t *ctx = context->context();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
-    NanReturnValue(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+    NanReturnValue(NanNew<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   }
-  NanReturnValue(False());
+  NanReturnValue(NanFalse());
 }
 
 /*
@@ -1220,7 +1220,7 @@ NAN_METHOD(Context2d::SetStrokePattern) {
 
 NAN_SETTER(Context2d::SetShadowColor) {
   short ok;
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (ok) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1237,7 +1237,7 @@ NAN_GETTER(Context2d::GetShadowColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1248,7 +1248,7 @@ NAN_METHOD(Context2d::SetFillColor) {
   NanScope();
   short ok;
   if (!args[0]->IsString()) NanReturnUndefined();
-  String::AsciiValue str(args[0]);
+  String::Utf8Value str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1266,7 +1266,7 @@ NAN_GETTER(Context2d::GetFillColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->fill, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1277,7 +1277,7 @@ NAN_METHOD(Context2d::SetStrokeColor) {
   NanScope();
   short ok;
   if (!args[0]->IsString()) NanReturnUndefined();
-  String::AsciiValue str(args[0]);
+  String::Utf8Value str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1295,7 +1295,7 @@ NAN_GETTER(Context2d::GetStrokeColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->stroke, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1763,11 +1763,11 @@ NAN_METHOD(Context2d::SetFont) {
     || !args[3]->IsString()
     || !args[4]->IsString()) NanReturnUndefined();
 
-  String::AsciiValue weight(args[0]);
-  String::AsciiValue style(args[1]);
+  String::Utf8Value weight(args[0]);
+  String::Utf8Value style(args[1]);
   double size = args[2]->NumberValue();
-  String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
+  String::Utf8Value unit(args[3]);
+  String::Utf8Value family(args[4]);
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
@@ -1876,7 +1876,7 @@ NAN_METHOD(Context2d::MeasureText) {
   cairo_t *ctx = context->context();
 
   String::Utf8Value str(args[0]->ToString());
-  Local<Object> obj = Object::New();
+  Local<Object> obj = NanNew<Object>();
 
 #if HAVE_PANGO
 
@@ -1917,21 +1917,21 @@ NAN_METHOD(Context2d::MeasureText) {
       y_offset = 0.0;
   }
 
-  obj->Set(String::New("width"), Number::New(logical_rect.width));
-  obj->Set(String::New("actualBoundingBoxLeft"),
-           Number::New(x_offset - PANGO_LBEARING(logical_rect)));
-  obj->Set(String::New("actualBoundingBoxRight"),
-           Number::New(x_offset + PANGO_RBEARING(logical_rect)));
-  obj->Set(String::New("actualBoundingBoxAscent"),
-           Number::New(-(y_offset+ink_rect.y)));
-  obj->Set(String::New("actualBoundingBoxDescent"),
-           Number::New((PANGO_DESCENT(ink_rect) + y_offset)));
-  obj->Set(String::New("emHeightAscent"),
-           Number::New(PANGO_ASCENT(logical_rect) - y_offset));
-  obj->Set(String::New("emHeightDescent"),
-           Number::New(PANGO_DESCENT(logical_rect) + y_offset));
-  obj->Set(String::New("alphabeticBaseline"),
-           Number::New((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
+  obj->Set(NanNew<String>("width"), NanNew<Number>(logical_rect.width));
+  obj->Set(NanNew<String>("actualBoundingBoxLeft"),
+           NanNew<Number>(x_offset - PANGO_LBEARING(logical_rect)));
+  obj->Set(NanNew<String>("actualBoundingBoxRight"),
+           NanNew<Number>(x_offset + PANGO_RBEARING(logical_rect)));
+  obj->Set(NanNew<String>("actualBoundingBoxAscent"),
+           NanNew<Number>(-(y_offset+ink_rect.y)));
+  obj->Set(NanNew<String>("actualBoundingBoxDescent"),
+           NanNew<Number>((PANGO_DESCENT(ink_rect) + y_offset)));
+  obj->Set(NanNew<String>("emHeightAscent"),
+           NanNew<Number>(PANGO_ASCENT(logical_rect) - y_offset));
+  obj->Set(NanNew<String>("emHeightDescent"),
+           NanNew<Number>(PANGO_DESCENT(logical_rect) + y_offset));
+  obj->Set(NanNew<String>("alphabeticBaseline"),
+           NanNew<Number>((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
                        + y_offset));
 
   pango_font_metrics_unref(metrics);
@@ -1972,18 +1972,18 @@ NAN_METHOD(Context2d::MeasureText) {
       y_offset = 0.0;
   }
 
-  obj->Set(String::New("width"), Number::New(te.x_advance));
-  obj->Set(String::New("actualBoundingBoxLeft"),
-           Number::New(x_offset - te.x_bearing));
-  obj->Set(String::New("actualBoundingBoxRight"),
-           Number::New((te.x_bearing + te.width) - x_offset));
-  obj->Set(String::New("actualBoundingBoxAscent"),
-           Number::New(-(te.y_bearing + y_offset)));
-  obj->Set(String::New("actualBoundingBoxDescent"),
-           Number::New(te.height + te.y_bearing + y_offset));
-  obj->Set(String::New("emHeightAscent"), Number::New(fe.ascent - y_offset));
-  obj->Set(String::New("emHeightDescent"), Number::New(fe.descent + y_offset));
-  obj->Set(String::New("alphabeticBaseline"), Number::New(y_offset));
+  obj->Set(NanNew<String>("width"), NanNew<Number>(te.x_advance));
+  obj->Set(NanNew<String>("actualBoundingBoxLeft"),
+           NanNew<Number>(x_offset - te.x_bearing));
+  obj->Set(NanNew<String>("actualBoundingBoxRight"),
+           NanNew<Number>((te.x_bearing + te.width) - x_offset));
+  obj->Set(NanNew<String>("actualBoundingBoxAscent"),
+           NanNew<Number>(-(te.y_bearing + y_offset)));
+  obj->Set(NanNew<String>("actualBoundingBoxDescent"),
+           NanNew<Number>(te.height + te.y_bearing + y_offset));
+  obj->Set(NanNew<String>("emHeightAscent"), NanNew<Number>(fe.ascent - y_offset));
+  obj->Set(NanNew<String>("emHeightDescent"), NanNew<Number>(fe.descent + y_offset));
+  obj->Set(NanNew<String>("alphabeticBaseline"), NanNew<Number>(y_offset));
 
 #endif
 

@@ -8,7 +8,7 @@
 #ifndef __NODE_IMAGE_H__
 #define __NODE_IMAGE_H__
 
-#include "nan.h"
+#include <nan.h>
 #include "Canvas.h"
 
 #ifdef HAVE_JPEG
