@@ -67,7 +67,7 @@ NAN_METHOD(Canvas::New) {
   canvas_type_t type = CANVAS_TYPE_IMAGE;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
+  if (args[2]->IsString()) type = !strcmp("pdf", *String::Utf8Value(args[2]))
     ? CANVAS_TYPE_PDF
     : CANVAS_TYPE_IMAGE;
   Canvas *canvas = new Canvas(width, height, type);
@@ -351,7 +351,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
       NanNull()
     , buf
     , NanNew<Integer>(len) };
-  NanMakeCallback(NanGetCurrentContext(), closure->fn, 3, argv);
+  NanMakeCallback(NanGetCurrentContext()->Global(), closure->fn, 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -420,13 +420,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     NanReturnValue(try_catch.ReThrow());
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    NanMakeCallback(NanGetCurrentContext(), closure.fn, 1, argv);
+    NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   } else {
     Local<Value> argv[3] = {
         NanNull()
       , NanNull()
-      , NanNew<Integer>(0) };
-    NanMakeCallback(NanGetCurrentContext(), closure.fn, 3, argv);
+      , NanNew<Uint32>(0) };
+    NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   }
   NanReturnUndefined();
 }

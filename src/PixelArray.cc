@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nan.h"
+#include <nan.h>
 
 Persistent<FunctionTemplate> PixelArray::constructor;
 

@@ -6,7 +6,7 @@
 
 #include "FontFace.h"
 
-#include "nan.h"
+#include <nan.h>
 
 Persistent<FunctionTemplate> FontFace::constructor;
 
@@ -60,7 +60,7 @@ NAN_METHOD(FontFace::New) {
     return NanThrowError("Wrong argument types passed to FontFace constructor");
   }
 
-  String::AsciiValue filePath(args[0]);
+  String::Utf8Value filePath(args[0]);
   int faceIdx = int(args[1]->NumberValue());
 
   FT_Face ftFace;

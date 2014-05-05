@@ -175,7 +175,7 @@ NAN_SETTER(Image::SetSource) {
 
   // url string
   if (value->IsString()) {
-    String::AsciiValue src(value);
+    String::Utf8Value src(value);
     if (img->filename) free(img->filename);
     img->filename = strdup(*src);
     status = img->load();

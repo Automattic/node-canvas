@@ -764,7 +764,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 
 NAN_SETTER(Context2d::SetPatternQuality) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  String::AsciiValue quality(value->ToString());
+  String::Utf8Value quality(value->ToString());
   if (0 == strcmp("fast", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_FAST;
   } else if (0 == strcmp("good", *quality)) {
@@ -803,7 +803,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   } else if (0 == strcmp("source-atop", *type)) {
@@ -953,7 +953,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   cairo_antialias_t a;
@@ -994,7 +994,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   if (0 == strcmp("path", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_PATHS;
@@ -1026,7 +1026,7 @@ NAN_GETTER(Context2d::GetFilter) {
  */
 
 NAN_SETTER(Context2d::SetFilter) {
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_filter_t filter;
   if (0 == strcmp("fast", *str)) {
@@ -1110,7 +1110,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
 NAN_SETTER(Context2d::SetLineJoin) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -1143,7 +1143,7 @@ NAN_GETTER(Context2d::GetLineCap) {
 NAN_SETTER(Context2d::SetLineCap) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
-  String::AsciiValue type(value->ToString());
+  String::Utf8Value type(value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
@@ -1166,7 +1166,7 @@ NAN_METHOD(Context2d::IsPointInPath) {
          , y = args[1]->NumberValue();
     NanReturnValue(NanNew<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   }
-  NanReturnValue(False());
+  NanReturnValue(NanFalse());
 }
 
 /*
@@ -1220,7 +1220,7 @@ NAN_METHOD(Context2d::SetStrokePattern) {
 
 NAN_SETTER(Context2d::SetShadowColor) {
   short ok;
-  String::AsciiValue str(value->ToString());
+  String::Utf8Value str(value->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (ok) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1248,7 +1248,7 @@ NAN_METHOD(Context2d::SetFillColor) {
   NanScope();
   short ok;
   if (!args[0]->IsString()) NanReturnUndefined();
-  String::AsciiValue str(args[0]);
+  String::Utf8Value str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1277,7 +1277,7 @@ NAN_METHOD(Context2d::SetStrokeColor) {
   NanScope();
   short ok;
   if (!args[0]->IsString()) NanReturnUndefined();
-  String::AsciiValue str(args[0]);
+  String::Utf8Value str(args[0]);
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) NanReturnUndefined();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
@@ -1763,11 +1763,11 @@ NAN_METHOD(Context2d::SetFont) {
     || !args[3]->IsString()
     || !args[4]->IsString()) NanReturnUndefined();
 
-  String::AsciiValue weight(args[0]);
-  String::AsciiValue style(args[1]);
+  String::Utf8Value weight(args[0]);
+  String::Utf8Value style(args[1]);
   double size = args[2]->NumberValue();
-  String::AsciiValue unit(args[3]);
-  String::AsciiValue family(args[4]);
+  String::Utf8Value unit(args[3]);
+  String::Utf8Value family(args[4]);
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
 
