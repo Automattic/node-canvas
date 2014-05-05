@@ -81,8 +81,8 @@ Context2d::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Context2d::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Context2d::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(NanSymbol("CanvasRenderingContext2d"));
 
@@ -694,7 +694,7 @@ NAN_METHOD(Context2d::DrawImage) {
 NAN_GETTER(Context2d::GetGlobalAlpha) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->globalAlpha));
+  NanReturnValue(NanNew<Number>(context->state->globalAlpha));
 }
 
 /*
@@ -878,7 +878,7 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
 NAN_GETTER(Context2d::GetShadowOffsetX) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowOffsetX));
+  NanReturnValue(NanNew<Number>(context->state->shadowOffsetX));
 }
 
 /*
@@ -897,7 +897,7 @@ NAN_SETTER(Context2d::SetShadowOffsetX) {
 NAN_GETTER(Context2d::GetShadowOffsetY) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowOffsetY));
+  NanReturnValue(NanNew<Number>(context->state->shadowOffsetY));
 }
 
 /*
@@ -916,7 +916,7 @@ NAN_SETTER(Context2d::SetShadowOffsetY) {
 NAN_GETTER(Context2d::GetShadowBlur) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(context->state->shadowBlur));
+  NanReturnValue(NanNew<Number>(context->state->shadowBlur));
 }
 
 /*
@@ -1050,7 +1050,7 @@ NAN_SETTER(Context2d::SetFilter) {
 NAN_GETTER(Context2d::GetMiterLimit) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(cairo_get_miter_limit(context->context())));
+  NanReturnValue(NanNew<Number>(cairo_get_miter_limit(context->context())));
 }
 
 /*
@@ -1072,7 +1072,7 @@ NAN_SETTER(Context2d::SetMiterLimit) {
 NAN_GETTER(Context2d::GetLineWidth) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  NanReturnValue(Number::New(cairo_get_line_width(context->context())));
+  NanReturnValue(NanNew<Number>(cairo_get_line_width(context->context())));
 }
 
 /*
@@ -1164,7 +1164,7 @@ NAN_METHOD(Context2d::IsPointInPath) {
     cairo_t *ctx = context->context();
     double x = args[0]->NumberValue()
          , y = args[1]->NumberValue();
-    NanReturnValue(Boolean::New(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+    NanReturnValue(NanNew<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
   }
   NanReturnValue(False());
 }
@@ -1237,7 +1237,7 @@ NAN_GETTER(Context2d::GetShadowColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1266,7 +1266,7 @@ NAN_GETTER(Context2d::GetFillColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->fill, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1295,7 +1295,7 @@ NAN_GETTER(Context2d::GetStrokeColor) {
   char buf[64];
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   rgba_to_string(context->state->stroke, buf, sizeof(buf));
-  NanReturnValue(String::New(buf));
+  NanReturnValue(NanNew<String>(buf));
 }
 
 /*
@@ -1876,7 +1876,7 @@ NAN_METHOD(Context2d::MeasureText) {
   cairo_t *ctx = context->context();
 
   String::Utf8Value str(args[0]->ToString());
-  Local<Object> obj = Object::New();
+  Local<Object> obj = NanNew<Object>();
 
 #if HAVE_PANGO
 
@@ -1917,21 +1917,21 @@ NAN_METHOD(Context2d::MeasureText) {
       y_offset = 0.0;
   }
 
-  obj->Set(String::New("width"), Number::New(logical_rect.width));
-  obj->Set(String::New("actualBoundingBoxLeft"),
-           Number::New(x_offset - PANGO_LBEARING(logical_rect)));
-  obj->Set(String::New("actualBoundingBoxRight"),
-           Number::New(x_offset + PANGO_RBEARING(logical_rect)));
-  obj->Set(String::New("actualBoundingBoxAscent"),
-           Number::New(-(y_offset+ink_rect.y)));
-  obj->Set(String::New("actualBoundingBoxDescent"),
-           Number::New((PANGO_DESCENT(ink_rect) + y_offset)));
-  obj->Set(String::New("emHeightAscent"),
-           Number::New(PANGO_ASCENT(logical_rect) - y_offset));
-  obj->Set(String::New("emHeightDescent"),
-           Number::New(PANGO_DESCENT(logical_rect) + y_offset));
-  obj->Set(String::New("alphabeticBaseline"),
-           Number::New((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
+  obj->Set(NanNew<String>("width"), NanNew<Number>(logical_rect.width));
+  obj->Set(NanNew<String>("actualBoundingBoxLeft"),
+           NanNew<Number>(x_offset - PANGO_LBEARING(logical_rect)));
+  obj->Set(NanNew<String>("actualBoundingBoxRight"),
+           NanNew<Number>(x_offset + PANGO_RBEARING(logical_rect)));
+  obj->Set(NanNew<String>("actualBoundingBoxAscent"),
+           NanNew<Number>(-(y_offset+ink_rect.y)));
+  obj->Set(NanNew<String>("actualBoundingBoxDescent"),
+           NanNew<Number>((PANGO_DESCENT(ink_rect) + y_offset)));
+  obj->Set(NanNew<String>("emHeightAscent"),
+           NanNew<Number>(PANGO_ASCENT(logical_rect) - y_offset));
+  obj->Set(NanNew<String>("emHeightDescent"),
+           NanNew<Number>(PANGO_DESCENT(logical_rect) + y_offset));
+  obj->Set(NanNew<String>("alphabeticBaseline"),
+           NanNew<Number>((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
                        + y_offset));
 
   pango_font_metrics_unref(metrics);
@@ -1972,18 +1972,18 @@ NAN_METHOD(Context2d::MeasureText) {
       y_offset = 0.0;
   }
 
-  obj->Set(String::New("width"), Number::New(te.x_advance));
-  obj->Set(String::New("actualBoundingBoxLeft"),
-           Number::New(x_offset - te.x_bearing));
-  obj->Set(String::New("actualBoundingBoxRight"),
-           Number::New((te.x_bearing + te.width) - x_offset));
-  obj->Set(String::New("actualBoundingBoxAscent"),
-           Number::New(-(te.y_bearing + y_offset)));
-  obj->Set(String::New("actualBoundingBoxDescent"),
-           Number::New(te.height + te.y_bearing + y_offset));
-  obj->Set(String::New("emHeightAscent"), Number::New(fe.ascent - y_offset));
-  obj->Set(String::New("emHeightDescent"), Number::New(fe.descent + y_offset));
-  obj->Set(String::New("alphabeticBaseline"), Number::New(y_offset));
+  obj->Set(NanNew<String>("width"), NanNew<Number>(te.x_advance));
+  obj->Set(NanNew<String>("actualBoundingBoxLeft"),
+           NanNew<Number>(x_offset - te.x_bearing));
+  obj->Set(NanNew<String>("actualBoundingBoxRight"),
+           NanNew<Number>((te.x_bearing + te.width) - x_offset));
+  obj->Set(NanNew<String>("actualBoundingBoxAscent"),
+           NanNew<Number>(-(te.y_bearing + y_offset)));
+  obj->Set(NanNew<String>("actualBoundingBoxDescent"),
+           NanNew<Number>(te.height + te.y_bearing + y_offset));
+  obj->Set(NanNew<String>("emHeightAscent"), NanNew<Number>(fe.ascent - y_offset));
+  obj->Set(NanNew<String>("emHeightDescent"), NanNew<Number>(fe.descent + y_offset));
+  obj->Set(NanNew<String>("alphabeticBaseline"), NanNew<Number>(y_offset));
 
 #endif
 

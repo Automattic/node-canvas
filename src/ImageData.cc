@@ -18,8 +18,8 @@ ImageData::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(ImageData::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(ImageData::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(NanSymbol("ImageData"));
 
@@ -55,7 +55,7 @@ NAN_METHOD(ImageData::New) {
 NAN_GETTER(ImageData::GetWidth) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(Number::New(imageData->pixelArray()->width()));
+  NanReturnValue(NanNew<Number>(imageData->pixelArray()->width()));
 }
 
 /*
@@ -65,5 +65,5 @@ NAN_GETTER(ImageData::GetWidth) {
 NAN_GETTER(ImageData::GetHeight) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(Number::New(imageData->pixelArray()->height()));
+  NanReturnValue(NanNew<Number>(imageData->pixelArray()->height()));
 }

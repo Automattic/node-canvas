@@ -22,8 +22,8 @@ PixelArray::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(PixelArray::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(PixelArray::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(NanSymbol("CanvasPixelArray"));
 
@@ -82,7 +82,7 @@ NAN_METHOD(PixelArray::New) {
 
 NAN_GETTER(PixelArray::GetLength) {
   NanScope();
-  NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
+  NanReturnValue(NanNew<Number>(args.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*
@@ -142,7 +142,7 @@ uint8_t *
 PixelArray::alloc() {
   int len = length();
   _data = (uint8_t *) calloc(1, len);
-  V8::AdjustAmountOfExternalAllocatedMemory(len);
+  NanAdjustExternalMemory(len);
   return _data;
 }
 
@@ -151,6 +151,6 @@ PixelArray::alloc() {
  */
 
 PixelArray::~PixelArray() {
-  V8::AdjustAmountOfExternalAllocatedMemory(-length());
+  NanAdjustExternalMemory(-length());
   free(_data);
 }
