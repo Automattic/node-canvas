@@ -117,6 +117,8 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(ctor, "closePath", ClosePath);
   NODE_SET_PROTOTYPE_METHOD(ctor, "arc", Arc);
   NODE_SET_PROTOTYPE_METHOD(ctor, "arcTo", ArcTo);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "setLineDash", SetLineDash);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "getLineDash", GetLineDash);
   NODE_SET_PROTOTYPE_METHOD(ctor, "_setFont", SetFont);
 #ifdef HAVE_FREETYPE
   NODE_SET_PROTOTYPE_METHOD(ctor, "_setFontFace", SetFontFace);
@@ -137,6 +139,7 @@ Context2d::Initialize(Handle<Object> target) {
   proto->SetAccessor(NanSymbol("lineWidth"), GetLineWidth, SetLineWidth);
   proto->SetAccessor(NanSymbol("lineCap"), GetLineCap, SetLineCap);
   proto->SetAccessor(NanSymbol("lineJoin"), GetLineJoin, SetLineJoin);
+  proto->SetAccessor(NanSymbol("lineDashOffset"), GetLineDashOffset, SetLineDashOffset);
   proto->SetAccessor(NanSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
   proto->SetAccessor(NanSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
   proto->SetAccessor(NanSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
@@ -2016,6 +2019,87 @@ NAN_METHOD(Context2d::SetTextAlignment) {
   context->state->textAlignment = args[0]->Int32Value();
 
   NanReturnUndefined();
+}
+
+/*
+ * Set line dash
+ * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
+ */
+NAN_METHOD(Context2d::SetLineDash) {
+  NanScope();
+
+  if (!args[0]->IsArray()) NanReturnUndefined();
+  Handle<Array> dash = Handle<Array>::Cast(args[0]);
+  uint32_t dashes = dash->Length() & 1 ? dash->Length() * 2 : dash->Length();
+
+  double a[dashes];
+  for (uint32_t i=0; i<dashes; i++) {
+    Local<Value> d = dash->Get(i % dash->Length());
+    if (!d->IsNumber()) NanReturnUndefined();
+    a[i] = d->NumberValue();
+    if (a[i] < 0 || isnan(a[i]) || isinf(a[i])) NanReturnUndefined();
+  }
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+  double offset;
+  cairo_get_dash(ctx, NULL, &offset);
+  cairo_set_dash(ctx, a, dashes, offset);
+  NanReturnUndefined();
+}
+
+/*
+ * Get line dash
+ * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
+ */
+NAN_METHOD(Context2d::GetLineDash) {
+  NanScope();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+  int dashes = cairo_get_dash_count(ctx);
+  double a[dashes];
+  cairo_get_dash(ctx, a, NULL);
+
+  Local<Array> dash = NanNew<Array>(dashes);
+  for (int i=0; i<dashes; i++)
+      dash->Set(NanNew<Number>(i), NanNew<Number>(a[i]));
+
+  NanReturnValue(dash);
+}
+
+/*
+ * Set line dash offset
+ * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
+ */
+NAN_SETTER(Context2d::SetLineDashOffset) {
+  NanScope();
+
+  double offset = value->NumberValue();
+  if (isnan(offset) || isinf(offset)) return;
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+
+  int dashes = cairo_get_dash_count(ctx);
+  double a[dashes];
+  cairo_get_dash(ctx, a, NULL);
+  cairo_set_dash(ctx, a, dashes, offset);
+}
+
+/*
+ * Get line dash offset
+ * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
+ */
+NAN_GETTER(Context2d::GetLineDashOffset) {
+  NanScope();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  cairo_t *ctx = context->context();
+  double offset;
+  cairo_get_dash(ctx, NULL, &offset);
+
+  NanReturnValue(NanNew<Number>(offset));
 }
 
 /*

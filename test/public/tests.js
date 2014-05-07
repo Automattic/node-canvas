@@ -1851,3 +1851,68 @@ tests['putImageData() png data 3'] = function(ctx, done){
   img.onerror = function(){}
   img.src = 'state.png';
 };
+
+tests['setLineDash']  = function(ctx, done){
+  ctx.setLineDash([10, 5, 25, 15]);
+  ctx.lineWidth = 17;
+
+  var y=5;
+  var line = function(lineDash, color){
+    ctx.setLineDash(lineDash);
+    if (color) ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0,   y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += ctx.lineWidth + 4;
+  };
+
+  line([15, 30], "blue");
+  line([], "black");
+  line([5,10,15,20,25,30,35,40,45,50], "purple");
+  line([8], "green");
+  line([3, 3, -30], "red");
+  line([4, Infinity, 4]);
+  line([10, 10, NaN]);
+  line((function(){
+    ctx.setLineDash([8]);
+    var a = ctx.getLineDash();
+    a[0] -= 3;
+    a.push(20);
+    return a;
+  })(), "orange");
+};
+
+tests['lineDashOffset']  = function(ctx, done){
+  ctx.setLineDash([10, 5, 25, 15]);
+  ctx.lineWidth = 4;
+
+  var y=5;
+  var line = function(lineDashOffset, color){
+    ctx.lineDashOffset = lineDashOffset;
+    if (color) ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0,   y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+    y += ctx.lineWidth + 4;
+  };
+
+  line(-10, "black");
+  line(0);
+  line(10);
+  line(20);
+  line(30);
+  line(40, "blue");
+  line(NaN)
+  line(50, "green");
+  line(Infinity)
+  line(60, "orange");
+  line(-Infinity)
+  line(70, "purple");
+  line(void 0)
+  line(80, "black");
+  line(ctx.lineDashOffset + 10);
+  for (var i=0; i<10; i++)
+    line(90 + i/5, "red");
+}
