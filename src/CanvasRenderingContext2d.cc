@@ -526,8 +526,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (args.Length()) {
     // imageData, dx, dy
     case 3:
-      cols = arr->width();
-      rows = arr->height();
+      cols = std::min(arr->width(), context->canvas()->width - dx);
+      rows = std::min(arr->height(), context->canvas()->height - dy);
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -539,15 +539,16 @@ NAN_METHOD(Context2d::PutImageData) {
       if (sy < 0) sh += sy, sy = 0;
       if (sx + sw > arr->width()) sw = arr->width() - sx;
       if (sy + sh > arr->height()) sh = arr->height() - sy;
-      if (sw <= 0 || sh <= 0) NanReturnUndefined();
-      cols = sw;
-      rows = sh;
       dx += sx;
       dy += sy;
+      cols = std::min(sw, context->canvas()->width - dx);
+      rows = std::min(sh, context->canvas()->height - dy);
       break;
     default:
       return NanThrowError("invalid arguments");
   }
+
+  if (cols <= 0 || rows <= 0) NanReturnUndefined();
 
   uint8_t *srcRows = src + sy * srcStride + sx * 4;
   for (int y = 0; y < rows; ++y) {
