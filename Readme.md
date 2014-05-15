@@ -26,6 +26,7 @@ Unless previously installed you'll _need_ __Cairo__. For system-specific install
 
 ```javascript
 var Canvas = require('canvas')
+  , Image = Canvas.Image
   , canvas = new Canvas(200,200)
   , ctx = canvas.getContext('2d');
 
