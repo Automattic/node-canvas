@@ -8,6 +8,9 @@
 ## Authors
 
   - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
+  - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
+  - Rod Vagg ([rvagg](http://github.com/rvagg))
+  - Juriy Zaytsev ([kangax](http://github.com/kangax))
 
 ## Installation
 
