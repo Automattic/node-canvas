@@ -21,6 +21,12 @@
 #include "FontFace.h"
 #endif
 
+// Windows doesn't support the C99 names for these
+#ifndef isnan
+#define isnan(x) _isnan(x)
+#define isinf(x) (!_finite(x))
+#endif
+
 Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
