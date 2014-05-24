@@ -8,6 +8,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 #include "Canvas.h"
 #include "Point.h"
 #include "Image.h"
@@ -18,6 +19,12 @@
 
 #ifdef HAVE_FREETYPE
 #include "FontFace.h"
+#endif
+
+// Windows doesn't support the C99 names for these
+#ifndef isnan
+#define isnan(x) _isnan(x)
+#define isinf(x) (!_finite(x))
 #endif
 
 Persistent<FunctionTemplate> Context2d::constructor;
@@ -2033,7 +2040,7 @@ NAN_METHOD(Context2d::SetLineDash) {
   Handle<Array> dash = Handle<Array>::Cast(args[0]);
   uint32_t dashes = dash->Length() & 1 ? dash->Length() * 2 : dash->Length();
 
-  double a[dashes];
+  std::vector<double> a(dashes);
   for (uint32_t i=0; i<dashes; i++) {
     Local<Value> d = dash->Get(i % dash->Length());
     if (!d->IsNumber()) NanReturnUndefined();
@@ -2045,7 +2052,7 @@ NAN_METHOD(Context2d::SetLineDash) {
   cairo_t *ctx = context->context();
   double offset;
   cairo_get_dash(ctx, NULL, &offset);
-  cairo_set_dash(ctx, a, dashes, offset);
+  cairo_set_dash(ctx, a.data(), dashes, offset);
   NanReturnUndefined();
 }
 
@@ -2059,8 +2066,8 @@ NAN_METHOD(Context2d::GetLineDash) {
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   cairo_t *ctx = context->context();
   int dashes = cairo_get_dash_count(ctx);
-  double a[dashes];
-  cairo_get_dash(ctx, a, NULL);
+  std::vector<double> a(dashes);
+  cairo_get_dash(ctx, a.data(), NULL);
 
   Local<Array> dash = NanNew<Array>(dashes);
   for (int i=0; i<dashes; i++)
@@ -2083,9 +2090,9 @@ NAN_SETTER(Context2d::SetLineDashOffset) {
   cairo_t *ctx = context->context();
 
   int dashes = cairo_get_dash_count(ctx);
-  double a[dashes];
-  cairo_get_dash(ctx, a, NULL);
-  cairo_set_dash(ctx, a, dashes, offset);
+  std::vector<double> a(dashes);
+  cairo_get_dash(ctx, a.data(), NULL);
+  cairo_set_dash(ctx, a.data(), dashes, offset);
 }
 
 /*
