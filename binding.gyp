@@ -1,10 +1,12 @@
 {
+    'variables': {
+        'has_cairo%': '<!(./util/has_lib.sh cairo)',
+     },
     'conditions': [
-        ['standalone_static_library==1', {
-          'includes': [ 'static.gyp' ],
-        }, {
+        ['has_cairo=="true1"', {
           'includes': [ 'shared.gyp' ],
+        }, {
+          'includes': [ 'static.gyp' ],
         }]
     ],
-
 }
