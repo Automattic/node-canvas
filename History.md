@@ -1,3 +1,14 @@
+1.1.4 / 2014-06-08
+==================
+
+* Fix compile error with Visual C++
+* Add support for the lineDash API
+* Update NAN
+* New V8 compatibility
+* Correctly limit bounds in PutImageData to prevent segment fault
+* Fix segfault when onload and onerror are not function
+* Add support for Node 0.11.9
+
 1.1.3 / 2014-01-08
 ==================
 
