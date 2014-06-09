@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <algorithm>
 #include "Canvas.h"
 #include "Point.h"
 #include "Image.h"
