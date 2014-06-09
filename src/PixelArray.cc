@@ -25,12 +25,12 @@ PixelArray::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(PixelArray::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPixelArray"));
+  ctor->SetClassName(NanNew("CanvasPixelArray"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->InstanceTemplate();
-  proto->SetAccessor(NanSymbol("length"), GetLength);
-  target->Set(NanSymbol("CanvasPixelArray"), ctor->GetFunction());
+  proto->SetAccessor(NanNew("length"), GetLength);
+  target->Set(NanNew("CanvasPixelArray"), ctor->GetFunction());
 }
 
 /*

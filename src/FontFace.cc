@@ -33,10 +33,10 @@ FontFace::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(FontFace::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("FontFace"));
+  ctor->SetClassName(NanNew("FontFace"));
 
   // Prototype
-  target->Set(NanSymbol("FontFace"), ctor->GetFunction());
+  target->Set(NanNew("FontFace"), ctor->GetFunction());
 }
 
 /*

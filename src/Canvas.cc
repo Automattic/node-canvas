@@ -33,7 +33,7 @@ Canvas::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Canvas::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Canvas"));
+  ctor->SetClassName(NanNew("Canvas"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -42,9 +42,9 @@ Canvas::Initialize(Handle<Object> target) {
 #ifdef HAVE_JPEG
   NODE_SET_PROTOTYPE_METHOD(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
-  proto->SetAccessor(NanSymbol("type"), GetType);
-  proto->SetAccessor(NanSymbol("width"), GetWidth, SetWidth);
-  proto->SetAccessor(NanSymbol("height"), GetHeight, SetHeight);
+  proto->SetAccessor(NanNew("type"), GetType);
+  proto->SetAccessor(NanNew("width"), GetWidth, SetWidth);
+  proto->SetAccessor(NanNew("height"), GetHeight, SetHeight);
 
   NanSetTemplate(proto, "PNG_NO_FILTERS", NanNew<Uint32>(PNG_NO_FILTERS));
   NanSetTemplate(proto, "PNG_FILTER_NONE", NanNew<Uint32>(PNG_FILTER_NONE));
@@ -54,7 +54,7 @@ Canvas::Initialize(Handle<Object> target) {
   NanSetTemplate(proto, "PNG_FILTER_PAETH", NanNew<Uint32>(PNG_FILTER_PAETH));
   NanSetTemplate(proto, "PNG_ALL_FILTERS", NanNew<Uint32>(PNG_ALL_FILTERS));
 
-  target->Set(NanSymbol("Canvas"), ctor->GetFunction());
+  target->Set(NanNew("Canvas"), ctor->GetFunction());
 }
 
 /*
