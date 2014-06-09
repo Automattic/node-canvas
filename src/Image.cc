@@ -41,25 +41,25 @@ Image::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Image::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Image"));
+  ctor->SetClassName(NanNew("Image"));
 
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Image"));
+  ctor->SetClassName(NanNew("Image"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanSymbol("source"), GetSource, SetSource);
-  proto->SetAccessor(NanSymbol("complete"), GetComplete);
-  proto->SetAccessor(NanSymbol("width"), GetWidth);
-  proto->SetAccessor(NanSymbol("height"), GetHeight);
-  proto->SetAccessor(NanSymbol("onload"), GetOnload, SetOnload);
-  proto->SetAccessor(NanSymbol("onerror"), GetOnerror, SetOnerror);
+  proto->SetAccessor(NanNew("source"), GetSource, SetSource);
+  proto->SetAccessor(NanNew("complete"), GetComplete);
+  proto->SetAccessor(NanNew("width"), GetWidth);
+  proto->SetAccessor(NanNew("height"), GetHeight);
+  proto->SetAccessor(NanNew("onload"), GetOnload, SetOnload);
+  proto->SetAccessor(NanNew("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
-  proto->SetAccessor(NanSymbol("dataMode"), GetDataMode, SetDataMode);
-  ctor->Set(NanSymbol("MODE_IMAGE"), NanNew<Number>(DATA_IMAGE));
-  ctor->Set(NanSymbol("MODE_MIME"), NanNew<Number>(DATA_MIME));
+  proto->SetAccessor(NanNew("dataMode"), GetDataMode, SetDataMode);
+  ctor->Set(NanNew("MODE_IMAGE"), NanNew<Number>(DATA_IMAGE));
+  ctor->Set(NanNew("MODE_MIME"), NanNew<Number>(DATA_MIME));
 #endif
-  target->Set(NanSymbol("Image"), ctor->GetFunction());
+  target->Set(NanNew("Image"), ctor->GetFunction());
 }
 
 /*

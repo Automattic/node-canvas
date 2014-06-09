@@ -91,7 +91,7 @@ Context2d::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Context2d::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasRenderingContext2d"));
+  ctor->SetClassName(NanNew("CanvasRenderingContext2d"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -136,24 +136,24 @@ Context2d::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(ctor, "_setStrokePattern", SetStrokePattern);
   NODE_SET_PROTOTYPE_METHOD(ctor, "_setTextBaseline", SetTextBaseline);
   NODE_SET_PROTOTYPE_METHOD(ctor, "_setTextAlignment", SetTextAlignment);
-  proto->SetAccessor(NanSymbol("patternQuality"), GetPatternQuality, SetPatternQuality);
-  proto->SetAccessor(NanSymbol("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
-  proto->SetAccessor(NanSymbol("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
-  proto->SetAccessor(NanSymbol("shadowColor"), GetShadowColor, SetShadowColor);
-  proto->SetAccessor(NanSymbol("fillColor"), GetFillColor);
-  proto->SetAccessor(NanSymbol("strokeColor"), GetStrokeColor);
-  proto->SetAccessor(NanSymbol("miterLimit"), GetMiterLimit, SetMiterLimit);
-  proto->SetAccessor(NanSymbol("lineWidth"), GetLineWidth, SetLineWidth);
-  proto->SetAccessor(NanSymbol("lineCap"), GetLineCap, SetLineCap);
-  proto->SetAccessor(NanSymbol("lineJoin"), GetLineJoin, SetLineJoin);
-  proto->SetAccessor(NanSymbol("lineDashOffset"), GetLineDashOffset, SetLineDashOffset);
-  proto->SetAccessor(NanSymbol("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
-  proto->SetAccessor(NanSymbol("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
-  proto->SetAccessor(NanSymbol("shadowBlur"), GetShadowBlur, SetShadowBlur);
-  proto->SetAccessor(NanSymbol("antialias"), GetAntiAlias, SetAntiAlias);
-  proto->SetAccessor(NanSymbol("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
-  proto->SetAccessor(NanSymbol("filter"), GetFilter, SetFilter);
-  target->Set(NanSymbol("CanvasRenderingContext2d"), ctor->GetFunction());
+  proto->SetAccessor(NanNew("patternQuality"), GetPatternQuality, SetPatternQuality);
+  proto->SetAccessor(NanNew("globalCompositeOperation"), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
+  proto->SetAccessor(NanNew("globalAlpha"), GetGlobalAlpha, SetGlobalAlpha);
+  proto->SetAccessor(NanNew("shadowColor"), GetShadowColor, SetShadowColor);
+  proto->SetAccessor(NanNew("fillColor"), GetFillColor);
+  proto->SetAccessor(NanNew("strokeColor"), GetStrokeColor);
+  proto->SetAccessor(NanNew("miterLimit"), GetMiterLimit, SetMiterLimit);
+  proto->SetAccessor(NanNew("lineWidth"), GetLineWidth, SetLineWidth);
+  proto->SetAccessor(NanNew("lineCap"), GetLineCap, SetLineCap);
+  proto->SetAccessor(NanNew("lineJoin"), GetLineJoin, SetLineJoin);
+  proto->SetAccessor(NanNew("lineDashOffset"), GetLineDashOffset, SetLineDashOffset);
+  proto->SetAccessor(NanNew("shadowOffsetX"), GetShadowOffsetX, SetShadowOffsetX);
+  proto->SetAccessor(NanNew("shadowOffsetY"), GetShadowOffsetY, SetShadowOffsetY);
+  proto->SetAccessor(NanNew("shadowBlur"), GetShadowBlur, SetShadowBlur);
+  proto->SetAccessor(NanNew("antialias"), GetAntiAlias, SetAntiAlias);
+  proto->SetAccessor(NanNew("textDrawingMode"), GetTextDrawingMode, SetTextDrawingMode);
+  proto->SetAccessor(NanNew("filter"), GetFilter, SetFilter);
+  target->Set(NanNew("CanvasRenderingContext2d"), ctor->GetFunction());
 }
 
 /*
@@ -766,7 +766,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 #endif
   }
 
-  NanReturnValue(NanSymbol(op));
+  NanReturnValue(NanNew(op));
 }
 
 /*
@@ -804,7 +804,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
     case CAIRO_FILTER_BILINEAR: quality = "bilinear"; break;
     default: quality = "good";
   }
-  NanReturnValue(NanSymbol(quality));
+  NanReturnValue(NanNew(quality));
 }
 
 /*
@@ -956,7 +956,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
     case CAIRO_ANTIALIAS_SUBPIXEL: aa = "subpixel"; break;
     default: aa = "default";
   }
-  NanReturnValue(NanSymbol(aa));
+  NanReturnValue(NanNew(aa));
 }
 
 /*
@@ -997,7 +997,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
   } else {
     mode = "unknown";
   }
-  NanReturnValue(NanSymbol(mode));
+  NanReturnValue(NanNew(mode));
 }
 
 /*
@@ -1029,7 +1029,7 @@ NAN_GETTER(Context2d::GetFilter) {
     case CAIRO_FILTER_BILINEAR: filter = "bilinear"; break;
     default: filter = "good";
   }
-  NanReturnValue(NanSymbol(filter));
+  NanReturnValue(NanNew(filter));
 }
 
 /*
@@ -1111,7 +1111,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
     case CAIRO_LINE_JOIN_ROUND: join = "round"; break;
     default: join = "miter";
   }
-  NanReturnValue(NanSymbol(join));
+  NanReturnValue(NanNew(join));
 }
 
 /*
@@ -1144,7 +1144,7 @@ NAN_GETTER(Context2d::GetLineCap) {
     case CAIRO_LINE_CAP_SQUARE: cap = "square"; break;
     default: cap = "butt";
   }
-  NanReturnValue(NanSymbol(cap));
+  NanReturnValue(NanNew(cap));
 }
 
 /*

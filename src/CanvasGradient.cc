@@ -23,11 +23,11 @@ Gradient::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Gradient::New);
   NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasGradient"));
+  ctor->SetClassName(NanNew("CanvasGradient"));
 
   // Prototype
   NODE_SET_PROTOTYPE_METHOD(ctor, "addColorStop", AddColorStop);
-  target->Set(NanSymbol("CanvasGradient"), ctor->GetFunction());
+  target->Set(NanNew("CanvasGradient"), ctor->GetFunction());
 }
 
 /*
