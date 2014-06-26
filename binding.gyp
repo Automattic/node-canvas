@@ -45,7 +45,18 @@
           'defines': [
             'snprintf=_snprintf',
             '_USE_MATH_DEFINES' # for M_PI
-          ]
+          ],
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                }
+              }
+            }
+          }
         }, { # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
