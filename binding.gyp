@@ -20,6 +20,25 @@
   ],
   'targets': [
     {
+      'target_name': 'canvas-postbuild',
+      'dependencies': ['canvas'],
+      'conditions': [
+        ['OS=="win"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              '<(GTK_Root)/bin/libcairo-2.dll',
+              '<(GTK_Root)/bin/libexpat-1.dll',
+              '<(GTK_Root)/bin/libfontconfig-1.dll',
+              '<(GTK_Root)/bin/libfreetype-6.dll',
+              '<(GTK_Root)/bin/libpng14-14.dll',
+              '<(GTK_Root)/bin/zlib1.dll',
+            ]
+          }]
+        }]
+      ]
+    },
+    {
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
