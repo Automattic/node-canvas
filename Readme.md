@@ -290,40 +290,6 @@ Tested with and designed for:
 For node 0.2.x `node-canvas` <= 0.4.3 may be used,
 0.5.0 and above are designed for node 0.4.x only.
 
-## Contributors
-
-```
-project  : node-canvas
- repo age : 1 year, 11 months
- active   : 120 days
- commits  : 963
- files    : 72
- authors  :
-   816	Tj Holowaychuk          84.7%
-    58	TJ Holowaychuk          6.0%
-    23	c-spencer               2.4%
-    16	Nathan Rajlich          1.7%
-    12	atomizer                1.2%
-     6	Elijah Hamovitz         0.6%
-     5	Luigi Pinca             0.5%
-     5	Robert Sköld            0.5%
-     4	obarthel                0.4%
-     3	Don Park                0.3%
-     2	Andreas Botsikas        0.2%
-     2	Gabriel Falcao          0.2%
-     1	Brian McKinney          0.1%
-     1	Seiya Konno             0.1%
-     1	Syoyo Fujita            0.1%
-     1	Marcello Bastea-Forte   0.1%
-     1	Tharit                  0.1%
-     1	Konstantin Käfer        0.1%
-     1	Tom Carden              0.1%
-     1	Walt Lin                0.1%
-     1	David Björklund         0.1%
-     1	Brian White             0.1%
-     1	Philippe Plantier       0.1%
-```
-
 ## License
 
 (The MIT License)
