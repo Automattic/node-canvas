@@ -1,3 +1,17 @@
+
+1.1.5 / 2014-06-26
+==================
+
+  * Readme: remove Contributors section
+  * Readme: update copyright
+  * On Windows, copy required DLLs next to ".node" file (#442 @pandell)
+  * Duplicate "msvc_settings" for "Debug" configuration
+  * Remove unneeded #include <nan.h>
+  * Use float constants to prevent double->float conversion warning
+  * Ignore Visual C++ 2013 warnings (#441 @pandell)
+  * Add algorithm include to CanvasRenderingContext2d.cc for std::min (#435 @kkoopa)
+  * Updated NAN to 1.2.0 (#434 @kkoopa)
+
 1.1.4 / 2014-06-08
 ==================
 
