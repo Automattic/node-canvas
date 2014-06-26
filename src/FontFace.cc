@@ -6,8 +6,6 @@
 
 #include "FontFace.h"
 
-#include <nan.h>
-
 Persistent<FunctionTemplate> FontFace::constructor;
 
 /*
