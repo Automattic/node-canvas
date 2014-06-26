@@ -329,6 +329,7 @@ project  : node-canvas
 (The MIT License)
 
 Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
+
 Copyright (c) 2014 Automattic, Inc and contributors &lt;dev@automattic.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
