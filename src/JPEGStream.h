@@ -6,7 +6,6 @@
 #ifndef __NODE_JPEG_STREAM_H__
 #define __NODE_JPEG_STREAM_H__
 
-#include <nan.h>
 #include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>

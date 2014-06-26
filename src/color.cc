@@ -350,10 +350,10 @@ rgba_from_rgba_string(const char *str, short *ok) {
       if ('0' == *str) ++str;
       if ('.' == *str) {
         ++str;
-        float n = .1;
+        float n = .1f;
         while (*str >= '0' && *str <= '9') {
           a += (*str++ - '0') * n;
-          n *= .1;
+          n *= .1f;
         }
       }
     }
