@@ -20,7 +20,7 @@ require() {
 fetch() {
   local tarball=`basename $1`
   echo "... downloading $tarball"
-  local dir=${tarball/.tar.gz/}
+  local dir=`basename $tarball .tar.gz`
   curl -# -L $1 -o $tarball \
     && echo "... unpacking" \
     && tar -zxf $tarball \
@@ -32,7 +32,7 @@ fetch() {
 fetch_xz() {
   local tarball=`basename $1`
   echo "... downloading $tarball"
-  local dir=${tarball/.tar.xz/}
+  local dir=`basename $tarball .tar.xz`
   curl -# -L $1 -o $tarball \
     && echo "... unpacking" \
     && tar -xJf $tarball \
