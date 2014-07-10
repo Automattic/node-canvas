@@ -17,13 +17,15 @@
 
 #ifdef HAVE_GIF
 #include <gif_lib.h>
+
+  #if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
+    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
+  #else
+    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
+  #endif
 #endif
 
-#if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
-  #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
-#else
-  #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
-#endif
+
 
 class Image: public node::ObjectWrap {
   public:
