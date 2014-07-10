@@ -19,12 +19,6 @@ typedef struct {
 } gif_data_t;
 #endif
 
-#if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
-  #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
-#else
-  #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
-#endif
-
 /*
  * Read closure used by loadFromBuffer.
  */
