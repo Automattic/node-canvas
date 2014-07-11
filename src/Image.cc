@@ -517,7 +517,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 #endif
 
   if (GIF_OK != DGifSlurp(gif)) {
-    DGifCloseFile(gif);
+    GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_READ_ERROR;
   }
 
@@ -526,7 +526,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
-    DGifCloseFile(gif);
+    GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -608,7 +608,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     }
   }
 
-  DGifCloseFile(gif);
+  GIF_CLOSE_FILE(gif);
 
   // New image surface
   _surface = cairo_image_surface_create_for_data(
