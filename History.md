@@ -1,4 +1,18 @@
 
+1.1.6 / 2014-08-01
+==================
+
+ * export canvas.CanvasPixelArray instead of canvas.PixelArray which is undefined
+ * Glib version test into giflib exists test
+ * Giflib 5.1
+ * install: use an even older version of giflib (v4.1.6)
+ * install: use an older version of giflib (v4.2.3)
+ * install: install `giflib`
+ * install: use more compatible sh syntax
+ * travis: attempt to run the ./install script before testintg
+ * travis: test node v0.6, v0.8, v0.10, and v0.11
+ * Distinguish between 'add' and 'lighter'
+
 1.1.5 / 2014-06-26
 ==================
 
