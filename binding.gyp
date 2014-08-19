@@ -3,10 +3,20 @@
     ['OS=="win"', {
       'variables': {
         'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
-        'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
-        'with_freetype%': 'false'
+        'with_freetype%': 'false',
+        'variables': { # Nest jpeg_root to evaluate it before with_jpeg
+          'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
+        },
+        'jpeg_root%': '<(jpeg_root)', # Take value of nested variable
+        'conditions': [
+          ['jpeg_root==""', {
+            'with_jpeg%': 'false'
+          }, {
+            'with_jpeg%': 'true'
+          }]
+        ]
       }
     }, { # 'OS!="win"'
       'variables': {
@@ -139,7 +149,10 @@
           'conditions': [
             ['OS=="win"', {
               'libraries': [
-                '-l<(GTK_Root)/lib/jpeg.lib'
+                '-l<(jpeg_root)/lib/jpeg-static.lib'
+              ],
+              'include_dirs': [
+                '<(jpeg_root)/include'
               ]
             }, {
               'libraries': [
