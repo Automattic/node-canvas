@@ -1,5 +1,6 @@
 [![NPM version](https://badge.fury.io/js/canvas.png)](http://badge.fury.io/js/canvas)
 [![Dependency Status](https://gemnasium.com/LearnBoost/node-canvas.png)](https://gemnasium.com/LearnBoost/node-canvas)
+[![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
 
 # node-canvas
 
