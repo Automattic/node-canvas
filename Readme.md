@@ -270,7 +270,7 @@ If you have not previously, init git submodules:
 
 Build node-canvas:
 
-    $ node-waf configure build
+    $ node-gyp rebuild
 
 Unit tests:
 
