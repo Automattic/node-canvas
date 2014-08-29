@@ -7,6 +7,7 @@ examples/*.jpg
 testing
 out.png
 out.pdf
+out.svg
 .pomo
 node_modules
 
