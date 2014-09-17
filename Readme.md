@@ -27,6 +27,12 @@ You can quickly install Cairo and its dependencies for OS X using the one liner 
 $ wget https://raw.githubusercontent.com/LearnBoost/node-canvas/master/install -O - | sh
 ```
 
+or if you use MacPorts
+
+```bash
+sudo port install pkgconfig libpng giflib freetype libpixman cairo
+```
+
 ## Screencasts
 
   - [Introduction](http://screenr.com/CTk)
