@@ -257,6 +257,17 @@ ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
 ```
 
+## SVG support
+
+ Just like PDF support, make sure to install cairo with `--enable-svg=yes`.
+ You also need to tell node-canvas that it is working on SVG upon its initialization:
+
+```js
+var canvas = new Canvas(200, 500, 'svg');
+// Use the normal primitives.
+fs.writeFile('out.svg', canvas.toBuffer());
+```
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
@@ -277,7 +288,7 @@ If you have not previously, init git submodules:
 
 Build node-canvas:
 
-    $ node-waf configure build
+    $ node-gyp rebuild
 
 Unit tests:
 
