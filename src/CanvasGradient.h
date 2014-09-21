@@ -8,7 +8,6 @@
 #ifndef __NODE_GRADIENT_H__
 #define __NODE_GRADIENT_H__
 
-#include "nan.h"
 #include "Canvas.h"
 
 class Gradient: public node::ObjectWrap {

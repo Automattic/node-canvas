@@ -19,7 +19,7 @@
 #include <cairo/cairo.h>
 #endif
 
-#include "nan.h"
+#include <nan.h>
 
 using namespace v8;
 using namespace node;
@@ -39,7 +39,8 @@ using namespace node;
 
 typedef enum {
   CANVAS_TYPE_IMAGE,
-  CANVAS_TYPE_PDF
+  CANVAS_TYPE_PDF,
+  CANVAS_TYPE_SVG
 } canvas_type_t;
 
 /*
@@ -78,6 +79,7 @@ class Canvas: public node::ObjectWrap {
 #endif
 
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
+    inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
     inline cairo_surface_t *surface(){ return _surface; }
     inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }

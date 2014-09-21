@@ -20,14 +20,14 @@ Gradient::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Gradient::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Gradient::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasGradient"));
+  ctor->SetClassName(NanNew("CanvasGradient"));
 
   // Prototype
   NODE_SET_PROTOTYPE_METHOD(ctor, "addColorStop", AddColorStop);
-  target->Set(NanSymbol("CanvasGradient"), ctor->GetFunction());
+  target->Set(NanNew("CanvasGradient"), ctor->GetFunction());
 }
 
 /*
@@ -60,7 +60,7 @@ NAN_METHOD(Gradient::New) {
     grad->Wrap(args.This());
     NanReturnValue(args.This());
   }
-  
+
   return NanThrowTypeError("invalid arguments");
 }
 
@@ -77,7 +77,7 @@ NAN_METHOD(Gradient::AddColorStop) {
 
   Gradient *grad = ObjectWrap::Unwrap<Gradient>(args.This());
   short ok;
-  String::AsciiValue str(args[1]);
+  String::Utf8Value str(args[1]);
   uint32_t rgba = rgba_from_string(*str, &ok);
 
   if (ok) {

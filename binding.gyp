@@ -20,6 +20,25 @@
   ],
   'targets': [
     {
+      'target_name': 'canvas-postbuild',
+      'dependencies': ['canvas'],
+      'conditions': [
+        ['OS=="win"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              '<(GTK_Root)/bin/libcairo-2.dll',
+              '<(GTK_Root)/bin/libexpat-1.dll',
+              '<(GTK_Root)/bin/libfontconfig-1.dll',
+              '<(GTK_Root)/bin/libfreetype-6.dll',
+              '<(GTK_Root)/bin/libpng14-14.dll',
+              '<(GTK_Root)/bin/zlib1.dll',
+            ]
+          }]
+        }]
+      ]
+    },
+    {
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
@@ -45,7 +64,27 @@
           'defines': [
             'snprintf=_snprintf',
             '_USE_MATH_DEFINES' # for M_PI
-          ]
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                }
+              }
+            },
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                }
+              }
+            }
+          }
         }, { # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',

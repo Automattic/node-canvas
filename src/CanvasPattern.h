@@ -8,7 +8,6 @@
 #ifndef __NODE_PATTERN_H__
 #define __NODE_PATTERN_H__
 
-#include "nan.h"
 #include "Canvas.h"
 
 class Pattern: public node::ObjectWrap {

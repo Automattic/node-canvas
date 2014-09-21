@@ -76,6 +76,10 @@ module.exports = {
     }
   },
 
+  'test .PixelArray': function(){
+    assert.equal(typeof Canvas.PixelArray, 'function');
+  },
+
   'test color serialization': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
@@ -161,6 +165,8 @@ module.exports = {
     assert('image' == canvas.type);
     var canvas = new Canvas(10, 10, 'pdf');
     assert('pdf' == canvas.type);
+    var canvas = new Canvas(10, 10, 'svg');
+    assert('svg' == canvas.type);
     var canvas = new Canvas(10, 10, 'hey');
     assert('image' == canvas.type);
   },

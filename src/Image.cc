@@ -38,28 +38,28 @@ void
 Image::Initialize(Handle<Object> target) {
   NanScope();
 
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Image::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Image::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Image"));
+  ctor->SetClassName(NanNew("Image"));
 
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Image"));
+  ctor->SetClassName(NanNew("Image"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanSymbol("source"), GetSource, SetSource);
-  proto->SetAccessor(NanSymbol("complete"), GetComplete);
-  proto->SetAccessor(NanSymbol("width"), GetWidth);
-  proto->SetAccessor(NanSymbol("height"), GetHeight);
-  proto->SetAccessor(NanSymbol("onload"), GetOnload, SetOnload);
-  proto->SetAccessor(NanSymbol("onerror"), GetOnerror, SetOnerror);
+  proto->SetAccessor(NanNew("source"), GetSource, SetSource);
+  proto->SetAccessor(NanNew("complete"), GetComplete);
+  proto->SetAccessor(NanNew("width"), GetWidth);
+  proto->SetAccessor(NanNew("height"), GetHeight);
+  proto->SetAccessor(NanNew("onload"), GetOnload, SetOnload);
+  proto->SetAccessor(NanNew("onerror"), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
-  proto->SetAccessor(NanSymbol("dataMode"), GetDataMode, SetDataMode);
-  ctor->Set(NanSymbol("MODE_IMAGE"), Number::New(DATA_IMAGE));
-  ctor->Set(NanSymbol("MODE_MIME"), Number::New(DATA_MIME));
+  proto->SetAccessor(NanNew("dataMode"), GetDataMode, SetDataMode);
+  ctor->Set(NanNew("MODE_IMAGE"), NanNew<Number>(DATA_IMAGE));
+  ctor->Set(NanNew("MODE_MIME"), NanNew<Number>(DATA_MIME));
 #endif
-  target->Set(NanSymbol("Image"), ctor->GetFunction());
+  target->Set(NanNew("Image"), ctor->GetFunction());
 }
 
 /*
@@ -81,7 +81,7 @@ NAN_METHOD(Image::New) {
 NAN_GETTER(Image::GetComplete) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(Boolean::New(Image::COMPLETE == img->state));
+  NanReturnValue(NanNew<Boolean>(Image::COMPLETE == img->state));
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -93,7 +93,7 @@ NAN_GETTER(Image::GetComplete) {
 NAN_GETTER(Image::GetDataMode) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(Number::New(img->data_mode));
+  NanReturnValue(NanNew<Number>(img->data_mode));
 }
 
 /*
@@ -117,7 +117,7 @@ NAN_SETTER(Image::SetDataMode) {
 NAN_GETTER(Image::GetWidth) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(Number::New(img->width));
+  NanReturnValue(NanNew<Number>(img->width));
 }
 /*
  * Get height.
@@ -126,7 +126,7 @@ NAN_GETTER(Image::GetWidth) {
 NAN_GETTER(Image::GetHeight) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(Number::New(img->height));
+  NanReturnValue(NanNew<Number>(img->height));
 }
 
 /*
@@ -136,7 +136,7 @@ NAN_GETTER(Image::GetHeight) {
 NAN_GETTER(Image::GetSource) {
   NanScope();
   Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(String::New(img->filename ? img->filename : ""));
+  NanReturnValue(NanNew<String>(img->filename ? img->filename : ""));
 }
 
 /*
@@ -147,7 +147,7 @@ void
 Image::clearData() {
   if (_surface) {
     cairo_surface_destroy(_surface);
-    V8::AdjustAmountOfExternalAllocatedMemory(-_data_len);
+    NanAdjustExternalMemory(-_data_len);
     _data_len = 0;
     _surface = NULL;
   }
@@ -175,7 +175,7 @@ NAN_SETTER(Image::SetSource) {
 
   // url string
   if (value->IsString()) {
-    String::AsciiValue src(value);
+    String::Utf8Value src(value);
     if (img->filename) free(img->filename);
     img->filename = strdup(*src);
     status = img->load();
@@ -359,7 +359,7 @@ Image::loaded() {
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
   _data_len = height * cairo_image_surface_get_stride(_surface);
-  V8::AdjustAmountOfExternalAllocatedMemory(_data_len);
+  NanAdjustExternalMemory(_data_len);
 
   if (onload != NULL) {
     onload->Call(0, NULL);
@@ -517,7 +517,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 #endif
 
   if (GIF_OK != DGifSlurp(gif)) {
-    DGifCloseFile(gif);
+    GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_READ_ERROR;
   }
 
@@ -526,7 +526,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
-    DGifCloseFile(gif);
+    GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -608,7 +608,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     }
   }
 
-  DGifCloseFile(gif);
+  GIF_CLOSE_FILE(gif);
 
   // New image surface
   _surface = cairo_image_surface_create_for_data(
@@ -807,7 +807,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  V8::AdjustAmountOfExternalAllocatedMemory(-((read_closure_t *)closure)->len);
+  NanAdjustExternalMemory(-((read_closure_t *)closure)->len);
   free(((read_closure_t *) closure)->buf);
   free(closure);
 }
@@ -834,7 +834,7 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   mime_closure->buf = mime_data;
   mime_closure->len = len;
 
-  V8::AdjustAmountOfExternalAllocatedMemory(len);
+  NanAdjustExternalMemory(len);
 
   return cairo_surface_set_mime_data(_surface
     , mime_type

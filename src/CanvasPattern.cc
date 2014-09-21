@@ -20,16 +20,16 @@ Pattern::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Pattern::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Pattern::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPattern"));
+  ctor->SetClassName(NanNew("CanvasPattern"));
 
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPattern"));
+  ctor->SetClassName(NanNew("CanvasPattern"));
 
   // Prototype
-  target->Set(NanSymbol("CanvasPattern"), ctor->GetFunction());
+  target->Set(NanNew("CanvasPattern"), ctor->GetFunction());
 }
 
 /*
