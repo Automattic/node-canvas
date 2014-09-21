@@ -748,8 +748,8 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     // Non-standard
     // supported by resent versions of cairo
 #if CAIRO_VERSION_MINOR >= 10
+    case CAIRO_OPERATOR_LIGHTEN: op = "lighten"; break;
     case CAIRO_OPERATOR_ADD: op = "add"; break;
-    case CAIRO_OPERATOR_LIGHTEN: op = "lighter"; break;
     case CAIRO_OPERATOR_DARKEN: op = "darker"; break;
     case CAIRO_OPERATOR_MULTIPLY: op = "multiply"; break;
     case CAIRO_OPERATOR_SCREEN: op = "screen"; break;
@@ -849,7 +849,7 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
 #if CAIRO_VERSION_MINOR >= 10
   } else if (0 == strcmp("add", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
-  } else if (0 == strcmp("lighter", *type)) {
+  } else if (0 == strcmp("lighten", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
   } else if (0 == strcmp("darker", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
