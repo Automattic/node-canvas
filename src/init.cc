@@ -17,6 +17,9 @@
 #ifdef HAVE_FREETYPE
 #include "FontFace.h"
 #endif
+#ifdef HAVE_CACA
+#include "Caca.h"
+#endif
 
 extern "C" void
 init (Handle<Object> target) {
@@ -30,6 +33,9 @@ init (Handle<Object> target) {
   Pattern::Initialize(target);
 #ifdef HAVE_FREETYPE
   FontFace::Initialize(target);
+#endif
+#ifdef HAVE_CACA
+  Caca::Initialize(target);
 #endif
 
   target->Set(NanNew<String>("cairoVersion"), NanNew<String>(cairo_version_string()));

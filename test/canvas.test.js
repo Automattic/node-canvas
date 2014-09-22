@@ -523,6 +523,31 @@ module.exports = {
     }
   },
 
+  'test .toAnsiString': function(){
+    // method not available if not compiled with libcaca
+    if (!Canvas.prototype.toAnsiString) return;
+
+    var pattern = new Canvas(2, 2)
+      , checkers = pattern.getContext('2d');
+
+    // white
+    checkers.fillStyle = '#fff';
+    checkers.fillRect(0,0,2,2);
+
+    // black
+    checkers.fillStyle = '#000';
+    checkers.fillRect(0,0,1,1);
+    checkers.fillRect(1,1,1,1);
+
+    var ansiString = pattern.toAnsiString({rows: 2, cols: 2});
+    var expected = [
+      "\u001b[0;34;40m \u001b[0;37;5;47;107m \u001b[0m",
+      "\u001b[0;37;5;47;107m \u001b[0;34;40m \u001b[0m",
+      ""
+    ].join("\n");
+    assert.equal(expected, ansiString);
+  },
+
   'test Context2d#createPattern(Image)': function(){
     var img = new Canvas.Image();
     img.src = __dirname + '/fixtures/checkers.png';

@@ -6,7 +6,8 @@
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
-        'with_freetype%': 'false'
+        'with_freetype%': 'false',
+        'with_caca%': 'false'
       }
     }, { # 'OS!="win"'
       'variables': {
@@ -14,7 +15,8 @@
         'with_gif%': '<!(./util/has_lib.sh gif)',
         # disable pango as it causes issues with freetype.
         'with_pango%': 'false',
-        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
+        'with_freetype%': '<!(./util/has_cairo_freetype.sh)',
+        'with_caca%': '<!(./util/has_lib.sh caca)'
       }
     }]
   ],
@@ -162,6 +164,28 @@
             }, {
               'libraries': [
                 '-lgif'
+              ]
+            }]
+          ]
+        }],
+        ['with_caca=="true"', {
+          'defines': [
+            'HAVE_CACA'
+          ],
+          'sources': [
+            'src/Caca.cc'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/caca.lib'
+              ]
+            }, {
+              'include_dirs': [ # tried to pass through cflags but failed
+                '<!@(pkg-config caca --cflags-only-I | sed s/-I//g)'
+              ],
+              'libraries': [
+                '<!@(pkg-config caca --libs)'
               ]
             }]
           ]

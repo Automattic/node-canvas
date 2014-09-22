@@ -6,6 +6,7 @@ CAIRO="http://cairographics.org/releases/cairo-1.12.16.tar.xz"
 FREETYPE="http://download.savannah.gnu.org/releases/freetype/freetype-2.4.10.tar.gz"
 LIBPNG="http://downloads.sourceforge.net/project/libpng/libpng16/1.6.10/libpng-1.6.10.tar.gz"
 GIF_LIB="https://downloads.sourceforge.net/project/giflib/giflib-4.x/giflib-4.1.6/giflib-4.1.6.tar.gz"
+LIBCACA="http://caca.zoy.org/files/libcaca/libcaca-0.99.beta19.tar.gz"
 PREFIX=${1-/usr/local}
 
 require() {
@@ -62,4 +63,5 @@ fetch $LIBPNG
 fetch $GIF_LIB
 fetch $FREETYPE
 fetch $PIXMAN
+fetch $LIBCACA
 fetch_xz $CAIRO
