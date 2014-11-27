@@ -392,7 +392,7 @@ Image::error(Local<Value> err) {
 
 cairo_status_t
 Image::loadSurface() {
-  FILE *stream = fopen(filename, "r");
+  FILE *stream = fopen(filename, "rb");
   if (!stream) return CAIRO_STATUS_READ_ERROR;
   uint8_t buf[5];
   if (1 != fread(&buf, 5, 1, stream)) {
