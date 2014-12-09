@@ -606,7 +606,7 @@ NAN_METHOD(Context2d::DrawImage) {
   if (args.Length() < 3)
     return NanThrowTypeError("invalid arguments");
 
-  int sx = 0
+  float sx = 0
     , sy = 0
     , sw = 0
     , sh = 0
