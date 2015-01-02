@@ -576,13 +576,12 @@ NAN_METHOD(Context2d::PutImageData) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
-  PixelArray *arr = imageData->pixelArray();
-
-  uint8_t *src = arr->data();
+  
+  uint8_t *src = imageData->data();
   uint8_t *dst = context->canvas()->data();
 
-  int srcStride = arr->stride()
-    , dstStride = context->canvas()->stride();
+  int srcStride = imageData->stride();
+  int dstStride = context->canvas()->stride();
 
   int sx = 0
     , sy = 0
@@ -596,8 +595,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (args.Length()) {
     // imageData, dx, dy
     case 3:
-      cols = std::min(arr->width(), context->canvas()->width - dx);
-      rows = std::min(arr->height(), context->canvas()->height - dy);
+      cols = std::min(imageData->width(), context->canvas()->width - dx);
+      rows = std::min(imageData->height(), context->canvas()->height - dy);
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -607,8 +606,8 @@ NAN_METHOD(Context2d::PutImageData) {
       sh = args[6]->Int32Value();
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
-      if (sx + sw > arr->width()) sw = arr->width() - sx;
-      if (sy + sh > arr->height()) sh = arr->height() - sy;
+      if (sx + sw > imageData->width()) sw = imageData->width() - sx;
+      if (sy + sh > imageData->height()) sh = imageData->height() - sy;
       dx += sx;
       dy += sy;
       cols = std::min(sw, context->canvas()->width - dx);
