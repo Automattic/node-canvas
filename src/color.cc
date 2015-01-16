@@ -8,6 +8,7 @@
 #include "color.h"
 #include <stdlib.h>
 #include <cmath>
+#include <limits>
 
 /*
  * Consume whitespace.
@@ -72,6 +73,7 @@ static bool parseNumber(const char** pStr, parsed_t *pParsed)
    int divisorForFraction = 1;
    int sign = 1;
    int exponent = 0;
+   int digits = 0;
    bool inFraction = false;
   
    if (*str == '-')
@@ -87,15 +89,24 @@ static bool parseNumber(const char** pStr, parsed_t *pParsed)
    {
        if (*str >= '0' && *str <= '9')
        {
-           if (inFraction)
-           {
-               fractionPart = fractionPart*10 + (*str - '0');
-               divisorForFraction *= 10;
-           }
-           else
-           {
-               integerPart = integerPart*10 + (*str - '0');
-           }
+          if (digits>=std::numeric_limits<parsed_t>::digits10)
+          {
+            if (!inFraction)
+              return false;
+          }
+          else {
+            ++digits;
+          
+            if (inFraction)
+            {
+                fractionPart = fractionPart*10 + (*str - '0');
+                divisorForFraction *= 10;
+            }
+            else
+            {
+                integerPart = integerPart*10 + (*str - '0');
+            }
+          }
        }
        else if (*str == '.')
        {
