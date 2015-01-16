@@ -7,6 +7,7 @@
 
 #include "color.h"
 #include <stdlib.h>
+#include <cmath>
 
 /*
  * Consume whitespace.
@@ -15,23 +16,239 @@
 #define WHITESPACE \
   while (' ' == *str) ++str;
 
+#define WHITESPACE_OR_COMMA \
+  while (' ' == *str || ',' == *str) ++str;
+
+
+/*
+ * Parse integer value
+ */
+
+template <typename parsed_t>
+static bool parseInteger(const char** pStr, parsed_t *pParsed)
+{
+  parsed_t& c = *pParsed;
+  const char*& str = *pStr;
+  int8_t sign=1;
+
+  c = 0;
+  if (*str == '-')
+  {
+    sign=-1;
+    ++str;
+  }
+  else if (*str == '+')
+    ++str;
+
+  if (*str >= '0' && *str <= '9') {
+     do {
+       c *= 10;
+       c += *str++ - '0';
+     } while (*str >= '0' && *str <= '9');
+   } else {
+     return false;
+   }
+   if (sign<0)
+    c=-c;
+   return true;
+}
+
+
+/*
+ * Parse CSS <number> value
+ */
+
+template <typename parsed_t>
+static bool parseNumber(const char** pStr, parsed_t *pParsed)
+{
+   parsed_t &parsed = *pParsed;
+   const char*& str = *pStr;
+   const char* startStr = str;
+
+   if (!str || !*str)
+       return false; 
+   parsed_t integerPart = 0;
+   parsed_t fractionPart = 0;
+   int divisorForFraction = 1;
+   int sign = 1;
+   int exponent = 0;
+   bool inFraction = false;
+  
+   if (*str == '-')
+   {
+       ++str;
+       sign = -1;
+   }
+   else if (*str == '+')
+   {
+       ++str;
+   }
+   while (*str != '\0')
+   {
+       if (*str >= '0' && *str <= '9')
+       {
+           if (inFraction)
+           {
+               fractionPart = fractionPart*10 + (*str - '0');
+               divisorForFraction *= 10;
+           }
+           else
+           {
+               integerPart = integerPart*10 + (*str - '0');
+           }
+       }
+       else if (*str == '.')
+       {
+           if (inFraction)
+               break;
+           else
+               inFraction = true;
+       }
+       else if (*str == 'e')
+       {
+          ++str;
+          if (!parseInteger(&str, &exponent))
+            return false;
+          break;
+       }
+       else
+       {
+          break;
+       }
+       ++str;
+   }
+   if (str != startStr)
+   {
+      parsed = sign * (integerPart + fractionPart/divisorForFraction);
+
+      for (;exponent>0;--exponent)
+        parsed *= 10;
+      for (;exponent<0;++exponent)
+        parsed /= 10;
+      return true;
+   }
+   return false;
+}
+
+/*
+ * Parse clipped integer value
+ */
+
+template <typename clipped_t, typename limit_t>
+static bool parseClipped(const char** pStr, clipped_t *pClipped, limit_t minValue, limit_t maxValue)
+{
+  limit_t raw;
+  bool result = parseInteger(pStr, &raw);
+  if (result)
+  {
+    if (raw > maxValue)
+      raw = maxValue;
+    if (raw < minValue)
+      raw = minValue;
+    *pClipped = raw;
+  }
+  return result; 
+}
+
+template <typename T>
+static T clip(T value, T minValue, T maxValue)
+{
+  if (value > maxValue)
+      value = maxValue;
+  if (value < minValue)
+      value = minValue;
+  return value;
+}
+
+template <typename T>
+static T wrapFloat(T value, T limit) {
+  return fmod(fmod(value, limit) + limit, limit);
+}
+
+template <typename T>
+static T wrapInt(T value, T limit) {
+  return (value % limit + limit) % limit;
+}
+
 /*
  * Parse color channel value
  */
 
+static bool parseChannel(const char** pStr, uint8_t *pChannel)
+{
+  int channel;
+  if (parseInteger(pStr, &channel)) {
+    *pChannel = clip(channel, 0, 255);
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Parse a value in degrees
+ */
+
+static bool parseDegrees(const char** pStr, float *pDegrees)
+{
+  float degrees;
+  if (parseNumber(pStr, &degrees))
+  {
+    *pDegrees = wrapFloat(degrees, 360.0f);
+    return true;
+  }
+  return false;
+}
+
+static bool parseClippedPercentage(const char** pStr, float *pFraction)
+{ 
+  float percentage;
+  bool result = parseNumber(pStr,&percentage);
+  const char*& str = *pStr;
+  if (result)
+  {
+    if (*str == '%')
+    {
+      ++str;
+      *pFraction = clip(percentage, 0.0f, 100.0f) / 100.0f;
+      return result;
+    }
+  }
+  return false;
+}
+
+/*
+ * Parse color channel value - simple macro wrapper
+ */
+
 #define CHANNEL(NAME) \
-   c = 0; \
-   if (*str >= '0' && *str <= '9') { \
-     do { \
-       c *= 10; \
-       c += *str++ - '0'; \
-     } while (*str >= '0' && *str <= '9'); \
-   } else { \
-     return 0; \
-   } \
-   if (c > 255) c = 255; \
-   NAME = c; \
-   while (' ' == *str || ',' == *str) str++;
+   if (!parseChannel(&str, &NAME)) \
+    return 0; \
+
+#define HUE(NAME) \
+   if (!parseDegrees(&str, &NAME)) \
+    return 0;
+
+#define SATURATION(NAME) \
+   if (!parseClippedPercentage(&str, &NAME)) \
+    return 0;
+
+#define LIGHTNESS(NAME) SATURATION(NAME)
+
+#define ALPHA(NAME) \
+  if (*str >= '1' && *str <= '9') { \
+      NAME = 1; \
+    } else { \
+      if ('0' == *str) ++str; \
+      if ('.' == *str) { \
+        ++str; \
+        float n = .1f; \
+        while (*str >= '0' && *str <= '9') { \
+          NAME += (*str++ - '0') * n; \
+          n *= .1f; \
+        } \
+      } \
+    } \
+    do {} while (0) // require trailing semicolon
 
 /*
  * Named colors.
@@ -161,6 +378,7 @@ static struct named_color {
   , { "plum", 0xDDA0DDFF }
   , { "powderblue", 0xB0E0E6FF }
   , { "purple", 0x800080FF }
+  , { "rebeccapurple", 0x663399FF } // Source: CSS Color Level 4 draft
   , { "red", 0xFF0000FF }
   , { "rosybrown", 0xBC8F8FFF }
   , { "royalblue", 0x4169E1FF }
@@ -276,6 +494,49 @@ rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 }
 
 /*
+ * Helper function used in rgba_from_hsla().
+ */
+
+static float hue_to_rgb(float t1, float t2, float hue) {
+  if(hue < 0) hue += 6;
+  if(hue >= 6) hue -= 6;
+
+  if(hue < 1) return (t2 - t1) * hue + t1;
+  else if(hue < 3) return t2;
+  else if(hue < 4) return (t2 - t1) * (4 - hue) + t1;
+  else return t1;
+}
+
+/*
+ * Return rgba from (h,s,l,a).
+ */
+
+static inline int32_t
+rgba_from_hsla(float h_deg, float s, float l, float a) {
+  float h = (6 * h_deg) / 360.0f;
+  float m1,m2;
+  if (l<=0.5)
+    m2=l*(s+1);
+  else
+    m2=l+s-l*s;
+  m1 = l*2 - m2;
+  return rgba_from_rgba((uint8_t)floor(hue_to_rgb(m1, m2, h + 2) * 255 + 0.5),
+                        (uint8_t)floor(hue_to_rgb(m1, m2, h    ) * 255 + 0.5),
+                        (uint8_t)floor(hue_to_rgb(m1, m2, h - 2) * 255 + 0.5),
+                        (uint8_t)(a * 255));
+}
+
+/*
+ * Return rgba from (h,s,l).
+ */
+
+static inline int32_t
+rgba_from_hsl(float h_deg, float s, float l) {
+  return rgba_from_hsla(h_deg, s, l, 1.0);
+}
+
+
+/*
  * Return rgba from (r,g,b).
  */
 
@@ -320,10 +581,12 @@ rgba_from_rgb_string(const char *str, short *ok) {
     str += 4;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
-    int c;
     CHANNEL(r);
+    WHITESPACE_OR_COMMA;
     CHANNEL(g);
+    WHITESPACE_OR_COMMA;
     CHANNEL(b);
+    WHITESPACE;
     return *ok = 1, rgba_from_rgb(r, g, b);
   }
   return *ok = 0;
@@ -339,28 +602,65 @@ rgba_from_rgba_string(const char *str, short *ok) {
     str += 5;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
-    int c;
     float a = 0;
     CHANNEL(r);
+    WHITESPACE_OR_COMMA;
     CHANNEL(g);
+    WHITESPACE_OR_COMMA;
     CHANNEL(b);
-    if (*str >= '1' && *str <= '9') {
-      a = 1;
-    } else {
-      if ('0' == *str) ++str;
-      if ('.' == *str) {
-        ++str;
-        float n = .1f;
-        while (*str >= '0' && *str <= '9') {
-          a += (*str++ - '0') * n;
-          n *= .1f;
-        }
-      }
-    }
+    WHITESPACE_OR_COMMA;
+    ALPHA(a);
+    WHITESPACE;
     return *ok = 1, rgba_from_rgba(r, g, b, (int) (a * 255));
   }
   return *ok = 0;
 }
+
+/*
+ * Return rgb from "hsla()"
+ */
+static int32_t
+rgba_from_hsla_string(const char *str, short *ok) {
+  if (str == strstr(str, "hsla(")) {
+    str += 5;
+    WHITESPACE;
+    float h_deg = 0;
+    float s = 0, l = 0;
+    float a = 0;
+    HUE(h_deg);
+    WHITESPACE_OR_COMMA;
+    SATURATION(s);
+    WHITESPACE_OR_COMMA;
+    LIGHTNESS(l);
+    WHITESPACE_OR_COMMA;
+    ALPHA(a);
+    WHITESPACE;
+    return *ok = 1, rgba_from_hsla(h_deg, s, l, a);
+  }
+  return *ok = 0;
+}
+
+/*
+ * Return rgb from "hsl()"
+ */
+static int32_t
+rgba_from_hsl_string(const char *str, short *ok) {
+  if (str == strstr(str, "hsl(")) {
+    str += 4;
+    WHITESPACE;
+    float h_deg = 0;
+    float s = 0, l = 0;
+    HUE(h_deg);
+    WHITESPACE_OR_COMMA;
+    SATURATION(s);
+    WHITESPACE_OR_COMMA;
+    LIGHTNESS(l);
+    WHITESPACE;
+    return *ok = 1, rgba_from_hsl(h_deg, s, l);
+  }
+  return *ok = 0;
+}
+
 
 /*
  * Return rgb from:
@@ -401,6 +701,8 @@ rgba_from_name_string(const char *str, short *ok) {
  *  - #RRGGBB
  *  - rgb(r,g,b)
  *  - rgba(r,g,b,a)
+ *  - hsl(h,s,l)
+ *  - hsla(h,s,l,a)
  *  - name
  *
  */
@@ -413,6 +715,10 @@ rgba_from_string(const char *str, short *ok) {
     return rgba_from_rgba_string(str, ok);
   if (str == strstr(str, "rgb"))
     return rgba_from_rgb_string(str, ok);
+  if (str == strstr(str, "hsla"))
+    return rgba_from_hsla_string(str, ok);
+  if (str == strstr(str, "hsl"))
+    return rgba_from_hsl_string(str, ok);
   return rgba_from_name_string(str, ok);
 }
 
