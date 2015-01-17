@@ -158,6 +158,56 @@ module.exports = {
 
     ctx.fillStyle = 'rgba(0, 0, 0, 42.42)';
     assert.equal('#000000', ctx.fillStyle);
+
+    // hsl / hsla tests
+
+    ctx.fillStyle = 'hsl(0, 0%, 0%)';
+    assert.equal('#000000', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(3600, -10%, -10%)';
+    assert.equal('#000000', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(10, 100%, 42%)';
+    assert.equal('#d62400', ctx.fillStyle);
+    
+    ctx.fillStyle = 'hsl(370, 120%, 42%)';
+    assert.equal('#d62400', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(0, 100%, 100%)';
+    assert.equal('#ffffff', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(0, 150%, 150%)';
+    assert.equal('#ffffff', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(237, 76%, 25%)';
+    assert.equal('#0f1470', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(240, 73%, 25%)';
+    assert.equal('#11116e', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(262, 32%, 42%)';
+    assert.equal('#62498d', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsla(0, 0%, 0%, 1)';
+    assert.equal('#000000', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsla(0, 100%, 100%, 1)';
+    assert.equal('#ffffff', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsla(120, 25%, 75%, 0.5)';
+    assert.equal('rgba(175, 207, 175, 0.50)', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsla(240, 75%, 25%, 0.75)';
+    assert.equal('rgba(16, 16, 112, 0.75)', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsla(172.0, 33.00000e0%, 42%, 1)';
+    assert.equal('#488e85', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(124.5, 76.1%, 47.6%)';
+    assert.equal('#1dd62b', ctx.fillStyle);
+
+    ctx.fillStyle = 'hsl(1.24e2, 760e-1%, 4.7e1%)';
+    assert.equal('#1dd329', ctx.fillStyle);
   },
 
   'test Canvas#type': function(){

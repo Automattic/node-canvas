@@ -1916,3 +1916,25 @@ tests['lineDashOffset']  = function(ctx, done){
   for (var i=0; i<10; i++)
     line(90 + i/5, "red");
 }
+
+
+tests['fillStyle=\'hsl(...)\''] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'hsl(' + (360-60*i) + ',' + 
+                       (100-16.66*j) + '%,' + (50+(i+j)*(50/12)) + '%)';
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+};
+
+tests['fillStyle=\'hsla(...)\''] = function(ctx){
+  for (i=0;i<6;i++){
+    for (j=0;j<6;j++){
+      ctx.fillStyle = 'hsla(' + (360-60*i) + ',' + 
+                       (100-16.66*j) + '%,50%,' + (1-0.16*j) + ')';
+                       console.log((100-16.66*j));
+      ctx.fillRect(j*25,i*25,25,25);
+    }
+  }
+};
