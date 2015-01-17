@@ -11,30 +11,18 @@
 #include <limits>
 
 /*
- * Consume whitespace.
- */
-
-#define WHITESPACE \
-  while (' ' == *str) ++str;
-
-#define WHITESPACE_OR_COMMA \
-  while (' ' == *str || ',' == *str) ++str;
-
-
-/*
  * Parse integer value
  */
 
 template <typename parsed_t>
-static bool parseInteger(const char** pStr, parsed_t *pParsed)
-{
+static bool
+parse_integer(const char** pStr, parsed_t *pParsed) {
   parsed_t& c = *pParsed;
   const char*& str = *pStr;
   int8_t sign=1;
 
   c = 0;
-  if (*str == '-')
-  {
+  if (*str == '-') {
     sign=-1;
     ++str;
   }
@@ -57,15 +45,15 @@ static bool parseInteger(const char** pStr, parsed_t *pParsed)
 
 /*
  * Parse CSS <number> value
+ * Adapted from http://crackprogramming.blogspot.co.il/2012/10/implement-atof.html
  */
 
 template <typename parsed_t>
-static bool parseNumber(const char** pStr, parsed_t *pParsed)
-{
+static bool
+parse_css_number(const char** pStr, parsed_t *pParsed) {
    parsed_t &parsed = *pParsed;
    const char*& str = *pStr;
    const char* startStr = str;
-
    if (!str || !*str)
        return false; 
    parsed_t integerPart = 0;
@@ -76,62 +64,48 @@ static bool parseNumber(const char** pStr, parsed_t *pParsed)
    int digits = 0;
    bool inFraction = false;
   
-   if (*str == '-')
-   {
+   if (*str == '-') {
        ++str;
        sign = -1;
    }
    else if (*str == '+')
-   {
        ++str;
-   }
-   while (*str != '\0')
-   {
-       if (*str >= '0' && *str <= '9')
-       {
-          if (digits>=std::numeric_limits<parsed_t>::digits10)
-          {
+   while (*str != '\0') {
+       if (*str >= '0' && *str <= '9') {
+          if (digits>=std::numeric_limits<parsed_t>::digits10) {
             if (!inFraction)
               return false;
           }
           else {
             ++digits;
           
-            if (inFraction)
-            {
+            if (inFraction) {
                 fractionPart = fractionPart*10 + (*str - '0');
                 divisorForFraction *= 10;
             }
-            else
-            {
+            else {
                 integerPart = integerPart*10 + (*str - '0');
             }
           }
        }
-       else if (*str == '.')
-       {
+       else if (*str == '.') {
            if (inFraction)
                break;
            else
                inFraction = true;
        }
-       else if (*str == 'e')
-       {
+       else if (*str == 'e') {
           ++str;
-          if (!parseInteger(&str, &exponent))
+          if (!parse_integer(&str, &exponent))
             return false;
           break;
        }
        else
-       {
           break;
-       }
        ++str;
    }
-   if (str != startStr)
-   {
+   if (str != startStr) {
       parsed = sign * (integerPart + fractionPart/divisorForFraction);
-
       for (;exponent>0;--exponent)
         parsed *= 10;
       for (;exponent<0;++exponent)
@@ -142,28 +116,12 @@ static bool parseNumber(const char** pStr, parsed_t *pParsed)
 }
 
 /*
- * Parse clipped integer value
+ * Clip value to the range [minValue, maxValue]
  */
 
-template <typename clipped_t, typename limit_t>
-static bool parseClipped(const char** pStr, clipped_t *pClipped, limit_t minValue, limit_t maxValue)
-{
-  limit_t raw;
-  bool result = parseInteger(pStr, &raw);
-  if (result)
-  {
-    if (raw > maxValue)
-      raw = maxValue;
-    if (raw < minValue)
-      raw = minValue;
-    *pClipped = raw;
-  }
-  return result; 
-}
-
 template <typename T>
-static T clip(T value, T minValue, T maxValue)
-{
+static T
+clip(T value, T minValue, T maxValue) {
   if (value > maxValue)
       value = maxValue;
   if (value < minValue)
@@ -171,24 +129,33 @@ static T clip(T value, T minValue, T maxValue)
   return value;
 }
 
+/*
+ * Wrap value to the range [0, limit]
+ */
+ 
 template <typename T>
-static T wrapFloat(T value, T limit) {
+static T
+wrap_float(T value, T limit) {
   return fmod(fmod(value, limit) + limit, limit);
 }
 
-template <typename T>
-static T wrapInt(T value, T limit) {
-  return (value % limit + limit) % limit;
-}
+/*
+ * Wrap value to the range [0, limit] - currently-unused integer version of wrap_float
+ */
+
+// template <typename T>
+// static T wrap_int(T value, T limit) {
+//   return (value % limit + limit) % limit;
+// }
 
 /*
  * Parse color channel value
  */
 
-static bool parseChannel(const char** pStr, uint8_t *pChannel)
-{
+static bool
+parse_rgb_channel(const char** pStr, uint8_t *pChannel) {
   int channel;
-  if (parseInteger(pStr, &channel)) {
+  if (parse_integer(pStr, &channel)) {
     *pChannel = clip(channel, 0, 255);
     return true;
   }
@@ -199,26 +166,27 @@ static bool parseChannel(const char** pStr, uint8_t *pChannel)
  * Parse a value in degrees
  */
 
-static bool parseDegrees(const char** pStr, float *pDegrees)
-{
+static bool
+parse_degrees(const char** pStr, float *pDegrees) {
   float degrees;
-  if (parseNumber(pStr, &degrees))
-  {
-    *pDegrees = wrapFloat(degrees, 360.0f);
+  if (parse_css_number(pStr, &degrees)) {
+    *pDegrees = wrap_float(degrees, 360.0f);
     return true;
   }
   return false;
 }
 
-static bool parseClippedPercentage(const char** pStr, float *pFraction)
-{ 
+/*
+ * Parse and clip a percentage value. Returns a float in the range [0, 1].
+ */
+
+static bool
+parse_clipped_percentage(const char** pStr, float *pFraction) { 
   float percentage;
-  bool result = parseNumber(pStr,&percentage);
+  bool result = parse_css_number(pStr,&percentage);
   const char*& str = *pStr;
-  if (result)
-  {
-    if (*str == '%')
-    {
+  if (result) {
+    if (*str == '%') {
       ++str;
       *pFraction = clip(percentage, 0.0f, 100.0f) / 100.0f;
       return result;
@@ -228,19 +196,25 @@ static bool parseClippedPercentage(const char** pStr, float *pFraction)
 }
 
 /*
- * Parse color channel value - simple macro wrapper
+ * Macros to help with parsing inside rgba_from_*_string
  */
 
+#define WHITESPACE \
+  while (' ' == *str) ++str;
+
+#define WHITESPACE_OR_COMMA \
+  while (' ' == *str || ',' == *str) ++str;
+
 #define CHANNEL(NAME) \
-   if (!parseChannel(&str, &NAME)) \
+   if (!parse_rgb_channel(&str, &NAME)) \
     return 0; \
 
 #define HUE(NAME) \
-   if (!parseDegrees(&str, &NAME)) \
+   if (!parse_degrees(&str, &NAME)) \
     return 0;
 
 #define SATURATION(NAME) \
-   if (!parseClippedPercentage(&str, &NAME)) \
+   if (!parse_clipped_percentage(&str, &NAME)) \
     return 0;
 
 #define LIGHTNESS(NAME) SATURATION(NAME)
@@ -506,39 +480,54 @@ rgba_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 
 /*
  * Helper function used in rgba_from_hsla().
+ * Based on http://dev.w3.org/csswg/css-color-4/#hsl-to-rgb
  */
 
-static float hue_to_rgb(float t1, float t2, float hue) {
-  if(hue < 0) hue += 6;
-  if(hue >= 6) hue -= 6;
+static float
+hue_to_rgb(float t1, float t2, float hue) {
+  if (hue < 0)
+    hue += 6;
+  if (hue >= 6)
+    hue -= 6;
 
-  if(hue < 1) return (t2 - t1) * hue + t1;
-  else if(hue < 3) return t2;
-  else if(hue < 4) return (t2 - t1) * (4 - hue) + t1;
-  else return t1;
+  if (hue < 1)
+    return (t2 - t1) * hue + t1;
+  else if (hue < 3)
+    return t2;
+  else if (hue < 4)
+    return (t2 - t1) * (4 - hue) + t1;
+  else
+    return t1;
 }
 
 /*
  * Return rgba from (h,s,l,a).
+ * Expects h values in the range [0, 360), and s, l, a in the range [0, 1].
+ * Adapted from http://dev.w3.org/csswg/css-color-4/#hsl-to-rgb
  */
 
 static inline int32_t
 rgba_from_hsla(float h_deg, float s, float l, float a) {
-  float h = (6 * h_deg) / 360.0f;
-  float m1,m2;
+  uint8_t r, g, b;
+  float h = (6 * h_deg) / 360.0f, m1, m2;
+
   if (l<=0.5)
     m2=l*(s+1);
   else
     m2=l+s-l*s;
   m1 = l*2 - m2;
-  return rgba_from_rgba((uint8_t)floor(hue_to_rgb(m1, m2, h + 2) * 255 + 0.5),
-                        (uint8_t)floor(hue_to_rgb(m1, m2, h    ) * 255 + 0.5),
-                        (uint8_t)floor(hue_to_rgb(m1, m2, h - 2) * 255 + 0.5),
-                        (uint8_t)(a * 255));
+
+  // Scale and round the RGB components
+  r = (uint8_t)floor(hue_to_rgb(m1, m2, h + 2) * 255 + 0.5);
+  g = (uint8_t)floor(hue_to_rgb(m1, m2, h    ) * 255 + 0.5);
+  b = (uint8_t)floor(hue_to_rgb(m1, m2, h - 2) * 255 + 0.5);
+
+  return rgba_from_rgba(r, g, b, (uint8_t) (a * 255));
 }
 
 /*
  * Return rgba from (h,s,l).
+ * Expects h values in the range [0, 360), and s, l in the range [0, 1].
  */
 
 static inline int32_t
@@ -630,6 +619,7 @@ rgba_from_rgba_string(const char *str, short *ok) {
 /*
  * Return rgb from "hsla()"
  */
+
 static int32_t
 rgba_from_hsla_string(const char *str, short *ok) {
   if (str == strstr(str, "hsla(")) {
@@ -654,6 +644,7 @@ rgba_from_hsla_string(const char *str, short *ok) {
 /*
  * Return rgb from "hsl()"
  */
+
 static int32_t
 rgba_from_hsl_string(const char *str, short *ok) {
   if (str == strstr(str, "hsl(")) {
