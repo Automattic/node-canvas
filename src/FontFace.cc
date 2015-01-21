@@ -6,6 +6,8 @@
 
 #include "FontFace.h"
 
+#include <fontconfig/fontconfig.h>
+
 Persistent<FunctionTemplate> FontFace::constructor;
 
 /*
@@ -78,6 +80,14 @@ NAN_METHOD(FontFace::New) {
   if (ftError) {
     return NanThrowError("Could not load font file");
   }
+
+  #if HAVE_PANGO
+    // Load the font file in fontconfig
+    FcBool ok = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(*filePath));
+    if (!ok) {
+      return NanThrowError("Could not load font in FontConfig");
+    }
+  #endif
 
   // Create new cairo font face.
   crFace = cairo_ft_font_face_create_for_ft_face(ftFace, 0);
