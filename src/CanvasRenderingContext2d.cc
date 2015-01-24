@@ -418,6 +418,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   int height = cairo_image_surface_get_height( surface );
   unsigned* precalc =
       (unsigned*)malloc(width*height*sizeof(unsigned));
+  cairo_surface_flush( surface );
   unsigned char* src = cairo_image_surface_get_data( surface );
   double mul=1.f/((radius*2)*(radius*2));
   int channel;
@@ -465,6 +466,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
       }
   }
 
+  cairo_surface_mark_dirty(surface);
   free(precalc);
 }
 
