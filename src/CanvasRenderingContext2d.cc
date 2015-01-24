@@ -349,11 +349,15 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
   cairo_path_t *path = cairo_copy_path_flat(_context);
   cairo_save(_context);
 
-  // Offset
+  // Offset (always unaffected by current transform)
+  cairo_matrix_t current_matrix;
+  cairo_get_matrix(_context, &current_matrix);
+  cairo_identity_matrix(_context);
   cairo_translate(
       _context
     , state->shadowOffsetX
     , state->shadowOffsetY);
+  cairo_transform(_context, &current_matrix);
 
   // Apply shadow
   cairo_push_group(_context);

@@ -1327,6 +1327,38 @@ tests['shadowOffset{X,Y} negative'] = function(ctx){
   ctx.fillRect(150,150,20,20);
 };
 
+tests['shadowOffset{X,Y} transform'] = function(ctx){
+  ctx.translate(100, 0);
+  ctx.scale(.75,.75);
+  ctx.rotate(Math.PI/4);
+
+  ctx.fillRect(150,10,20,20);
+
+  ctx.lineTo(20,5);
+  ctx.lineTo(100,5);
+  ctx.stroke();
+
+  ctx.shadowColor = '#c00';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
+  ctx.fillRect(20,20,100,100);
+
+  ctx.beginPath();
+  ctx.lineTo(20,150);
+  ctx.lineTo(100,150);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  
+  ctx.beginPath();
+  ctx.lineTo(20,180);
+  ctx.lineTo(100,180);
+  ctx.stroke();
+  
+  ctx.fillRect(150,150,20,20);
+};
+
 tests['shadowBlur values'] = function(ctx){
   ctx.fillRect(150,10,20,20);
 
