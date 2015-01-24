@@ -1510,6 +1510,20 @@ tests['shadow strokeText()'] = function(ctx){
   ctx.strokeText("Shadow", 100, 100);
 };
 
+tests['shadow image'] = function(ctx, done){
+  var img = new Image;
+  img.onload = function(){
+    ctx.shadowColor = '#f3ac22';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 8;
+    ctx.shadowOffsetY = 8;
+    ctx.drawImage(img, 0, 0);
+    done();
+  };
+  img.onerror = function(){}
+  img.src = 'star.png';
+};
+
 tests['shadow integration'] = function(ctx){
   ctx.shadowBlur = 5;
   ctx.shadowOffsetX = 10;
