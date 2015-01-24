@@ -26,6 +26,32 @@ function text(str) {
   return document.createTextNode(str);
 }
 
+function pdfForm(fn, canvas) {
+  var form = create('form')
+    , input = create('input')
+    , submit = create('input');
+
+  form.setAttribute('action', '/pdf');
+  form.setAttribute('method', 'post');
+  form.setAttribute('target', '_blank');
+
+  input.setAttribute('type', 'hidden');
+  input.setAttribute('name', 'json');
+  input.setAttribute('value', JSON.stringify({
+    fn: fn.toString()
+    , width: canvas.width
+    , height: canvas.height
+  }));
+
+  submit.setAttribute('type', 'submit');
+  submit.setAttribute('value', 'PDF');
+
+  form.appendChild(input);
+  form.appendChild(submit);
+
+  return form;
+}
+
 function clearTests() {
   var table = get('tests');
   table.removeChild(table.children[1]);
@@ -47,6 +73,7 @@ function runTests() {
 
     tds[1].appendChild(canvas);
     tds[2].appendChild(create('h3', name));
+    tds[2].appendChild(pdfForm(fn, canvas));
 
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);

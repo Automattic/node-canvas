@@ -349,26 +349,70 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
   cairo_path_t *path = cairo_copy_path_flat(_context);
   cairo_save(_context);
 
-  // Offset (always unaffected by current transform)
-  cairo_matrix_t current_matrix;
-  cairo_get_matrix(_context, &current_matrix);
+  // shadowOffset is unaffected by current transform
+  cairo_matrix_t path_matrix;
+  cairo_get_matrix(_context, &path_matrix);
   cairo_identity_matrix(_context);
-  cairo_translate(
-      _context
-    , state->shadowOffsetX
-    , state->shadowOffsetY);
-  cairo_transform(_context, &current_matrix);
 
   // Apply shadow
   cairo_push_group(_context);
-  cairo_new_path(_context);
-  cairo_append_path(_context, path);
-  setSourceRGBA(state->shadow);
-  fn(_context);
 
   // No need to invoke blur if shadowBlur is 0
   if (state->shadowBlur) {
-    blur(cairo_get_group_target(_context), state->shadowBlur);
+    // find out extent of path
+    double x1, y1, x2, y2;
+    if (fn == cairo_fill || fn == cairo_fill_preserve) {
+      cairo_fill_extents(_context, &x1, &y1, &x2, &y2);
+    } else {
+      cairo_stroke_extents(_context, &x1, &y1, &x2, &y2);
+    }
+
+    // create new image surface that size + padding for blurring
+    int pad = state->shadowBlur * 2;
+    cairo_surface_t *surface = cairo_get_group_target(_context);
+    cairo_surface_t *shadow_surface = cairo_surface_create_similar_image(surface,
+      CAIRO_FORMAT_ARGB32,
+      x2-x1 + 2*pad,
+      y2-y1 + 2*pad);
+    cairo_t *shadow_context = cairo_create(shadow_surface);
+
+    // transform path to the right place
+    cairo_translate(shadow_context, pad-x1, pad-y1);
+    cairo_transform(shadow_context, &path_matrix);
+
+    // draw the path and blur
+    cairo_new_path(shadow_context);
+    cairo_append_path(shadow_context, path);
+    cairo_set_source_rgba(
+      shadow_context
+    , state->shadow.r
+    , state->shadow.g
+    , state->shadow.b
+    , state->shadow.a * state->globalAlpha);
+    fn(shadow_context);
+    blur(shadow_surface, state->shadowBlur);
+
+    // paint to original context
+    cairo_set_source_surface(_context, shadow_surface,
+      (x1 - pad + state->shadowOffsetX),
+      (y1 - pad + state->shadowOffsetY));
+    cairo_paint(_context);
+    cairo_destroy(shadow_context);
+    cairo_surface_destroy(shadow_surface);
+  } else {
+    // Offset first, then apply path's transform
+    cairo_translate(
+        _context
+      , state->shadowOffsetX
+      , state->shadowOffsetY);
+    cairo_transform(_context, &path_matrix);
+
+    // Apply shadow
+    cairo_new_path(_context);
+    cairo_append_path(_context, path);
+    setSourceRGBA(state->shadow);
+
+    fn(_context);
   }
 
   // Paint the shadow
@@ -422,6 +466,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   int height = cairo_image_surface_get_height( surface );
   unsigned* precalc =
       (unsigned*)malloc(width*height*sizeof(unsigned));
+  cairo_surface_flush( surface );
   unsigned char* src = cairo_image_surface_get_data( surface );
   double mul=1.f/((radius*2)*(radius*2));
   int channel;
@@ -469,6 +514,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
       }
   }
 
+  cairo_surface_mark_dirty(surface);
   free(precalc);
 }
 
