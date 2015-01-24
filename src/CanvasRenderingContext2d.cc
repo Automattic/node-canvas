@@ -394,8 +394,8 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
 
     // paint to original context
     cairo_set_source_surface(_context, shadow_surface,
-      (x1 - pad + state->shadowOffsetX),
-      (y1 - pad + state->shadowOffsetY));
+      x1 - pad + state->shadowOffsetX + 1,
+      y1 - pad + state->shadowOffsetY + 1);
     cairo_paint(_context);
     cairo_destroy(shadow_context);
     cairo_surface_destroy(shadow_surface);
