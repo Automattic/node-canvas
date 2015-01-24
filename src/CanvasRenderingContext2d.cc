@@ -725,11 +725,6 @@ NAN_METHOD(Context2d::DrawImage) {
   // Start draw
   cairo_save(ctx);
 
-  context->savePath();
-  cairo_rectangle(ctx, dx, dy, dw, dh);
-  cairo_clip(ctx);
-  context->restorePath();
-
   // Scale src
   if (dw != sw || dh != sh) {
     float fx = (float) dw / sw;
@@ -738,6 +733,18 @@ NAN_METHOD(Context2d::DrawImage) {
     dx /= fx;
     dy /= fy;
   }
+
+  if (context->hasShadow()) {
+    context->setSourceRGBA(context->state->shadow);
+    cairo_mask_surface(ctx, surface,
+      dx - sx + context->state->shadowOffsetX,
+      dy - sy + context->state->shadowOffsetY);
+  }
+
+  context->savePath();
+  cairo_rectangle(ctx, dx, dy, dw, dh);
+  cairo_clip(ctx);
+  context->restorePath();
 
   // Paint
   cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
