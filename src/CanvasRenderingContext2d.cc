@@ -412,7 +412,7 @@ void
 Context2d::blur(cairo_surface_t *surface, int radius) {
   // Steve Hanov, 2009
   // Released into the public domain.
-  --radius;
+  radius = radius * 0.57735f + 0.5f;
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
