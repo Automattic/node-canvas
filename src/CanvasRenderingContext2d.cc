@@ -368,12 +368,14 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
     }
 
     // create new image surface that size + padding for blurring
+    double dx = x2-x1, dy = y2-y1;
+    cairo_user_to_device_distance(_context, &dx, &dy);
     int pad = state->shadowBlur * 2;
     cairo_surface_t *surface = cairo_get_group_target(_context);
     cairo_surface_t *shadow_surface = cairo_surface_create_similar_image(surface,
       CAIRO_FORMAT_ARGB32,
-      x2-x1 + 2*pad,
-      y2-y1 + 2*pad);
+      dx + 2 * pad,
+      dy + 2 * pad);
     cairo_t *shadow_context = cairo_create(shadow_surface);
 
     // transform path to the right place
@@ -381,6 +383,7 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
     cairo_transform(shadow_context, &path_matrix);
 
     // draw the path and blur
+    cairo_set_line_width(shadow_context, cairo_get_line_width(_context));
     cairo_new_path(shadow_context);
     cairo_append_path(shadow_context, path);
     setSourceRGBA(shadow_context, state->shadow);
