@@ -1510,6 +1510,19 @@ tests['shadow strokeText()'] = function(ctx){
   ctx.strokeText("Shadow", 100, 100);
 };
 
+tests['shadow transform text'] = function(ctx){
+  ctx.shadowColor = '#c0c';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 6;
+  ctx.shadowOffsetY = 10;
+  ctx.textAlign = 'center';
+  ctx.font = '35px Arial';
+  ctx.scale(2, 2);
+  ctx.strokeText("Sha", 33, 40);
+  ctx.rotate(Math.PI/2);
+  ctx.fillText("dow", 50, -72);
+};
+
 tests['shadow image'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
