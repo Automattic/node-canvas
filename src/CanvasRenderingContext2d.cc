@@ -383,12 +383,7 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
     // draw the path and blur
     cairo_new_path(shadow_context);
     cairo_append_path(shadow_context, path);
-    cairo_set_source_rgba(
-      shadow_context
-    , state->shadow.r
-    , state->shadow.g
-    , state->shadow.b
-    , state->shadow.a * state->globalAlpha);
+    setSourceRGBA(shadow_context, state->shadow);
     fn(shadow_context);
     blur(shadow_surface, state->shadowBlur);
 
@@ -429,13 +424,22 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
 }
 
 /*
- * Set source RGBA.
+ * Set source RGBA for the current context
  */
 
 void
 Context2d::setSourceRGBA(rgba_t color) {
+  setSourceRGBA(_context, color);
+}
+
+/*
+ * Set source RGBA
+ */
+
+void
+Context2d::setSourceRGBA(cairo_t *ctx, rgba_t color) {
   cairo_set_source_rgba(
-      _context
+      ctx
     , color.r
     , color.g
     , color.b
