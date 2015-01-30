@@ -54,7 +54,7 @@ term_closure_destination(j_compress_ptr cinfo){
   Local<Value> data_argv[3] = {
       NanNew(NanNull())
     , NanNew(buf)
-    , NanNew<Integer>(remaining)
+    , NanNew<Number>(remaining)
   };
 
   NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, data_argv);

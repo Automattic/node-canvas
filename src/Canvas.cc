@@ -353,7 +353,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
   Local<Value> argv[3] = {
       NanNew(NanNull())
     , buf
-    , NanNew<Integer>(len) };
+    , NanNew<Number>(len) };
   NanMakeCallback(NanGetCurrentContext()->Global(), closure->fn, 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
