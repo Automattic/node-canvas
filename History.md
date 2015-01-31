@@ -1,4 +1,42 @@
 
+1.2.0 / 2015-01-31
+==================
+
+  * travis: drop support for node v0.6
+  * Merge pull request #507 from salzhrani/iojs
+  * io.js compatibility
+  * Merge pull request #505 from woodcoder/shadow-blur
+  * Fix issue with line width not being correct in stroked shadows.
+  * Add another shadow/transform test.
+  * Refactor setSourceRGBA to allow the context to be supplied.
+  * Simple image shadow (no blurring or handling current transforms) based on image's alpha channel.
+  * Test showing issue #133, that images don't have shadows.
+  * The +1 on the offset seems to match the browser's output better, but I can't work out why it would be needed (unless it's pixel alignment related).
+  * Make the shadow radius more accurately match the browser's, making use of sigma scale as used in SKIA: https://github.com/google/skia/blob/master/src/effects/SkBlurMask.cpp#L26.
+  * Create a new image surface to render blurred shadows to, this means that vector formats like PDF will now render blurs.
+  * Add recommended calls to flush and dirty buffer, as per http://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-data.
+  * Add PDF button to test page to easily generate PDF version of the test image.
+  * Fix to ensure shadowOffset is unaffected by the current transform.
+  * New test illustrating that canvas implementation doesn't translate the shadowOffset.
+  * Merge pull request #490 from AllYearbooks/master
+  * Merge pull request #501 from motiz88/hsl-color
+  * Code style + attribution. Also removed parseClipped() and commented out wrapInt (now wrap_int).
+  * Added visual tests for hsl() and hsla() color parsing.
+  * Fixed <number> handling in hsl/hsla color parser. parseNumber() was erroring out on numbers with long fractional parts.
+  * hsl/hsla color parsing + rebeccapurple hsl() and hsla() color values are now supported, with corresponding unit tests. Also added rebeccapurple (from CSS Color Level 4) to the named color list.
+  * float rather than int for drawImage arguments
+  * with_pango to true and use fontconfig to load fonts
+  * Merge pull request #399 from nulltask/fix/lighten
+  * Merge pull request #465 from espadrine/master
+  * Merge pull request #470 from tonylukasavage/patch-1
+  * Add one-liner MacPorts install to docs
+  * Offer SVG output.
+  * Readme update: node-gyp.
+  * Readme: fix subheading size
+  * Readme: remove Gemnasium badge, use SVG for npm badge
+  * Readme: add Travis-CI badge
+  * change operator lighter to lighten
+
 1.1.6 / 2014-08-01
 ==================
 
