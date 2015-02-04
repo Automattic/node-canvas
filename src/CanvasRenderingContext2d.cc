@@ -739,6 +739,8 @@ NAN_METHOD(Context2d::DrawImage) {
     cairo_scale(ctx, fx, fy);
     dx /= fx;
     dy /= fy;
+    dw /= fx;
+    dh /= fy;
   }
 
   if (context->hasShadow()) {
