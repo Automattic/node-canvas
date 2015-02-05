@@ -383,6 +383,7 @@ module.exports = {
 
     assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
     assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    assert.ok(0 == canvas.toDataURL('image/png',1).indexOf('data:image/png;base64,'));
 
     var err;
     try {
@@ -402,6 +403,13 @@ module.exports = {
 
   'test Canvas#toDataURL() async with type': function(){
     new Canvas(200,200).toDataURL('image/png', function(err, str){
+      assert.ok(!err);
+      assert.ok(0 == str.indexOf('data:image/png;base64,'));
+    });
+  },
+
+  'test Canvas#toDataURL() async with type, encoderOptions': function(){
+    new Canvas(200,200).toDataURL('image/png', 1, function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
     });
