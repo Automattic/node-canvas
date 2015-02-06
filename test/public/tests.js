@@ -1656,7 +1656,7 @@ tests['drawImage(img,x,y,w,h) scale vertical'] = function(ctx, done){
 tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function(ctx, done){
   var img = new Image;
   img.onload = function(){
-    ctx.drawImage(img, 13, 13, 80, 80, 25, 25, img.width / 2, img.height / 2);
+    ctx.drawImage(img, 13, 13, 45, 45, 25, 25, img.width / 2, img.height / 2);
     done();
   };
   img.onerror = function(){}
