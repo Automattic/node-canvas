@@ -23,9 +23,14 @@
 #endif
 
 // Windows doesn't support the C99 names for these
-#ifndef isnan
+#ifdef _MSC_VER
 #define isnan(x) _isnan(x)
 #define isinf(x) (!_finite(x))
+#endif
+
+#ifndef isnan
+#define isnan(x) std::isnan(x)
+#define isinf(x) std::isinf(x)
 #endif
 
 Persistent<FunctionTemplate> Context2d::constructor;
