@@ -286,6 +286,10 @@ If you have not previously, init git submodules:
 
     $ git submodule update --init
 
+Install the node modules:
+
+    $ npm install
+
 Build node-canvas:
 
     $ node-gyp rebuild
