@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 has_lib() {
   local regex="lib$1.+(so|dylib)"
 

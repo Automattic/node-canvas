@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 has_freetype() {
   pkg-config cairo --cflags-only-I | grep freetype2
