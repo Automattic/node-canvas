@@ -7,6 +7,8 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+// Linux framebuffer surface: http://lists.cairographics.org/archives/cairo/2010-July/020378.html
+
 static void cairo_linuxfb_surface_destroy(void *device) {
   cairo_linuxfb_device_t *dev = (cairo_linuxfb_device_t *)device;
 
