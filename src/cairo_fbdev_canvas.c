@@ -49,7 +49,7 @@ cairo_surface_t *cairo_linuxfb_surface_create(const char *fb_name) {
 
   // Map the device to memory
   device->fb_data = (char *)mmap(0, device->fb_screensize,
-  PROT_READ | PROT_WRITE, MAP_SHARED,#include <ledscape.h>
+  PROT_READ | PROT_WRITE, MAP_SHARED,
   device->fb_fd, 0);
   if ((int)device->fb_data == -1) {
     perror("Error: failed to map framebuffer device to memory");
@@ -62,7 +62,7 @@ cairo_surface_t *cairo_linuxfb_surface_create(const char *fb_name) {
     exit(2);
   }
 
-  // dicide image format by bpp of fb device
+  // TODO decide image format by bpp of fb device
   surface = cairo_image_surface_create_for_data(device->fb_data,
   CAIRO_FORMAT_ARGB32,
   device->fb_vinfo.xres,

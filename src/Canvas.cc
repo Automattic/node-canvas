@@ -15,6 +15,7 @@
 #include <cairo/cairo-pdf.h>
 #include <cairo/cairo-svg.h>
 #include "closure.h"
+
 extern "C" {
   #include "cairo_fbdev_canvas.h"
 }
@@ -495,11 +496,14 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
     assert(status == CAIRO_STATUS_SUCCESS);
     _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
   } else if (CANVAS_TYPE_FBDEV == t) {
+    // TODO make it possible to change fb device
     _surface = cairo_linuxfb_surface_create("/dev/fb0");
     assert(_surface);
-    cairo_linuxfb_device_t *dev = (cairo_linuxfb_device_t *)cairo_surface_get_user_data(_surface, NULL);
-    printf("fbid: %d", dev->fb_fd);
-    NanAdjustExternalMemory(4 * w * h);
+    cairo_linuxfb_device_t *dev = (cairo_linuxfb_device_t *) cairo_surface_get_user_data(_surface, NULL);
+    width = dev->fb_vinfo.xres;
+    height = dev->fb_vinfo.yres;
+    // TODO set external memory to actual bit depth
+    NanAdjustExternalMemory(4 * width * height);
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
