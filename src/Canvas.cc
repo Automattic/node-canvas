@@ -15,6 +15,9 @@
 #include <cairo/cairo-pdf.h>
 #include <cairo/cairo-svg.h>
 #include "closure.h"
+extern "C" {
+  #include "cairo_fbdev_canvas.h"
+}
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -72,7 +75,9 @@ NAN_METHOD(Canvas::New) {
     ? CANVAS_TYPE_PDF
     : !strcmp("svg", *String::Utf8Value(args[2]))
       ? CANVAS_TYPE_SVG
-      : CANVAS_TYPE_IMAGE;
+      : !strcmp("fbdev", *String::Utf8Value(args[2]))
+        ? CANVAS_TYPE_FBDEV
+        : CANVAS_TYPE_IMAGE;
   Canvas *canvas = new Canvas(width, height, type);
   canvas->Wrap(args.This());
   NanReturnValue(args.This());
@@ -85,7 +90,7 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(NanNew<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : "image"));
+  NanReturnValue(NanNew<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : canvas->isFbDev() ? "fbdev" : "image"));
 }
 
 /*
@@ -489,6 +494,12 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
     cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
     assert(status == CAIRO_STATUS_SUCCESS);
     _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
+  } else if (CANVAS_TYPE_FBDEV == t) {
+    _surface = cairo_linuxfb_surface_create("/dev/fb0");
+    assert(_surface);
+    cairo_linuxfb_device_t *dev = (cairo_linuxfb_device_t *)cairo_surface_get_user_data(_surface, NULL);
+    printf("fbid: %d", dev->fb_fd);
+    NanAdjustExternalMemory(4 * w * h);
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
@@ -509,6 +520,7 @@ Canvas::~Canvas() {
       free(_closure);
       cairo_surface_destroy(_surface);
       break;
+    case CANVAS_TYPE_FBDEV:
     case CANVAS_TYPE_IMAGE:
       cairo_surface_destroy(_surface);
       NanAdjustExternalMemory(-4 * width * height);
@@ -544,6 +556,9 @@ Canvas::resurface(Handle<Object> canvas) {
         context2d->setContext(cairo_create(surface()));
         cairo_destroy(prev);
       }
+      break;
+    case CANVAS_TYPE_FBDEV:
+      printf("resurface for fbdev not implemented yet!\n");
       break;
     case CANVAS_TYPE_IMAGE:
       // Re-surface
