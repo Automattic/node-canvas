@@ -16,6 +16,9 @@ class FBDevBackend : public Backend {
     long fb_screensize;
     unsigned char *fb_data;
 
+    cairo_format_t format;
+    int bpp;
+
     virtual cairo_surface_t *createSurface();
     virtual cairo_surface_t *recreateSurface();
     virtual void destroySurface();

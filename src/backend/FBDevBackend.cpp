@@ -25,8 +25,31 @@ cairo_surface_t * FBDevBackend::createSurface() {
     exit(3);
   }
 
+  // set width, height and bpp according to the size of the fb device
+  this->width = this->fb_vinfo.xres;
+  this->height = this->fb_vinfo.yres;
+  this->bpp = this->fb_vinfo.bits_per_pixel;
+
+  switch (this->bpp) {
+    case 32:
+      this->format = CAIRO_FORMAT_ARGB32;
+      break;
+    case 24:
+      this->format = CAIRO_FORMAT_RGB24;
+      break;
+    case 16:
+      this->format = CAIRO_FORMAT_RGB16_565;
+      break;
+    case 8:
+      this->format = CAIRO_FORMAT_A8;
+      break;
+    default:
+      perror("Could not determine fbdev color format");
+      exit(1);
+  }
+
   // Figure out the size of the screen in bytes
-  this->fb_screensize = this->fb_vinfo.xres * this->fb_vinfo.yres  * this->fb_vinfo.bits_per_pixel / 8;
+  this->fb_screensize = this->width * this->height * this->bpp / 8;
 
   // Map the device to memory
   this->fb_data = (unsigned char *) mmap(
@@ -51,17 +74,20 @@ cairo_surface_t * FBDevBackend::createSurface() {
   // TODO decide image format by bpp of fb device
   this->surface = cairo_image_surface_create_for_data(
     this->fb_data,
-    CAIRO_FORMAT_ARGB32,
-    this->fb_vinfo.xres,
-    this->fb_vinfo.yres,
-    cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, this->fb_vinfo.xres)
+    this->format,
+    this->width,
+    this->height,
+    cairo_format_stride_for_width(this->format, this->width)
   );
+
+  // set destroy callback
   cairo_surface_set_user_data(
     this->surface,
     NULL,
     this,
     &cairo_linuxfb_surface_destroy
   );
+
   return this->surface;
 }
 
