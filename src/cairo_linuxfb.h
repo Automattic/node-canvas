@@ -6,7 +6,7 @@
 
 typedef struct _cairo_linuxfb_device {
   int fb_fd;
-  char *fb_data;
+  unsigned char *fb_data;
   long fb_screensize;
   struct fb_var_screeninfo fb_vinfo;
   struct fb_fix_screeninfo fb_finfo;

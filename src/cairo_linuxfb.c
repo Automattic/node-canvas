@@ -1,4 +1,4 @@
-#include "cairo_fbdev_canvas.h"
+#include "cairo_linuxfb.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,13 +44,17 @@ cairo_surface_t *cairo_linuxfb_surface_create(const char *fb_name) {
   }
 
   // Figure out the size of the screen in bytes
-  device->fb_screensize = device->fb_vinfo.xres * device->fb_vinfo.yres
-  * device->fb_vinfo.bits_per_pixel / 8;
+  device->fb_screensize = device->fb_vinfo.xres * device->fb_vinfo.yres  * device->fb_vinfo.bits_per_pixel / 8;
 
   // Map the device to memory
-  device->fb_data = (char *)mmap(0, device->fb_screensize,
-  PROT_READ | PROT_WRITE, MAP_SHARED,
-  device->fb_fd, 0);
+  device->fb_data = (char *) mmap(
+    0,
+    device->fb_screensize,
+    PROT_READ | PROT_WRITE,
+    MAP_SHARED,
+    device->fb_fd,
+    0
+  );
   if ((int)device->fb_data == -1) {
     perror("Error: failed to map framebuffer device to memory");
     exit(4);
@@ -63,14 +67,19 @@ cairo_surface_t *cairo_linuxfb_surface_create(const char *fb_name) {
   }
 
   // TODO decide image format by bpp of fb device
-  surface = cairo_image_surface_create_for_data(device->fb_data,
-  CAIRO_FORMAT_ARGB32,
-  device->fb_vinfo.xres,
-  device->fb_vinfo.yres,
-  cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-  device->fb_vinfo.xres));
-  cairo_surface_set_user_data(surface, NULL, device,
-  &cairo_linuxfb_surface_destroy);
+  surface = cairo_image_surface_create_for_data(
+    device->fb_data,
+    CAIRO_FORMAT_ARGB32,
+    device->fb_vinfo.xres,
+    device->fb_vinfo.yres,
+    cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, device->fb_vinfo.xres)
+  );
+  cairo_surface_set_user_data(
+    surface,
+    NULL,
+    device,
+    &cairo_linuxfb_surface_destroy
+  );
 
   return surface;
 }

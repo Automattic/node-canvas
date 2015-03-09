@@ -17,7 +17,7 @@
 #include "closure.h"
 
 extern "C" {
-  #include "cairo_fbdev_canvas.h"
+  #include "cairo_linuxfb.h"
 }
 
 #ifdef HAVE_JPEG
