@@ -14,15 +14,20 @@ cairo_surface_t *ImageBackend::Backend::createSurface() {
 }
 
 cairo_surface_t *ImageBackend::Backend::recreateSurface() {
-  int old_width = cairo_image_surface_get_width(this->surface);
-  int old_height = cairo_image_surface_get_height(this->surface);
-  cairo_surface_destroy(this->surface);
+  if (this->surface != NULL) {
+    int old_width = cairo_image_surface_get_width(this->surface);
+    int old_height = cairo_image_surface_get_height(this->surface);
+    cairo_surface_destroy(this->surface);
+    //NanAdjustExternalMemory(-4 * old_width * old_height);
+  }
   this->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   //NanAdjustExternalMemory(4 * (width * height - old_width * old_height));
   return this->surface;
 }
 
 void ImageBackend::Backend::destroySurface() {
-  cairo_surface_destroy(this->surface);
-  //NanAdjustExternalMemory(-4 * this->width * this->height);
+  if (this->surface != NULL) {
+    cairo_surface_destroy(this->surface);
+    //NanAdjustExternalMemory(-4 * this->width * this->height);
+  }
 }

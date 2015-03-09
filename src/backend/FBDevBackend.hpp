@@ -1,7 +1,8 @@
 #ifndef __FBDEV_BACKEND_H__
 #define __FBDEV_BACKEND_H__
 
-#include <iostream>
+#include <exception>
+#include <string>
 #include <linux/fb.h>
 #include "Backend.hpp"
 
@@ -30,5 +31,15 @@ class FBDevBackend : public Backend {
 };
 
 static void cairo_linuxfb_surface_destroy(void *device);
+
+class FBDevBackendException : public std::exception {
+  private:
+    string err_msg;
+
+  public:
+    FBDevBackendException(const string msg) : err_msg(msg) {};
+    ~FBDevBackendException() throw() {};
+    const char *what() const throw() { return this->err_msg.c_str(); };
+};
 
 #endif
