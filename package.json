@@ -21,7 +21,8 @@
   "homepage": "https://github.com/learnboost/node-canvas",
   "repository": "git://github.com/learnboost/node-canvas",
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "install": "./build.sh"
   },
   "dependencies": {
     "nan": "~1.5.1"
