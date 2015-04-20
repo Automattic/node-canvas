@@ -19,7 +19,7 @@
     "pdf"
   ],
   "homepage": "https://github.com/learnboost/node-canvas",
-  "repository": "git://github.com/learnboost/node-canvas",
+  "repository": "git://github.com/learnboost/node-canvas.git",
   "scripts": {
     "test": "make test"
   },
