@@ -114,15 +114,18 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
       uint8_t g = *pixel >> 8;
       uint8_t b = *pixel;
       dst[bx + 3] = a;
+
+      // Performance optimization: fully transparent/opaque pixels
+      // can be processed more efficiently
       if (a != 0 && a != 255) {
-          float alpha = (float) a / 255;
-          dst[bx + 0] = (int)((float) r / alpha);
-          dst[bx + 1] = (int)((float) g / alpha);
-          dst[bx + 2] = (int)((float) b / alpha);
+        float alpha = (float) a / 255;
+        dst[bx + 0] = (int)((float) r / alpha);
+        dst[bx + 1] = (int)((float) g / alpha);
+        dst[bx + 2] = (int)((float) b / alpha);
       } else {
-          dst[bx + 0] = r;
-          dst[bx + 1] = g;
-          dst[bx + 2] = b;
+        dst[bx + 0] = r;
+        dst[bx + 1] = g;
+        dst[bx + 2] = b;
       }
     }
     dst += dstStride;
