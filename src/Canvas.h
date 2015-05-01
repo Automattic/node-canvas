@@ -21,6 +21,8 @@
 
 #include <nan.h>
 
+#include "backend/Backend.h"
+
 using namespace v8;
 using namespace node;
 
@@ -34,25 +36,11 @@ using namespace node;
 #endif
 
 /*
- * Canvas types.
- */
-
-typedef enum {
-  CANVAS_TYPE_IMAGE,
-  CANVAS_TYPE_PDF,
-  CANVAS_TYPE_SVG,
-  CANVAS_TYPE_FBDEV
-} canvas_type_t;
-
-/*
  * Canvas.
  */
 
 class Canvas: public node::ObjectWrap {
   public:
-    int width;
-    int height;
-    canvas_type_t type;
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
@@ -79,19 +67,22 @@ class Canvas: public node::ObjectWrap {
     static int EIO_AfterToBuffer(eio_req *req);
 #endif
 
-    inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
-    inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
-    inline bool isFbDev(){ return CANVAS_TYPE_FBDEV == type; }
-    inline cairo_surface_t *surface(){ return _surface; }
-    inline void *closure(){ return _closure; }
-    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
-    inline int stride(){ return cairo_image_surface_get_stride(_surface); }
-    Canvas(int width, int height, canvas_type_t type);
+    inline Backend *backend() { return _backend; }
+    inline cairo_surface_t *surface(){ return backend()->getSurface(); }
+    inline uint8_t *data(){ return cairo_image_surface_get_data(backend()->getSurface()); }
+    inline int stride(){ return cairo_image_surface_get_stride(backend()->getSurface()); }
+
+    inline int getWidth() { return backend()->getWidth(); }
+    inline int getHeight() { return backend()->getHeight(); }
+
+    Canvas(Backend *backend);
     void resurface(Handle<Object> canvas);
+
+    inline void *closure(){ return _closure; }
 
   private:
     ~Canvas();
-    cairo_surface_t *_surface;
+    Backend *_backend;
     void *_closure;
 };
 

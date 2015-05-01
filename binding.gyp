@@ -42,7 +42,8 @@
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
-        'src/cairo_linuxfb.c',
+        'src/backend/ImageBackend.cc',
+        'src/backend/FBDevBackend.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
@@ -53,6 +54,8 @@
         'src/init.cc',
         'src/PixelArray.cc'
       ],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions' ],
       'conditions': [
         ['OS=="win"', {
           'libraries': [

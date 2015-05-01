@@ -58,8 +58,8 @@ NAN_METHOD(Pattern::New) {
   // Canvas
   } else if (NanHasInstance(Canvas::constructor, obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
-    w = canvas->width;
-    h = canvas->height;
+    w = canvas->getWidth();
+    h = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid

@@ -4,7 +4,7 @@
 #include <exception>
 #include <string>
 #include <linux/fb.h>
-#include "Backend.hpp"
+#include "Backend.h"
 
 using namespace std;
 
@@ -28,9 +28,10 @@ class FBDevBackend : public Backend {
     void setHeight(int height);
 
     FBDevBackend(string deviceName);
+    ~FBDevBackend() { this->destroySurface(); }
 };
 
-static void cairo_linuxfb_surface_destroy(void *device);
+void cairo_linuxfb_surface_destroy(void *device);
 
 class FBDevBackendException : public std::exception {
   private:

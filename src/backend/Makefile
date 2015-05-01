@@ -1,5 +1,5 @@
 all:
-	g++ FBDevBackend.cpp ImageBackend.cpp main.cpp -lcairo -o backendtest
+	g++ FBDevBackend.cc ImageBackend.cc main.cc -lcairo -o backendtest
 
 run: all
 	./backendtest

@@ -1,5 +1,5 @@
-#include "FBDevBackend.hpp"
-#include "ImageBackend.hpp"
+#include "FBDevBackend.h"
+#include "ImageBackend.h"
 
 #include <iostream>
 

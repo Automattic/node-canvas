@@ -99,8 +99,8 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
 
   if (sx < 0) width += sx, sx = 0;
   if (sy < 0) height += sy, sy = 0;
-  if (sx + width > canvas->width) width = canvas->width - sx;
-  if (sy + height > canvas->height) height = canvas->height - sy;
+  if (sx + width > canvas->getWidth()) width = canvas->getWidth() - sx;
+  if (sy + height > canvas->getHeight()) height = canvas->getHeight() - sy;
   if (width <= 0 || height <= 0) return;
 
   // Normalize data (argb -> rgba)

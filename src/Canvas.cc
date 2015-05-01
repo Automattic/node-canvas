@@ -12,17 +12,15 @@
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>
-#include <cairo/cairo-pdf.h>
-#include <cairo/cairo-svg.h>
-#include "closure.h"
 
-extern "C" {
-  #include "cairo_linuxfb.h"
-}
+#include "closure.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
 #endif
+
+#include "backend/FBDevBackend.h"
+#include "backend/ImageBackend.h"
 
 Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -68,18 +66,31 @@ Canvas::Initialize(Handle<Object> target) {
 
 NAN_METHOD(Canvas::New) {
   NanScope();
-  int width = 0, height = 0;
-  canvas_type_t type = CANVAS_TYPE_IMAGE;
+  Backend *backend = NULL;
+  int width = 0;
+  int height = 0;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::Utf8Value(args[2]))
-    ? CANVAS_TYPE_PDF
-    : !strcmp("svg", *String::Utf8Value(args[2]))
-      ? CANVAS_TYPE_SVG
-      : !strcmp("fbdev", *String::Utf8Value(args[2]))
-        ? CANVAS_TYPE_FBDEV
-        : CANVAS_TYPE_IMAGE;
-  Canvas *canvas = new Canvas(width, height, type);
+  if (args[2]->IsString()) {
+    v8::String::Utf8Value param2(args[2]->ToString());
+    string type = std::string(*param2);
+    if (type == "image") {
+      backend = new ImageBackend(width, height);
+    } else if (type == "fbdev") {
+      string deviceName = "/dev/fb0";
+      if (args[3]->IsString()) {
+        v8::String::Utf8Value param3(args[3]->ToString());
+        deviceName = std::string(*param3);
+      }
+      backend = new FBDevBackend(deviceName);
+    } else {
+      backend = new ImageBackend(width, height);
+    }
+  } else {
+    backend = new ImageBackend(width, height);
+  }
+
+  Canvas *canvas = new Canvas(backend);
   canvas->Wrap(args.This());
   NanReturnValue(args.This());
 }
@@ -91,7 +102,7 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(NanNew<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : canvas->isFbDev() ? "fbdev" : "image"));
+  NanReturnValue(NanNew<String>(canvas->backend()->getName()));
 }
 
 /*
@@ -101,7 +112,7 @@ NAN_GETTER(Canvas::GetType) {
 NAN_GETTER(Canvas::GetWidth) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(NanNew<Number>(canvas->width));
+  NanReturnValue(NanNew<Number>(canvas->getWidth()));
 }
 
 /*
@@ -112,8 +123,7 @@ NAN_SETTER(Canvas::SetWidth) {
   NanScope();
   if (value->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-    canvas->width = value->Uint32Value();
-    canvas->resurface(args.This());
+    canvas->backend()->setWidth(value->Uint32Value());
   }
 }
 
@@ -124,7 +134,7 @@ NAN_SETTER(Canvas::SetWidth) {
 NAN_GETTER(Canvas::GetHeight) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(NanNew<Number>(canvas->height));
+  NanReturnValue(NanNew<Number>(canvas->getHeight()));
 }
 
 /*
@@ -135,8 +145,7 @@ NAN_SETTER(Canvas::SetHeight) {
   NanScope();
   if (value->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-    canvas->height = value->Uint32Value();
-    canvas->resurface(args.This());
+    canvas->backend()->setHeight(value->Uint32Value());
   }
 }
 
@@ -245,15 +254,6 @@ NAN_METHOD(Canvas::ToBuffer) {
   uint32_t compression_level = 6;
   uint32_t filter = PNG_ALL_FILTERS;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-
-  // TODO: async / move this out
-  if (canvas->isPDF() || canvas->isSVG()) {
-    cairo_surface_finish(canvas->surface());
-    closure_t *closure = (closure_t *) canvas->closure();
-
-    Local<Object> buf = NanNewBufferHandle((char*) closure->data, closure->len);
-    NanReturnValue(buf);
-  }
 
   if (args.Length() > 1 && !(args[1]->StrictEquals(NanUndefined()) && args[2]->StrictEquals(NanUndefined()))) {
     if (!args[1]->StrictEquals(NanUndefined())) {
@@ -476,39 +476,9 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
-  type = t;
-  width = w;
-  height = h;
-  _surface = NULL;
-  _closure = NULL;
-
-  if (CANVAS_TYPE_PDF == t) {
-    _closure = malloc(sizeof(closure_t));
-    assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-    assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else if (CANVAS_TYPE_SVG == t) {
-    _closure = malloc(sizeof(closure_t));
-    assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-    assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else if (CANVAS_TYPE_FBDEV == t) {
-    // TODO make it possible to change fb device
-    _surface = cairo_linuxfb_surface_create("/dev/fb0");
-    assert(_surface);
-    cairo_linuxfb_device_t *dev = (cairo_linuxfb_device_t *) cairo_surface_get_user_data(_surface, NULL);
-    width = dev->fb_vinfo.xres;
-    height = dev->fb_vinfo.yres;
-    // TODO set external memory to actual bit depth
-    NanAdjustExternalMemory(4 * width * height);
-  } else {
-    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-    assert(_surface);
-    NanAdjustExternalMemory(4 * w * h);
-  }
+Canvas::Canvas(Backend* backend): ObjectWrap() {
+  _backend = backend;
+  this->backend()->createSurface();
 }
 
 /*
@@ -516,20 +486,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-    case CANVAS_TYPE_SVG:
-      cairo_surface_finish(_surface);
-      closure_destroy((closure_t *) _closure);
-      free(_closure);
-      cairo_surface_destroy(_surface);
-      break;
-    case CANVAS_TYPE_FBDEV:
-    case CANVAS_TYPE_IMAGE:
-      cairo_surface_destroy(_surface);
-      NanAdjustExternalMemory(-4 * width * height);
-      break;
-  }
+  delete _backend;
 }
 
 /*
@@ -540,47 +497,14 @@ void
 Canvas::resurface(Handle<Object> canvas) {
   NanScope();
   Handle<Value> context;
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-      cairo_pdf_surface_set_size(_surface, width, height);
-      break;
-    case CANVAS_TYPE_SVG:
-      // Re-surface
-      cairo_surface_finish(_surface);
-      closure_destroy((closure_t *) _closure);
-      cairo_surface_destroy(_surface);
-      closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-      _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, width, height);
 
-      // Reset context
-      context = canvas->Get(NanNew<String>("context"));
-      if (!context->IsUndefined()) {
-        Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
-        cairo_t *prev = context2d->context();
-        context2d->setContext(cairo_create(surface()));
-        cairo_destroy(prev);
-      }
-      break;
-    case CANVAS_TYPE_FBDEV:
-      printf("resurface for fbdev not implemented yet!\n");
-      break;
-    case CANVAS_TYPE_IMAGE:
-      // Re-surface
-      int old_width = cairo_image_surface_get_width(_surface);
-      int old_height = cairo_image_surface_get_height(_surface);
-      cairo_surface_destroy(_surface);
-      _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-      NanAdjustExternalMemory(4 * (width * height - old_width * old_height));
-
-      // Reset context
-      context = canvas->Get(NanNew<String>("context"));
-      if (!context->IsUndefined()) {
-        Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
-        cairo_t *prev = context2d->context();
-        context2d->setContext(cairo_create(surface()));
-        cairo_destroy(prev);
-      }
-      break;
+  backend()->recreateSurface();
+  context = canvas->Get(NanNew<String>("context"));
+  if (!context->IsUndefined()) {
+    Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+    cairo_t *prev = context2d->context();
+    context2d->setContext(cairo_create(surface()));
+    cairo_destroy(prev);
   }
 }
 

@@ -552,7 +552,7 @@ NAN_METHOD(Context2d::New) {
 NAN_METHOD(Context2d::AddPage) {
   NanScope();
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
-  if (!context->canvas()->isPDF()) {
+  if (context->canvas()->backend()->getName() != "pdf") {
     return NanThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
@@ -596,8 +596,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (args.Length()) {
     // imageData, dx, dy
     case 3:
-      cols = std::min(arr->width(), context->canvas()->width - dx);
-      rows = std::min(arr->height(), context->canvas()->height - dy);
+      cols = std::min(arr->width(), context->canvas()->getWidth() - dx);
+      rows = std::min(arr->height(), context->canvas()->getHeight() - dy);
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -611,8 +611,8 @@ NAN_METHOD(Context2d::PutImageData) {
       if (sy + sh > arr->height()) sh = arr->height() - sy;
       dx += sx;
       dy += sy;
-      cols = std::min(sw, context->canvas()->width - dx);
-      rows = std::min(sh, context->canvas()->height - dy);
+      cols = std::min(sw, context->canvas()->getWidth() - dx);
+      rows = std::min(sh, context->canvas()->getHeight() - dy);
       break;
     default:
       return NanThrowError("invalid arguments");
@@ -691,8 +691,8 @@ NAN_METHOD(Context2d::DrawImage) {
   // Canvas
   } else if (NanHasInstance(Canvas::constructor, obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->width;
-    sh = canvas->height;
+    sw = canvas->getWidth();
+    sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid

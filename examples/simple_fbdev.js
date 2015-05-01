@@ -6,7 +6,7 @@
 var fs = require('fs');
 var Canvas = require('../lib/canvas');
 
-var canvas = new Canvas(320, 320, "fbdev")
+var canvas = new Canvas(0, 0, "fbdev")
 var ctx = canvas.getContext('2d')
 
 console.log("Width: " + canvas.width + ", Height: " + canvas.height);

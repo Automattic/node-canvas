@@ -18,19 +18,17 @@ class Backend
 {
   protected:
     string name;
-    
+
     int width;
     int height;
     cairo_surface_t *surface;
 
   public:
-    virtual ~Backend() {
-      this->destroySurface();
-    };
+    virtual ~Backend() = 0;
 
-    virtual cairo_surface_t *createSurface();
-    virtual cairo_surface_t *recreateSurface();
-    virtual void destroySurface();
+    virtual cairo_surface_t *createSurface() = 0;
+    virtual cairo_surface_t *recreateSurface() = 0;
+    virtual void destroySurface() = 0;
 
     string getName() { return name; };
 

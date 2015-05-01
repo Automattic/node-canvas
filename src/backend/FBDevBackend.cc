@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "FBDevBackend.hpp"
+#include "FBDevBackend.h"
 
 FBDevBackend::FBDevBackend(string deviceName) {
   this->name = "fbdev";
@@ -116,7 +116,7 @@ void FBDevBackend::destroySurface() {
   cairo_surface_destroy(this->surface);
 }
 
-static void cairo_linuxfb_surface_destroy(void *device) {
+void cairo_linuxfb_surface_destroy(void *device) {
   FBDevBackend *backend = (FBDevBackend *) device;
 
   if (backend == NULL) {
