@@ -1,3 +1,10 @@
+1.2.2 / 2015-04-18
+==================
+
+  * Now works on io.js
+  * Fix 'drawImage' scaling (the dimensions of the region that gets clipped also needs to be scaled).
+  * Fix bug in StreamPNGSync
+
 1.2.1 / 2015-02-10
 ==================
 
