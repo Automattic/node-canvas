@@ -1,28 +1,28 @@
-{ 
+{
 
   'includes': [  'common.gyp' , 'locations.gyp'],
   'targets': [
     {
       'target_name': 'libjpeg',
       'type': 'static_library',
-      'include_dirs': [ 
-            './custom-include/jpeg/',
+      'include_dirs': [
+            '../static/custom-include/jpeg/',
             '<(jpeg_root)' ,
         ],
-      
+
       'dependencies': [],
       'defines': [],
       'sources': [
-   
+
             #"<(jpeg_root)ansi2knr.c",
             #"<(jpeg_root)cdjpeg.c",
             #"<(jpeg_root)cjpeg.c",
             #"<(jpeg_root)ckconfig.c",
             #"<(jpeg_root)djpeg.c",
             #"<(jpeg_root)example.c",
-            
+
             "<(jpeg_root)jsimd_none.c",
-            
+
             "<(jpeg_root)jcapimin.c",
             "<(jpeg_root)jcapistd.c",
             "<(jpeg_root)jccoefct.c",
@@ -35,7 +35,7 @@
             "<(jpeg_root)jcmarker.c",
             "<(jpeg_root)jcmaster.c",
             "<(jpeg_root)jcomapi.c",
-            "./custom-include/jpeg/jconfig.h",
+            "../static/custom-include/jpeg/jconfig.h",
             "<(jpeg_root)jcparam.c",
             "<(jpeg_root)jcphuff.c",
             "<(jpeg_root)jcprepct.c",
@@ -69,30 +69,30 @@
             "<(jpeg_root)jidctfst.c",
             "<(jpeg_root)jidctint.c",
             "<(jpeg_root)jinclude.h",
-            
+
             "<(jpeg_root)jidctred.c",
-            
+
             #"<(jpeg_root)jmemansi.c",
             #"<(jpeg_root)jmemdos.c",
             #"<(jpeg_root)jmemmac.c",
-            
+
             "<(jpeg_root)jmemmgr.c",
-            
+
             #"<(jpeg_root)jmemname.c",
             "<(jpeg_root)jmemnobs.c",
             #"<(jpeg_root)jpegtran.c",
-            
+
             "<(jpeg_root)jquant1.c",
             "<(jpeg_root)jquant2.c",
-            
+
             "<(jpeg_root)jmemsys.h",
             "<(jpeg_root)jmorecfg.h",
             "<(jpeg_root)jpegint.h",
             "<(jpeg_root)jpeglib.h",
-            
+
             "<(jpeg_root)jutils.c",
             "<(jpeg_root)jversion.h",
-            
+
             #"<(jpeg_root)rdbmp.c",
             #"<(jpeg_root)rdcolmap.c",
             #"<(jpeg_root)rdgif.c",
@@ -111,4 +111,4 @@
       ],
     },
   ]
-} 
+}

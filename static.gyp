@@ -1,7 +1,7 @@
 {
-    'includes': [ 'deps/locations.gyp'],
+    'includes': [ 'static/locations.gyp'],
     'variables':{
-        'ensure_deps%': '<!(./deps/ensure_deps.sh)',
+        'ensure_deps%': '<!(./static/ensure_deps.sh)',
     },
     'targets': [
     {
@@ -10,20 +10,20 @@
             "<!(node -e \"require('nan')\")",
             './deps/<(freetype_root)/include',
             './deps/<(jpeg_root)',
-           #'./deps/custom-include/jpeg/',
+           #'./static/custom-include/jpeg/',
             './deps/<(cairo_root)' ,
             './deps/<(cairo_root)cairo/' ,
             './deps/<(pixman_root)pixman/'
             './deps/<(libpng_root)/',
-            './deps/custom-include/cairo/',
+            './static/custom-include/cairo/',
             './deps/<(gif_root)/lib/',
       ],
       'dependencies': [
-	        'deps/cairo.gyp:cairo',
-	        'deps/libpng.gyp:png',
-	        'deps/jpeg.gyp:libjpeg',
-	        'deps/gif.gyp:gif',
-	  ],
+            'static/cairo.gyp:cairo',
+            'static/libpng.gyp:png',
+            'static/jpeg.gyp:libjpeg',
+            'static/gif.gyp:gif',
+      ],
       'defines': [  'HAVE_FREETYPE' ,'HAVE_JPEG' ,'HAVE_GIF' ],
       'sources': [
         'src/backend/ImageBackend.cc',

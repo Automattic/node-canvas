@@ -1,18 +1,18 @@
-{ 
+{
 
   'includes': [ 'common.gyp' , 'locations.gyp'],
   'targets': [
     {
       'target_name': 'pixman',
       'type': 'static_library',
-      'include_dirs': [ 
-            './custom-include/pixman/',
-            '<(pixman_root)', 
+      'include_dirs': [
+            '../static/custom-include/pixman/',
+            '<(pixman_root)',
             '<(pixman_root)pixman',
             ],
-      
+
       'libraries': [
-            
+
       ]
       ,
       'defines': [ 'HAVE_CONFIG_H' ],
@@ -57,4 +57,4 @@
       ],
     },
   ]
-} 
+}

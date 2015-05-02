@@ -15,3 +15,4 @@ node_modules
 *.swp
 *.un~
 deps/
+npm-debug.log

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-cd $(dirname $0)
+DEPS="$(dirname $0)/../deps"
+
+mkdir -p $DEPS
+cd $DEPS
 
 
 if [ ! -d "cairo-1.12.16" ]; then
@@ -63,5 +66,3 @@ if [ ! -d "cairo-1.12.16" ] || [ ! -d "pixman-0.30.2" ] || [ ! -d "freetype-2.5.
 else
     echo true
 fi
-
-

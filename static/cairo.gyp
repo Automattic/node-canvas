@@ -1,25 +1,25 @@
-{ 
+{
 
     'includes': [ 'common.gyp', 'locations.gyp' ],
-    
-	  
+
+
     'targets': [
     {
         'variables': {
-         
+
     	  'cairo_src%': "<(cairo_root)cairo/",
     	},
       'target_name': 'cairo',
       'type': 'static_library',
-     
-      'include_dirs': [ 
-            './custom-include/cairo/',
-            '<(cairo_root)', 
+
+      'include_dirs': [
+            '../static/custom-include/cairo/',
+            '<(cairo_root)',
             '<(cairo_src)' ,
-            '<(pixman_root)', 
+            '<(pixman_root)',
             '<(pixman_root)pixman',
             '<(freetype_root)include',
-            
+
             #'<!@(pkg-config --cflags-only-I  pixman-1 | sed s/-I//g)'
       ],'libraries': [
             #'<!@(pkg-config pixman-1 --libs)'
@@ -30,7 +30,7 @@
       ]
       ,
       'defines': [ 'HAVE_CONFIG_H' ],
-      
+
      #'cflags!': [ '-O2' ],
      #'cflags+': [ '-O3' ],
      # 'cflags_cc!': [ '-O2' ],
@@ -243,4 +243,4 @@
       ],
     },
   ]
-} 
+}
