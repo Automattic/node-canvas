@@ -53,19 +53,9 @@ class Canvas: public node::ObjectWrap {
     static NAN_METHOD(StreamPNGSync);
     static NAN_METHOD(StreamJPEGSync);
     static Local<Value> Error(cairo_status_t status);
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
+    
     static void ToBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
-#else
-    static
-#if NODE_VERSION_AT_LEAST(0, 5, 4)
-      void
-#else
-      int
-#endif
-      EIO_ToBuffer(eio_req *req);
-    static int EIO_AfterToBuffer(eio_req *req);
-#endif
 
     inline Backend *backend() { return _backend; }
     inline cairo_surface_t *surface(){ return backend()->getSurface(); }
