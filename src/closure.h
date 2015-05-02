@@ -16,7 +16,7 @@
   #define PAGE_SIZE 4096
 #endif
 
-#include "nan.h"
+#include <nan.h>
 
 /*
  * PNG stream closure.
@@ -50,7 +50,7 @@ closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level,
 }
 
 /*
- * Free the given closure's data, 
+ * Free the given closure's data,
  * and hint V8 at the memory dealloc.
  */
 
@@ -58,7 +58,7 @@ void
 closure_destroy(closure_t *closure) {
   if (closure->len) {
     free(closure->data);
-    V8::AdjustAmountOfExternalAllocatedMemory(- (intptr_t) closure->max_len);
+    NanAdjustExternalMemory(-((intptr_t) closure->max_len));
   }
 }
 

@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nan.h"
-
 Persistent<FunctionTemplate> PixelArray::constructor;
 
 /*
@@ -22,15 +20,15 @@ PixelArray::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(PixelArray::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(PixelArray::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPixelArray"));
+  ctor->SetClassName(NanNew("CanvasPixelArray"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->InstanceTemplate();
-  proto->SetAccessor(NanSymbol("length"), GetLength);
-  target->Set(NanSymbol("CanvasPixelArray"), ctor->GetFunction());
+  proto->SetAccessor(NanNew("length"), GetLength);
+  target->Set(NanNew("CanvasPixelArray"), ctor->GetFunction());
 }
 
 /*
@@ -82,7 +80,7 @@ NAN_METHOD(PixelArray::New) {
 
 NAN_GETTER(PixelArray::GetLength) {
   NanScope();
-  NanReturnValue(Number::New(args.This()->GetIndexedPropertiesPixelDataLength()));
+  NanReturnValue(NanNew<Number>(args.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*
@@ -101,8 +99,8 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
 
   if (sx < 0) width += sx, sx = 0;
   if (sy < 0) height += sy, sy = 0;
-  if (sx + width > canvas->width) width = canvas->width - sx;
-  if (sy + height > canvas->height) height = canvas->height - sy;
+  if (sx + width > canvas->getWidth()) width = canvas->getWidth() - sx;
+  if (sy + height > canvas->getHeight()) height = canvas->getHeight() - sy;
   if (width <= 0 || height <= 0) return;
 
   // Normalize data (argb -> rgba)
@@ -116,10 +114,19 @@ PixelArray::PixelArray(Canvas *canvas, int sx, int sy, int width, int height):
       uint8_t g = *pixel >> 8;
       uint8_t b = *pixel;
       dst[bx + 3] = a;
-      float alpha = (float) a / 255;
-      dst[bx + 0] = (int)((float) r / alpha);
-      dst[bx + 1] = (int)((float) g / alpha);
-      dst[bx + 2] = (int)((float) b / alpha);
+
+      // Performance optimization: fully transparent/opaque pixels
+      // can be processed more efficiently
+      if (a != 0 && a != 255) {
+        float alpha = (float) a / 255;
+        dst[bx + 0] = (int)((float) r / alpha);
+        dst[bx + 1] = (int)((float) g / alpha);
+        dst[bx + 2] = (int)((float) b / alpha);
+      } else {
+        dst[bx + 0] = r;
+        dst[bx + 1] = g;
+        dst[bx + 2] = b;
+      }
     }
     dst += dstStride;
   }
@@ -142,7 +149,7 @@ uint8_t *
 PixelArray::alloc() {
   int len = length();
   _data = (uint8_t *) calloc(1, len);
-  V8::AdjustAmountOfExternalAllocatedMemory(len);
+  NanAdjustExternalMemory(len);
   return _data;
 }
 
@@ -151,6 +158,6 @@ PixelArray::alloc() {
  */
 
 PixelArray::~PixelArray() {
-  V8::AdjustAmountOfExternalAllocatedMemory(-length());
+  NanAdjustExternalMemory(-length());
   free(_data);
 }

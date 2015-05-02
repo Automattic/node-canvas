@@ -1,16 +1,37 @@
-# node-canvas
+node-canvas
+===========
+### Canvas graphics API backed by Cairo
+[![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
+[![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
 
- Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
+  node-canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
 
 ## Authors
 
   - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
+  - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
+  - Rod Vagg ([rvagg](http://github.com/rvagg))
+  - Juriy Zaytsev ([kangax](http://github.com/kangax))
 
 ## Installation
 
-    $ npm install canvas
+```bash
+$ npm install canvas
+```
 
 Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/LearnBoost/node-canvas/wiki/_pages).
+
+You can quickly install Cairo and its dependencies for OS X using the one liner below:
+
+```bash
+$ wget https://raw.githubusercontent.com/LearnBoost/node-canvas/master/install -O - | sh
+```
+
+or if you use MacPorts
+
+```bash
+sudo port install pkgconfig libpng giflib freetype libpixman cairo
+```
 
 ## Screencasts
 
@@ -20,6 +41,7 @@ Unless previously installed you'll _need_ __Cairo__. For system-specific install
 
 ```javascript
 var Canvas = require('canvas')
+  , Image = Canvas.Image
   , canvas = new Canvas(200,200)
   , ctx = canvas.getContext('2d');
 
@@ -109,8 +131,8 @@ _Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
 are synchronous_
 
 ```javascript
-var stream = canvas.JPEGStream({
-    bufsize: 4096 // output buffer size in bytes, default: 4096 
+var stream = canvas.jpegStream({
+    bufsize: 4096 // output buffer size in bytes, default: 4096
   , quality: 75 // JPEG quality (0-100) default: 75
   , progressive: false // true for progressive compression, default: false
 });
@@ -218,7 +240,7 @@ ctx.antialias = 'none';
 var canvas = new Canvas(200, 500, 'pdf');
 ```
 
- An additional method `.addPage()` is then available to create 
+ An additional method `.addPage()` is then available to create
  multiple page PDFs:
 
 ```js
@@ -233,6 +255,17 @@ ctx.addPage();
 ctx.font = '22px Helvetica';
 ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
+```
+
+## SVG support
+
+ Just like PDF support, make sure to install cairo with `--enable-svg=yes`.
+ You also need to tell node-canvas that it is working on SVG upon its initialization:
+
+```js
+var canvas = new Canvas(200, 500, 'svg');
+// Use the normal primitives.
+fs.writeFile('out.svg', canvas.toBuffer());
 ```
 
 ## Benchmarks
@@ -253,9 +286,13 @@ If you have not previously, init git submodules:
 
     $ git submodule update --init
 
+Install the node modules:
+
+    $ npm install
+
 Build node-canvas:
 
-    $ node-waf configure build
+    $ node-gyp rebuild
 
 Unit tests:
 
@@ -275,45 +312,13 @@ Tested with and designed for:
 For node 0.2.x `node-canvas` <= 0.4.3 may be used,
 0.5.0 and above are designed for node 0.4.x only.
 
-## Contributors
-
-```
-project  : node-canvas
- repo age : 1 year, 11 months
- active   : 120 days
- commits  : 963
- files    : 72
- authors  : 
-   816	Tj Holowaychuk          84.7%
-    58	TJ Holowaychuk          6.0%
-    23	c-spencer               2.4%
-    16	Nathan Rajlich          1.7%
-    12	atomizer                1.2%
-     6	Elijah Hamovitz         0.6%
-     5	Luigi Pinca             0.5%
-     5	Robert Sköld            0.5%
-     4	obarthel                0.4%
-     3	Don Park                0.3%
-     2	Andreas Botsikas        0.2%
-     2	Gabriel Falcao          0.2%
-     1	Brian McKinney          0.1%
-     1	Seiya Konno             0.1%
-     1	Syoyo Fujita            0.1%
-     1	Marcello Bastea-Forte   0.1%
-     1	Tharit                  0.1%
-     1	Konstantin Käfer        0.1%
-     1	Tom Carden              0.1%
-     1	Walt Lin                0.1%
-     1	David Björklund         0.1%
-     1	Brian White             0.1%
-     1	Philippe Plantier       0.1%
-```
-
 ## License
 
 (The MIT License)
 
-Copyright (c) 2010 LearnBoost &lt;dev@learnboost.ca&gt;
+Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
+
+Copyright (c) 2014 Automattic, Inc and contributors &lt;dev@automattic.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

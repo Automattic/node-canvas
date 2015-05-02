@@ -7,7 +7,7 @@
     {
       'target_name': 'canvas',
       'include_dirs': [
-            "<!(node -p -e \"require('path').dirname(require.resolve('nan'))\")" ,
+            "<!(node -e \"require('nan')\")",
             './deps/<(freetype_root)/include',
             './deps/<(jpeg_root)',
            #'./deps/custom-include/jpeg/',
@@ -26,6 +26,8 @@
 	  ],
       'defines': [  'HAVE_FREETYPE' ,'HAVE_JPEG' ,'HAVE_GIF' ],
       'sources': [
+        'src/backend/ImageBackend.cc',
+        'src/backend/FBDevBackend.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
@@ -37,6 +39,8 @@
         'src/PixelArray.cc',
         'src/FontFace.cc',
        ],
+      'cflags!': [ '-fno-exceptions' ],
+      'cflags_cc!': [ '-fno-exceptions' ],
     }
   ]
 }

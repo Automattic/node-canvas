@@ -20,7 +20,7 @@
 
 extern "C" void
 init (Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
@@ -32,7 +32,7 @@ init (Handle<Object> target) {
   FontFace::Initialize(target);
 #endif
 
-  target->Set(String::New("cairoVersion"), String::New(cairo_version_string()));
+  target->Set(NanNew<String>("cairoVersion"), NanNew<String>(cairo_version_string()));
 #ifdef HAVE_JPEG
 
 #ifndef JPEG_LIB_VERSION_MAJOR
@@ -57,16 +57,16 @@ init (Handle<Object> target) {
   } else {
     snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
   }
-  target->Set(String::New("jpegVersion"), String::New(jpeg_version));
+  target->Set(NanNew<String>("jpegVersion"), NanNew<String>(jpeg_version));
 #endif
 
 #ifdef HAVE_GIF
 #ifndef GIF_LIB_VERSION
   char gif_version[10];
   snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
-  target->Set(String::New("gifVersion"), String::New(gif_version));
+  target->Set(NanNew<String>("gifVersion"), NanNew<String>(gif_version));
 #else
-  target->Set(String::New("gifVersion"), String::New(GIF_LIB_VERSION));
+  target->Set(NanNew<String>("gifVersion"), NanNew<String>(GIF_LIB_VERSION));
 #endif
 #endif
 }

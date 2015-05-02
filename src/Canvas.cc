@@ -12,12 +12,15 @@
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>
-#include <cairo/cairo-pdf.h>
+
 #include "closure.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
 #endif
+
+#include "backend/FBDevBackend.h"
+#include "backend/ImageBackend.h"
 
 Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -30,10 +33,10 @@ Canvas::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Canvas::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Canvas::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("Canvas"));
+  ctor->SetClassName(NanNew("Canvas"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -42,19 +45,19 @@ Canvas::Initialize(Handle<Object> target) {
 #ifdef HAVE_JPEG
   NODE_SET_PROTOTYPE_METHOD(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
-  proto->SetAccessor(NanSymbol("type"), GetType);
-  proto->SetAccessor(NanSymbol("width"), GetWidth, SetWidth);
-  proto->SetAccessor(NanSymbol("height"), GetHeight, SetHeight);
+  proto->SetAccessor(NanNew("type"), GetType);
+  proto->SetAccessor(NanNew("width"), GetWidth, SetWidth);
+  proto->SetAccessor(NanNew("height"), GetHeight, SetHeight);
 
-  proto->Set("PNG_NO_FILTERS", Uint32::New(PNG_NO_FILTERS));
-  proto->Set("PNG_FILTER_NONE", Uint32::New(PNG_FILTER_NONE));
-  proto->Set("PNG_FILTER_SUB", Uint32::New(PNG_FILTER_SUB));
-  proto->Set("PNG_FILTER_UP", Uint32::New(PNG_FILTER_UP));
-  proto->Set("PNG_FILTER_AVG", Uint32::New(PNG_FILTER_AVG));
-  proto->Set("PNG_FILTER_PAETH", Uint32::New(PNG_FILTER_PAETH));
-  proto->Set("PNG_ALL_FILTERS", Uint32::New(PNG_ALL_FILTERS));
+  NanSetTemplate(proto, "PNG_NO_FILTERS", NanNew<Uint32>(PNG_NO_FILTERS));
+  NanSetTemplate(proto, "PNG_FILTER_NONE", NanNew<Uint32>(PNG_FILTER_NONE));
+  NanSetTemplate(proto, "PNG_FILTER_SUB", NanNew<Uint32>(PNG_FILTER_SUB));
+  NanSetTemplate(proto, "PNG_FILTER_UP", NanNew<Uint32>(PNG_FILTER_UP));
+  NanSetTemplate(proto, "PNG_FILTER_AVG", NanNew<Uint32>(PNG_FILTER_AVG));
+  NanSetTemplate(proto, "PNG_FILTER_PAETH", NanNew<Uint32>(PNG_FILTER_PAETH));
+  NanSetTemplate(proto, "PNG_ALL_FILTERS", NanNew<Uint32>(PNG_ALL_FILTERS));
 
-  target->Set(NanSymbol("Canvas"), ctor->GetFunction());
+  target->Set(NanNew("Canvas"), ctor->GetFunction());
 }
 
 /*
@@ -63,14 +66,31 @@ Canvas::Initialize(Handle<Object> target) {
 
 NAN_METHOD(Canvas::New) {
   NanScope();
-  int width = 0, height = 0;
-  canvas_type_t type = CANVAS_TYPE_IMAGE;
+  Backend *backend = NULL;
+  int width = 0;
+  int height = 0;
   if (args[0]->IsNumber()) width = args[0]->Uint32Value();
   if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-  if (args[2]->IsString()) type = !strcmp("pdf", *String::AsciiValue(args[2]))
-    ? CANVAS_TYPE_PDF
-    : CANVAS_TYPE_IMAGE;
-  Canvas *canvas = new Canvas(width, height, type);
+  if (args[2]->IsString()) {
+    v8::String::Utf8Value param2(args[2]->ToString());
+    string type = std::string(*param2);
+    if (type == "image") {
+      backend = new ImageBackend(width, height);
+    } else if (type == "fbdev") {
+      string deviceName = "/dev/fb0";
+      if (args[3]->IsString()) {
+        v8::String::Utf8Value param3(args[3]->ToString());
+        deviceName = std::string(*param3);
+      }
+      backend = new FBDevBackend(deviceName);
+    } else {
+      backend = new ImageBackend(width, height);
+    }
+  } else {
+    backend = new ImageBackend(width, height);
+  }
+
+  Canvas *canvas = new Canvas(backend);
   canvas->Wrap(args.This());
   NanReturnValue(args.This());
 }
@@ -82,7 +102,7 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(String::New(canvas->isPDF() ? "pdf" : "image"));
+  NanReturnValue(NanNew<String>(canvas->backend()->getName()));
 }
 
 /*
@@ -92,7 +112,7 @@ NAN_GETTER(Canvas::GetType) {
 NAN_GETTER(Canvas::GetWidth) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(Number::New(canvas->width));
+  NanReturnValue(NanNew<Number>(canvas->getWidth()));
 }
 
 /*
@@ -103,8 +123,7 @@ NAN_SETTER(Canvas::SetWidth) {
   NanScope();
   if (value->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-    canvas->width = value->Uint32Value();
-    canvas->resurface(args.This());
+    canvas->backend()->setWidth(value->Uint32Value());
   }
 }
 
@@ -115,7 +134,7 @@ NAN_SETTER(Canvas::SetWidth) {
 NAN_GETTER(Canvas::GetHeight) {
   NanScope();
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-  NanReturnValue(Number::New(canvas->height));
+  NanReturnValue(NanNew<Number>(canvas->getHeight()));
 }
 
 /*
@@ -126,8 +145,7 @@ NAN_SETTER(Canvas::SetHeight) {
   NanScope();
   if (value->IsNumber()) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
-    canvas->height = value->Uint32Value();
-    canvas->resurface(args.This());
+    canvas->backend()->setHeight(value->Uint32Value());
   }
 }
 
@@ -211,7 +229,7 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   } else {
     Local<Object> buf = NanNewBufferHandle((char*)closure->data, closure->len);
     memcpy(Buffer::Data(buf), closure->data, closure->len);
-    Local<Value> argv[2] = { Local<Value>::New(Null()), buf };
+    Local<Value> argv[2] = { NanNew(NanNull()), buf };
     closure->pfn->Call(2, argv);
   }
 
@@ -237,22 +255,13 @@ NAN_METHOD(Canvas::ToBuffer) {
   uint32_t filter = PNG_ALL_FILTERS;
   Canvas *canvas = ObjectWrap::Unwrap<Canvas>(args.This());
 
-  // TODO: async / move this out
-  if (canvas->isPDF()) {
-    cairo_surface_finish(canvas->surface());
-    closure_t *closure = (closure_t *) canvas->closure();
-
-    Local<Object> buf = NanNewBufferHandle((char*) closure->data, closure->len);
-    NanReturnValue(buf);
-  }
-
-  if (args.Length() > 1 && !(args[1]->StrictEquals(Undefined()) && args[2]->StrictEquals(Undefined()))) {
-    if (!args[1]->StrictEquals(Undefined())) {
+  if (args.Length() > 1 && !(args[1]->StrictEquals(NanUndefined()) && args[2]->StrictEquals(NanUndefined()))) {
+    if (!args[1]->StrictEquals(NanUndefined())) {
         bool good = true;
         if (args[1]->IsNumber()) {
           compression_level = args[1]->Uint32Value();
         } else if (args[1]->IsString()) {
-          if (args[1]->StrictEquals(String::New("0"))) {
+          if (args[1]->StrictEquals(NanNew<String>("0"))) {
             compression_level = 0;
           } else {
             uint32_t tmp = args[1]->Uint32Value();
@@ -275,9 +284,9 @@ NAN_METHOD(Canvas::ToBuffer) {
        }
     }
 
-    if (!args[2]->StrictEquals(Undefined())) {
+    if (!args[2]->StrictEquals(NanUndefined())) {
       if (args[2]->IsUint32()) {
-        filter = args[1]->Uint32Value();
+        filter = args[2]->Uint32Value();
       } else {
         return NanThrowTypeError("Invalid filter value.");
       }
@@ -348,10 +357,10 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
   closure_t *closure = (closure_t *) c;
   Local<Object> buf = NanNewBufferHandle((char *)data, len);
   Local<Value> argv[3] = {
-      Local<Value>::New(Null())
+      NanNew(NanNull())
     , buf
-    , Integer::New(len) };
-  closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
+    , NanNew<Number>(len) };
+  NanMakeCallback(NanGetCurrentContext()->Global(), closure->fn, 3, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -367,13 +376,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   if (!args[0]->IsFunction())
     return NanThrowTypeError("callback function required");
 
-  if (args.Length() > 1 && !(args[1]->StrictEquals(Undefined()) && args[2]->StrictEquals(Undefined()))) {
-    if (!args[1]->StrictEquals(Undefined())) {
+  if (args.Length() > 1 && !(args[1]->StrictEquals(NanUndefined()) && args[2]->StrictEquals(NanUndefined()))) {
+    if (!args[1]->StrictEquals(NanUndefined())) {
         bool good = true;
         if (args[1]->IsNumber()) {
           compression_level = args[1]->Uint32Value();
         } else if (args[1]->IsString()) {
-          if (args[1]->StrictEquals(String::New("0"))) {
+          if (args[1]->StrictEquals(NanNew<String>("0"))) {
             compression_level = 0;
           } else {
             uint32_t tmp = args[1]->Uint32Value();
@@ -396,9 +405,9 @@ NAN_METHOD(Canvas::StreamPNGSync) {
        }
     }
 
-    if (!args[2]->StrictEquals(Undefined())) {
+    if (!args[2]->StrictEquals(NanUndefined())) {
       if (args[2]->IsUint32()) {
-        filter = args[1]->Uint32Value();
+        filter = args[2]->Uint32Value();
       } else {
         return NanThrowTypeError("Invalid filter value.");
       }
@@ -420,13 +429,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     NanReturnValue(try_catch.ReThrow());
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    closure.fn->Call(Context::GetCurrent()->Global(), 1, argv);
+    NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   } else {
     Local<Value> argv[3] = {
-        Local<Value>::New(Null())
-      , Local<Value>::New(Null())
-      , Integer::New(0) };
-    closure.fn->Call(Context::GetCurrent()->Global(), 3, argv);
+        NanNew(NanNull())
+      , NanNew(NanNull())
+      , NanNew<Uint32>(0) };
+    NanMakeCallback(NanGetCurrentContext()->Global(), closure.fn, 1, argv);
   }
   NanReturnUndefined();
 }
@@ -467,24 +476,9 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
-  type = t;
-  width = w;
-  height = h;
-  _surface = NULL;
-  _closure = NULL;
-
-  if (CANVAS_TYPE_PDF == t) {
-    _closure = malloc(sizeof(closure_t));
-    assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-    assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else {
-    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-    assert(_surface);
-    V8::AdjustAmountOfExternalAllocatedMemory(4 * w * h);
-  }
+Canvas::Canvas(Backend* backend): ObjectWrap() {
+  _backend = backend;
+  this->backend()->createSurface();
 }
 
 /*
@@ -492,17 +486,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-      cairo_surface_finish(_surface);
-      closure_destroy((closure_t *) _closure);
-      free(_closure);
-      cairo_surface_destroy(_surface);
-      break;
-    case CANVAS_TYPE_IMAGE:
-      cairo_surface_destroy(_surface);
-      break;
-  }
+  delete _backend;
 }
 
 /*
@@ -511,27 +495,16 @@ Canvas::~Canvas() {
 
 void
 Canvas::resurface(Handle<Object> canvas) {
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-      cairo_pdf_surface_set_size(_surface, width, height);
-      break;
-    case CANVAS_TYPE_IMAGE:
-      // Re-surface
-      int old_width = cairo_image_surface_get_width(_surface);
-      int old_height = cairo_image_surface_get_height(_surface);
-      cairo_surface_destroy(_surface);
-      _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-      V8::AdjustAmountOfExternalAllocatedMemory(4 * (width * height - old_width * old_height));
+  NanScope();
+  Handle<Value> context;
 
-      // Reset context
-      Handle<Value> context = canvas->Get(String::New("context"));
-      if (!context->IsUndefined()) {
-        Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
-        cairo_t *prev = context2d->context();
-        context2d->setContext(cairo_create(surface()));
-        cairo_destroy(prev);
-      }
-      break;
+  backend()->recreateSurface();
+  context = canvas->Get(NanNew<String>("context"));
+  if (!context->IsUndefined()) {
+    Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+    cairo_t *prev = context2d->context();
+    context2d->setContext(cairo_create(surface()));
+    cairo_destroy(prev);
   }
 }
 
@@ -541,5 +514,5 @@ Canvas::resurface(Handle<Object> canvas) {
 
 Local<Value>
 Canvas::Error(cairo_status_t status) {
-  return Exception::Error(String::New(cairo_status_to_string(status)));
+  return Exception::Error(NanNew<String>(cairo_status_to_string(status)));
 }

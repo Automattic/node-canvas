@@ -1,22 +1,39 @@
-{  "name": "canvas"
- , "description":  "Canvas graphics API backed by Cairo"
- , "version":  "1.1.0"
- , "author": "TJ Holowaychuk <tj@learnboost.com>"
- , "keywords": ["canvas", "graphic", "graphics", "pixman", "cairo", "image", "images", "pdf"]
- , "homepage": "https://github.com/learnboost/node-canvas"
- , "repository": "git://github.com/learnboost/node-canvas"
- , "scripts": {
-     "test": "make test"
- }
- , "dependencies": {
-     "nan": "~0.3.0"
- }
- , "devDependencies": {
-     "express": "3.0"
-   , "jade": "0.28.1"
-   , "mocha": "*"
-   , "should": "*"
- }
- , "engines": { "node": ">= 0.6.0" }
- , "main": "./lib/canvas.js"
+{
+  "name": "canvas",
+  "description": "Canvas graphics API backed by Cairo",
+  "version": "1.2.2",
+  "author": "TJ Holowaychuk <tj@learnboost.com>",
+  "contributors": [
+    "Nathan Rajlich <nathan@tootallnate.net>",
+    "Rod Vagg <r@va.gg>",
+    "Juriy Zaytsev <kangax@gmail.com>"
+  ],
+  "keywords": [
+    "canvas",
+    "graphic",
+    "graphics",
+    "pixman",
+    "cairo",
+    "image",
+    "images",
+    "pdf"
+  ],
+  "homepage": "https://github.com/learnboost/node-canvas",
+  "repository": "git://github.com/learnboost/node-canvas.git",
+  "scripts": {
+    "test": "make test"
+  },
+  "dependencies": {
+    "nan": "~1.7.0"
+  },
+  "devDependencies": {
+    "express": "3.0",
+    "jade": "0.28.1",
+    "mocha": "*",
+    "should": "*"
+  },
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "main": "./lib/canvas.js"
 }

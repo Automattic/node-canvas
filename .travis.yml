@@ -1,7 +1,9 @@
 language: node_js
 node_js:
-  - 0.4
-  - 0.6
-  - 0.7 # development version of 0.8, may be unstable
-  - 0.8
-  - 0.9
+  - '0.8'
+  - '0.10'
+  - '0.11'
+  - 'iojs'
+before_install:
+  - sudo chown -R $USER /usr/local
+  - sh install

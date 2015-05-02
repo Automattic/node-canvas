@@ -17,19 +17,19 @@ Persistent<FunctionTemplate> Pattern::constructor;
 
 void
 Pattern::Initialize(Handle<Object> target) {
-  HandleScope scope;
+  NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(Pattern::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Pattern::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPattern"));
+  ctor->SetClassName(NanNew("CanvasPattern"));
 
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("CanvasPattern"));
+  ctor->SetClassName(NanNew("CanvasPattern"));
 
   // Prototype
-  target->Set(NanSymbol("CanvasPattern"), ctor->GetFunction());
+  target->Set(NanNew("CanvasPattern"), ctor->GetFunction());
 }
 
 /*
@@ -58,8 +58,8 @@ NAN_METHOD(Pattern::New) {
   // Canvas
   } else if (NanHasInstance(Canvas::constructor, obj)) {
     Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
-    w = canvas->width;
-    h = canvas->height;
+    w = canvas->getWidth();
+    h = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid

@@ -18,16 +18,16 @@ ImageData::Initialize(Handle<Object> target) {
   NanScope();
 
   // Constructor
-  Local<FunctionTemplate> ctor = FunctionTemplate::New(ImageData::New);
-  NanAssignPersistent(FunctionTemplate, constructor, ctor);
+  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(ImageData::New);
+  NanAssignPersistent(constructor, ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanSymbol("ImageData"));
+  ctor->SetClassName(NanNew("ImageData"));
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanSymbol("width"), GetWidth);
-  proto->SetAccessor(NanSymbol("height"), GetHeight);
-  target->Set(NanSymbol("ImageData"), ctor->GetFunction());
+  proto->SetAccessor(NanNew("width"), GetWidth);
+  proto->SetAccessor(NanNew("height"), GetHeight);
+  target->Set(NanNew("ImageData"), ctor->GetFunction());
 }
 
 /*
@@ -43,7 +43,7 @@ NAN_METHOD(ImageData::New) {
 
   PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(obj);
   ImageData *imageData = new ImageData(arr);
-  args.This()->Set(NanSymbol("data"), args[0]);
+  args.This()->Set(NanNew("data"), args[0]);
   imageData->Wrap(args.This());
   NanReturnValue(args.This());
 }
@@ -55,7 +55,7 @@ NAN_METHOD(ImageData::New) {
 NAN_GETTER(ImageData::GetWidth) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(Number::New(imageData->pixelArray()->width()));
+  NanReturnValue(NanNew<Number>(imageData->pixelArray()->width()));
 }
 
 /*
@@ -65,5 +65,5 @@ NAN_GETTER(ImageData::GetWidth) {
 NAN_GETTER(ImageData::GetHeight) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(Number::New(imageData->pixelArray()->height()));
+  NanReturnValue(NanNew<Number>(imageData->pixelArray()->height()));
 }
