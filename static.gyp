@@ -10,13 +10,14 @@
             "<!(node -e \"require('nan')\")",
             './deps/<(freetype_root)/include',
             './deps/<(jpeg_root)',
-           #'./static/custom-include/jpeg/',
+            './static/custom-include/jpeg/',
             './deps/<(cairo_root)' ,
             './deps/<(cairo_root)cairo/' ,
-            './deps/<(pixman_root)pixman/'
-            './deps/<(libpng_root)/',
             './static/custom-include/cairo/',
             './deps/<(gif_root)/lib/',
+            './deps/<(libpng_root)/',
+            './deps/<(pixman_root)pixman/',
+            './deps/<(zlib_root)/'
       ],
       'dependencies': [
             'static/cairo.gyp:cairo',
@@ -24,7 +25,7 @@
             'static/jpeg.gyp:libjpeg',
             'static/gif.gyp:gif',
       ],
-      'defines': [  'HAVE_FREETYPE' ,'HAVE_JPEG' ,'HAVE_GIF' ],
+      'defines': [ 'HAVE_FREETYPE' ,'HAVE_JPEG' ,'HAVE_GIF' ],
       'sources': [
         'src/backend/ImageBackend.cc',
         'src/backend/FBDevBackend.cc',
@@ -37,8 +38,8 @@
         'src/ImageData.cc',
         'src/init.cc',
         'src/PixelArray.cc',
-        'src/FontFace.cc',
-       ],
+#        'src/FontFace.cc',
+      ],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
     }

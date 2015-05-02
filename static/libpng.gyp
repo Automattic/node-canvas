@@ -8,6 +8,7 @@
       'include_dirs': [
             '<(libpng_root)' ,
             '../static/custom-include/png/',
+            '<(zlib_root)',
         ],
 
       'dependencies': [
