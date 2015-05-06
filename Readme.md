@@ -42,7 +42,7 @@ sudo port install pkgconfig libpng giflib freetype libpixman cairo
 ```javascript
 var Canvas = require('canvas')
   , Image = Canvas.Image
-  , canvas = new Canvas(200,200)
+  , canvas = new Canvas(200, 200)
   , ctx = canvas.getContext('2d');
 
 ctx.font = '30px Impact';
