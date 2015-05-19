@@ -24,7 +24,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "nan": "~1.7.0"
+    "nan": "^1.8.4"
   },
   "devDependencies": {
     "express": "3.0",
