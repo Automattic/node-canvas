@@ -1,3 +1,14 @@
+
+1.2.3 / 2015-05-21
+==================
+
+  * Update TJ Holowaychuk's username in the readme
+  * Fix segmentation fault in `Image::loadFromBuffer` when buffer is empty
+  * Optimize getImageData()
+  * package: add "license" attribute
+  * package: update "nan" to v1.8.4
+  * package: append `.git` to "repository" URL
+
 1.2.2 / 2015-04-18
 ==================
 
