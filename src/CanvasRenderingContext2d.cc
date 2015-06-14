@@ -376,7 +376,6 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
     double dx = x2-x1, dy = y2-y1;
     cairo_user_to_device_distance(_context, &dx, &dy);
     int pad = state->shadowBlur * 2;
-    cairo_surface_t *surface = cairo_get_group_target(_context);
     cairo_surface_t *shadow_surface = cairo_image_surface_create(
       CAIRO_FORMAT_ARGB32,
       dx + 2 * pad,
