@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , Image = Canvas.Image
   , fs = require('fs');
 
@@ -31,4 +31,3 @@ img.onload = function(){
 };
 
 img.src = process.argv[2] || __dirname + '/images/squid.png';
-

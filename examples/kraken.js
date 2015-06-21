@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , Image = Canvas.Image
   , canvas = new Canvas(400, 267)
   , ctx = canvas.getContext('2d')
@@ -87,7 +87,7 @@ function blurTest() {
  ctx.putImageData(imgData, 0, 0);
  console.log('... finished in %dms', finishTime);
 }
- 
+
 blurTest();
 
 var out = fs.createWriteStream(__dirname + '/kraken.png')

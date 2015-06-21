@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../')
+var Canvas = require('..')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
   , fs = require('fs');
@@ -169,7 +169,7 @@ module.exports = {
 
     ctx.fillStyle = 'hsl(10, 100%, 42%)';
     assert.equal('#d62400', ctx.fillStyle);
-    
+
     ctx.fillStyle = 'hsl(370, 120%, 42%)';
     assert.equal('#d62400', ctx.fillStyle);
 

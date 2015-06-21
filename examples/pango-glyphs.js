@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , canvas = new Canvas(400, 100)
   , ctx = canvas.getContext('2d')
   , fs = require('fs');

@@ -4,7 +4,7 @@
 */
 
 var fs = require('fs');
-var Canvas = require('../lib/canvas');
+var Canvas = require('..');
 
 var canvas = new Canvas(0, 0, "fbdev")
 var ctx = canvas.getContext('2d')

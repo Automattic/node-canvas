@@ -1,5 +1,5 @@
 
-var Canvas = require('../')
+var Canvas = require('..')
   , canvas = new Canvas(500, 500, 'pdf')
   , ctx = canvas.getContext('2d')
   , fs = require('fs');

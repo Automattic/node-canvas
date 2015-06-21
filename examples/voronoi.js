@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , canvas = new Canvas(1920, 1200)
   , ctx = canvas.getContext('2d')
   , http = require('http')
@@ -15,7 +15,7 @@ http.createServer(function (req, res) {
   var voronoi = voronoiFactory()
     , start = new Date;
   var bbox =  { xl: 0, xr: canvas.width, yt: 0, yb: canvas.height };
-  
+
   for (var i =0 ;i<340;i++)
   {
 	var x = Math.random()*canvas.width;
@@ -39,7 +39,7 @@ http.createServer(function (req, res) {
 
 	var sites = diagram.sites;
 	var nSites = sites.length;
-	for (var iSite=nSites-1; iSite>=0; iSite-=1) 
+	for (var iSite=nSites-1; iSite>=0; iSite-=1)
 	{
 		site = sites[iSite];
 			ctx.rect(site.x-0.5,site.y-0.5,1,1);
@@ -48,7 +48,7 @@ http.createServer(function (req, res) {
 
 //		ctx.stroke();
 		var cell = diagram.cells[diagram.sites[iSite].id];
-		if (cell !== undefined) 
+		if (cell !== undefined)
 		{
 			var halfedges = cell.halfedges;
 			var nHalfedges = halfedges.length;
@@ -62,7 +62,7 @@ http.createServer(function (req, res) {
 			ctx.beginPath();
 			ctx.moveTo(v.x,v.y);
 
-			for (var iHalfedge=0; iHalfedge<nHalfedges; iHalfedge++) 
+			for (var iHalfedge=0; iHalfedge<nHalfedges; iHalfedge++)
 			{
 				v = halfedges[iHalfedge].getEndpoint();
 				ctx.lineTo(v.x,v.y);
@@ -78,7 +78,7 @@ http.createServer(function (req, res) {
 			var midy = (maxy+miny)/2;
 			var R = 0;
 
-			for (var iHalfedge=0; iHalfedge<nHalfedges; iHalfedge++) 
+			for (var iHalfedge=0; iHalfedge<nHalfedges; iHalfedge++)
 			{
 				v = halfedges[iHalfedge].getEndpoint();
 				var dx = v.x - site.x;
@@ -116,7 +116,7 @@ http.createServer(function (req, res) {
 
 	}
 
-	if (nEdges) 
+	if (nEdges)
 	{
 			var edge, v;
 			ctx.beginPath();
@@ -128,7 +128,7 @@ http.createServer(function (req, res) {
 				ctx.lineTo(v.x,v.y);
 				}
 			ctx.stroke();
-			}			
+			}
 
   canvas.toBuffer(function(err, buf){
     var duration = new Date - start;

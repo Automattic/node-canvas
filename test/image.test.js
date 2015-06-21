@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../')
+var Canvas = require('..')
   , Image = Canvas.Image
   , assert = require('assert');
 
@@ -35,7 +35,7 @@ module.exports = {
     assert.strictEqual(320, img.height);
     assert.equal(1, n);
   },
-  
+
   'test Image#onerror': function(){
     var img = new Image
       , error
@@ -47,7 +47,7 @@ module.exports = {
     img.onload = function(){
       assert.fail('called onload');
     };
-    
+
     img.onerror = function(err){
       ++n;
       error = err;
@@ -65,11 +65,11 @@ module.exports = {
     assert.strictEqual(false, img.complete);
     assert.equal(1, n);
   },
-  
+
   'test Image#{width,height}': function(){
     var img = new Image
       , n = 0;
-    
+
     assert.strictEqual(0, img.width);
     assert.strictEqual(0, img.height);
     img.onload = function(){

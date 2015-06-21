@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , canvas = new Canvas(320, 320)
   , Font = Canvas.Font
   , ctx = canvas.getContext('2d')

@@ -1,5 +1,5 @@
 
-var Canvas = require('../')
+var Canvas = require('..')
   , canvas = new Canvas(400, 200, 'svg')
   , ctx = canvas.getContext('2d')
   , fs = require('fs');

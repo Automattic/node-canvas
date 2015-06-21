@@ -3,8 +3,8 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
-  , canvas = new Canvas(243 * 4, 243) 
+var Canvas = require('..')
+  , canvas = new Canvas(243 * 4, 243)
   , ctx = canvas.getContext('2d')
   , fs = require('fs');
 
@@ -72,9 +72,9 @@ function getPointColour(x,y){
 var start = new Date;
 render(10);
 ctx.translate(243,0);
-render(6);    
+render(6);
 ctx.translate(243,0);
-render(3);    
+render(3);
 ctx.translate(243,0);
 render(1);
 console.log('Rendered in %s seconds', (new Date - start) / 1000);

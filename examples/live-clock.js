@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , canvas = new Canvas(320, 320)
   , ctx = canvas.getContext('2d')
   , http = require('http');
@@ -53,7 +53,7 @@ function clock(ctx){
       ctx.stroke();
     }
   }
-  
+
   var sec = now.getSeconds();
   var min = now.getMinutes();
   var hr  = now.getHours();
@@ -79,7 +79,7 @@ function clock(ctx){
   ctx.moveTo(x*-28,y*-28);
   ctx.lineTo(x*112,y*112);
   ctx.stroke();
-  
+
   // Write seconds
   var x = getX(sec * Math.PI/30);
   var y = getY(sec * Math.PI/30);

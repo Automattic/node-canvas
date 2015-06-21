@@ -2,7 +2,7 @@
  * Passing grayscale image through canvas.  Image should remain a gray square.
  * If image is distorted with lines, then grayscale images are being distorted.
  */
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , Image = Canvas.Image
   , canvas = new Canvas(288, 288)
   , ctx = canvas.getContext('2d')

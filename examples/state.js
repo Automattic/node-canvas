@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../lib/canvas')
+var Canvas = require('..')
   , canvas = new Canvas(150, 150)
   , ctx = canvas.getContext('2d')
   , fs = require('fs');
@@ -16,7 +16,7 @@ ctx.fillRect(15,15,120,120); // Draw a rectangle with new settings
 
 ctx.save();                  // Save the current state
 ctx.fillStyle = '#FFF'       // Make changes to the settings
-ctx.globalAlpha = 0.5;    
+ctx.globalAlpha = 0.5;
 ctx.fillRect(30,30,90,90);   // Draw a rectangle with new settings
 
 ctx.restore();               // Restore previous state
