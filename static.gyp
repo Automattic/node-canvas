@@ -26,6 +26,9 @@
             'static/gif.gyp:gif',
       ],
       'defines': [ 'HAVE_FREETYPE' ,'HAVE_JPEG' ,'HAVE_GIF' ],
+      'libraries': [
+        '-static'
+      ],
       'sources': [
         'src/backend/ImageBackend.cc',
         'src/backend/FBDevBackend.cc',
