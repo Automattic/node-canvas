@@ -14,9 +14,6 @@ console.log("Width: " + canvas.width + ", Height: " + canvas.height);
 ctx.fillStyle = "#00FF00";
 ctx.fillRect(50, 50, 100, 100);
 
-var out = fs.createWriteStream(__dirname + '/rectangle.png');
-var stream = canvas.createPNGStream();
+var outPath = __dirname + '/rectangle.png';
 
-stream.on('data', function(chunk){
-  out.write(chunk);
-});
+canvas.createPNGStream().pipe(fs.createWriteStream(outPath));

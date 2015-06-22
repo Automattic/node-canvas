@@ -212,13 +212,13 @@ module.exports = {
 
   'test Canvas#type': function(){
     var canvas = new Canvas(10, 10);
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
     var canvas = new Canvas(10, 10, 'pdf');
-    assert('pdf' == canvas.type);
+    assert.equal(canvas.type, 'pdf');
     var canvas = new Canvas(10, 10, 'svg');
-    assert('svg' == canvas.type);
+    assert.equal(canvas.type, 'svg');
     var canvas = new Canvas(10, 10, 'hey');
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
   },
 
   'test Canvas#getContext("2d")': function(){

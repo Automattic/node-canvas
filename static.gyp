@@ -41,7 +41,7 @@
         'src/ImageData.cc',
         'src/init.cc',
         'src/PixelArray.cc',
-#        'src/FontFace.cc',
+        'src/FontFace.cc',
       ],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
