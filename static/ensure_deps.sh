@@ -40,7 +40,11 @@ fetch_xz()
 }
 
 
-fetch_xz $CAIRO_URL    cairo    &&
+if [ ! -d cairo ]; then
+  fetch_xz $CAIRO_URL cairo &&
+  mv cairo/src cairo/cairo  || exit $?
+fi
+
 fetch    $FREETYPE_URL freetype &&
 fetch    $GIFLIB_URL   giflib   &&
 fetch    $LIBJPEG_URL  libjpeg  &&

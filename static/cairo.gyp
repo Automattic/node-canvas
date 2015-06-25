@@ -6,7 +6,7 @@
     'targets': [
     {
         'variables': {
-        'cairo_src%': "<(cairo_root)src/",
+        'cairo_src%': "<(cairo_root)cairo/",
         },
       'target_name': 'cairo',
       'type': 'static_library',

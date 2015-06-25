@@ -12,7 +12,7 @@
             './deps/<(jpeg_root)',
             './static/custom-include/jpeg/',
             './deps/<(cairo_root)',
-            './deps/<(cairo_root)src',
+            './deps/<(cairo_root)cairo',
             './static/custom-include/cairo/',
             './deps/<(gif_root)/lib/',
             './deps/<(libpng_root)/',
