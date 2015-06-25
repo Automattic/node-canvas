@@ -26,27 +26,27 @@ cd $DEPS
 fetch()
 {
   if [ ! -d $2 ]; then
-    mkdir -p $2                                      &&
-    curl -L $1 | tar xzf - -C $2 --strip-components=1 || exit $?
+    mkdir -p $2                                          &&
+    curl -s -L $1 | tar xzf - -C $2 --strip-components=1 || exit $?
   fi
 }
 
 fetch_xz()
 {
   if [ ! -d $2 ]; then
-    mkdir -p $2                                       &&
-    curl -L $1 | tar xJf - -C $2 --strip-components=1 || exit $?
+    mkdir -p $2                                          &&
+    curl -s -L $1 | tar xJf - -C $2 --strip-components=1 || exit $?
   fi
 }
 
 
-fetch_xz $CAIRO_URL    cairo
-fetch    $FREETYPE_URL freetype
-fetch    $GIFLIB_URL   giflib
-fetch    $LIBJPEG_URL  libjpeg
-fetch_xz $LIBPNG_URL   libpng
-fetch    $PIXMAN_URL   pixman
-fetch    $ZLIB_URL     zlib
+fetch_xz $CAIRO_URL    cairo    &&
+fetch    $FREETYPE_URL freetype &&
+fetch    $GIFLIB_URL   giflib   &&
+fetch    $LIBJPEG_URL  libjpeg  &&
+fetch_xz $LIBPNG_URL   libpng   &&
+fetch    $PIXMAN_URL   pixman   &&
+fetch    $ZLIB_URL     zlib     || exit $?
 
 
 if [ ! -d "cairo"   ] || [ ! -d "freetype" ] || [ ! -d "giflib" ] \
