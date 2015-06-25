@@ -6,18 +6,18 @@
     'targets': [
     {
         'variables': {
-
-    	  'cairo_src%': "<(cairo_root)cairo/",
-    	},
+        'cairo_src%': "<(cairo_root)src/",
+        },
       'target_name': 'cairo',
       'type': 'static_library',
 
       'include_dirs': [
-            '../static/custom-include/cairo/',
+            'custom-include/cairo',
             '<(cairo_root)',
-            '<(cairo_src)' ,
+            '<(cairo_src)',
             '<(freetype_root)include',
             '<(libpng_root)',
+            'custom-include/png',
             '<(pixman_root)',
             '<(pixman_root)pixman',
             '<(zlib_root)',
