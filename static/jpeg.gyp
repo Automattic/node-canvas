@@ -23,8 +23,10 @@
 
             "<(jpeg_root)jsimd_none.c",
 
+            "<(jpeg_root)jaricom.c",
             "<(jpeg_root)jcapimin.c",
             "<(jpeg_root)jcapistd.c",
+            "<(jpeg_root)jcarith.c",
             "<(jpeg_root)jccoefct.c",
             "<(jpeg_root)jccolor.c",
             "<(jpeg_root)jcdctmgr.c",
@@ -43,6 +45,7 @@
             #"<(jpeg_root)jctrans.c",
             "<(jpeg_root)jdapimin.c",
             "<(jpeg_root)jdapistd.c",
+            "<(jpeg_root)jdarith.c",
             "<(jpeg_root)jdatadst.c",
             "<(jpeg_root)jdatasrc.c",
             "<(jpeg_root)jdcoefct.c",
