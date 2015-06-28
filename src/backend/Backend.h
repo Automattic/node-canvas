@@ -30,33 +30,27 @@ class Backend
     virtual cairo_surface_t *recreateSurface() = 0;
     virtual void destroySurface() = 0;
 
-    string getName() { return name; };
+    string getName();
 
-    int getWidth() { return this->width; };
-    void setWidth(int width) { this->width = width; this->recreateSurface(); };
+    int getWidth();
+    void setWidth(int width);
 
-    int getHeight() { return this->width; };
-    void setHeight(int height) { this->height = height; this->recreateSurface(); };
+    int getHeight();
+    void setHeight(int height);
 
-    cairo_surface_t *getSurface() { return surface; };
+    cairo_surface_t* getSurface();
 };
 
 class BackendOperationNotAvailable : public exception {
   private:
-    Backend *backend;
+    Backend* backend;
     string operation_name;
 
   public:
-    BackendOperationNotAvailable(Backend *backend, string operation_name) {
-      this->backend = backend;
-      this->operation_name = operation_name;
-    };
-    ~BackendOperationNotAvailable() throw() {};
-    const char *what() const throw() {
-      std::ostringstream o;
-      o << "operation " << this->operation_name << " not supported by backend " + backend->getName();
-      return o.str().c_str();
-    };
+    BackendOperationNotAvailable(Backend* backend, string operation_name);
+    ~BackendOperationNotAvailable() throw();
+
+    const char* what() const throw();
 };
 
 #endif
