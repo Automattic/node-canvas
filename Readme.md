@@ -8,7 +8,7 @@ node-canvas
 
 ## Authors
 
-  - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
+  - TJ Holowaychuk ([tj](http://github.com/tj))
   - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
   - Rod Vagg ([rvagg](http://github.com/rvagg))
   - Juriy Zaytsev ([kangax](http://github.com/kangax))
@@ -42,7 +42,7 @@ sudo port install pkgconfig libpng giflib freetype libpixman cairo
 ```javascript
 var Canvas = require('canvas')
   , Image = Canvas.Image
-  , canvas = new Canvas(200,200)
+  , canvas = new Canvas(200, 200)
   , ctx = canvas.getContext('2d');
 
 ctx.font = '30px Impact';

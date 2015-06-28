@@ -80,5 +80,11 @@ module.exports = {
     img.src = png;
 
     assert.equal(1, n);
+  },
+
+  'test Image#src set empty buffer': function(){
+    var image = new Canvas.Image();
+    image.src = new Buffer(0);
+    image.src = new Buffer('');
   }
 };
