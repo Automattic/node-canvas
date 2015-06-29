@@ -42,6 +42,7 @@
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
+        'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
         'src/backend/FBDevBackend.cc',
         'src/Canvas.cc',
