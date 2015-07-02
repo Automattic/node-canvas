@@ -12,8 +12,8 @@
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>
-#include <cairo/cairo-pdf.h>
-#include <cairo/cairo-svg.h>
+#include <cairo-pdf.h>
+#include <cairo-svg.h>
 #include "closure.h"
 
 #ifdef HAVE_JPEG

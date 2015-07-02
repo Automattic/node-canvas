@@ -2,7 +2,7 @@
 #define _CANVAS_PNG_H
 #include <png.h>
 #include <pngconf.h>
-#include <cairo/cairo.h>
+#include <cairo.h>
 #include <stdlib.h>
 #include <string.h>
 #include "closure.h"
