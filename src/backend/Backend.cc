@@ -10,6 +10,7 @@ string Backend::getName() {
 int Backend::getWidth() {
 	return this->width;
 }
+
 void Backend::setWidth(int width) {
 	this->width = width;
 	this->recreateSurface();
@@ -18,6 +19,7 @@ void Backend::setWidth(int width) {
 int Backend::getHeight() {
 	return this->height;
 }
+
 void Backend::setHeight(int height) {
 	this->height = height;
 	this->recreateSurface();

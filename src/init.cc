@@ -6,6 +6,7 @@
 //
 
 #include <stdio.h>
+#include "Backends.h"
 #include "Canvas.h"
 #include "Image.h"
 #include "ImageData.h"
@@ -21,6 +22,7 @@
 extern "C" void
 init (Handle<Object> target) {
   NanScope();
+  Backends::Initialize(target);
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
@@ -71,4 +73,4 @@ init (Handle<Object> target) {
 #endif
 }
 
-NODE_MODULE(canvas,init);
+NODE_MODULE(canvas, init);
