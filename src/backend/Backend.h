@@ -14,8 +14,7 @@
 
 using namespace std;
 
-class Backend
-{
+class Backend {
   protected:
     string name;
 
