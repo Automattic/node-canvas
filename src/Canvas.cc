@@ -66,31 +66,14 @@ Canvas::Initialize(Handle<Object> target) {
 
 NAN_METHOD(Canvas::New) {
 	NanScope();
-	Backend *backend = NULL;
-	int width = 0;
-	int height = 0;
-	if (args[0]->IsNumber()) width = args[0]->Uint32Value();
-	if (args[1]->IsNumber()) height = args[1]->Uint32Value();
-	if (args[2]->IsString()) {
-		v8::String::Utf8Value param2(args[2]->ToString());
-		string type = std::string(*param2);
-		if (type == "image") {
-			backend = new ImageBackend(width, height);
-		} else if (type == "fbdev") {
-			string deviceName = "/dev/fb0";
-			if (args[3]->IsString()) {
-				v8::String::Utf8Value param3(args[3]->ToString());
-				deviceName = std::string(*param3);
-			}
-			backend = new FBDevBackend(deviceName);
-		} else {
-			backend = new ImageBackend(width, height);
-		}
-	} else {
-		backend = new ImageBackend(width, height);
-	}
 
-	Canvas *canvas = new Canvas(backend);
+	Canvas *canvas = NULL;
+	if (args[0]->IsNumber() && args[1]->IsNumber()) {
+		canvas = new Canvas(new ImageBackend(args[0]->Uint32Value(), args[1]->Uint32Value()));
+	} else if (args[0]->IsObject()) {
+		Backend* backend = ObjectWrap::Unwrap<Backend>(args[0]->ToObject());
+		canvas = new Canvas(backend);
+	}
 	canvas->Wrap(args.This());
 	NanReturnValue(args.This());
 }

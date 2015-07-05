@@ -6,8 +6,9 @@
 var fs = require('fs');
 var Canvas = require('..');
 
-var canvas = new Canvas(0, 0, "fbdev")
-var ctx = canvas.getContext('2d')
+var backend = new Canvas.Backends.FBDevBackend("/dev/fb0");
+var canvas = new Canvas(backend);
+var ctx = canvas.getContext('2d');
 
 console.log("Width: " + canvas.width + ", Height: " + canvas.height);
 
