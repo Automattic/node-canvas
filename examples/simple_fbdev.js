@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 
 /**
 * Module dependencies.
@@ -6,7 +7,9 @@
 var fs = require('fs');
 var Canvas = require('..');
 
-var backend = new Canvas.backends.FBDevBackend("/dev/fb0");
+var device = process.argv[2] || "/dev/fb0"
+
+var backend = new Canvas.backends.FBDevBackend(device);
 var canvas = new Canvas(backend);
 var ctx = canvas.getContext('2d');
 
