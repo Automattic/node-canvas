@@ -29,6 +29,10 @@ class FBDevBackend : public Backend {
 
     FBDevBackend(string deviceName);
     ~FBDevBackend() { this->destroySurface(); }
+
+    static Persistent<FunctionTemplate> constructor;
+    static void Initialize(Handle<Object> target);
+    static NAN_METHOD(New);
 };
 
 void cairo_linuxfb_surface_destroy(void *device);

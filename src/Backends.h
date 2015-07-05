@@ -12,11 +12,6 @@
 using namespace v8;
 using namespace node;
 
-using v8::FunctionTemplate;
-using v8::Handle;
-using v8::Object;
-using v8::String;
-
 class Backends : public ObjectWrap {
   public:
     static void Initialize(Handle<Object> target);

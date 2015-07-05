@@ -16,6 +16,10 @@ class ImageBackend : public Backend {
 
     ImageBackend(int width, int height);
     ~ImageBackend() { this->destroySurface(); }
+
+    static Persistent<FunctionTemplate> constructor;
+    static void Initialize(Handle<Object> target);
+    static NAN_METHOD(New);
 };
 
 #endif

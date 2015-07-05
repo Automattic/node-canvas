@@ -31,3 +31,26 @@ void ImageBackend::destroySurface() {
 		//NanAdjustExternalMemory(-4 * this->width * this->height);
 	}
 }
+
+Persistent<FunctionTemplate> ImageBackend::constructor;
+
+void ImageBackend::Initialize(Handle<Object> target) {
+	NanScope();
+	Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(ImageBackend::New);
+	NanAssignPersistent(ImageBackend::constructor, ctor);
+	ctor->InstanceTemplate()->SetInternalFieldCount(1);
+	ctor->SetClassName(NanNew("ImageBackend"));
+	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+	target->Set(NanNew("ImageBackend"), ctor->GetFunction());
+}
+
+NAN_METHOD(ImageBackend::New) {
+	int width = 0;
+	int height = 0;
+	if (args[0]->IsNumber()) width = args[0]->Uint32Value();
+	if (args[1]->IsNumber()) height = args[1]->Uint32Value();
+
+	ImageBackend *backend = new ImageBackend(width, height);
+	backend->Wrap(args.This());
+	NanReturnValue(args.This());
+}

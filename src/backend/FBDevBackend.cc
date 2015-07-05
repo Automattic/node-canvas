@@ -127,3 +127,29 @@ void cairo_linuxfb_surface_destroy(void *device) {
 	munmap(backend->fb_data, backend->fb_screensize);
 	close(backend->fb_fd);
 }
+
+Persistent<FunctionTemplate> FBDevBackend::constructor;
+
+void FBDevBackend::Initialize(Handle<Object> target) {
+	NanScope();
+	Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(FBDevBackend::New);
+	NanAssignPersistent(FBDevBackend::constructor, ctor);
+	ctor->InstanceTemplate()->SetInternalFieldCount(1);
+	ctor->SetClassName(NanNew("FBDevBackend"));
+	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+	target->Set(NanNew("FBDevBackend"), ctor->GetFunction());
+}
+
+NAN_METHOD(FBDevBackend::New) {
+	FBDevBackend *backend = NULL;
+
+	if (args[0]->IsString()) {
+	  string fbDevice = *String::Utf8Value(args[0].As<String>());
+		backend = new FBDevBackend(fbDevice);
+	} else {
+		backend = new FBDevBackend("/dev/fb0");
+	}
+
+	backend->Wrap(args.This());
+	NanReturnValue(args.This());
+}
