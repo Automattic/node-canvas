@@ -1,23 +1,24 @@
 {
     'includes': [ 'static/locations.gyp'],
     'variables':{
-        'ensure_deps%': '<!(./static/ensure_deps.sh)',
+        'ensure_deps%': '<!(static/ensure_deps.sh)',
     },
     'targets': [
     {
       'target_name': 'canvas',
       'include_dirs': [
             "<!(node -e \"require('nan')\")",
-            './deps/<(freetype_root)/include',
-            './deps/<(jpeg_root)',
-            './static/custom-include/jpeg/',
-            './deps/<(cairo_root)',
-            './deps/<(cairo_root)cairo',
-            './static/custom-include/cairo/',
-            './deps/<(gif_root)/lib/',
-            './deps/<(libpng_root)/',
-            './deps/<(pixman_root)pixman/',
-            './deps/<(zlib_root)/'
+            'deps',
+            'deps/<(cairo_root)',
+            'deps/<(cairo_root)cairo',
+            'static/custom-include/cairo',
+            'deps/<(freetype_root)/include',
+            'deps/<(gif_root)/lib',
+            'deps/<(jpeg_root)',
+            'static/custom-include/jpeg',
+            'deps/<(libpng_root)',
+            'deps/<(pixman_root)pixman',
+            'deps/<(zlib_root)'
       ],
       'dependencies': [
             'static/cairo.gyp:cairo',

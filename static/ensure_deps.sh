@@ -9,6 +9,7 @@ PIXMAN_VERSION=0.32.6
 ZLIB_VERSION=1.2.8
 
 CAIRO_URL=http://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz
+FONTCONFIG_URL=http://cgit.freedesktop.org/fontconfig/plain/fontconfig/fontconfig.h
 FREETYPE_URL=http://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VERSION.tar.gz
 GIFLIB_URL=http://sourceforge.net/projects/giflib/files/giflib-4.x/giflib-$GIFLIB_VERSION.tar.gz
 LIBJPEG_URL=http://downloads.sourceforge.net/project/libjpeg-turbo/$LIBJPEG_VERSION/libjpeg-turbo-$LIBJPEG_VERSION.tar.gz
@@ -43,6 +44,11 @@ fetch_xz()
 if [ ! -d cairo ]; then
   fetch_xz $CAIRO_URL cairo &&
   mv cairo/src cairo/cairo  || exit $?
+fi
+
+if [ ! -d fontconfig ]; then
+  mkdir -p fontconfig                                   &&
+  curl -s -L $FONTCONFIG_URL >> fontconfig/fontconfig.h || exit $?
 fi
 
 fetch    $FREETYPE_URL freetype &&
