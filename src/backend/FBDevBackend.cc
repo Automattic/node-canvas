@@ -114,6 +114,7 @@ cairo_surface_t *FBDevBackend::recreateSurface() {
 }
 
 void FBDevBackend::destroySurface() {
+	printf("destroy");
 	cairo_surface_destroy(this->surface);
 }
 

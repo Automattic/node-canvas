@@ -31,6 +31,7 @@
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
         'src/backend/FBDevBackend.cc',
+        'src/backend/X11Backend.cc',
         'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',

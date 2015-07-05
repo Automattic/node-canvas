@@ -440,7 +440,10 @@ Canvas::Canvas(Backend* backend) : ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-	delete _backend;
+	printf("destroying canvas\n");
+	if (_backend != NULL) {
+		delete _backend;
+	}
 }
 
 /*

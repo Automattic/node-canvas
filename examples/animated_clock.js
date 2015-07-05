@@ -1,7 +1,9 @@
 var fs = require('fs');
 var Canvas = require('..');
 
-var backend = new Canvas.backends.FBDevBackend("/dev/fb0");
+//var backend = new Canvas.backends.FBDevBackend("/dev/fb0");
+var backend = new Canvas.backends.X11Backend(800, 600);
+
 var canvas = new Canvas(backend);
 var ctx = canvas.getContext('2d');
 
@@ -101,7 +103,24 @@ function clock(ctx) {
   ctx.restore();
 }
 
-clock(ctx);
-setInterval(function() {
+var counter = 0;
+
+var loop = function() {
+  if (counter == 5) {
+    console.log("stopping loop");
+
+    ctx = null;
+    canvas = null;
+    backend = null;
+    return;
+  } else {
+    setTimeout(loop, 1000);
+  }
   clock(ctx);
-}, 1000);
+  counter++;
+}
+loop();
+
+setInterval(function() {
+  global.gc();
+}, 100);
