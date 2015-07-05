@@ -23,6 +23,13 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
+	// Get fixed screen information
+	if (ioctl(this->fb_fd, FBIOGET_FSCREENINFO, &this->fb_finfo) == -1) {
+		std::ostringstream o;
+		o << "error reading fixed information from device \"" << this->fb_dn << "\"";
+		throw FBDevBackendException(o.str());
+	}
+
 	// Get variable screen information
 	if (ioctl(this->fb_fd, FBIOGET_VSCREENINFO, &this->fb_vinfo) == -1) {
 		std::ostringstream o;
@@ -56,8 +63,8 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	}
 
 	// Figure out the size of the screen in bytes
-	this->fb_screensize = this->width * this->height * this->bpp / 8;
-
+	//this->fb_screensize = this->width * this->height * this->bpp / 8;
+	this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
 	// Map the device to memory
 	this->fb_data = (unsigned char *) mmap(
 	        0,
@@ -71,13 +78,6 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	if (this->fb_data == MAP_FAILED) {
 		std::ostringstream o;
 		o << "failed to map framebuffer device \"" << this->fb_dn << "\" to memory";
-		throw FBDevBackendException(o.str());
-	}
-
-	// Get fixed screen information
-	if (ioctl(this->fb_fd, FBIOGET_FSCREENINFO, &this->fb_finfo) == -1) {
-		std::ostringstream o;
-		o << "error reading fixed information from device \"" << this->fb_dn << "\"";
 		throw FBDevBackendException(o.str());
 	}
 
