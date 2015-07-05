@@ -1,7 +1,7 @@
 var Canvas = require('..')
   , fs = require('fs');
 
-var imagebackend = new Canvas.Backends.ImageBackend(800, 600);
+var imagebackend = new Canvas.backends.ImageBackend(800, 600);
 
 var canvas = new Canvas(imagebackend);
 var ctx = canvas.getContext('2d');
