@@ -23,6 +23,13 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
+	// Get fixed screen information
+	if (ioctl(this->fb_fd, FBIOGET_FSCREENINFO, &this->fb_finfo) == -1) {
+		std::ostringstream o;
+		o << "error reading fixed information from device \"" << this->fb_dn << "\"";
+		throw FBDevBackendException(o.str());
+	}
+
 	// Get variable screen information
 	if (ioctl(this->fb_fd, FBIOGET_VSCREENINFO, &this->fb_vinfo) == -1) {
 		std::ostringstream o;
@@ -56,8 +63,8 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	}
 
 	// Figure out the size of the screen in bytes
-	this->fb_screensize = this->width * this->height * this->bpp / 8;
-
+	//this->fb_screensize = this->width * this->height * this->bpp / 8;
+	this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
 	// Map the device to memory
 	this->fb_data = (unsigned char *) mmap(
 	        0,
@@ -74,13 +81,6 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
-	// Get fixed screen information
-	if (ioctl(this->fb_fd, FBIOGET_FSCREENINFO, &this->fb_finfo) == -1) {
-		std::ostringstream o;
-		o << "error reading fixed information from device \"" << this->fb_dn << "\"";
-		throw FBDevBackendException(o.str());
-	}
-
 	// TODO decide image format by bpp of fb device
 	this->surface = cairo_image_surface_create_for_data(
 	        this->fb_data,
@@ -88,14 +88,6 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	        this->width,
 	        this->height,
 	        cairo_format_stride_for_width(this->format, this->width)
-	        );
-
-	// set destroy callback
-	cairo_surface_set_user_data(
-	        this->surface,
-	        NULL,
-	        this,
-	        &cairo_linuxfb_surface_destroy
 	        );
 
 	return this->surface;
@@ -114,18 +106,11 @@ cairo_surface_t *FBDevBackend::recreateSurface() {
 }
 
 void FBDevBackend::destroySurface() {
-	cairo_surface_destroy(this->surface);
-}
-
-void cairo_linuxfb_surface_destroy(void *device) {
-	FBDevBackend *backend = (FBDevBackend *) device;
-
-	if (backend == NULL) {
-		return;
+	if (this->surface != NULL) {
+		cairo_surface_destroy(this->surface);
+		munmap(this->fb_data, this->fb_screensize);
+		close(this->fb_fd);
 	}
-
-	munmap(backend->fb_data, backend->fb_screensize);
-	close(backend->fb_fd);
 }
 
 Persistent<FunctionTemplate> FBDevBackend::constructor;
@@ -136,7 +121,6 @@ void FBDevBackend::Initialize(Handle<Object> target) {
 	NanAssignPersistent(FBDevBackend::constructor, ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(NanNew("FBDevBackend"));
-	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
 	target->Set(NanNew("FBDevBackend"), ctor->GetFunction());
 }
 
@@ -144,7 +128,7 @@ NAN_METHOD(FBDevBackend::New) {
 	FBDevBackend *backend = NULL;
 
 	if (args[0]->IsString()) {
-	  string fbDevice = *String::Utf8Value(args[0].As<String>());
+		string fbDevice = *String::Utf8Value(args[0].As<String>());
 		backend = new FBDevBackend(fbDevice);
 	} else {
 		backend = new FBDevBackend("/dev/fb0");

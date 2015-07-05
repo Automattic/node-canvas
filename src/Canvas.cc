@@ -440,7 +440,9 @@ Canvas::Canvas(Backend* backend) : ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-	delete _backend;
+	if (_backend != NULL) {
+		delete _backend;
+	}
 }
 
 /*
