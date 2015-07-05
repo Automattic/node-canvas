@@ -21,14 +21,6 @@ cairo_surface_t *X11Backend::createSurface() {
 
   this->surface = cairo_xlib_surface_create(display, this->window, DefaultVisual(display, 0), this->width, this->height);
 
-	// set destroy callback
-	cairo_surface_set_user_data(
-	        this->surface,
-	        NULL,
-	        this,
-	        &cairo_x11_surface_destroy
-	        );
-
 	return this->surface;
 }
 
@@ -37,19 +29,10 @@ cairo_surface_t *X11Backend::recreateSurface() {
 }
 
 void X11Backend::destroySurface() {
-	printf("destroying surface\n");
 	if (this->surface != NULL) {
 		cairo_surface_destroy(this->surface);
+		XCloseDisplay(this->display);
 	}
-}
-
-void cairo_x11_surface_destroy(void *backend) {
-	printf("destroying surface callback\n"); 
-	if (backend == NULL) {
-		return;
-	}
-	X11Backend *x11backend = (X11Backend *) backend;
-	XCloseDisplay(x11backend->display);
 }
 
 Persistent<FunctionTemplate> X11Backend::constructor;
@@ -60,7 +43,6 @@ void X11Backend::Initialize(Handle<Object> target) {
 	NanAssignPersistent(X11Backend::constructor, ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(NanNew("X11Backend"));
-	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
 	target->Set(NanNew("X11Backend"), ctor->GetFunction());
 }
 

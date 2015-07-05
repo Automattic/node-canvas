@@ -35,8 +35,6 @@ class FBDevBackend : public Backend {
     static NAN_METHOD(New);
 };
 
-void cairo_linuxfb_surface_destroy(void *device);
-
 class FBDevBackendException : public std::exception {
   private:
     string err_msg;

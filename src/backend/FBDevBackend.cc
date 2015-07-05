@@ -90,14 +90,6 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	        cairo_format_stride_for_width(this->format, this->width)
 	        );
 
-	// set destroy callback
-	cairo_surface_set_user_data(
-	        this->surface,
-	        NULL,
-	        this,
-	        &cairo_linuxfb_surface_destroy
-	        );
-
 	return this->surface;
 }
 
@@ -114,19 +106,11 @@ cairo_surface_t *FBDevBackend::recreateSurface() {
 }
 
 void FBDevBackend::destroySurface() {
-	printf("destroy");
-	cairo_surface_destroy(this->surface);
-}
-
-void cairo_linuxfb_surface_destroy(void *device) {
-	FBDevBackend *backend = (FBDevBackend *) device;
-
-	if (backend == NULL) {
-		return;
+	if (this->surface != NULL) {
+		cairo_surface_destroy(this->surface);
+		munmap(this->fb_data, this->fb_screensize);
+		close(this->fb_fd);
 	}
-
-	munmap(backend->fb_data, backend->fb_screensize);
-	close(backend->fb_fd);
 }
 
 Persistent<FunctionTemplate> FBDevBackend::constructor;
@@ -137,7 +121,6 @@ void FBDevBackend::Initialize(Handle<Object> target) {
 	NanAssignPersistent(FBDevBackend::constructor, ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(NanNew("FBDevBackend"));
-	Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
 	target->Set(NanNew("FBDevBackend"), ctor->GetFunction());
 }
 
@@ -145,7 +128,7 @@ NAN_METHOD(FBDevBackend::New) {
 	FBDevBackend *backend = NULL;
 
 	if (args[0]->IsString()) {
-	  string fbDevice = *String::Utf8Value(args[0].As<String>());
+		string fbDevice = *String::Utf8Value(args[0].As<String>());
 		backend = new FBDevBackend(fbDevice);
 	} else {
 		backend = new FBDevBackend("/dev/fb0");

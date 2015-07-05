@@ -17,7 +17,7 @@ class X11Backend : public Backend {
     void setHeight(int height);
 
     X11Backend(int width, int height);
-    ~X11Backend() { printf("destroying backend\n"); this->destroySurface(); }
+    ~X11Backend() { this->destroySurface(); }
 
     Display *display;
     Window window;
@@ -26,8 +26,6 @@ class X11Backend : public Backend {
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
 };
-
-void cairo_x11_surface_destroy(void *backend);
 
 class X11BackendException : public std::exception {
   private:

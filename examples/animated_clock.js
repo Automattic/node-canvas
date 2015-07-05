@@ -103,24 +103,6 @@ function clock(ctx) {
   ctx.restore();
 }
 
-var counter = 0;
-
-var loop = function() {
-  if (counter == 5) {
-    console.log("stopping loop");
-
-    ctx = null;
-    canvas = null;
-    backend = null;
-    return;
-  } else {
-    setTimeout(loop, 1000);
-  }
-  clock(ctx);
-  counter++;
-}
-loop();
-
 setInterval(function() {
-  global.gc();
-}, 100);
+  clock(ctx);
+}, 1000);
