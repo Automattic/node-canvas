@@ -64,7 +64,9 @@ cairo_surface_t * FBDevBackend::createSurface() {
 
 	// Figure out the size of the screen in bytes
 	//this->fb_screensize = this->width * this->height * this->bpp / 8;
-	this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
+	//this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
+	this->fb_screensize = this->fb_finfo.smem_len;
+
 	// Map the device to memory
 	this->fb_data = (unsigned char *) mmap(
 	        0,
