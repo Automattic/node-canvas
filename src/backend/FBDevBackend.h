@@ -27,7 +27,7 @@ class FBDevBackend : public Backend {
     void setWidth(int width);
     void setHeight(int height);
 
-    void FBDevBackend:FbDevIoctlHelper(unsigned long request, void* data, char* errmsg);
+    void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
 
     FBDevBackend(string deviceName);
     ~FBDevBackend() { this->destroySurface(); }

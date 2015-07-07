@@ -14,7 +14,7 @@ FBDevBackend::FBDevBackend(string deviceName) {
 	this->fb_dn = deviceName;
 }
 
-void FBDevBackend:FbDevIoctlHelper(unsigned long request, void* data, char* errmsg) {
+void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data, string errmsg) {
 	if (ioctl(this->fb_fd, request, data) == -1) {
 		std::ostringstream o;
 		o << errmsg << ", Framebuffer Device: \"" << this->fb_dn << "\"";
@@ -32,12 +32,12 @@ cairo_surface_t * FBDevBackend::createSurface() {
 	}
 
 	// read fixed info, read variable info, set bpp and disable grayscale
-	this->FbDevIoctlHelper(FBIOGET_FSCREENINFO, this->fb_finfo, "error reading fixed framebuffer information");
-	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, this->fb_vinfo, "error reading variable framebuffer information");
+	this->FbDevIoctlHelper(FBIOGET_FSCREENINFO, &this->fb_finfo, "error reading fixed framebuffer information");
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &this->fb_vinfo, "error reading variable framebuffer information");
 	this->fb_vinfo.grayscale = 0;
-	this->fb_vinfovinfo.bits_per_pixel = 32;
-	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, this->fb_finfo, "error setting variable framebuffer information");
-	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, this->fb_vinfo, "error reading variable framebuffer information");
+	this->fb_vinfo.bits_per_pixel = 32;
+	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &this->fb_vinfo, "error setting variable framebuffer information");
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &this->fb_vinfo, "error reading variable framebuffer information");
 
 	// set width, height and bpp according to the size of the fb device
 	this->width = this->fb_vinfo.xres;
