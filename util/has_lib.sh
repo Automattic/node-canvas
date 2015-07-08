@@ -12,7 +12,8 @@ has_lib() {
   done
 
   # Try just checking common library locations
-  for dir in /lib /usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/i386-linux-gnu; do
+  for dir in /lib /usr/lib /usr/local/lib /opt/local/lib \
+             /usr/lib/x86_64-linux-gnu /usr/lib/i386-linux-gnu; do
     test -d $dir && ls $dir | grep -E $regex && return 0
   done
 
