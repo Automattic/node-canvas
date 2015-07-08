@@ -14,6 +14,14 @@ FBDevBackend::FBDevBackend(string deviceName) {
 	this->fb_dn = deviceName;
 }
 
+void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data, string errmsg) {
+	if (ioctl(this->fb_fd, request, data) == -1) {
+		std::ostringstream o;
+		o << errmsg << ", Framebuffer Device: \"" << this->fb_dn << "\"";
+		throw FBDevBackendException(o.str());
+	}
+}
+
 cairo_surface_t * FBDevBackend::createSurface() {
 	// Open the file for reading and writing
 	this->fb_fd = open(this->fb_dn.c_str(), O_RDWR);
@@ -23,24 +31,19 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
-	// Get fixed screen information
-	if (ioctl(this->fb_fd, FBIOGET_FSCREENINFO, &this->fb_finfo) == -1) {
-		std::ostringstream o;
-		o << "error reading fixed information from device \"" << this->fb_dn << "\"";
-		throw FBDevBackendException(o.str());
-	}
-
-	// Get variable screen information
-	if (ioctl(this->fb_fd, FBIOGET_VSCREENINFO, &this->fb_vinfo) == -1) {
-		std::ostringstream o;
-		o << "error reading variable information from device \"" << this->fb_dn << "\"";
-		throw FBDevBackendException(o.str());
-	}
+	// read fixed info, read variable info, set bpp and disable grayscale
+	this->FbDevIoctlHelper(FBIOGET_FSCREENINFO, &this->fb_finfo, "error reading fixed framebuffer information");
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &this->fb_vinfo, "error reading variable framebuffer information");
+	this->fb_vinfo.grayscale = 0;
+	this->fb_vinfo.bits_per_pixel = 32;
+	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &this->fb_vinfo, "error setting variable framebuffer information");
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &this->fb_vinfo, "error reading variable framebuffer information");
 
 	// set width, height and bpp according to the size of the fb device
 	this->width = this->fb_vinfo.xres;
 	this->height = this->fb_vinfo.yres;
 	this->bpp = this->fb_vinfo.bits_per_pixel;
+	this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
 
 	// switch through bpp and decide on which format for the cairo surface to use
 	switch (this->bpp) {
@@ -62,9 +65,6 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
-	// Figure out the size of the screen in bytes
-	//this->fb_screensize = this->width * this->height * this->bpp / 8;
-	this->fb_screensize = this->fb_vinfo.yres_virtual * this->fb_finfo.line_length;
 	// Map the device to memory
 	this->fb_data = (unsigned char *) mmap(
 	        0,
@@ -81,13 +81,15 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
-	// TODO decide image format by bpp of fb device
+	int stride = cairo_format_stride_for_width(this->format, this->fb_vinfo.xres_virtual);
+
+	// create cairo surface from data
 	this->surface = cairo_image_surface_create_for_data(
 	        this->fb_data,
 	        this->format,
 	        this->width,
 	        this->height,
-	        cairo_format_stride_for_width(this->format, this->width)
+	        stride
 	        );
 
 	return this->surface;
