@@ -81,13 +81,15 @@ cairo_surface_t * FBDevBackend::createSurface() {
 		throw FBDevBackendException(o.str());
 	}
 
+	int stride = cairo_format_stride_for_width(this->format, this->fb_vinfo.xres_virtual);
+
 	// create cairo surface from data
 	this->surface = cairo_image_surface_create_for_data(
 	        this->fb_data,
 	        this->format,
 	        this->width,
 	        this->height,
-	        cairo_format_stride_for_width(this->format, this->width)
+	        stride
 	        );
 
 	return this->surface;
