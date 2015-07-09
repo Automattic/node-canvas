@@ -5,17 +5,13 @@
 
 using namespace std;
 
-class ImageBackend : public Backend {
+class ImageBackend : public Backend
+{
+  private:
+    cairo_surface_t* createSurface();
+
   public:
-    virtual cairo_surface_t *createSurface();
-    virtual cairo_surface_t *recreateSurface();
-    virtual void destroySurface();
-
-    void setWidth(int width);
-    void setHeight(int height);
-
     ImageBackend(int width, int height);
-    ~ImageBackend() { this->destroySurface(); }
 
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);

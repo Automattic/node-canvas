@@ -1,43 +1,77 @@
 #include "Backend.h"
 
-Backend::~Backend() {
+
+Backend::Backend(string name)
+	: name(name)
+	, width(0)
+	, height(0)
+	, surface(NULL)
+{}
+
+Backend::~Backend()
+{
+	this->destroySurface();
 }
 
-string Backend::getName() {
+
+void Backend::destroySurface()
+{
+	if(this->surface)
+	{
+		cairo_surface_destroy(this->surface);
+		this->surface = NULL;
+	}
+}
+
+cairo_surface_t* Backend::recreateSurface()
+{
+	this->destroySurface();
+
+	return this->createSurface();
+}
+
+cairo_surface_t* Backend::getSurface()
+{
+	return surface;
+}
+
+
+string Backend::getName()
+{
 	return name;
 }
 
-int Backend::getWidth() {
+int Backend::getWidth()
+{
 	return this->width;
 }
-
-void Backend::setWidth(int width) {
+void Backend::setWidth(int width)
+{
 	this->width = width;
 	this->recreateSurface();
 }
 
-int Backend::getHeight() {
+int Backend::getHeight()
+{
 	return this->height;
 }
-
-void Backend::setHeight(int height) {
+void Backend::setHeight(int height)
+{
 	this->height = height;
 	this->recreateSurface();
 }
 
-cairo_surface_t* Backend::getSurface() {
-	return surface;
-}
 
-BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend, string operation_name) {
-	this->backend = backend;
-	this->operation_name = operation_name;
-};
+BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
+	string operation_name)
+	: backend(backend)
+	, operation_name(operation_name)
+{};
 
-BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {
-};
+BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {};
 
-const char* BackendOperationNotAvailable::what() const throw() {
+const char* BackendOperationNotAvailable::what() const throw()
+{
 	std::ostringstream o;
 
 	o << "operation " << this->operation_name;

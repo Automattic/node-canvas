@@ -7,20 +7,20 @@
 
 using namespace std;
 
-class X11Backend : public Backend {
-  public:
-    virtual cairo_surface_t *createSurface();
-    virtual cairo_surface_t *recreateSurface();
-    virtual void destroySurface();
+class X11Backend : public Backend
+{
+  private:
+    Display* display;
+    Window window;
+
+    cairo_surface_t* createSurface();
+    void             destroySurface();
 
     void setWidth(int width);
     void setHeight(int height);
 
+  public:
     X11Backend(int width, int height);
-    ~X11Backend() { this->destroySurface(); }
-
-    Display *display;
-    Window window;
 
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
