@@ -1,43 +1,33 @@
 #include "X11Backend.h"
 
 X11Backend::X11Backend(int width, int height)
-: Backend("x11")
+	: Backend("x11", width, height)
 {
-	this->width = width;
-	this->height = height;
+	display = XOpenDisplay(NULL);
+	if(!display)
+		throw X11BackendException("Can't open display. Is DISPLAY set?\n");
+
+	this->window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
+		this->width, this->height, 0, 0, BlackPixel(display, 0));
+
+	XSelectInput(display, this->window, StructureNotifyMask | ExposureMask);
+	XMapWindow(display, this->window);
+}
+
+X11Backend::~X11Backend()
+{
+	this->destroySurface();
+
+	XCloseDisplay(this->display);
 }
 
 
 cairo_surface_t* X11Backend::createSurface()
 {
-	display = XOpenDisplay(NULL);
-  if(!display)
-	{
-		std::ostringstream o;
-		o << "Can't open display. Is DISPLAY set?\n";
-		throw X11BackendException(o.str());
-  }
-
-  this->window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
-		this->width, this->height, 0, 0, BlackPixel(display, 0));
-
-  XSelectInput(display, this->window, StructureNotifyMask | ExposureMask);
-  XMapWindow(display, this->window);
-
   this->surface = cairo_xlib_surface_create(display, this->window,
 		DefaultVisual(display, 0), this->width, this->height);
 
 	return this->surface;
-}
-
-void X11Backend::destroySurface()
-{
-	if(this->surface)
-	{
-		Backend::destroySurface();
-
-		XCloseDisplay(this->display);
-	}
 }
 
 

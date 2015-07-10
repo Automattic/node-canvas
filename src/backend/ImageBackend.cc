@@ -1,11 +1,9 @@
 #include "ImageBackend.h"
 
 ImageBackend::ImageBackend(int width, int height)
-: Backend("image")
-{
-	this->width  = width;
-	this->height = height;
-}
+	: Backend("image", width, height)
+{}
+
 
 cairo_surface_t* ImageBackend::createSurface()
 {

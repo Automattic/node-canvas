@@ -13,6 +13,8 @@ class X11Backend : public Backend
     Display* display;
     Window window;
 
+    ~X11Backend();
+
     cairo_surface_t* createSurface();
     void             destroySurface();
 
@@ -26,6 +28,7 @@ class X11Backend : public Backend
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
 };
+
 
 class X11BackendException : public std::exception {
   private:

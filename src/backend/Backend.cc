@@ -7,21 +7,18 @@ Backend::Backend(string name)
 	, height(0)
 	, surface(NULL)
 {}
+Backend::Backend(string name, int width, int height)
+	: name(name)
+	, width(width)
+	, height(height)
+	, surface(NULL)
+{}
 
 Backend::~Backend()
 {
 	this->destroySurface();
 }
 
-
-void Backend::destroySurface()
-{
-	if(this->surface)
-	{
-		cairo_surface_destroy(this->surface);
-		this->surface = NULL;
-	}
-}
 
 cairo_surface_t* Backend::recreateSurface()
 {
@@ -33,6 +30,15 @@ cairo_surface_t* Backend::recreateSurface()
 cairo_surface_t* Backend::getSurface()
 {
 	return surface;
+}
+
+void Backend::destroySurface()
+{
+	if(this->surface)
+	{
+		cairo_surface_destroy(this->surface);
+		this->surface = NULL;
+	}
 }
 
 

@@ -33,15 +33,16 @@ class Backend : public ObjectWrap
     cairo_surface_t* surface;
 
     Backend(string name);
+    Backend(string name, int width, int height);
 
   public:
     virtual ~Backend();
 
     virtual cairo_surface_t* createSurface() = 0;
-    virtual void             destroySurface();
 
     cairo_surface_t* recreateSurface();
     cairo_surface_t* getSurface();
+    void             destroySurface();
 
     string getName();
 
