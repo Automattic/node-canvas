@@ -76,11 +76,9 @@ cairo_surface_t* FBDevBackend::createSurface()
 			throw FBDevBackendException("Could not determine color format");
 	}
 
-	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres_virtual);
-
 	// create cairo surface from data
 	this->surface = cairo_image_surface_create_for_data(this->fb_data, format,
-		this->width, this->height, stride);
+		this->width, this->height, fb_finfo.line_length);
 
 	return this->surface;
 }
