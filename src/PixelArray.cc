@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Persistent<FunctionTemplate> PixelArray::constructor;
+Nan::Persistent<FunctionTemplate> PixelArray::constructor;
 
 /*
  * Initialize PixelArray.
@@ -17,18 +17,18 @@ Persistent<FunctionTemplate> PixelArray::constructor;
 
 void
 PixelArray::Initialize(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope scope;
 
   // Constructor
-  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(PixelArray::New);
-  NanAssignPersistent(constructor, ctor);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(PixelArray::New);
+  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("CanvasPixelArray"));
+  ctor->SetClassName(Nan::New("CanvasPixelArray").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->InstanceTemplate();
-  proto->SetAccessor(NanNew("length"), GetLength);
-  target->Set(NanNew("CanvasPixelArray"), ctor->GetFunction());
+  Nan::SetAccessor(proto, Nan::New("length").ToLocalChecked(), GetLength);
+  target->Set(Nan::New("CanvasPixelArray").ToLocalChecked(), ctor->GetFunction());
 }
 
 /*
@@ -36,42 +36,42 @@ PixelArray::Initialize(Handle<Object> target) {
  */
 
 NAN_METHOD(PixelArray::New) {
-  NanScope();
+  Nan::HandleScope scope;
   PixelArray *arr;
-  Local<Object> obj = args[0]->ToObject();
+  Local<Object> obj = info[0]->ToObject();
 
-  switch (args.Length()) {
+  switch (info.Length()) {
     // width, height
     case 2:
       arr = new PixelArray(
-          args[0]->Int32Value()
-        , args[1]->Int32Value());
+          info[0]->Int32Value()
+        , info[1]->Int32Value());
       break;
     // canvas, x, y, width, height
     case 5: {
-      if (!NanHasInstance(Canvas::constructor, obj))
-        return NanThrowTypeError("Canvas expected");
+      if (!Nan::New(Canvas::constructor)->HasInstance(obj))
+        return Nan::ThrowTypeError("Canvas expected");
 
-      Canvas *canvas = ObjectWrap::Unwrap<Canvas>(obj);
+      Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
       arr = new PixelArray(
           canvas
-        , args[1]->Int32Value()
-        , args[2]->Int32Value()
-        , args[3]->Int32Value()
-        , args[4]->Int32Value());
+        , info[1]->Int32Value()
+        , info[2]->Int32Value()
+        , info[3]->Int32Value()
+        , info[4]->Int32Value());
       }
       break;
     default:
-      return NanThrowTypeError("invalid arguments");
+      return Nan::ThrowTypeError("invalid arguments");
   }
 
   // Let v8 handle accessors (and clamping)
-  args.This()->SetIndexedPropertiesToPixelData(
+  info.This()->SetIndexedPropertiesToPixelData(
       arr->data()
     , arr->length());
 
-  arr->Wrap(args.This());
-  NanReturnValue(args.This());
+  arr->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
@@ -79,8 +79,8 @@ NAN_METHOD(PixelArray::New) {
  */
 
 NAN_GETTER(PixelArray::GetLength) {
-  NanScope();
-  NanReturnValue(NanNew<Number>(args.This()->GetIndexedPropertiesPixelDataLength()));
+  Nan::HandleScope scope;
+  info.GetReturnValue().Set(Nan::New<Number>(info.This()->GetIndexedPropertiesPixelDataLength()));
 }
 
 /*
@@ -149,7 +149,7 @@ uint8_t *
 PixelArray::alloc() {
   int len = length();
   _data = (uint8_t *) calloc(1, len);
-  NanAdjustExternalMemory(len);
+  Nan::AdjustExternalMemory(len);
   return _data;
 }
 
@@ -158,6 +158,6 @@ PixelArray::alloc() {
  */
 
 PixelArray::~PixelArray() {
-  NanAdjustExternalMemory(-length());
+  Nan::AdjustExternalMemory(-length());
   free(_data);
 }

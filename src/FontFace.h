@@ -13,9 +13,9 @@
 #include <cairo-ft.h>
 #include FT_FREETYPE_H
 
-class FontFace: public node::ObjectWrap {
+class FontFace: public Nan::ObjectWrap {
   public:
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     FontFace(FT_Face ftFace, cairo_font_face_t *crFace)

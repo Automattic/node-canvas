@@ -366,10 +366,11 @@ module.exports = {
     assert.equal('PNG', buf.slice(1,4).toString());
   },
 
-  'test Canvas#toBuffer() async': function(){
+  'test Canvas#toBuffer() async': function(done){
     new Canvas(200, 200).toBuffer(function(err, buf){
       assert.ok(!err);
       assert.equal('PNG', buf.slice(1,4).toString());
+      done();
     });
   },
 
@@ -393,17 +394,19 @@ module.exports = {
     assert.equal('currently only image/png is supported', err.message);
   },
 
-  'test Canvas#toDataURL() async': function(){
+  'test Canvas#toDataURL() async': function(done){
     new Canvas(200,200).toDataURL(function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
+      done();
     });
   },
 
-  'test Canvas#toDataURL() async with type': function(){
+  'test Canvas#toDataURL() async with type': function(done){
     new Canvas(200,200).toDataURL('image/png', function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
+      done();
     });
   },
 

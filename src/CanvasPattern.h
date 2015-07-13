@@ -10,9 +10,9 @@
 
 #include "Canvas.h"
 
-class Pattern: public node::ObjectWrap {
+class Pattern: public Nan::ObjectWrap {
   public:
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     Pattern(cairo_surface_t *surface, int w, int h);
