@@ -33,11 +33,15 @@ cairo_surface_t* X11Backend::createSurface()
 
 void X11Backend::setWidth(int width)
 {
-	throw BackendOperationNotAvailable(this, "setWidth()");
+	XResizeWindow(this->display, this->window, width, this->height);
+
+	Backend::setWidth(width);
 }
 void X11Backend::setHeight(int height)
 {
-	throw BackendOperationNotAvailable(this, "setHeight()");
+	XResizeWindow(this->display, this->window, this->width, height);
+
+	Backend::setHeight(height);
 }
 
 

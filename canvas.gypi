@@ -6,6 +6,10 @@
     },
     'conditions':
     [
+        ['OS=="win"',
+        {
+            'sources': ['src/backend/Win32Backend.cc']
+        }],
         ['has_FBDev=="true"',
         {
             'defines': ['HAS_FBDEV'],
@@ -14,7 +18,8 @@
         ['has_X11=="true"',
         {
             'defines': ['HAS_X11'],
-            'sources': ['src/backend/X11Backend.cc']
+            'sources': ['src/backend/X11Backend.cc'],
+            'libraries': ['-lX11', '-lXrender', '-lXext']
         }]
     ],
     'target_name': 'canvas',
@@ -23,7 +28,6 @@
     [
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
-        'src/backend/FBDevBackend.cc',
         'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
