@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net>",
@@ -18,8 +18,8 @@
     "images",
     "pdf"
   ],
-  "homepage": "https://github.com/learnboost/node-canvas",
-  "repository": "git://github.com/learnboost/node-canvas.git",
+  "homepage": "https://github.com/Automattic/node-canvas",
+  "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
     "test": "make test"
   },

@@ -1,3 +1,11 @@
+1.2.4 / 2015-07-23
+==================
+
+  * Point `homepage` and `repository` links to
+    [`github.com/Automattic/node-canvas`][repo]
+  * Fix Travis builds and Cairo include paths (thanks, Linus Unnebäck!)
+
+[repo]: [https://github.com/Automattic/node-canvas]
 
 1.2.3 / 2015-05-21
 ==================
