@@ -42,7 +42,16 @@
             {
                 'sources':
                 [
-                    "<(cairo_src)cairo-xlib-surface.c"
+                    "<(cairo_src)cairo-xlib-core-compositor.c",
+                    "<(cairo_src)cairo-xlib-display.c",
+                    "<(cairo_src)cairo-xlib-fallback-compositor.c",
+                    "<(cairo_src)cairo-xlib-render-compositor.c",
+                    "<(cairo_src)cairo-xlib-screen.c",
+                    "<(cairo_src)cairo-xlib-source.c",
+                    "<(cairo_src)cairo-xlib-surface.c",
+                    "<(cairo_src)cairo-xlib-surface-shm.c",
+                    "<(cairo_src)cairo-xlib-visual.c",
+                    "<(cairo_src)cairo-xlib-xcb-surface.c"
                 ],
                 'libraries': ['-lX11']
             }]
@@ -234,15 +243,6 @@
             # "<(cairo_src)cairo-xcb-surface.c",
             # "<(cairo_src)cairo-xcb-surface-core.c",
             # "<(cairo_src)cairo-xcb-surface-render.c",
-            "<(cairo_src)cairo-xlib-core-compositor.c",
-            "<(cairo_src)cairo-xlib-display.c",
-            "<(cairo_src)cairo-xlib-fallback-compositor.c",
-            "<(cairo_src)cairo-xlib-render-compositor.c",
-            "<(cairo_src)cairo-xlib-screen.c",
-            "<(cairo_src)cairo-xlib-source.c",
-            "<(cairo_src)cairo-xlib-surface-shm.c",
-            "<(cairo_src)cairo-xlib-visual.c",
-            "<(cairo_src)cairo-xlib-xcb-surface.c",
             #"<(cairo_src)cairo-xml-surface.c",
             #"<(cairo_src)check-has-hidden-symbols.c",
             "<(cairo_src)check-link.c",
