@@ -60,6 +60,7 @@
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
+            '<(GTK_Root)/include/cairo'
           ],
           'defines': [
             'snprintf=_snprintf',
