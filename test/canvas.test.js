@@ -80,6 +80,17 @@ module.exports = {
     assert.equal(typeof Canvas.PixelArray, 'function');
   },
 
+  'test .Uint8ClampedArray': function(){
+
+    assert(typeof Uint8ClampedArray !== "undefined");
+    var elem = new Canvas(200, 200);
+    var ctx = elem.getContext('2d');
+    
+    var image = ctx.createImageData(1, 1);
+    assert(image.data instanceof Uint8ClampedArray);
+
+  },
+
   'test color serialization': function(){
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');

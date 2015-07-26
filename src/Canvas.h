@@ -16,7 +16,7 @@
 #if HAVE_PANGO
 #include <pango/pangocairo.h>
 #else
-#include <cairo.h>
+#include <cairo/cairo.h>
 #endif
 
 #include <nan.h>
