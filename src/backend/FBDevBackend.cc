@@ -67,13 +67,11 @@ cairo_surface_t* FBDevBackend::createSurface()
 	cairo_format_t format;
 	switch(fb_vinfo.bits_per_pixel)
 	{
-		case  8: format = CAIRO_FORMAT_A8;        break;
 		case 16: format = CAIRO_FORMAT_RGB16_565; break;
-		case 24: format = CAIRO_FORMAT_RGB24;     break;
 		case 32: format = CAIRO_FORMAT_ARGB32;    break;
 
 		default:
-			throw FBDevBackendException("Could not determine color format");
+			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
 	}
 
 	// create cairo surface from data
