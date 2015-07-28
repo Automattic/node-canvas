@@ -487,4 +487,4 @@
 
   * Initial release
 
-[repo]: [https://github.com/Automattic/node-canvas]
+[repo]: https://github.com/Automattic/node-canvas
