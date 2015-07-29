@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/sh -e
 
 PKG_CONFIG="http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz"
-PIXMAN="http://www.cairographics.org/releases/pixman-0.32.4.tar.gz"
-CAIRO="http://cairographics.org/releases/cairo-1.12.16.tar.xz"
-FREETYPE="http://download.savannah.gnu.org/releases/freetype/freetype-2.4.10.tar.gz"
-LIBPNG="http://downloads.sourceforge.net/project/libpng/libpng16/1.6.10/libpng-1.6.10.tar.gz"
-GIF_LIB="https://downloads.sourceforge.net/project/giflib/giflib-4.x/giflib-4.1.6/giflib-4.1.6.tar.gz"
+PIXMAN="http://www.cairographics.org/releases/pixman-0.32.6.tar.gz"
+CAIRO="http://cairographics.org/releases/cairo-1.14.2.tar.xz"
+FREETYPE="http://download.savannah.gnu.org/releases/freetype/freetype-2.6.tar.gz"
+LIBPNG="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.18.tar.xz"
+GIF_LIB="https://downloads.sourceforge.net/project/giflib/giflib-5.1.1.tar.gz"
 PREFIX=${1-/usr/local}
 
 require() {
@@ -58,7 +58,7 @@ require curl
 require tar
 test `which pkg-config` || fetch $PKG_CONFIG
 require 'pkg-config'
-fetch $LIBPNG
+fetch_xz $LIBPNG
 fetch $GIF_LIB
 fetch $FREETYPE
 fetch $PIXMAN
