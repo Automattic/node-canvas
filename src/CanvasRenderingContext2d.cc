@@ -103,6 +103,7 @@ Context2d::Initialize(Handle<Object> target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   NODE_SET_PROTOTYPE_METHOD(ctor, "drawImage", DrawImage);
   NODE_SET_PROTOTYPE_METHOD(ctor, "putImageData", PutImageData);
+  NODE_SET_PROTOTYPE_METHOD(ctor, "getImageData", GetImageData);
   NODE_SET_PROTOTYPE_METHOD(ctor, "addPage", AddPage);
   NODE_SET_PROTOTYPE_METHOD(ctor, "save", Save);
   NODE_SET_PROTOTYPE_METHOD(ctor, "restore", Restore);
@@ -576,12 +577,11 @@ NAN_METHOD(Context2d::PutImageData) {
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(obj);
-  PixelArray *arr = imageData->pixelArray();
 
-  uint8_t *src = arr->data();
+  uint8_t *src = imageData->data();
   uint8_t *dst = context->canvas()->data();
 
-  int srcStride = arr->stride()
+  int srcStride = imageData->stride()
     , dstStride = context->canvas()->stride();
 
   int sx = 0
@@ -596,8 +596,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (args.Length()) {
     // imageData, dx, dy
     case 3:
-      cols = std::min(arr->width(), context->canvas()->width - dx);
-      rows = std::min(arr->height(), context->canvas()->height - dy);
+      cols = std::min(imageData->width(), context->canvas()->width - dx);
+      rows = std::min(imageData->height(), context->canvas()->height - dy);
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -607,8 +607,8 @@ NAN_METHOD(Context2d::PutImageData) {
       sh = args[6]->Int32Value();
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
-      if (sx + sw > arr->width()) sw = arr->width() - sx;
-      if (sy + sh > arr->height()) sh = arr->height() - sy;
+      if (sx + sw > imageData->width()) sw = imageData->width() - sx;
+      if (sy + sh > imageData->height()) sh = imageData->height() - sy;
       dx += sx;
       dy += sy;
       cols = std::min(sw, context->canvas()->width - dx);
@@ -651,6 +651,109 @@ NAN_METHOD(Context2d::PutImageData) {
     , rows);
 
   NanReturnUndefined();
+}
+
+/*
+ * Get image data.
+ *
+ *  - sx, sy, sw, sh
+ *
+ */
+
+NAN_METHOD(Context2d::GetImageData) {
+  NanScope();
+
+  Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+  Canvas *canvas = context->canvas();
+
+  int sx = args[0]->Int32Value();
+  int sy = args[1]->Int32Value();
+  int sw = args[2]->Int32Value();
+  int sh = args[3]->Int32Value();
+
+  if (!sw)
+    return NanThrowError("IndexSizeError: The source width is 0.");
+  if (!sh)
+    return NanThrowError("IndexSizeError: The source height is 0.");
+
+  // WebKit and Firefox have this behavior:
+  // Flip the coordinates so the origin is top/left-most:
+  if (sw < 0) {
+    sx += sw;
+    sw = -sw;
+  }
+  if (sh < 0) {
+    sy += sh;
+    sh = -sh;
+  }
+
+  if (sx + sw > canvas->width) sw = canvas->width - sx;
+  if (sy + sh > canvas->height) sh = canvas->height - sy;
+
+  // WebKit/moz functionality. node-canvas used to return in either case.
+  if (sw <= 0) sw = 1;
+  if (sh <= 0) sh = 1;
+
+  // Non-compliant. "Pixels outside the canvas must be returned as transparent
+  // black." This instead clips the returned array to the canvas area.
+  if (sx < 0) {
+    sw += sx;
+    sx = 0;
+  }
+  if (sy < 0) {
+    sh += sy;
+    sy = 0;
+  }
+
+  int size = sw * sh * 4;
+
+  int srcStride = canvas->stride();
+  int dstStride = sw * 4;
+
+  uint8_t *src = canvas->data();
+  uint8_t *dst = (uint8_t *)calloc(1, size);
+  NanAdjustExternalMemory(size);
+
+  Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
+  Local<Uint8ClampedArray> clampedArray = Uint8ClampedArray::New(buffer, 0, size);
+  clampedArray->SetIndexedPropertiesToExternalArrayData(dst, kExternalUint8ClampedArray, size);
+
+  // Normalize data (argb -> rgba)
+  for (int y = 0; y < sh; ++y) {
+    uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
+    for (int x = 0; x < sw; ++x) {
+      int bx = x * 4;
+      uint32_t *pixel = row + x + sx;
+      uint8_t a = *pixel >> 24;
+      uint8_t r = *pixel >> 16;
+      uint8_t g = *pixel >> 8;
+      uint8_t b = *pixel;
+      dst[bx + 3] = a;
+
+      // Performance optimization: fully transparent/opaque pixels can be
+      // processed more efficiently.
+      if (a == 0 || a == 255) {
+        dst[bx + 0] = r;
+        dst[bx + 1] = g;
+        dst[bx + 2] = b;
+      } else {
+        float alpha = (float)a / 255;
+        dst[bx + 0] = (int)((float)r / alpha);
+        dst[bx + 1] = (int)((float)g / alpha);
+        dst[bx + 2] = (int)((float)b / alpha);
+      }
+
+    }
+    dst += dstStride;
+  }
+
+  const int argc = 3;
+  Local<Value> argv[argc] = { clampedArray, NanNew(sw), NanNew(sh) };
+
+  Local<FunctionTemplate> cons = NanNew(ImageData::constructor);
+  Local<Object> instance = cons->GetFunction()->NewInstance(argc, argv);
+
+  NanReturnValue(instance);
 }
 
 /*

@@ -36,15 +36,38 @@ ImageData::Initialize(Handle<Object> target) {
 
 NAN_METHOD(ImageData::New) {
   NanScope();
-  Local<Object> obj = args[0]->ToObject();
 
-  if (!NanHasInstance(PixelArray::constructor, obj))
-    return NanThrowTypeError("CanvasPixelArray expected");
+  Local<Uint8ClampedArray> clampedArray;
+  int width;
+  int height;
 
-  PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(obj);
-  ImageData *imageData = new ImageData(arr);
-  args.This()->Set(NanNew("data"), args[0]);
+  if (args[0]->IsUint32() && args[1]->IsUint32()) {
+    width = args[0]->Uint32Value();
+    height = args[1]->Uint32Value();
+    int size = width * height;
+    clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), size), 0, size);
+  } else if (args[0]->IsUint8ClampedArray() && args[1]->IsUint32()) {
+    clampedArray = args[0].As<Uint8ClampedArray>();
+    width = args[1]->Uint32Value();
+    if (args[2]->IsUint32()) {
+      height = args[2]->Uint32Value();
+    } else {
+      height = clampedArray->Length() / width;
+    }
+  } else {
+    NanThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
+    NanReturnUndefined();
+  }
+
+  // No behavior defined in spec. This is what WebKit does:
+  if (width < 1) width = 1;
+  if (height < 1) height = 1;
+
+  void *dataPtr = clampedArray->GetIndexedPropertiesExternalArrayData();
+
+  ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(dataPtr), width, height);
   imageData->Wrap(args.This());
+  args.This()->Set(NanNew("data"), clampedArray);
   NanReturnValue(args.This());
 }
 
@@ -55,7 +78,7 @@ NAN_METHOD(ImageData::New) {
 NAN_GETTER(ImageData::GetWidth) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->pixelArray()->width()));
+  NanReturnValue(NanNew<Number>(imageData->width()));
 }
 
 /*
@@ -65,5 +88,5 @@ NAN_GETTER(ImageData::GetWidth) {
 NAN_GETTER(ImageData::GetHeight) {
   NanScope();
   ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->pixelArray()->height()));
+  NanReturnValue(NanNew<Number>(imageData->height()));
 }
