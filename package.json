@@ -27,8 +27,9 @@
     "nan": "^1.8.4"
   },
   "devDependencies": {
-    "express": "3.0",
-    "jade": "0.28.1",
+    "body-parser": "^1.13.3",
+    "express": "^4.13.2",
+    "jade": "^1.11.0",
     "mocha": "*",
     "should": "*"
   },

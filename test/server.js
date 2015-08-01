@@ -6,6 +6,7 @@
 var express = require('express')
   , Canvas = require('../lib/canvas')
   , Image = Canvas.Image
+  , bodyParser = require('body-parser')
   , app = express();
 
 // Config
@@ -15,12 +16,8 @@ app.set('view engine', 'jade');
 
 // Middleware
 
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(app.router);
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public'));
-app.use(express.errorHandler());
 
 // Routes
 
