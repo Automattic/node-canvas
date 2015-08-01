@@ -605,12 +605,15 @@ NAN_METHOD(Context2d::PutImageData) {
       sy = args[4]->Int32Value();
       sw = args[5]->Int32Value();
       sh = args[6]->Int32Value();
+      // clamp the left edge
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
+      // clamp the right edge
       if (sx + sw > imageData->width()) sw = imageData->width() - sx;
       if (sy + sh > imageData->height()) sh = imageData->height() - sy;
       dx += sx;
       dy += sy;
+      // clamp width at canvas size
       cols = std::min(sw, context->canvas()->width - dx);
       rows = std::min(sh, context->canvas()->height - dy);
       break;
@@ -620,27 +623,36 @@ NAN_METHOD(Context2d::PutImageData) {
 
   if (cols <= 0 || rows <= 0) NanReturnUndefined();
 
-  uint8_t *srcRows = src + sy * srcStride + sx * 4;
+  src += sy * srcStride + sx * 4;
+  dst += dstStride * dy + 4 * dx;
   for (int y = 0; y < rows; ++y) {
-    uint32_t *row = (uint32_t *)(dst + dstStride * (y + dy));
+    uint8_t *dstRow = dst;
+    uint8_t *srcRow = src;
     for (int x = 0; x < cols; ++x) {
-      int bx = x * 4;
-      uint32_t *pixel = row + x + dx;
+      // rgba
+      uint8_t r = *srcRow++;
+      uint8_t g = *srcRow++;
+      uint8_t b = *srcRow++;
+      uint8_t a = *srcRow++;
 
-      // RGBA
-      uint8_t a = srcRows[bx + 3];
-      uint8_t r = srcRows[bx + 0];
-      uint8_t g = srcRows[bx + 1];
-      uint8_t b = srcRows[bx + 2];
-      float alpha = (float) a / 255;
-
-      // ARGB
-      *pixel = a << 24
-        | (int)((float) r * alpha) << 16
-        | (int)((float) g * alpha) << 8
-        | (int)((float) b * alpha);
+      // argb
+      // performance optimization: fully transparent/opaque pixels can be
+      // processed more efficiently.
+      if (a == 0 || a == 255) {
+        *dstRow++ = b;
+        *dstRow++ = g;
+        *dstRow++ = r;
+        *dstRow++ = a;
+      } else {
+        float alpha = (float)a / 255;
+        *dstRow++ = b * alpha;
+        *dstRow++ = g * alpha;
+        *dstRow++ = r * alpha;
+        *dstRow++ = a;
+      }
     }
-    srcRows += srcStride;
+    dst += dstStride;
+    src += srcStride;
   }
 
   cairo_surface_mark_dirty_rectangle(
