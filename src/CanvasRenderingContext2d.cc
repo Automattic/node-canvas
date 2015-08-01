@@ -605,14 +605,21 @@ NAN_METHOD(Context2d::PutImageData) {
       sy = args[4]->Int32Value();
       sw = args[5]->Int32Value();
       sh = args[6]->Int32Value();
+      // fix up negative height, width
+      if (sw < 0) sx += sw, sw = -sw;
+      if (sh < 0) sy += sh, sh = -sh;
       // clamp the left edge
       if (sx < 0) sw += sx, sx = 0;
       if (sy < 0) sh += sy, sy = 0;
       // clamp the right edge
       if (sx + sw > imageData->width()) sw = imageData->width() - sx;
       if (sy + sh > imageData->height()) sh = imageData->height() - sy;
+      // start destination at source offset
       dx += sx;
       dy += sy;
+      // chop off outlying source data
+      if (dx < 0) sw += dx, sx -= dx, dx = 0;
+      if (dy < 0) sh += dy, sy -= dy, dy = 0;
       // clamp width at canvas size
       cols = std::min(sw, context->canvas()->width - dx);
       rows = std::min(sh, context->canvas()->height - dy);
