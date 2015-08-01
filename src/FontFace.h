@@ -24,7 +24,6 @@ class FontFace: public node::ObjectWrap {
     inline cairo_font_face_t *cairoFace(){ return _crFace; }
   private:
     ~FontFace();
-    FT_Face   _ftFace;
     cairo_font_face_t *_crFace;
     static bool _initLibrary;
 };
