@@ -14,7 +14,7 @@ tests['strokeRect()'] = function(ctx){
 };
 
 tests['fillRect()'] = function(ctx){
-  
+
   function render(level){
     ctx.fillStyle = getPointColour(122,122);
     ctx.fillRect(0,0,240,240);
@@ -386,7 +386,7 @@ tests['createLinearGradient()'] = function(ctx){
   ctx.strokeStyle = lingrad2;
 
   ctx.fillRect(10,10,130,130);
-  ctx.strokeRect(50,50,50,50);  
+  ctx.strokeRect(50,50,50,50);
 };
 
 tests['createRadialGradient()'] = function(ctx){
@@ -458,7 +458,7 @@ tests['globalAlpha 2'] = function(ctx){
 tests['fillStyle'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -468,7 +468,7 @@ tests['fillStyle'] = function(ctx){
 tests['strokeStyle'] = function(ctx){
   for (var i=0;i<6;i++){
     for (var j=0;j<6;j++){
-      ctx.strokeStyle = 'rgb(0,' + Math.floor(255-42.5*i) + ',' + 
+      ctx.strokeStyle = 'rgb(0,' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ')';
       ctx.beginPath();
       ctx.arc(12.5+j*25,12.5+i*25,10,0,Math.PI*2,true);
@@ -593,22 +593,22 @@ tests['states'] = function(ctx){
 };
 
 tests['states with stroke/fill/globalAlpha'] = function(ctx){
-  ctx.fillRect(0,0,150,150); 
-  ctx.save();                
-                             
-  ctx.fillStyle = '#09F'     
+  ctx.fillRect(0,0,150,150);
+  ctx.save();
+
+  ctx.fillStyle = '#09F'
   ctx.fillRect(15,15,120,120);
-                             
-  ctx.save();                
-  ctx.fillStyle = '#FFF'     
-  ctx.globalAlpha = 0.5;     
-  ctx.fillRect(30,30,90,90); 
-                             
-  ctx.restore();             
-  ctx.fillRect(45,45,60,60); 
-                             
-  ctx.restore();             
-  ctx.fillRect(60,60,30,30); 
+
+  ctx.save();
+  ctx.fillStyle = '#FFF'
+  ctx.globalAlpha = 0.5;
+  ctx.fillRect(30,30,90,90);
+
+  ctx.restore();
+  ctx.fillRect(45,45,60,60);
+
+  ctx.restore();
+  ctx.fillRect(60,60,30,30);
 };
 
 tests['path through fillRect/strokeRect/clearRect'] = function(ctx){
@@ -1208,12 +1208,12 @@ tests['shadowBlur'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1234,12 +1234,12 @@ tests['shadowColor'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1262,12 +1262,12 @@ tests['shadowOffset{X,Y}'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1290,12 +1290,12 @@ tests['shadowOffset{X,Y} large'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1318,12 +1318,12 @@ tests['shadowOffset{X,Y} negative'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1350,12 +1350,12 @@ tests['shadowOffset{X,Y} transform'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1378,12 +1378,12 @@ tests['shadowBlur values'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowColor = 'rgba(0,0,0,0)';
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.fillRect(150,150,20,20);
 };
 
@@ -1406,12 +1406,12 @@ tests['shadow strokeRect()'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowColor = 'rgba(0,0,0,0)';
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.strokeRect(150,150,20,20);
 };
 
@@ -1435,12 +1435,12 @@ tests['shadow fill()'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowColor = 'rgba(0,0,0,0)';
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.strokeRect(150,150,20,20);
 };
 
@@ -1464,12 +1464,12 @@ tests['shadow stroke()'] = function(ctx){
   ctx.stroke();
 
   ctx.shadowColor = 'rgba(0,0,0,0)';
-  
+
   ctx.beginPath();
   ctx.lineTo(20,180);
   ctx.lineTo(100,180);
   ctx.stroke();
-  
+
   ctx.strokeRect(150,150,20,20);
 };
 
@@ -1693,7 +1693,7 @@ tests['drawImage(img,0,0) clip'] = function(ctx, done){
 tests['putImageData()'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1705,7 +1705,7 @@ tests['putImageData()'] = function(ctx){
 tests['putImageData() 2'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1717,7 +1717,7 @@ tests['putImageData() 2'] = function(ctx){
 tests['putImageData() 3'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1729,7 +1729,7 @@ tests['putImageData() 3'] = function(ctx){
 tests['putImageData() 4'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1742,7 +1742,7 @@ tests['putImageData() 4'] = function(ctx){
 tests['putImageData() 5'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1755,7 +1755,7 @@ tests['putImageData() 5'] = function(ctx){
 tests['putImageData() 6'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1768,7 +1768,7 @@ tests['putImageData() 6'] = function(ctx){
 tests['putImageData() 7'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1782,7 +1782,7 @@ tests['putImageData() 7'] = function(ctx){
 tests['putImageData() 8'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1795,7 +1795,7 @@ tests['putImageData() 8'] = function(ctx){
 tests['putImageData() 9'] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
+      ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' +
                        Math.floor(255-42.5*j) + ',0)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1867,7 +1867,7 @@ tests['putImageData() png data'] = function(ctx, done){
     ctx.putImageData(imageData,50,50);
     done();
   };
-  
+
   img.onerror = function(){}
 
   img.src = 'state.png';
@@ -1980,7 +1980,7 @@ tests['lineDashOffset']  = function(ctx, done){
 tests['fillStyle=\'hsl(...)\''] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'hsl(' + (360-60*i) + ',' + 
+      ctx.fillStyle = 'hsl(' + (360-60*i) + ',' +
                        (100-16.66*j) + '%,' + (50+(i+j)*(50/12)) + '%)';
       ctx.fillRect(j*25,i*25,25,25);
     }
@@ -1990,9 +1990,8 @@ tests['fillStyle=\'hsl(...)\''] = function(ctx){
 tests['fillStyle=\'hsla(...)\''] = function(ctx){
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
-      ctx.fillStyle = 'hsla(' + (360-60*i) + ',' + 
+      ctx.fillStyle = 'hsla(' + (360-60*i) + ',' +
                        (100-16.66*j) + '%,50%,' + (1-0.16*j) + ')';
-                       console.log((100-16.66*j));
       ctx.fillRect(j*25,i*25,25,25);
     }
   }
