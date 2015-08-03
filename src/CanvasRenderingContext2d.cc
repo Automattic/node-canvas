@@ -645,7 +645,12 @@ NAN_METHOD(Context2d::PutImageData) {
       // argb
       // performance optimization: fully transparent/opaque pixels can be
       // processed more efficiently.
-      if (a == 0 || a == 255) {
+      if (a == 0) {
+        *dstRow++ = 0;
+        *dstRow++ = 0;
+        *dstRow++ = 0;
+        *dstRow++ = 0;
+      } else if (a == 255) {
         *dstRow++ = b;
         *dstRow++ = g;
         *dstRow++ = r;
