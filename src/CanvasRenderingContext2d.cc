@@ -738,9 +738,21 @@ NAN_METHOD(Context2d::GetImageData) {
   uint8_t *dst = (uint8_t *)calloc(1, size);
   NanAdjustExternalMemory(size);
 
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
+  Local<Object> global = Context::GetCurrent()->Global();
+
+  Handle<Value> bufargv[] = { NanNew(size) };
+  Local<Object> buffer = global->Get(NanNew("ArrayBuffer")).As<Function>()->NewInstance(1, bufargv);
+
+  Handle<Value> caargv[] = { buffer, NanNew(0), NanNew(size) };
+  Local<Object> clampedArray = global->Get(NanNew("Uint8ClampedArray")).As<Function>()->NewInstance(3, caargv);
+
+  clampedArray->SetIndexedPropertiesToExternalArrayData(dst, kExternalPixelArray, size);
+#else
   Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
   Local<Uint8ClampedArray> clampedArray = Uint8ClampedArray::New(buffer, 0, size);
   clampedArray->SetIndexedPropertiesToExternalArrayData(dst, kExternalUint8ClampedArray, size);
+#endif
 
   // Normalize data (argb -> rgba)
   for (int y = 0; y < sh; ++y) {

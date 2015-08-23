@@ -37,22 +37,45 @@ ImageData::Initialize(Handle<Object> target) {
 NAN_METHOD(ImageData::New) {
   NanScope();
 
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
+  Local<v8::Object> clampedArray;
+  Local<Object> global = Context::GetCurrent()->Global();
+#else
   Local<Uint8ClampedArray> clampedArray;
+#endif
+
   int width;
   int height;
+
 
   if (args[0]->IsUint32() && args[1]->IsUint32()) {
     width = args[0]->Uint32Value();
     height = args[1]->Uint32Value();
     int size = width * height;
+
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
+    Handle<Value> caargv[] = { NanNew(size) };
+    Local<Object> clampedArray = global->Get(NanNew("Uint8ClampedArray")).As<Function>()->NewInstance(1, caargv);
+#else
     clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), size), 0, size);
+#endif
+
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
+  } else if (args[0]->ToObject()->GetIndexedPropertiesExternalArrayDataType() == kExternalPixelArray && args[1]->IsUint32()) {
+    clampedArray = args[0]->ToObject();
+#else
   } else if (args[0]->IsUint8ClampedArray() && args[1]->IsUint32()) {
     clampedArray = args[0].As<Uint8ClampedArray>();
+#endif
     width = args[1]->Uint32Value();
     if (args[2]->IsUint32()) {
       height = args[2]->Uint32Value();
     } else {
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
+      height = clampedArray->GetIndexedPropertiesExternalArrayDataLength() / width;
+#else
       height = clampedArray->Length() / width;
+#endif
     }
   } else {
     NanThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");

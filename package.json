@@ -34,7 +34,7 @@
     "should": "*"
   },
   "engines": {
-    "node": ">= 0.12.0"
+    "node": ">=0.8.0 <3"
   },
   "main": "./lib/canvas.js",
   "license": "MIT"
