@@ -8,6 +8,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits>
 #include <vector>
 #include <algorithm>
 #include "Canvas.h"
@@ -1307,7 +1308,7 @@ NAN_GETTER(Context2d::GetLineWidth) {
 
 NAN_SETTER(Context2d::SetLineWidth) {
   double n = value->NumberValue();
-  if (n > 0) {
+  if (n > 0 && n != std::numeric_limits<double>::infinity()) {
     Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
     cairo_set_line_width(context->context(), n);
   }
