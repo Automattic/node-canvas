@@ -7,7 +7,7 @@
 
 #include "ImageData.h"
 
-Persistent<FunctionTemplate> ImageData::constructor;
+Nan::Persistent<FunctionTemplate> ImageData::constructor;
 
 /*
  * Initialize ImageData.
@@ -15,19 +15,19 @@ Persistent<FunctionTemplate> ImageData::constructor;
 
 void
 ImageData::Initialize(Handle<Object> target) {
-  NanScope();
+  Nan::HandleScope scope;
 
   // Constructor
-  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(ImageData::New);
-  NanAssignPersistent(constructor, ctor);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New);
+  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("ImageData"));
+  ctor->SetClassName(Nan::New("ImageData").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanNew("width"), GetWidth);
-  proto->SetAccessor(NanNew("height"), GetHeight);
-  target->Set(NanNew("ImageData"), ctor->GetFunction());
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
+  target->Set(Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction());
 }
 
 /*
@@ -35,17 +35,17 @@ ImageData::Initialize(Handle<Object> target) {
  */
 
 NAN_METHOD(ImageData::New) {
-  NanScope();
-  Local<Object> obj = args[0]->ToObject();
+  Nan::HandleScope scope;
+  Local<Object> obj = info[0]->ToObject();
 
-  if (!NanHasInstance(PixelArray::constructor, obj))
-    return NanThrowTypeError("CanvasPixelArray expected");
+  if (!Nan::New(PixelArray::constructor)->HasInstance(obj))
+    return Nan::ThrowTypeError("CanvasPixelArray expected");
 
-  PixelArray *arr = ObjectWrap::Unwrap<PixelArray>(obj);
+  PixelArray *arr = Nan::ObjectWrap::Unwrap<PixelArray>(obj);
   ImageData *imageData = new ImageData(arr);
-  args.This()->Set(NanNew("data"), args[0]);
-  imageData->Wrap(args.This());
-  NanReturnValue(args.This());
+  info.This()->Set(Nan::New("data").ToLocalChecked(), info[0]);
+  imageData->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
@@ -53,9 +53,9 @@ NAN_METHOD(ImageData::New) {
  */
 
 NAN_GETTER(ImageData::GetWidth) {
-  NanScope();
-  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->pixelArray()->width()));
+  Nan::HandleScope scope;
+  ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(imageData->pixelArray()->width()));
 }
 
 /*
@@ -63,7 +63,7 @@ NAN_GETTER(ImageData::GetWidth) {
  */
 
 NAN_GETTER(ImageData::GetHeight) {
-  NanScope();
-  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->pixelArray()->height()));
+  Nan::HandleScope scope;
+  ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(imageData->pixelArray()->height()));
 }

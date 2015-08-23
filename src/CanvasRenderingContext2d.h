@@ -63,13 +63,13 @@ typedef struct {
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
 #endif
 
-class Context2d: public node::ObjectWrap {
+class Context2d: public Nan::ObjectWrap {
   public:
     short stateno;
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     static NAN_METHOD(DrawImage);

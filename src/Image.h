@@ -27,13 +27,13 @@
 
 
 
-class Image: public node::ObjectWrap {
+class Image: public Nan::ObjectWrap {
   public:
     char *filename;
     int width, height;
-    NanCallback *onload;
-    NanCallback *onerror;
-    static Persistent<FunctionTemplate> constructor;
+    Nan::Callback *onload;
+    Nan::Callback *onerror;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetSource);

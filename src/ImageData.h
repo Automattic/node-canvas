@@ -12,9 +12,9 @@
 #include "PixelArray.h"
 #include <stdlib.h>
 
-class ImageData: public node::ObjectWrap {
+class ImageData: public Nan::ObjectWrap {
   public:
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetWidth);

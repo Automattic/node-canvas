@@ -10,9 +10,9 @@
 
 #include "Canvas.h"
 
-class Gradient: public node::ObjectWrap {
+class Gradient: public Nan::ObjectWrap {
   public:
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static NAN_METHOD(New);
     static NAN_METHOD(AddColorStop);
