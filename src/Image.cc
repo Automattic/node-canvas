@@ -268,6 +268,12 @@ NAN_SETTER(Image::SetOnload) {
   if (value->IsFunction()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->onload = new Nan::Callback(value.As<Function>());
+  } else if (value->IsNull()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (img->onload) {
+      delete img->onload;
+    }
+    img->onload = NULL;
   }
 }
 
@@ -292,6 +298,12 @@ NAN_SETTER(Image::SetOnerror) {
   if (value->IsFunction()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->onerror = new Nan::Callback(value.As<Function>());
+  } else if (value->IsNull()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (img->onerror) {
+        delete img->onerror;
+    }
+    img->onerror = NULL;
   }
 }
 
