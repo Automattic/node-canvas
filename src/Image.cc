@@ -366,8 +366,6 @@ Image::loaded() {
 
   if (onload != NULL) {
     onload->Call(0, NULL);
-    delete onload;
-    onload = NULL;
   }
 }
 
@@ -381,8 +379,6 @@ Image::error(Local<Value> err) {
   if (onerror != NULL) {
     Local<Value> argv[1] = { err };
     onerror->Call(1, argv);
-    delete onerror;
-    onerror = NULL;
   }
 }
 
