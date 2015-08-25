@@ -184,6 +184,8 @@ NAN_SETTER(Image::SetSource) {
     uint8_t *buf = (uint8_t *) Buffer::Data(value->ToObject());
     unsigned len = Buffer::Length(value->ToObject());
     status = img->loadFromBuffer(buf, len);
+  } else if (value->IsNull()) {
+    status = CAIRO_STATUS_INVALID_CONTENT;
   }
 
   // check status
