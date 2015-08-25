@@ -7,6 +7,7 @@ var Canvas = require('../')
   , Image = Canvas.Image
   , assert = require('assert');
 
+var png_checkers = __dirname + '/fixtures/checkers.png';
 var png = __dirname + '/fixtures/clock.png';
 
 module.exports = {
@@ -86,5 +87,57 @@ module.exports = {
     var image = new Canvas.Image();
     image.src = new Buffer(0);
     image.src = new Buffer('');
+  },
+
+  'test unbind Image#onload': function() {
+    var img = new Image
+      , n = 0;
+
+    img.onload = function() {
+      ++n;
+    };
+
+    img.src = png_checkers;
+    assert.equal(img.src, png_checkers);
+    assert.strictEqual(true, img.complete);
+    assert.strictEqual(2, img.width);
+    assert.strictEqual(2, img.height);
+
+    assert.equal(n, 1);
+
+    n = 0;
+    img.onload = null;
+    img.src = png;
+    assert.equal(img.src, png);
+    assert.strictEqual(true, img.complete);
+    assert.strictEqual(320, img.width);
+    assert.strictEqual(320, img.height);
+
+    assert.equal(n, 0);
+  },
+
+  'test unbind Image#onerror': function() {
+    var img = new Image
+      , n = 0;
+
+
+    img.onload = function() {
+      assert.fail('called onload');
+    };
+
+    img.onerror = function() {
+      ++n;
+    };
+
+    img.src = png + 's1';
+    assert.equal(img.src, png + 's1');
+
+    assert.equal(n, 1);
+
+    n = 0;
+    img.onerror = null;
+    img.src = png + 's3';
+    assert.equal(img.src, png + 's3');
+    assert.equal(n, 0);
   }
 };
