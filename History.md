@@ -1,3 +1,8 @@
+Future / Future
+==================
+
+  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#xxx)
+
 1.2.7 / 2015-07-29
 ==================
 

@@ -9,7 +9,6 @@
 #include "Canvas.h"
 #include "Image.h"
 #include "ImageData.h"
-#include "PixelArray.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
@@ -24,7 +23,6 @@ init (Handle<Object> target) {
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
-  PixelArray::Initialize(target);
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);

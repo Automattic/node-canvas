@@ -49,8 +49,7 @@
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
-        'src/init.cc',
-        'src/PixelArray.cc'
+        'src/init.cc'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -72,7 +71,7 @@
                 'VCCLCompilerTool': {
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
-                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
                 }
               }
             },
@@ -81,7 +80,7 @@
                 'VCCLCompilerTool': {
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
-                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
                 }
               }
             }
