@@ -1,7 +1,9 @@
-Future / Future
+1.2.8 / 2015-08-30
 ==================
 
-  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#xxx)
+  * Clean up the tests (#612)
+  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#604)
+  * Specify travis iojs versions (#611)
 
 1.2.7 / 2015-07-29
 ==================
