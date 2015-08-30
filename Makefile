@@ -9,7 +9,6 @@ test: $(ADDON)
 	@./node_modules/.bin/mocha \
 		--reporter $(REPORTER) \
 		--ui exports \
-		--require should \
 		test/*.test.js
 
 test-server: $(ADDON)

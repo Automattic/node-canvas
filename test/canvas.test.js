@@ -13,11 +13,11 @@ console.log('   cairo: %s', Canvas.cairoVersion);
 
 module.exports = {
   'test .version': function(){
-    Canvas.version.should.match(/^\d+\.\d+\.\d+$/);
+    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.version));
   },
 
   'test .cairoVersion': function(){
-    Canvas.cairoVersion.should.match(/^\d+\.\d+\.\d+$/);
+    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.cairoVersion));
   },
 
   'test .parseFont()': function(){
@@ -39,17 +39,17 @@ module.exports = {
       , '20px monospace'
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Arial' }
       , 'bold italic 50px Arial, sans-serif'
-      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial' }
       , '50px Helvetica ,  Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica' }
       , '50px "Helvetica Neue", sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue, foo bar baz , sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , "50px 'Helvetica Neue'"
-      , { size: 50, unit: 'px', family: "Helvetica Neue" }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , 'italic 20px Arial'
       , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
       , 'oblique 20px Arial'
@@ -70,9 +70,11 @@ module.exports = {
       var str = tests[i++]
         , obj = tests[i]
         , actual = parseFont(str);
+
       if (!obj.style) obj.style = 'normal';
       if (!obj.weight) obj.weight = 'normal';
-      // actual.should.eql(obj);
+
+      assert.deepEqual(obj, actual);
     }
   },
 
@@ -270,7 +272,9 @@ module.exports = {
 
     ctx.lineWidth = 10.0;
     assert.equal(10, ctx.lineWidth);
-    // ctx.lineWidth = Infinity;
+    ctx.lineWidth = Infinity;
+    assert.equal(10, ctx.lineWidth);
+    ctx.lineWidth = -Infinity;
     assert.equal(10, ctx.lineWidth);
     ctx.lineWidth = -5;
     assert.equal(10, ctx.lineWidth);
@@ -362,10 +366,11 @@ module.exports = {
     assert.equal('PNG', buf.slice(1,4).toString());
   },
 
-  'test Canvas#toBuffer() async': function(){
+  'test Canvas#toBuffer() async': function(done){
     new Canvas(200, 200).toBuffer(function(err, buf){
       assert.ok(!err);
       assert.equal('PNG', buf.slice(1,4).toString());
+      done();
     });
   },
 
@@ -389,17 +394,19 @@ module.exports = {
     assert.equal('currently only image/png is supported', err.message);
   },
 
-  'test Canvas#toDataURL() async': function(){
+  'test Canvas#toDataURL() async': function(done){
     new Canvas(200,200).toDataURL(function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
+      done();
     });
   },
 
-  'test Canvas#toDataURL() async with type': function(){
+  'test Canvas#toDataURL() async with type': function(done){
     new Canvas(200,200).toDataURL('image/png', function(err, str){
       assert.ok(!err);
       assert.ok(0 == str.indexOf('data:image/png;base64,'));
+      done();
     });
   },
 
