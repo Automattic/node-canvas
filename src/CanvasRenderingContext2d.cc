@@ -1962,10 +1962,36 @@ NAN_METHOD(Context2d::SetFontFace) {
   double size = args[1]->NumberValue();
 
   Context2d *context = ObjectWrap::Unwrap<Context2d>(args.This());
+
+#if HAVE_PANGO
+
+  state_assign_fontFamily(context->state, face->freeTypeFace()->family_name);
+  context->state->fontSize = size;
+
+  FT_Long styleFlags = face->freeTypeFace()->style_flags;
+
+  PangoStyle s = PANGO_STYLE_NORMAL;
+  if (styleFlags & FT_STYLE_FLAG_ITALIC) {
+    s = PANGO_STYLE_ITALIC;
+  }
+  context->state->fontStyle = s;
+
+  PangoWeight w = PANGO_WEIGHT_NORMAL;
+  if (styleFlags & FT_STYLE_FLAG_BOLD) {
+    w = PANGO_WEIGHT_BOLD;
+  }
+  context->state->fontWeight = w;
+
+  context->setFontFromState();
+
+#else
+
   cairo_t *ctx = context->context();
 
   cairo_set_font_size(ctx, size);
   cairo_set_font_face(ctx, face->cairoFace());
+
+#endif
 
   NanReturnUndefined();
 }

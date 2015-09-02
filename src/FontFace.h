@@ -22,6 +22,7 @@ class FontFace: public node::ObjectWrap {
       :_ftFace(ftFace), _crFace(crFace) {}
 
     inline cairo_font_face_t *cairoFace(){ return _crFace; }
+    inline FT_Face freeTypeFace(){ return _ftFace; }
   private:
     ~FontFace();
     FT_Face   _ftFace;
