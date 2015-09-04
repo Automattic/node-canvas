@@ -4,6 +4,7 @@
       'variables': {
         'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
         'JPEG_ROOT%': 'C:/libjpeg-turbo', # Set the location of LibJpeg Turbo
+		'GIF_Root': 'C:/giflib', # Set the location of GifLib source root
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
@@ -168,9 +169,16 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'libraries': [
-                '-l<(GTK_Root)/lib/gif.lib'
-              ]
+              'sources': [
+                '<(GIF_Root)/lib/dgif_lib.c',
+                '<(GIF_Root)/lib/egif_lib.c',
+                '<(GIF_Root)/lib/gif_err.c',
+                '<(GIF_Root)/lib/gif_font.c',
+                '<(GIF_Root)/lib/gif_hash.c',
+                '<(GIF_Root)/lib/quantize.c',
+                '<(GIF_Root)/lib/gifalloc.c'
+              ],
+		      'include_dirs': ["<(GIF_Root)/lib"]
             }, {
               'libraries': [
                 '-lgif'
