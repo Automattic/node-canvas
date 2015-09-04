@@ -123,8 +123,16 @@
           'conditions': [
             ['OS=="win"', {
               'libraries': [
-                '-l<(GTK_Root)/lib/pangocairo.lib'
-              ]
+                '-l<(GTK_Root)/lib/fontconfig.lib',
+                '-l<(GTK_Root)/lib/gobject-2.0.lib',
+                '-l<(GTK_Root)/lib/pango-1.0.lib',
+                '-l<(GTK_Root)/lib/pangocairo-1.0.lib'
+              ],
+			  'include_dirs': [
+                '<(GTK_Root)/include/glib-2.0',
+                '<(GTK_Root)/lib/glib-2.0/include',
+                '<(GTK_Root)/include/pango-1.0',
+			  ]
             }, { # 'OS!="win"'
               'include_dirs': [ # tried to pass through cflags but failed
                 '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'

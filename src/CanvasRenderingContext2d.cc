@@ -29,6 +29,11 @@
 #define isinf(x) (!_finite(x))
 #endif
 
+#ifdef _WIN32
+// This is not available out of the box on Windows (MSVC)
+char* strndup( const char* s , size_t size );
+#endif
+
 #ifndef isnan
 #define isnan(x) std::isnan(x)
 #define isinf(x) std::isinf(x)
@@ -2548,3 +2553,27 @@ NAN_METHOD(Context2d::ArcTo) {
 
   NanReturnUndefined();
 }
+
+#ifdef _WIN32
+// From: https://code.google.com/p/madp-win/source/browse/src/argp-standalone-1.3/strndup.c
+char *
+strndup (const char *s, size_t size)
+{
+  char *r;
+  char *end = (char*)memchr(s, 0, size);
+  
+  if (end)
+    /* Length + 1 */
+    size = end - s + 1;
+  
+  r = (char*)malloc(size);
+
+  if (size)
+    {
+      memcpy(r, s, size-1);
+      r[size-1] = '\0';
+    }
+  return r;
+}
+#endif
+
