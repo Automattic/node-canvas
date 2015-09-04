@@ -76,9 +76,6 @@
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
                   'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
-                },
-                'VCLinkerTool': {
-                  'IgnoreDefaultLibraryNames': ['libcmtd']
                 }
               }
             },
@@ -88,9 +85,6 @@
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
                   'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
-                },
-                'VCLinkerTool': {
-                  'IgnoreDefaultLibraryNames': ['libcmt']
                 }
               }
             }
@@ -121,7 +115,23 @@
 			  'include_dirs': [
                 '<(FT_Root)/include',
                 '<(FT_Root)/include/freetype'
-              ]
+              ],
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'IgnoreDefaultLibraryNames': ['libcmtd']
+                    }
+                  }
+                },
+                'Release': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'IgnoreDefaultLibraryNames': ['libcmt']
+                    }
+                  }
+                }
+              }
             }, { # 'OS!="win"'
               'include_dirs': [ # tried to pass through cflags but failed.
                 # Need to include the header files of cairo AND freetype.
