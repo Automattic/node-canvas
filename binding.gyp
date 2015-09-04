@@ -64,6 +64,7 @@
           'include_dirs': [
             '<(GTK_Root)/include',
             '<(GTK_Root)/include/cairo',
+			'src/unistd' # needed for Freetype, GifLib, and Pango
           ],
           'defines': [
             'snprintf=_snprintf',
