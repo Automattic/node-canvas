@@ -7,27 +7,27 @@
 
 #include "ImageData.h"
 
-Persistent<FunctionTemplate> ImageData::constructor;
+Nan::Persistent<FunctionTemplate> ImageData::constructor;
 
 /*
  * Initialize ImageData.
  */
 
 void
-ImageData::Initialize(Handle<Object> target) {
-  NanScope();
+ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+  Nan::HandleScope scope;
 
   // Constructor
-  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(ImageData::New);
-  NanAssignPersistent(constructor, ctor);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New);
+  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("ImageData"));
+  ctor->SetClassName(Nan::New("ImageData").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanNew("width"), GetWidth);
-  proto->SetAccessor(NanNew("height"), GetHeight);
-  target->Set(NanNew("ImageData"), ctor->GetFunction());
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
+  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction());
 }
 
 /*
@@ -35,8 +35,6 @@ ImageData::Initialize(Handle<Object> target) {
  */
 
 NAN_METHOD(ImageData::New) {
-  NanScope();
-
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
   Local<v8::Object> clampedArray;
   Local<Object> global = Context::GetCurrent()->Global();
@@ -47,29 +45,29 @@ NAN_METHOD(ImageData::New) {
   int width;
   int height;
 
-
-  if (args[0]->IsUint32() && args[1]->IsUint32()) {
-    width = args[0]->Uint32Value();
-    height = args[1]->Uint32Value();
+  if (info[0]->IsUint32() && info[1]->IsUint32()) {
+    width = info[0]->Uint32Value();
+    height = info[1]->Uint32Value();
     int size = width * height;
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-    Handle<Value> caargv[] = { NanNew(size) };
-    Local<Object> clampedArray = global->Get(NanNew("Uint8ClampedArray")).As<Function>()->NewInstance(1, caargv);
+    Local<Int32> sizeHandle = Nan::New(size);
+    Local<Value> caargv[] = { sizeHandle };
+    clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(1, caargv);
 #else
     clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), size), 0, size);
 #endif
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-  } else if (args[0]->ToObject()->GetIndexedPropertiesExternalArrayDataType() == kExternalPixelArray && args[1]->IsUint32()) {
-    clampedArray = args[0]->ToObject();
+  } else if (info[0]->ToObject()->GetIndexedPropertiesExternalArrayDataType() == kExternalPixelArray && info[1]->IsUint32()) {
+    clampedArray = info[0]->ToObject();
 #else
-  } else if (args[0]->IsUint8ClampedArray() && args[1]->IsUint32()) {
-    clampedArray = args[0].As<Uint8ClampedArray>();
+  } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
+    clampedArray = info[0].As<Uint8ClampedArray>();
 #endif
-    width = args[1]->Uint32Value();
-    if (args[2]->IsUint32()) {
-      height = args[2]->Uint32Value();
+    width = info[1]->Uint32Value();
+    if (info[2]->IsUint32()) {
+      height = info[2]->Uint32Value();
     } else {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
       height = clampedArray->GetIndexedPropertiesExternalArrayDataLength() / width;
@@ -78,20 +76,24 @@ NAN_METHOD(ImageData::New) {
 #endif
     }
   } else {
-    NanThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
-    NanReturnUndefined();
+    Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
+    return;
   }
 
   // No behavior defined in spec. This is what WebKit does:
   if (width < 1) width = 1;
   if (height < 1) height = 1;
 
+#if NODE_MAJOR_VERSION < 3
   void *dataPtr = clampedArray->GetIndexedPropertiesExternalArrayData();
+#else
+  void *dataPtr = clampedArray->Buffer()->GetContents().Data();
+#endif
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(dataPtr), width, height);
-  imageData->Wrap(args.This());
-  args.This()->Set(NanNew("data"), clampedArray);
-  NanReturnValue(args.This());
+  imageData->Wrap(info.This());
+  info.This()->Set(Nan::New("data").ToLocalChecked(), clampedArray);
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
@@ -99,9 +101,8 @@ NAN_METHOD(ImageData::New) {
  */
 
 NAN_GETTER(ImageData::GetWidth) {
-  NanScope();
-  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->width()));
+  ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(imageData->width()));
 }
 
 /*
@@ -109,7 +110,6 @@ NAN_GETTER(ImageData::GetWidth) {
  */
 
 NAN_GETTER(ImageData::GetHeight) {
-  NanScope();
-  ImageData *imageData = ObjectWrap::Unwrap<ImageData>(args.This());
-  NanReturnValue(NanNew<Number>(imageData->height()));
+  ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(imageData->height()));
 }

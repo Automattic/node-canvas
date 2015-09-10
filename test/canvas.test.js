@@ -639,5 +639,23 @@ module.exports = {
     assert.equal(0, imageData.data[i+2]);
     assert.equal(255, imageData.data[i+3]);
 
+  },
+
+  'test Canvas#createSyncPNGStream()': function(done) {
+    var canvas = new Canvas(20, 20);
+    var stream = canvas.createSyncPNGStream();
+    var firstChunk = true;
+    stream.on('data', function(chunk){
+      if (firstChunk) {
+        firstChunk = false;
+        assert.equal('PNG', chunk.slice(1,4).toString());
+      }
+    });
+    stream.on('end', function(){
+      done();
+    });
+    stream.on('error', function(err) {
+      done(err);
+    });
   }
 }
