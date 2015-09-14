@@ -17,9 +17,7 @@
 #include "FontFace.h"
 #endif
 
-extern "C" void
-init (Handle<Object> target) {
-  NanScope();
+NAN_MODULE_INIT(init) {
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
@@ -30,7 +28,7 @@ init (Handle<Object> target) {
   FontFace::Initialize(target);
 #endif
 
-  target->Set(NanNew<String>("cairoVersion"), NanNew<String>(cairo_version_string()));
+  target->Set(Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked());
 #ifdef HAVE_JPEG
 
 #ifndef JPEG_LIB_VERSION_MAJOR
@@ -55,16 +53,16 @@ init (Handle<Object> target) {
   } else {
     snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
   }
-  target->Set(NanNew<String>("jpegVersion"), NanNew<String>(jpeg_version));
+  target->Set(Nan::New<String>("jpegVersion").ToLocalChecked(), Nan::New<String>(jpeg_version).ToLocalChecked());
 #endif
 
 #ifdef HAVE_GIF
 #ifndef GIF_LIB_VERSION
   char gif_version[10];
   snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
-  target->Set(NanNew<String>("gifVersion"), NanNew<String>(gif_version));
+  target->Set(Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(gif_version).ToLocalChecked());
 #else
-  target->Set(NanNew<String>("gifVersion"), NanNew<String>(GIF_LIB_VERSION));
+  target->Set(Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(GIF_LIB_VERSION).ToLocalChecked());
 #endif
 #endif
 }

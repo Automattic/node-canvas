@@ -29,15 +29,15 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
-  NanScope();
+  Nan::HandleScope scope;
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
-  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
+  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
   Local<Value> argv[3] = {
-      NanNew(NanNull())
-    , NanNew(buf)
-    , NanNew<Integer>(dest->bufsize)
+      Nan::Null()
+    , buf
+    , Nan::New<Integer>(dest->bufsize)
   };
-  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 3, argv);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
   return true;
@@ -45,28 +45,28 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
-  NanScope();
+  Nan::HandleScope scope;
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
   /* emit remaining data */
   size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
-  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, remaining);
+  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, remaining).ToLocalChecked();
 
   Local<Value> data_argv[3] = {
-      NanNew(NanNull())
-    , NanNew(buf)
-    , NanNew<Number>(remaining)
+      Nan::Null()
+    , buf
+    , Nan::New<Number>(remaining)
   };
 
-  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, data_argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 3, data_argv);
 
   // emit "end"
   Local<Value> end_argv[3] = {
-      NanNew(NanNull())
-    , NanNew(NanNull())
-    , NanNew<Integer>(0)
+      Nan::Null()
+    , Nan::Null()
+    , Nan::New<Integer>(0)
   };
 
-  NanMakeCallback(NanGetCurrentContext()->Global(), dest->closure->fn, 3, end_argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 3, end_argv);
 }
 
 void

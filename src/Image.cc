@@ -28,38 +28,38 @@ typedef struct {
   uint8_t *buf;
 } read_closure_t;
 
-Persistent<FunctionTemplate> Image::constructor;
+Nan::Persistent<FunctionTemplate> Image::constructor;
 
 /*
  * Initialize Image.
  */
 
 void
-Image::Initialize(Handle<Object> target) {
-  NanScope();
+Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+  Nan::HandleScope scope;
 
-  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(Image::New);
-  NanAssignPersistent(constructor, ctor);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Image::New);
+  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("Image"));
+  ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("Image"));
+  ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  proto->SetAccessor(NanNew("source"), GetSource, SetSource);
-  proto->SetAccessor(NanNew("complete"), GetComplete);
-  proto->SetAccessor(NanNew("width"), GetWidth);
-  proto->SetAccessor(NanNew("height"), GetHeight);
-  proto->SetAccessor(NanNew("onload"), GetOnload, SetOnload);
-  proto->SetAccessor(NanNew("onerror"), GetOnerror, SetOnerror);
+  Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
+  Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
+  Nan::SetAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload);
+  Nan::SetAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
-  proto->SetAccessor(NanNew("dataMode"), GetDataMode, SetDataMode);
-  ctor->Set(NanNew("MODE_IMAGE"), NanNew<Number>(DATA_IMAGE));
-  ctor->Set(NanNew("MODE_MIME"), NanNew<Number>(DATA_MIME));
+  Nan::SetAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
+  ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
+  ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
 #endif
-  target->Set(NanNew("Image"), ctor->GetFunction());
+  Nan::Set(target, Nan::New("Image").ToLocalChecked(), ctor->GetFunction());
 }
 
 /*
@@ -67,11 +67,10 @@ Image::Initialize(Handle<Object> target) {
  */
 
 NAN_METHOD(Image::New) {
-  NanScope();
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
-  img->Wrap(args.This());
-  NanReturnValue(args.This());
+  img->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 
 /*
@@ -79,9 +78,8 @@ NAN_METHOD(Image::New) {
  */
 
 NAN_GETTER(Image::GetComplete) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(NanNew<Boolean>(Image::COMPLETE == img->state));
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Boolean>(Image::COMPLETE == img->state));
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -91,9 +89,8 @@ NAN_GETTER(Image::GetComplete) {
  */
 
 NAN_GETTER(Image::GetDataMode) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(NanNew<Number>(img->data_mode));
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->data_mode));
 }
 
 /*
@@ -102,7 +99,7 @@ NAN_GETTER(Image::GetDataMode) {
 
 NAN_SETTER(Image::SetDataMode) {
   if (value->IsNumber()) {
-    Image *img = ObjectWrap::Unwrap<Image>(args.This());
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     int mode = value->Uint32Value();
     img->data_mode = (data_mode_t) mode;
   }
@@ -115,18 +112,16 @@ NAN_SETTER(Image::SetDataMode) {
  */
 
 NAN_GETTER(Image::GetWidth) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(NanNew<Number>(img->width));
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
 /*
  * Get height.
  */
 
 NAN_GETTER(Image::GetHeight) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(NanNew<Number>(img->height));
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->height));
 }
 
 /*
@@ -134,9 +129,8 @@ NAN_GETTER(Image::GetHeight) {
  */
 
 NAN_GETTER(Image::GetSource) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
-  NanReturnValue(NanNew<String>(img->filename ? img->filename : ""));
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
 }
 
 /*
@@ -147,7 +141,7 @@ void
 Image::clearData() {
   if (_surface) {
     cairo_surface_destroy(_surface);
-    NanAdjustExternalMemory(-_data_len);
+    Nan::AdjustExternalMemory(-_data_len);
     _data_len = 0;
     _surface = NULL;
   }
@@ -167,8 +161,7 @@ Image::clearData() {
  */
 
 NAN_SETTER(Image::SetSource) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
   img->clearData();
@@ -259,12 +252,11 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
  */
 
 NAN_GETTER(Image::GetOnload) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   if (img->onload) {
-    NanReturnValue(img->onload->GetFunction());
+    info.GetReturnValue().Set(img->onload->GetFunction());
   } else {
-    NanReturnNull();
+    info.GetReturnValue().SetNull();
   }
 }
 
@@ -274,8 +266,8 @@ NAN_GETTER(Image::GetOnload) {
 
 NAN_SETTER(Image::SetOnload) {
   if (value->IsFunction()) {
-    Image *img = ObjectWrap::Unwrap<Image>(args.This());
-    img->onload = new NanCallback(value.As<Function>());
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->onload = new Nan::Callback(value.As<Function>());
   }
 }
 
@@ -284,12 +276,11 @@ NAN_SETTER(Image::SetOnload) {
  */
 
 NAN_GETTER(Image::GetOnerror) {
-  NanScope();
-  Image *img = ObjectWrap::Unwrap<Image>(args.This());
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   if (img->onerror) {
-    NanReturnValue(img->onerror->GetFunction());
+    info.GetReturnValue().Set(img->onerror->GetFunction());
   } else {
-    NanReturnNull();
+    info.GetReturnValue().SetNull();
   }
 }
 
@@ -299,8 +290,8 @@ NAN_GETTER(Image::GetOnerror) {
 
 NAN_SETTER(Image::SetOnerror) {
   if (value->IsFunction()) {
-    Image *img = ObjectWrap::Unwrap<Image>(args.This());
-    img->onerror = new NanCallback(value.As<Function>());
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->onerror = new Nan::Callback(value.As<Function>());
   }
 }
 
@@ -356,13 +347,13 @@ Image::load() {
 
 void
 Image::loaded() {
-  NanScope();
+  Nan::HandleScope scope;
   state = COMPLETE;
 
   width = cairo_image_surface_get_width(_surface);
   height = cairo_image_surface_get_height(_surface);
   _data_len = height * cairo_image_surface_get_stride(_surface);
-  NanAdjustExternalMemory(_data_len);
+  Nan::AdjustExternalMemory(_data_len);
 
   if (onload != NULL) {
     onload->Call(0, NULL);
@@ -377,7 +368,7 @@ Image::loaded() {
 
 void
 Image::error(Local<Value> err) {
-  NanScope();
+  Nan::HandleScope scope;
   if (onerror != NULL) {
     Local<Value> argv[1] = { err };
     onerror->Call(1, argv);
@@ -448,7 +439,7 @@ get_gif_transparent_color(GifFileType *gif, int frame) {
   int len = gif->SavedImages[frame].ExtensionBlockCount;
   for (int x = 0; x < len; ++x, ++ext) {
     if ((ext->Function == GRAPHICS_EXT_FUNC_CODE) && (ext->Bytes[0] & 1)) {
-      return ext->Bytes[3] == 0 ? 0 : (uint8_t) ext->Bytes[3]; 
+      return ext->Bytes[3] == 0 ? 0 : (uint8_t) ext->Bytes[3];
     }
   }
   return -1;
@@ -810,7 +801,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  NanAdjustExternalMemory(-((read_closure_t *)closure)->len);
+  Nan::AdjustExternalMemory(-((read_closure_t *)closure)->len);
   free(((read_closure_t *) closure)->buf);
   free(closure);
 }
@@ -837,7 +828,7 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   mime_closure->buf = mime_data;
   mime_closure->len = len;
 
-  NanAdjustExternalMemory(len);
+  Nan::AdjustExternalMemory(len);
 
   return cairo_surface_set_mime_data(_surface
     , mime_type

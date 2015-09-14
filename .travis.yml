@@ -5,7 +5,20 @@ node_js:
   - "0.12"
   - "iojs-v1.8.4"
   - "iojs-v2.5.0"
+  - "iojs-v3.3.0"
+  - "4"
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 before_install:
-  - '[ "${TRAVIS_NODE_VERSION}" != "0.8" ] || npm install -g npm@1.4.28'
+  - if [[ $TRAVIS_NODE_VERSION == 0.8 ]]; then npm install -g npm@1.4.28; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
+  - $CXX --version
   - sudo chown -R $USER /usr/local
   - sh install
+  - npm explore npm -g -- npm install node-gyp@latest
+after_script:
+  - make benchmark

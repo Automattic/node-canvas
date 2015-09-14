@@ -24,7 +24,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "nan": "^1.8.4"
+    "nan": "^2.0.9"
   },
   "devDependencies": {
     "body-parser": "^1.13.3",
@@ -33,7 +33,7 @@
     "mocha": "*"
   },
   "engines": {
-    "node": ">=0.8.0 <3"
+    "node": ">=0.8.0"
   },
   "main": "./lib/canvas.js",
   "license": "MIT"
