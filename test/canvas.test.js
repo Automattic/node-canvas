@@ -657,5 +657,28 @@ module.exports = {
     stream.on('error', function(err) {
       done(err);
     });
+  },
+
+  'test Canvas#jpegStream()': function(done) {
+    var canvas = new Canvas(640, 480);
+    var stream = canvas.jpegStream();
+    var firstChunk = true;
+    var bytes = 0;
+    stream.on('data', function(chunk){
+      if (firstChunk) {
+        firstChunk = false;
+        assert.equal(0xFF, chunk[0]);
+        assert.equal(0xD8, chunk[1]);
+        assert.equal(0xFF, chunk[2]);
+      }
+      bytes += chunk.length;
+    });
+    stream.on('end', function(){
+      assert.equal(bytes, 8192);
+      done();
+    });
+    stream.on('error', function(err) {
+      done(err);
+    });
   }
 }
