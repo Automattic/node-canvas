@@ -65,27 +65,28 @@ function runTests() {
     var fn = tests[name]
       , canvas = create('canvas')
       , tr = create('tr')
-      , tds = [create('td'), create('td'), create('td')];
+      , tds = [create('td'), create('td'), create('td'), create('td')];
 
     canvas.width = 200;
     canvas.height = 200;
     canvas.title = name;
 
-    tds[1].appendChild(canvas);
-    tds[2].appendChild(create('h3', name));
-    tds[2].appendChild(pdfForm(fn, canvas));
+    tds[2].appendChild(canvas);
+    tds[3].appendChild(create('h3', name));
+    tds[3].appendChild(pdfForm(fn, canvas));
 
     tr.appendChild(tds[0]);
     tr.appendChild(tds[1]);
     tr.appendChild(tds[2]);
+    tr.appendChild(tds[3]);
 
     tbody.appendChild(tr);
     table.appendChild(tbody);
-    runTest(name, canvas, tds[0], tds[2]);
+    runTest(name, canvas, tds[0], tds[1], tds[3]);
   }
 }
 
-function runTest(name, canvas, dest, stats) {
+function runTest(name, canvas, dest, jpegDest, stats) {
   var fn = tests[name]
     , start = new Date;
   try {
@@ -96,7 +97,7 @@ function runTest(name, canvas, dest, stats) {
   var duration = new Date - start;
   stats.appendChild(create('p', 'browser: ' + duration + 'ms'));
   stats.appendChild(create('p', 'fps: ' + (1000 / duration).toFixed(0)));
-  renderOnServer(name, canvas, function(res){
+  renderOnServer('/render', name, canvas, function(res){
     if (res.error) {
       var p = create('p');
       p.innerText = res.error;
@@ -109,16 +110,27 @@ function runTest(name, canvas, dest, stats) {
       dest.appendChild(img);
     }
   });
+  renderOnServer('/jpeg', name, canvas, function(res){
+    if (res.error) {
+      var p = create('p');
+      p.innerText = res.error;
+      jpegDest.appendChild(p);
+    } else if (res.data) {
+      var img = create('img');
+      img.src = res.data;
+      jpegDest.appendChild(img);
+    }
+  });
 }
 
-function renderOnServer(name, canvas, fn) {
+function renderOnServer(url, name, canvas, fn) {
   var req = new XMLHttpRequest
     , json = JSON.stringify({
       fn: tests[name].toString()
       , width: canvas.width
       , height: canvas.height
     });
-  req.open('POST', '/render');
+  req.open('POST', url);
   req.setRequestHeader('Content-Type', 'application/json');
   req.onreadystatechange = function(){
     if (4 == req.readyState) {

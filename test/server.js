@@ -78,6 +78,26 @@ app.post('/pdf', function(req, res, next){
     : fn(ctx), done();
 });
 
+app.post('/jpeg', function(req, res, next){
+  var fn = testFn(req)
+    , canvas = createCanvas(req)
+    , ctx = canvas.getContext('2d');
+
+  function done(){
+    var stream = canvas.jpegStream();
+    var buffers = [];
+    stream.on('data', function (chunk) {
+      buffers.push(chunk);
+    });
+    stream.on('end', function() {
+      res.send({data: 'data:image/jpeg;base64,' + Buffer.concat(buffers).toString('base64')});
+    });
+  }
+
+  2 == fn.length
+    ? fn(ctx, done)
+    : fn(ctx), done();
+});
 
 var port = parseInt(process.argv[2] || '4000', 10);
 app.listen(port);
