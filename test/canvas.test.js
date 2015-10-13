@@ -410,6 +410,24 @@ module.exports = {
     });
   },
 
+  'test Canvas#toDataURL() {width,height}=': function(){
+    var canvas = new Canvas;
+    canvas.width = 50;
+    canvas.height = 50;
+    assert.equal(50, canvas.width);
+    assert.equal(50, canvas.height);
+    assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
+    assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+  },
+
+  'test Canvas#toDataURL() default {width,height}': function(){
+    var canvas = new Canvas;
+    assert.equal(0, canvas.width);
+    assert.equal(0, canvas.height);
+    assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
+    assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+  },
+
   'test Context2d#createImageData(width, height)': function(){
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
