@@ -900,6 +900,10 @@ NAN_METHOD(Context2d::DrawImage) {
         dx - sx + context->state->shadowOffsetX - pad + 1.15,
         dx - sx + context->state->shadowOffsetY - pad + 1.15);
       cairo_paint(ctx);
+      
+      // cleanup
+      cairo_destroy(shadow_context);
+      cairo_surface_destroy(shadow_surface);
     } else {
       context->setSourceRGBA(context->state->shadow);
       cairo_mask_surface(ctx, surface,
