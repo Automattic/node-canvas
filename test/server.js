@@ -37,6 +37,15 @@ function testFn(req){
   return eval('(' + req.body.fn + ')');
 }
 
+function executeTestFn(ctx, fn, done) {
+  if(2 === fn.length) {
+    fn(ctx, done);
+  } else {
+    fn(ctx);
+    done();
+  }
+}
+
 function createCanvas(req, type){
   var width = req.body.width
     , height = req.body.height;
@@ -56,9 +65,7 @@ app.post('/render', function(req, res, next){
     });
   }
 
-  2 == fn.length
-    ? fn(ctx, done)
-    : fn(ctx), done();
+  executeTestFn(ctx, fn, done);
 });
 
 app.post('/pdf', function(req, res, next){
@@ -73,9 +80,7 @@ app.post('/pdf', function(req, res, next){
     res.end();
   }
 
-  2 == fn.length
-    ? fn(ctx, done)
-    : fn(ctx), done();
+  executeTestFn(ctx, fn, done);
 });
 
 app.post('/jpeg', function(req, res, next){
@@ -94,9 +99,7 @@ app.post('/jpeg', function(req, res, next){
     });
   }
 
-  2 == fn.length
-    ? fn(ctx, done)
-    : fn(ctx), done();
+  executeTestFn(ctx, fn, done);
 });
 
 var port = parseInt(process.argv[2] || '4000', 10);
