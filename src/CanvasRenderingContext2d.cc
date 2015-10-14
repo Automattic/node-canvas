@@ -883,10 +883,29 @@ NAN_METHOD(Context2d::DrawImage) {
   }
 
   if (context->hasShadow()) {
-    context->setSourceRGBA(context->state->shadow);
-    cairo_mask_surface(ctx, surface,
-      dx - sx + context->state->shadowOffsetX,
-      dy - sy + context->state->shadowOffsetY);
+    if(context->state->shadowBlur) {
+      // we need to create a new surface in order to blur
+      int pad = context->state->shadowBlur * 2;
+      cairo_surface_t *shadow_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw + 2 * pad, dh + 2 * pad);
+      cairo_t *shadow_context = cairo_create(shadow_surface);
+
+      // mask and blur
+      context->setSourceRGBA(shadow_context, context->state->shadow);
+      cairo_mask_surface(shadow_context, surface, pad, pad);
+      context->blur(shadow_surface, context->state->shadowBlur / 2);
+
+      // paint
+      // @todo figure out where the 1.15 comes from
+      cairo_set_source_surface(ctx, shadow_surface,
+        dx - sx + context->state->shadowOffsetX - pad + 1.15,
+        dx - sx + context->state->shadowOffsetY - pad + 1.15);
+      cairo_paint(ctx);
+    } else {
+      context->setSourceRGBA(context->state->shadow);
+      cairo_mask_surface(ctx, surface,
+        dx - sx + context->state->shadowOffsetX,
+        dy - sy + context->state->shadowOffsetY);
+    }
   }
 
   context->savePath();
