@@ -21,7 +21,12 @@
   "homepage": "https://github.com/Automattic/node-canvas",
   "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
-    "test": "make test"
+    "prebenchmark": "node-gyp build",
+    "benchmark": "node benchmarks/run.js",
+    "pretest": "node-gyp build",
+    "test": "mocha test/*.test.js",
+    "pretest-server": "node-gyp build",
+    "test-server": "node test/server.js"
   },
   "dependencies": {
     "nan": "^2.0.9"

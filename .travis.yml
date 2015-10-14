@@ -21,4 +21,4 @@ before_install:
   - sh install
   - npm explore npm -g -- npm install node-gyp@latest
 after_script:
-  - make benchmark
+  - npm run benchmark
