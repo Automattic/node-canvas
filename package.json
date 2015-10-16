@@ -21,7 +21,8 @@
   "homepage": "https://github.com/Automattic/node-canvas",
   "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "install": "./build.sh"
   },
   "dependencies": {
     "nan": "^2.0.9"
