@@ -895,10 +895,10 @@ NAN_METHOD(Context2d::DrawImage) {
       context->blur(shadow_surface, context->state->shadowBlur / 2);
 
       // paint
-      // @todo figure out where the 1.15 comes from
+      // @todo figure out where the 1.4 comes from
       cairo_set_source_surface(ctx, shadow_surface,
-        dx - sx + context->state->shadowOffsetX - pad + 1.15,
-        dx - sx + context->state->shadowOffsetY - pad + 1.15);
+        dx - sx + context->state->shadowOffsetX - pad + 1.4,
+        dx - sx + context->state->shadowOffsetY - pad + 1.4);
       cairo_paint(ctx);
       
       // cleanup
