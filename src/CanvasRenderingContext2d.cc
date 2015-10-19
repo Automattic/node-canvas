@@ -895,7 +895,10 @@ NAN_METHOD(Context2d::DrawImage) {
       context->blur(shadow_surface, context->state->shadowBlur / 2);
 
       // paint
-      // @todo figure out where the 1.4 comes from
+      // @note: ShadowBlur looks different in each browser. This implementation matches chrome as close as possible.
+      //        The 1.4 offset comes from visual tests with Chrome. I have read the spec and part of the shadowBlur
+      //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
+      //        in chrome is different.
       cairo_set_source_surface(ctx, shadow_surface,
         dx - sx + context->state->shadowOffsetX - pad + 1.4,
         dx - sx + context->state->shadowOffsetY - pad + 1.4);
