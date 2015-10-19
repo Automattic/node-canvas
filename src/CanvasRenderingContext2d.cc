@@ -883,10 +883,36 @@ NAN_METHOD(Context2d::DrawImage) {
   }
 
   if (context->hasShadow()) {
-    context->setSourceRGBA(context->state->shadow);
-    cairo_mask_surface(ctx, surface,
-      dx - sx + context->state->shadowOffsetX,
-      dy - sy + context->state->shadowOffsetY);
+    if(context->state->shadowBlur) {
+      // we need to create a new surface in order to blur
+      int pad = context->state->shadowBlur * 2;
+      cairo_surface_t *shadow_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw + 2 * pad, dh + 2 * pad);
+      cairo_t *shadow_context = cairo_create(shadow_surface);
+
+      // mask and blur
+      context->setSourceRGBA(shadow_context, context->state->shadow);
+      cairo_mask_surface(shadow_context, surface, pad, pad);
+      context->blur(shadow_surface, context->state->shadowBlur / 2);
+
+      // paint
+      // @note: ShadowBlur looks different in each browser. This implementation matches chrome as close as possible.
+      //        The 1.4 offset comes from visual tests with Chrome. I have read the spec and part of the shadowBlur
+      //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
+      //        in chrome is different.
+      cairo_set_source_surface(ctx, shadow_surface,
+        dx - sx + context->state->shadowOffsetX - pad + 1.4,
+        dx - sx + context->state->shadowOffsetY - pad + 1.4);
+      cairo_paint(ctx);
+      
+      // cleanup
+      cairo_destroy(shadow_context);
+      cairo_surface_destroy(shadow_surface);
+    } else {
+      context->setSourceRGBA(context->state->shadow);
+      cairo_mask_surface(ctx, surface,
+        dx - sx + context->state->shadowOffsetX,
+        dy - sy + context->state->shadowOffsetY);
+    }
   }
 
   context->savePath();
