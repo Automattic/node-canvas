@@ -44,45 +44,65 @@ NAN_METHOD(ImageData::New) {
 
   int width;
   int height;
+  int length;
 
   if (info[0]->IsUint32() && info[1]->IsUint32()) {
     width = info[0]->Uint32Value();
+    if (width == 0) {
+      Nan::ThrowRangeError("The source width is zero.");
+      return;
+    }
     height = info[1]->Uint32Value();
-    int size = width * height;
+    if (height == 0) {
+      Nan::ThrowRangeError("The source height is zero.");
+      return;
+    }
+    length = width * height * 4;
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-    Local<Int32> sizeHandle = Nan::New(size);
+    Local<Int32> sizeHandle = Nan::New(length);
     Local<Value> caargv[] = { sizeHandle };
     clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(1, caargv);
 #else
-    clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), size), 0, size);
+    clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
 #endif
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
   } else if (info[0]->ToObject()->GetIndexedPropertiesExternalArrayDataType() == kExternalPixelArray && info[1]->IsUint32()) {
     clampedArray = info[0]->ToObject();
+    length = clampedArray->GetIndexedPropertiesExternalArrayDataLength();
 #else
   } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
     clampedArray = info[0].As<Uint8ClampedArray>();
+    length = clampedArray->Length();
 #endif
+    if (length == 0) {
+      Nan::ThrowRangeError("The input data has a zero byte length.");
+      return;
+    }
+    if (length % 4 != 0) {
+      Nan::ThrowRangeError("The input data byte length is not a multiple of 4.");
+      return;
+    }
     width = info[1]->Uint32Value();
-    if (info[2]->IsUint32()) {
-      height = info[2]->Uint32Value();
-    } else {
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-      height = clampedArray->GetIndexedPropertiesExternalArrayDataLength() / width;
-#else
-      height = clampedArray->Length() / width;
-#endif
+    int size = length / 4;
+    if (width == 0) {
+      Nan::ThrowRangeError("The source width is zero.");
+      return;
+    }
+    if (size % width != 0) {
+      Nan::ThrowRangeError("The input data byte length is not a multiple of (4 * width).");
+      return;
+    }
+    height = size / width;
+    if (info[2]->IsUint32() && info[2]->Uint32Value() != height) {
+      Nan::ThrowRangeError("The input data byte length is not equal to (4 * width * height).");
+      return;
     }
   } else {
     Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
     return;
   }
-
-  // No behavior defined in spec. This is what WebKit does:
-  if (width < 1) width = 1;
-  if (height < 1) height = 1;
 
 #if NODE_MAJOR_VERSION < 3
   void *dataPtr = clampedArray->GetIndexedPropertiesExternalArrayData();
