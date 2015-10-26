@@ -1,3 +1,8 @@
+1.3.0 / 2015-10-26
+==================
+
+  * Expose ImageData constructor and make it more spec-compliant (#569)
+
 1.2.11 / 2015-10-20
 ===================
 
