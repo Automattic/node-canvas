@@ -19,12 +19,12 @@ node-canvas
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/LearnBoost/node-canvas/wiki/_pages).
+Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
 You can quickly install Cairo and its dependencies for OS X using the one liner below:
 
 ```bash
-$ wget https://raw.githubusercontent.com/LearnBoost/node-canvas/master/install -O - | sh
+$ wget https://raw.githubusercontent.com/Automattic/node-canvas/master/install -O - | sh
 ```
 
 or if you use MacPorts
@@ -274,7 +274,7 @@ fs.writeFile('out.svg', canvas.toBuffer());
 
 ## Contribute
 
- Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
+ Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/Automattic/node-canvas/issues) for existing issues.
 
 ## Examples
 
