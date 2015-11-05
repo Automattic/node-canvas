@@ -592,6 +592,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (info.Length()) {
     // imageData, dx, dy
     case 3:
+      // Need to wrap std::min calls using parens to prevent macro expansion on
+      // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
       cols = (std::min)(imageData->width(), context->canvas()->width - dx);
       rows = (std::min)(imageData->height(), context->canvas()->height - dy);
       break;
