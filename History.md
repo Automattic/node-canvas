@@ -1,3 +1,8 @@
+1.3.1 / 2015-11-09
+==================
+
+  * Wrap std::min calls in paranthesis to prevent macro expansion on windows (#660)
+
 1.3.0 / 2015-10-26
 ==================
 
