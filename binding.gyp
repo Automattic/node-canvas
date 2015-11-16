@@ -61,10 +61,6 @@
             '<(GTK_Root)/include',
             '<(GTK_Root)/include/cairo',
           ],
-          'defines': [
-            'snprintf=_snprintf',
-            '_USE_MATH_DEFINES' # for M_PI
-          ],
           'configurations': {
             'Debug': {
               'msvs_settings': {
@@ -96,6 +92,17 @@
             '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
           ]
         }],
+		['OS=="win" and MSVS_VERSION=="2015"', {
+			'defines': [
+					'_USE_MATH_DEFINES' # for M_PI
+			],
+		}],
+		['OS!="win" or MSVS_VERSION!="2015"', {
+			'defines': [
+				'snprintf=_snprintf',
+				'_USE_MATH_DEFINES' # for M_PI
+			]
+		}],
         ['with_freetype=="true"', {
           'defines': [
             'HAVE_FREETYPE'
