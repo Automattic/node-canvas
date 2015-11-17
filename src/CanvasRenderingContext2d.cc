@@ -898,7 +898,7 @@ NAN_METHOD(Context2d::DrawImage) {
       // mask and blur
       context->setSourceRGBA(shadow_context, context->state->shadow);
       cairo_mask_surface(shadow_context, surface, pad, pad);
-      context->blur(shadow_surface, context->state->shadowBlur / 2);
+      context->blur(shadow_surface, context->state->shadowBlur);
 
       // paint
       // @note: ShadowBlur looks different in each browser. This implementation matches chrome as close as possible.
