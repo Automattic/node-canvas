@@ -876,9 +876,10 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_save(ctx);
 
   // Scale src
+  float fx = (float) dw / sw;
+  float fy = (float) dh / sh;
+
   if (dw != sw || dh != sh) {
-    float fx = (float) dw / sw;
-    float fy = (float) dh / sh;
     cairo_scale(ctx, fx, fy);
     dx /= fx;
     dy /= fy;
@@ -886,6 +887,7 @@ NAN_METHOD(Context2d::DrawImage) {
     dh /= fy;
   }
 
+  // apply shadow if there is one
   if (context->hasShadow()) {
     if(context->state->shadowBlur) {
       // we need to create a new surface in order to blur
@@ -904,8 +906,8 @@ NAN_METHOD(Context2d::DrawImage) {
       //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
       //        in chrome is different.
       cairo_set_source_surface(ctx, shadow_surface,
-        dx - sx + context->state->shadowOffsetX - pad + 1.4,
-        dx - sx + context->state->shadowOffsetY - pad + 1.4);
+        dx - sx + (context->state->shadowOffsetX / fx) - pad + 1.4,
+        dy - sy + (context->state->shadowOffsetY / fy) - pad + 1.4);
       cairo_paint(ctx);
       
       // cleanup
@@ -914,8 +916,8 @@ NAN_METHOD(Context2d::DrawImage) {
     } else {
       context->setSourceRGBA(context->state->shadow);
       cairo_mask_surface(ctx, surface,
-        dx - sx + context->state->shadowOffsetX,
-        dy - sy + context->state->shadowOffsetY);
+        dx - sx + (context->state->shadowOffsetX / fx),
+        dy - sy + (context->state->shadowOffsetY / fy));
     }
   }
 
