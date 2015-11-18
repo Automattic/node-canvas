@@ -1537,6 +1537,20 @@ tests['shadow image'] = function(ctx, done){
   img.src = 'star.png';
 };
 
+tests['scaled shadow image'] = function(ctx, done){
+  var img = new Image;
+  img.onload = function(){
+    ctx.shadowColor = '#f3ac22';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 8;
+    ctx.shadowOffsetY = 8;
+    ctx.drawImage(img, 10, 10, 80, 80);
+    done();
+  };
+  img.onerror = function(){}
+  img.src = 'star.png';
+};
+
 tests['shadow integration'] = function(ctx){
   ctx.shadowBlur = 5;
   ctx.shadowOffsetX = 10;
