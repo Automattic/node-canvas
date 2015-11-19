@@ -42,8 +42,8 @@ NAN_METHOD(ImageData::New) {
   Local<Uint8ClampedArray> clampedArray;
 #endif
 
-  int width;
-  int height;
+  uint32_t width;
+  uint32_t height;
   int length;
 
   if (info[0]->IsUint32() && info[1]->IsUint32()) {
@@ -104,13 +104,9 @@ NAN_METHOD(ImageData::New) {
     return;
   }
 
-#if NODE_MAJOR_VERSION < 3
-  void *dataPtr = clampedArray->GetIndexedPropertiesExternalArrayData();
-#else
-  void *dataPtr = clampedArray->Buffer()->GetContents().Data();
-#endif
+  Nan::TypedArrayContents<uint8_t> dataPtr(clampedArray);
 
-  ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(dataPtr), width, height);
+  ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
   info.This()->Set(Nan::New("data").ToLocalChecked(), clampedArray);
   info.GetReturnValue().Set(info.This());

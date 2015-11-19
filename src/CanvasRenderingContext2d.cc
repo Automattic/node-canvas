@@ -736,22 +736,15 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<Object> global = Context::GetCurrent()->Global();
 
   Local<Int32> sizeHandle = Nan::New(size);
-  Local<Value> bufargv[] = { sizeHandle };
-  Local<Object> buffer = global->Get(Nan::New("ArrayBuffer").ToLocalChecked()).As<Function>()->NewInstance(1, bufargv);
-
-  Local<Int32> zeroHandle = Nan::New(0);
-  Local<Value> caargv[] = { buffer, zeroHandle, sizeHandle };
+  Local<Value> caargv[] = { sizeHandle };
   Local<Object> clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(3, caargv);
-  uint8_t *dst = (uint8_t *) clampedArray->GetIndexedPropertiesExternalArrayData();
 #else
   Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
   Local<Uint8ClampedArray> clampedArray = Uint8ClampedArray::New(buffer, 0, size);
-#if NODE_MAJOR_VERSION < 3
-   uint8_t *dst = (uint8_t *)clampedArray->GetIndexedPropertiesExternalArrayData();
-#else
-  uint8_t *dst = (uint8_t *)buffer->GetContents().Data();
 #endif
-#endif
+
+  Nan::TypedArrayContents<uint8_t> typedArrayContents(clampedArray);
+  uint8_t* dst = *typedArrayContents;
   
   // Normalize data (argb -> rgba)
   for (int y = 0; y < sh; ++y) {
