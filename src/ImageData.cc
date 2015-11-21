@@ -44,7 +44,7 @@ NAN_METHOD(ImageData::New) {
 
   uint32_t width;
   uint32_t height;
-  int length;
+  uint32_t length;
 
   if (info[0]->IsUint32() && info[1]->IsUint32()) {
     width = info[0]->Uint32Value();

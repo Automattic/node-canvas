@@ -20,7 +20,6 @@ class Pattern: public Nan::ObjectWrap {
 
   private:
     ~Pattern();
-    int _width, _height;
     // TODO REPEAT/REPEAT_X/REPEAT_Y
     cairo_pattern_t *_pattern;
 };
