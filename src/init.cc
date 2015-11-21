@@ -17,6 +17,11 @@
 #include "FontFace.h"
 #endif
 
+// Compatibility with Visual Studio versions prior to VS2015
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
+
 NAN_MODULE_INIT(init) {
   Canvas::Initialize(target);
   Image::Initialize(target);

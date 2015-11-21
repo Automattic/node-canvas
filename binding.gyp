@@ -62,7 +62,6 @@
             '<(GTK_Root)/include/cairo',
           ],
           'defines': [
-            'snprintf=_snprintf',
             '_USE_MATH_DEFINES' # for M_PI
           ],
           'configurations': {
