@@ -8,6 +8,9 @@ node_js:
   - "iojs-v3.3.0"
   - "4"
   - "5"
+matrix:
+  allow_failures:
+    - node_js: "5"
 addons:
   apt:
     sources:
