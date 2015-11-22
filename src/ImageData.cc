@@ -60,7 +60,7 @@ NAN_METHOD(ImageData::New) {
     length = width * height * 4;
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-    Local<Int32> sizeHandle = Nan::New(length);
+    Local<Uint32> sizeHandle = Nan::New(length);
     Local<Value> caargv[] = { sizeHandle };
     clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(1, caargv);
 #else
