@@ -92,7 +92,8 @@ node-canvas adds `Image#dataMode` support, which can be used to opt-in to mime d
 When mime data is tracked, in PDF mode JPEGs can be embedded directly into the output, rather than being re-encoded into PNG. This can drastically reduce filesize, and speed up rendering.
 
 ```javascript
-var img = new Image;
+var Image = Canvas.Image,
+  , img = new Image;
 img.dataMode = Image.MODE_IMAGE; // Only image data tracked
 img.dataMode = Image.MODE_MIME; // Only mime data tracked
 img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
