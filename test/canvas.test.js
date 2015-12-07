@@ -373,7 +373,7 @@ describe('Canvas', function () {
     });
   });
 
-  it('Canvas#toDataURL()', function () {
+  describe('#toDataURL()', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -381,31 +381,77 @@ describe('Canvas', function () {
     ctx.fillStyle = 'red';
     ctx.fillRect(100,0,100,100);
 
-    assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
-    assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
-
-    var err;
-    try {
-      canvas.toDataURL('image/jpeg');
-    } catch (e) {
-      err = e;
-    }
-    assert.equal('currently only image/png is supported', err.message);
-  });
-
-  it('Canvas#toDataURL() async', function (done) {
-    new Canvas(200,200).toDataURL(function(err, str){
-      assert.ok(!err);
-      assert.ok(0 == str.indexOf('data:image/png;base64,'));
-      done();
+    it('toDataURL() works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
     });
-  });
 
-  it('Canvas#toDataURL() async with type', function (done) {
-    new Canvas(200,200).toDataURL('image/png', function(err, str){
-      assert.ok(!err);
-      assert.ok(0 == str.indexOf('data:image/png;base64,'));
-      done();
+    it('toDataURL("image/png") works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/jpeg") throws', function () {
+      assert.throws(
+        function () {
+          canvas.toDataURL('image/jpeg');
+        },
+        function (err) {
+          return err.message === 'type "image/jpeg" only supports asynchronous operation';
+        }
+      );
+    });
+
+    it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/png', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", {}) throws', function () {
+      assert.throws(
+        function () {
+          canvas.toDataURL('image/png', {});
+        },
+        function (err) {
+          return err.message === 'type "image/png" does not accept an options object';
+        }
+      );
+    });
+
+    it('toDataURL("image/jpeg", {}) throws', function () {
+      assert.throws(
+        function () {
+          canvas.toDataURL('image/jpeg', {});
+        },
+        function (err) {
+          return err.message === 'type "image/jpeg" only supports asynchronous operation';
+        }
+      );
+    });
+
+    it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", opts, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', {quality: 100}, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
     });
   });
 
