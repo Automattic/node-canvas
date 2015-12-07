@@ -31,7 +31,8 @@ function testFn(req){
   req.body.fn = req.body.fn
     .replace("'state.png'", "'" + __dirname + "/public/state.png'")
     .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'")
-    .replace("'star.png'", "'" + __dirname + "/public/star.png'");
+    .replace("'star.png'", "'" + __dirname + "/public/star.png'")
+    .replace(/\\/g, "/"); // unescaped \ path sep causes issues on Windows, at least
 
   // Do not try this at home :)
   return eval('(' + req.body.fn + ')');
