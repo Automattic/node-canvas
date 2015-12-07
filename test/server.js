@@ -84,6 +84,8 @@ app.post('/pdf', function(req, res, next){
 });
 
 app.post('/jpeg', function(req, res, next){
+  // Send nothing if jpeg isn't available.
+  if (!Canvas.jpegVersion) { return res.send({}).end(); }
   var fn = testFn(req)
     , canvas = createCanvas(req)
     , ctx = canvas.getContext('2d');
