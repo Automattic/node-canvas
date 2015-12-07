@@ -156,22 +156,17 @@ canvas.toBuffer(function(err, buf){
 });
 ```
 
-### Canvas#toDataURL() async
+### Canvas#toDataURL() sync and async
 
-Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
-
-```javascript
-canvas.toDataURL(function(err, str){
-
-});
-```
-
-or specify the mime type:
+The following syntax patterns are supported:
 
 ```javascript
-canvas.toDataURL('image/png', function(err, str){
-
-});
+var dataUrl = canvas.toDataURL(); // defaults to PNG
+var dataUrl = canvas.toDataURL('image/png');
+canvas.toDataURL(function(err, png){ }); // defaults to PNG
+canvas.toDataURL('image/png', function(err, png){ });
+canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
+canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
 ```
 
 ### CanvasRenderingContext2d#patternQuality

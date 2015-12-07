@@ -61,6 +61,7 @@ app.post('/render', function(req, res, next){
   function done(){
     var duration = new Date - start;
     canvas.toDataURL(function(err, str){
+      if (err) throw err;
       res.send({ data: str, duration: duration });
     });
   }
@@ -89,13 +90,9 @@ app.post('/jpeg', function(req, res, next){
     , ctx = canvas.getContext('2d');
 
   function done(){
-    var stream = canvas.jpegStream();
-    var buffers = [];
-    stream.on('data', function (chunk) {
-      buffers.push(chunk);
-    });
-    stream.on('end', function() {
-      res.send({data: 'data:image/jpeg;base64,' + Buffer.concat(buffers).toString('base64')});
+    canvas.toDataURL('image/jpeg', function (err, str){
+      if (err) throw err;
+      res.send({data: str});
     });
   }
 
