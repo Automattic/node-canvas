@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Automattic/node-canvas",
   "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build",
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
     "pretest": "node-gyp build",
@@ -28,9 +29,20 @@
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js"
   },
+  "binary": {
+    "module_name": "canvas",
+    "module_path": "./lib/binding/{node_abi}-{platform}-{arch}",
+    "host": "https://maptalks.org",
+    "remote_path": "./{module_name}/v{version}/",
+    "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
+  },
   "dependencies": {
+    "node-pre-gyp": "^0.6.17",
     "nan": "^2.1.0"
   },
+  "bundledDependencies": [
+    "node-pre-gyp"
+  ],
   "devDependencies": {
     "body-parser": "^1.13.3",
     "express": "^4.13.2",

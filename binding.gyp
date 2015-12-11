@@ -21,11 +21,17 @@
   'targets': [
     {
       'target_name': 'canvas-postbuild',
-      'dependencies': ['canvas'],
+      'dependencies': ['<(module_name)'],
+      'copies': [
+        {
+          'files': ['<(PRODUCT_DIR)/<(module_name).node'],
+          'destination': '<(module_path)'
+        }
+      ],
       'conditions': [
         ['OS=="win"', {
           'copies': [{
-            'destination': '<(PRODUCT_DIR)',
+            'destination': '<(module_path)',
             'files': [
               '<(GTK_Root)/bin/libcairo-2.dll',
               '<(GTK_Root)/bin/libexpat-1.dll',
@@ -39,7 +45,7 @@
       ]
     },
     {
-      'target_name': 'canvas',
+      'target_name': '<(module_name)',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
         'src/Canvas.cc',
