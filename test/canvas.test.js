@@ -385,6 +385,10 @@ describe('Canvas', function () {
       assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
     });
 
+    it('toDataURL(undefined) works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL(undefined).indexOf('data:image/png;base64,'));
+    });
+
     it('toDataURL("image/png") works', function () {
       assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
     });
@@ -402,6 +406,14 @@ describe('Canvas', function () {
 
     it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
       new Canvas(200,200).toDataURL(function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL(undefined, function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(undefined, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -440,6 +452,14 @@ describe('Canvas', function () {
 
     it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
       new Canvas(200,200).toDataURL('image/jpeg', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", undefined, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', undefined, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();

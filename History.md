@@ -1,3 +1,7 @@
+future / future
+==================
+  * Allow optional arguments in `toDataURL` to be `undefined` (#695)
+
 1.3.5 / 2015-12-07
 ==================
 
