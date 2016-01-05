@@ -1,4 +1,4 @@
-future / future
+1.3.6 / 2016-01-06
 ==================
 
   * Allow optional arguments in `toDataURL` to be `undefined` and improve `toDataURL`'s spec compliance (#690)
