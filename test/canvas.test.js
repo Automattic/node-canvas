@@ -385,8 +385,24 @@ describe('Canvas', function () {
       assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
     });
 
+    it('toDataURL(0.5) works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL(0.5).indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL(undefined) works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL(undefined).indexOf('data:image/png;base64,'));
+    });
+
     it('toDataURL("image/png") works', function () {
       assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/png", 0.5) works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("iMaGe/PNg") works', function () {
+      assert.ok(0 == canvas.toDataURL('iMaGe/PNg').indexOf('data:image/png;base64,'));
     });
 
     it('toDataURL("image/jpeg") throws', function () {
@@ -395,13 +411,29 @@ describe('Canvas', function () {
           canvas.toDataURL('image/jpeg');
         },
         function (err) {
-          return err.message === 'type "image/jpeg" only supports asynchronous operation';
+          return err.message === 'Missing required callback function for format "image/jpeg"';
         }
       );
     });
 
     it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
       new Canvas(200,200).toDataURL(function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL(0.5, function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(0.5, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL(undefined, function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(undefined, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -416,15 +448,16 @@ describe('Canvas', function () {
       });
     });
 
-    it('toDataURL("image/png", {}) throws', function () {
-      assert.throws(
-        function () {
-          canvas.toDataURL('image/png', {});
-        },
-        function (err) {
-          return err.message === 'type "image/png" does not accept an options object';
-        }
-      );
+    it('toDataURL("image/png", 0.5, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/png', 0.5, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", {}) works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png', {}).indexOf('data:image/png;base64,'));
     });
 
     it('toDataURL("image/jpeg", {}) throws', function () {
@@ -433,13 +466,37 @@ describe('Canvas', function () {
           canvas.toDataURL('image/jpeg', {});
         },
         function (err) {
-          return err.message === 'type "image/jpeg" only supports asynchronous operation';
+          return err.message === 'Missing required callback function for format "image/jpeg"';
         }
       );
     });
 
     it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
       new Canvas(200,200).toDataURL('image/jpeg', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("iMAge/JPEG", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('iMAge/JPEG', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", undefined, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', undefined, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", 0.5, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', 0.5, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();

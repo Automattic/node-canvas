@@ -167,6 +167,7 @@ canvas.toDataURL(function(err, png){ }); // defaults to PNG
 canvas.toDataURL('image/png', function(err, png){ });
 canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
 canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
+canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
 ### CanvasRenderingContext2d#patternQuality
