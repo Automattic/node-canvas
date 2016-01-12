@@ -11,16 +11,16 @@ console.log();
 console.log('   canvas: %s', Canvas.version);
 console.log('   cairo: %s', Canvas.cairoVersion);
 
-module.exports = {
-  'test .version': function(){
-    Canvas.version.should.match(/^\d+\.\d+\.\d+$/);
-  },
+describe('Canvas', function () {
+  it('.version', function () {
+    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.version));
+  });
 
-  'test .cairoVersion': function(){
-    Canvas.cairoVersion.should.match(/^\d+\.\d+\.\d+$/);
-  },
+  it('.cairoVersion', function () {
+    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.cairoVersion));
+  });
 
-  'test .parseFont()': function(){
+  it('.parseFont()', function () {
     var tests = [
         '20px Arial'
       , { size: 20, unit: 'px', family: 'Arial' }
@@ -39,17 +39,17 @@ module.exports = {
       , '20px monospace'
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Arial' }
       , 'bold italic 50px Arial, sans-serif'
-      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial, sans-serif' }
+      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial' }
       , '50px Helvetica ,  Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica ,  Arial, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica' }
       , '50px "Helvetica Neue", sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue, sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue, foo bar baz , sans-serif' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , "50px 'Helvetica Neue'"
-      , { size: 50, unit: 'px', family: "Helvetica Neue" }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , 'italic 20px Arial'
       , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
       , 'oblique 20px Arial'
@@ -70,17 +70,15 @@ module.exports = {
       var str = tests[i++]
         , obj = tests[i]
         , actual = parseFont(str);
+
       if (!obj.style) obj.style = 'normal';
       if (!obj.weight) obj.weight = 'normal';
-      // actual.should.eql(obj);
+
+      assert.deepEqual(obj, actual);
     }
-  },
+  });
 
-  'test .PixelArray': function(){
-    assert.equal(typeof Canvas.PixelArray, 'function');
-  },
-
-  'test color serialization': function(){
+  it('color serialization', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -106,9 +104,9 @@ module.exports = {
       ctx[prop] = grad;
       assert.strictEqual(grad, ctx[prop], prop + ' pattern getter failed');
     });
-  },
+  });
 
-  'test color parser': function(){
+  it('color parser', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -169,7 +167,7 @@ module.exports = {
 
     ctx.fillStyle = 'hsl(10, 100%, 42%)';
     assert.equal('#d62400', ctx.fillStyle);
-    
+
     ctx.fillStyle = 'hsl(370, 120%, 42%)';
     assert.equal('#d62400', ctx.fillStyle);
 
@@ -208,9 +206,9 @@ module.exports = {
 
     ctx.fillStyle = 'hsl(1.24e2, 760e-1%, 4.7e1%)';
     assert.equal('#1dd329', ctx.fillStyle);
-  },
+  });
 
-  'test Canvas#type': function(){
+  it('Canvas#type', function () {
     var canvas = new Canvas(10, 10);
     assert('image' == canvas.type);
     var canvas = new Canvas(10, 10, 'pdf');
@@ -219,17 +217,17 @@ module.exports = {
     assert('svg' == canvas.type);
     var canvas = new Canvas(10, 10, 'hey');
     assert('image' == canvas.type);
-  },
+  });
 
-  'test Canvas#getContext("2d")': function(){
+  it('Canvas#getContext("2d")', function () {
     var canvas = new Canvas(200, 300)
       , ctx = canvas.getContext('2d');
     assert.ok('object' == typeof ctx);
     assert.equal(canvas, ctx.canvas, 'context.canvas is not canvas');
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
-  },
+  });
 
-  'test Canvas#{width,height}=': function(){
+  it('Canvas#{width,height}=', function () {
     var canvas = new Canvas(100, 200);
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
@@ -242,13 +240,13 @@ module.exports = {
     canvas.height = 50;
     assert.equal(50, canvas.width);
     assert.equal(50, canvas.height);
-  },
+  });
 
-  'test Canvas#getContext("invalid")': function(){
+  it('Canvas#getContext("invalid")', function () {
     assert.equal(null, new Canvas(200, 300).getContext('invalid'));
-  },
+  });
 
-  'test Context2d#patternQuality': function(){
+  it('Context2d#patternQuality', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -257,32 +255,34 @@ module.exports = {
     assert.equal('best', ctx.patternQuality);
     ctx.patternQuality = 'invalid';
     assert.equal('best', ctx.patternQuality);
-  },
+  });
 
-  'test Context2d#font=': function(){
+  it('Context2d#font=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('10px sans-serif', ctx.font);
     ctx.font = '15px Arial, sans-serif';
     assert.equal('15px Arial, sans-serif', ctx.font);
-  },
+  });
 
-  'test Context2d#lineWidth=': function(){
+  it('Context2d#lineWidth=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ctx.lineWidth = 10.0;
     assert.equal(10, ctx.lineWidth);
-    // ctx.lineWidth = Infinity;
+    ctx.lineWidth = Infinity;
+    assert.equal(10, ctx.lineWidth);
+    ctx.lineWidth = -Infinity;
     assert.equal(10, ctx.lineWidth);
     ctx.lineWidth = -5;
     assert.equal(10, ctx.lineWidth);
     ctx.lineWidth = 0;
     assert.equal(10, ctx.lineWidth);
-  },
+  });
 
-  'test Context2d#antiAlias=': function(){
+  it('Context2d#antiAlias=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -297,37 +297,36 @@ module.exports = {
     assert.equal('subpixel', ctx.antialias);
     ctx.antialias = 1;
     assert.equal('subpixel', ctx.antialias);
-  },
+  });
 
-  'test Context2d#lineCap=': function(){
+  it('Context2d#lineCap=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('butt', ctx.lineCap);
     ctx.lineCap = 'round';
     assert.equal('round', ctx.lineCap);
-  },
+  });
 
-  'test Context2d#lineJoin=': function(){
+  it('Context2d#lineJoin=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('miter', ctx.lineJoin);
     ctx.lineJoin = 'round';
     assert.equal('round', ctx.lineJoin);
-  },
+  });
 
-
-  'test Context2d#globalAlpha=': function(){
+  it('Context2d#globalAlpha=', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal(1, ctx.globalAlpha);
     ctx.globalAlpha = 0.5
     assert.equal(0.5, ctx.globalAlpha);
-  },
+  });
 
-  'test Context2d#isPointInPath()': function(){
+  it('Context2d#isPointInPath()', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -344,9 +343,9 @@ module.exports = {
     assert.ok(ctx.isPointInPath(60,110));
     assert.ok(!ctx.isPointInPath(70,110));
     assert.ok(!ctx.isPointInPath(50,120));
-  },
+  });
 
-  'test Context2d#textAlign': function(){
+  it('Context2d#textAlign', function () {
     var canvas = new Canvas(200,200)
       , ctx = canvas.getContext('2d');
 
@@ -359,21 +358,22 @@ module.exports = {
     assert.equal('end', ctx.textAlign);
     ctx.textAlign = 'fail';
     assert.equal('end', ctx.textAlign);
-  },
+  });
 
-  'test Canvas#toBuffer()': function(){
+  it('Canvas#toBuffer()', function () {
     var buf = new Canvas(200,200).toBuffer();
     assert.equal('PNG', buf.slice(1,4).toString());
-  },
+  });
 
-  'test Canvas#toBuffer() async': function(){
+  it('Canvas#toBuffer() async', function (done) {
     new Canvas(200, 200).toBuffer(function(err, buf){
       assert.ok(!err);
       assert.equal('PNG', buf.slice(1,4).toString());
+      done();
     });
-  },
+  });
 
-  'test Canvas#toDataURL()': function(){
+  describe('#toDataURL()', function () {
     var canvas = new Canvas(200, 200)
       , ctx = canvas.getContext('2d');
 
@@ -381,33 +381,138 @@ module.exports = {
     ctx.fillStyle = 'red';
     ctx.fillRect(100,0,100,100);
 
-    assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
-    assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
-
-    var err;
-    try {
-      canvas.toDataURL('image/jpeg');
-    } catch (e) {
-      err = e;
-    }
-    assert.equal('currently only image/png is supported', err.message);
-  },
-
-  'test Canvas#toDataURL() async': function(){
-    new Canvas(200,200).toDataURL(function(err, str){
-      assert.ok(!err);
-      assert.ok(0 == str.indexOf('data:image/png;base64,'));
+    it('toDataURL() works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
     });
-  },
 
-  'test Canvas#toDataURL() async with type': function(){
-    new Canvas(200,200).toDataURL('image/png', function(err, str){
-      assert.ok(!err);
-      assert.ok(0 == str.indexOf('data:image/png;base64,'));
+    it('toDataURL(0.5) works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL(0.5).indexOf('data:image/png;base64,'));
     });
-  },
 
-  'test Context2d#createImageData(width, height)': function(){
+    it('toDataURL(undefined) works and defaults to PNG', function () {
+      assert.ok(0 == canvas.toDataURL(undefined).indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/png") works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/png", 0.5) works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("iMaGe/PNg") works', function () {
+      assert.ok(0 == canvas.toDataURL('iMaGe/PNg').indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/jpeg") throws', function () {
+      assert.throws(
+        function () {
+          canvas.toDataURL('image/jpeg');
+        },
+        function (err) {
+          return err.message === 'Missing required callback function for format "image/jpeg"';
+        }
+      );
+    });
+
+    it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL(0.5, function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(0.5, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL(undefined, function (err, str) {...}) works and defaults to PNG', function (done) {
+      new Canvas(200,200).toDataURL(undefined, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/png', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", 0.5, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/png', 0.5, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/png;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/png", {}) works', function () {
+      assert.ok(0 == canvas.toDataURL('image/png', {}).indexOf('data:image/png;base64,'));
+    });
+
+    it('toDataURL("image/jpeg", {}) throws', function () {
+      assert.throws(
+        function () {
+          canvas.toDataURL('image/jpeg', {});
+        },
+        function (err) {
+          return err.message === 'Missing required callback function for format "image/jpeg"';
+        }
+      );
+    });
+
+    it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("iMAge/JPEG", function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('iMAge/JPEG', function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", undefined, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', undefined, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", 0.5, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', 0.5, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+
+    it('toDataURL("image/jpeg", opts, function (err, str) {...}) works', function (done) {
+      new Canvas(200,200).toDataURL('image/jpeg', {quality: 100}, function(err, str){
+        assert.ifError(err);
+        assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
+        done();
+      });
+    });
+  });
+
+  it('Context2d#createImageData(width, height)', function () {
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
 
@@ -420,18 +525,18 @@ module.exports = {
     assert.equal(0, imageData.data[1]);
     assert.equal(0, imageData.data[2]);
     assert.equal(0, imageData.data[3]);
-  },
+  });
 
-  'test Context2d#measureText().width': function(){
+  it('Context2d#measureText().width', function () {
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
 
     assert.ok(ctx.measureText('foo').width);
     assert.ok(ctx.measureText('foo').width != ctx.measureText('foobar').width);
     assert.ok(ctx.measureText('foo').width != ctx.measureText('  foo').width);
-  },
+  });
 
-  'test Context2d#createImageData(ImageData)': function(){
+  it('Context2d#createImageData(ImageData)', function () {
     var canvas = new Canvas(20, 20)
       , ctx = canvas.getContext('2d');
 
@@ -439,9 +544,9 @@ module.exports = {
     assert.equal(2, imageData.width);
     assert.equal(6, imageData.height);
     assert.equal(2 * 6 * 4, imageData.data.length);
-  },
+  });
 
-  'test Context2d#getImageData()': function(){
+  it('Context2d#getImageData()', function () {
     var canvas = new Canvas(3, 6)
       , ctx = canvas.getContext('2d');
 
@@ -499,9 +604,9 @@ module.exports = {
     assert.equal(255, data[0]);
     data[0] = -4444;
     assert.equal(0, data[0]);
-  },
+  });
 
-  'test Context2d#createPattern(Canvas)': function(){
+  it('Context2d#createPattern(Canvas)', function () {
     var pattern = new Canvas(2,2)
       , checkers = pattern.getContext('2d');
 
@@ -571,9 +676,9 @@ module.exports = {
       // alternate b, except when moving to a new row
       b = i % (imageData.width*4) == 0 ? b : !b;
     }
-  },
+  });
 
-  'test Context2d#createPattern(Image)': function(){
+  it('Context2d#createPattern(Image)', function () {
     var img = new Canvas.Image();
     img.src = __dirname + '/fixtures/checkers.png';
 
@@ -605,9 +710,9 @@ module.exports = {
       // alternate b, except when moving to a new row
       b = i % (imageData.width*4) == 0 ? b : !b;
     }
-  },
+  });
 
-  'test Context2d#createLinearGradient()': function(){
+  it('Context2d#createLinearGradient()', function () {
     var canvas = new Canvas(20, 1)
       , ctx = canvas.getContext('2d')
       , gradient = ctx.createLinearGradient(1,1,19,1);
@@ -635,6 +740,46 @@ module.exports = {
     assert.equal(0, imageData.data[i+1]);
     assert.equal(0, imageData.data[i+2]);
     assert.equal(255, imageData.data[i+3]);
+  });
 
-  }
-}
+  it('Canvas#createSyncPNGStream()', function (done) {
+    var canvas = new Canvas(20, 20);
+    var stream = canvas.createSyncPNGStream();
+    var firstChunk = true;
+    stream.on('data', function(chunk){
+      if (firstChunk) {
+        firstChunk = false;
+        assert.equal('PNG', chunk.slice(1,4).toString());
+      }
+    });
+    stream.on('end', function(){
+      done();
+    });
+    stream.on('error', function(err) {
+      done(err);
+    });
+  });
+
+  it('Canvas#jpegStream()', function (done) {
+    var canvas = new Canvas(640, 480);
+    var stream = canvas.jpegStream();
+    var firstChunk = true;
+    var bytes = 0;
+    stream.on('data', function(chunk){
+      if (firstChunk) {
+        firstChunk = false;
+        assert.equal(0xFF, chunk[0]);
+        assert.equal(0xD8, chunk[1]);
+        assert.equal(0xFF, chunk[2]);
+      }
+      bytes += chunk.length;
+    });
+    stream.on('end', function(){
+      assert.equal(bytes, 8192);
+      done();
+    });
+    stream.on('error', function(err) {
+      done(err);
+    });
+  });
+});

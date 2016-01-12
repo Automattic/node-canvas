@@ -19,19 +19,19 @@ node-canvas
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/LearnBoost/node-canvas/wiki/_pages).
+Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
-You can quickly install Cairo and its dependencies for OS X using the one liner below:
+You can quickly install the dependencies by using the command for your OS:
 
-```bash
-$ wget https://raw.githubusercontent.com/LearnBoost/node-canvas/master/install -O - | sh
-```
+OS | Command
+----- | -----
+OS X | `brew install pkg-config cairo libpng jpeg giflib`
+Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
+Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
+Solaris | `pkgin install cairo pkg-config xproto renderproto kbproto xextproto`
+Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
 
-or if you use MacPorts
-
-```bash
-sudo port install pkgconfig libpng giflib freetype libpixman cairo
-```
+**El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
 
 ## Screencasts
 
@@ -156,22 +156,18 @@ canvas.toBuffer(function(err, buf){
 });
 ```
 
-### Canvas#toDataURL() async
+### Canvas#toDataURL() sync and async
 
-Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
-
-```javascript
-canvas.toDataURL(function(err, str){
-
-});
-```
-
-or specify the mime type:
+The following syntax patterns are supported:
 
 ```javascript
-canvas.toDataURL('image/png', function(err, str){
-
-});
+var dataUrl = canvas.toDataURL(); // defaults to PNG
+var dataUrl = canvas.toDataURL('image/png');
+canvas.toDataURL(function(err, png){ }); // defaults to PNG
+canvas.toDataURL('image/png', function(err, png){ });
+canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
+canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
+canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
 ### CanvasRenderingContext2d#patternQuality
@@ -274,7 +270,7 @@ fs.writeFile('out.svg', canvas.toBuffer());
 
 ## Contribute
 
- Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
+ Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/Automattic/node-canvas/issues) for existing issues.
 
 ## Examples
 
