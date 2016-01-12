@@ -8,7 +8,7 @@
 
 #include <fontconfig/fontconfig.h>
 
-Persistent<FunctionTemplate> FontFace::constructor;
+Nan::Persistent<FunctionTemplate> FontFace::constructor;
 
 /*
  * Destroy ft_face.
@@ -26,17 +26,17 @@ FontFace::~FontFace() {
  */
 
 void
-FontFace::Initialize(Handle<Object> target) {
-  NanScope();
+FontFace::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+  Nan::HandleScope scope;
 
   // Constructor
-  Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(FontFace::New);
-  NanAssignPersistent(constructor, ctor);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(FontFace::New);
+  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(NanNew("FontFace"));
+  ctor->SetClassName(Nan::New("FontFace").ToLocalChecked());
 
   // Prototype
-  target->Set(NanNew("FontFace"), ctor->GetFunction());
+  Nan::Set(target, Nan::New("FontFace").ToLocalChecked(), ctor->GetFunction());
 }
 
 /*
@@ -53,15 +53,13 @@ static cairo_user_data_key_t key;
  */
 
 NAN_METHOD(FontFace::New) {
-  NanScope();
-
-  if (!args[0]->IsString()
-    || !args[1]->IsNumber()) {
-    return NanThrowError("Wrong argument types passed to FontFace constructor");
+  if (!info[0]->IsString()
+    || !info[1]->IsNumber()) {
+    return Nan::ThrowError("Wrong argument types passed to FontFace constructor");
   }
 
-  String::Utf8Value filePath(args[0]);
-  int faceIdx = int(args[1]->NumberValue());
+  String::Utf8Value filePath(info[0]);
+  int faceIdx = int(info[1]->NumberValue());
 
   FT_Face ftFace;
   FT_Error ftError;
@@ -71,21 +69,21 @@ NAN_METHOD(FontFace::New) {
     _initLibrary = false;
     ftError = FT_Init_FreeType(&library);
     if (ftError) {
-      return NanThrowError("Could not load library");
+      return Nan::ThrowError("Could not load library");
     }
   }
 
   // Create new freetype font face.
   ftError = FT_New_Face(library, *filePath, faceIdx, &ftFace);
   if (ftError) {
-    return NanThrowError("Could not load font file");
+    return Nan::ThrowError("Could not load font file");
   }
 
   #if HAVE_PANGO
     // Load the font file in fontconfig
     FcBool ok = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(*filePath));
     if (!ok) {
-      return NanThrowError("Could not load font in FontConfig");
+      return Nan::ThrowError("Could not load font in FontConfig");
     }
   #endif
 
@@ -98,7 +96,7 @@ NAN_METHOD(FontFace::New) {
   if (status) {
     cairo_font_face_destroy (crFace);
     FT_Done_Face (ftFace);
-    return NanThrowError("Failed to setup cairo font face user data");
+    return Nan::ThrowError("Failed to setup cairo font face user data");
   }
 
   // Explicit reference count the cairo font face. Otherwise the font face might
@@ -106,7 +104,7 @@ NAN_METHOD(FontFace::New) {
   cairo_font_face_reference(crFace);
 
   FontFace *face = new FontFace(ftFace, crFace);
-  face->Wrap(args.This());
-  NanReturnValue(args.This());
+  face->Wrap(info.This());
+  info.GetReturnValue().Set(info.This());
 }
 

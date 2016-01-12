@@ -27,14 +27,14 @@
 
 
 
-class Image: public node::ObjectWrap {
+class Image: public Nan::ObjectWrap {
   public:
     char *filename;
     int width, height;
-    NanCallback *onload;
-    NanCallback *onerror;
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    Nan::Callback *onload;
+    Nan::Callback *onerror;
+    static Nan::Persistent<FunctionTemplate> constructor;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetSource);
     static NAN_GETTER(GetOnload);
@@ -47,9 +47,9 @@ class Image: public node::ObjectWrap {
     static NAN_SETTER(SetOnload);
     static NAN_SETTER(SetOnerror);
     static NAN_SETTER(SetDataMode);
-    inline cairo_surface_t *surface(){ return _surface; } 
-    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
-    inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
+    inline cairo_surface_t *surface(){ return _surface; }
+    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
+    inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);

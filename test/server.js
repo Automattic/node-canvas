@@ -6,6 +6,7 @@
 var express = require('express')
   , Canvas = require('../lib/canvas')
   , Image = Canvas.Image
+  , bodyParser = require('body-parser')
   , app = express();
 
 // Config
@@ -15,12 +16,8 @@ app.set('view engine', 'jade');
 
 // Middleware
 
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(app.router);
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public'));
-app.use(express.errorHandler());
 
 // Routes
 
@@ -40,6 +37,15 @@ function testFn(req){
   return eval('(' + req.body.fn + ')');
 }
 
+function executeTestFn(ctx, fn, done) {
+  if(2 === fn.length) {
+    fn(ctx, done);
+  } else {
+    fn(ctx);
+    done();
+  }
+}
+
 function createCanvas(req, type){
   var width = req.body.width
     , height = req.body.height;
@@ -55,13 +61,12 @@ app.post('/render', function(req, res, next){
   function done(){
     var duration = new Date - start;
     canvas.toDataURL(function(err, str){
+      if (err) throw err;
       res.send({ data: str, duration: duration });
     });
   }
 
-  2 == fn.length
-    ? fn(ctx, done)
-    : fn(ctx), done();
+  executeTestFn(ctx, fn, done);
 });
 
 app.post('/pdf', function(req, res, next){
@@ -76,11 +81,25 @@ app.post('/pdf', function(req, res, next){
     res.end();
   }
 
-  2 == fn.length
-    ? fn(ctx, done)
-    : fn(ctx), done();
+  executeTestFn(ctx, fn, done);
 });
 
+app.post('/jpeg', function(req, res, next){
+  // Send nothing if jpeg isn't available.
+  if (!Canvas.jpegVersion) { return res.send({}).end(); }
+  var fn = testFn(req)
+    , canvas = createCanvas(req)
+    , ctx = canvas.getContext('2d');
+
+  function done(){
+    canvas.toDataURL('image/jpeg', function (err, str){
+      if (err) throw err;
+      res.send({data: str});
+    });
+  }
+
+  executeTestFn(ctx, fn, done);
+});
 
 var port = parseInt(process.argv[2] || '4000', 10);
 app.listen(port);

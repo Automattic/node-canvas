@@ -1,3 +1,60 @@
+1.3.6 / 2016-01-06
+==================
+
+  * Allow optional arguments in `toDataURL` to be `undefined` and improve `toDataURL`'s spec compliance (#690)
+
+1.3.5 / 2015-12-07
+==================
+
+  * Add image/jpeg support to `toDataUrl` (#685)
+
+1.3.4 / 2015-11-21
+==================
+
+  * Upgrade nan to 2.1.0 (#671)
+
+1.3.3 / 2015-11-21
+==================
+
+  * Fix compilation on Visual Studio 2015 (#670)
+
+1.3.2 / 2015-11-18
+==================
+
+  * Fix incorrect Y offset and scaling for shadows (#669)
+
+1.3.1 / 2015-11-09
+==================
+
+  * Wrap std::min calls in paranthesis to prevent macro expansion on windows (#660)
+
+1.3.0 / 2015-10-26
+==================
+
+  * Expose ImageData constructor and make it more spec-compliant (#569)
+
+1.2.11 / 2015-10-20
+===================
+
+  * Implement blur on images (#648)
+
+1.2.10 / 2015-10-12
+===================
+
+  * Fix segfault in Canvas#jpegStream (#629)
+
+1.2.9 / 2015-09-14
+==================
+
+  * Upgrade to Nan 2.x with support for iojs 3.x and Node.js 4.x (#622)
+
+1.2.8 / 2015-08-30
+==================
+
+  * Clean up the tests (#612)
+  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#604)
+  * Specify travis iojs versions (#611)
+
 1.2.7 / 2015-07-29
 ==================
 
