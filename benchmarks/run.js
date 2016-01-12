@@ -1,6 +1,7 @@
-
 /**
- * Module dependencies.
+ * Adaptive benchmarking. Starts with `initialTimes` iterations, increasing by
+ * a power of two each time until the benchmark takes at least `minDuration_ms`
+ * milliseconds to complete.
  */
 
 var Canvas = require('../lib/canvas')
@@ -8,34 +9,50 @@ var Canvas = require('../lib/canvas')
   , largeCanvas = new Canvas(1000, 1000)
   , ctx = canvas.getContext('2d');
 
-var times = 10000;
-console.log('\n  \x1b[33m%s\x1b[0m times\n', times);
+var initialTimes = 10;
+var minDuration_ms = 2000;
 
-function bm(label, overrideTimes, fn) {
-  var start = new Date
-    , n = times;
+var queue = [], running = false;
 
-  if ('function' == typeof overrideTimes) {
-    fn = overrideTimes;
-  } else {
-    n = overrideTimes;
-    label += ' (' + n + ' times)';
+function bm(label, fn) {
+  queue.push({label: label, fn: fn});
+  next();
+}
+
+function next() {
+  if (queue.length && !running) {
+    run(queue.pop(), initialTimes, Date.now());
   }
+}
 
-  var pending = n;
-
-  function done(){
-    var duration = (new Date - start) / 1000;
-    console.log('  - \x1b[33m%s\x1b[0m %ss', label, duration);
-  }
-
-  if (fn.length) {
-    while (n--) fn(function(){
-      --pending || done();
+function run(benchmark, n, start) {
+  running = true;
+  var originalN = n;
+  var fn = benchmark.fn;
+  if (fn.length) { // async
+    var pending = n;
+    while (n--) fn(function () {
+      --pending || done(benchmark, originalN, start, true);
     });
   } else {
     while (n--) fn();
-    done();
+    done(benchmark, originalN, start);
+  }
+}
+
+function done(benchmark, times, start, async) {
+  var duration = Date.now() - start;
+  if (duration < minDuration_ms) {
+    run(benchmark, times * 2, Date.now());
+  } else {
+    var opsSec = times / duration * 1000
+    if (async) {
+      console.log('  - \x1b[33m%s\x1b[0m %s ops/sec (%s times, async)', benchmark.label, opsSec.toLocaleString(), times);
+    } else {
+      console.log('  - \x1b[33m%s\x1b[0m %s ops/sec (%s times)', benchmark.label, opsSec.toLocaleString(), times);
+    }
+    running = false;
+    next();
   }
 }
 
@@ -46,7 +63,7 @@ bm('lineTo()', function(){
 });
 
 bm('arc()', function(){
-  ctx.arc(75,75,50,0,Math.PI*2,true);
+   ctx.arc(75,75,50,0,Math.PI*2,true);
 });
 
 bm('fillStyle= hex', function(){
@@ -57,6 +74,8 @@ bm('fillStyle= rgba()', function(){
   ctx.fillStyle = 'rgba(0,255,80,1)';
 });
 
+// Apparently there's a bug in cairo by which the fillRect and strokeRect are
+// slow only after a ton of arcs have been drawn.
 bm('fillRect()', function(){
   ctx.fillRect(50, 50, 100, 100);
 });
@@ -73,19 +92,31 @@ bm('linear gradients', function(){
   ctx.fillRect(10,10,130,130);
 });
 
-bm('toBuffer() 200x200', 50, function(){
+bm('toBuffer() 200x200', function(){
   canvas.toBuffer();
 });
 
-bm('toBuffer() 1000x1000', 50, function(){
+bm('toBuffer() 1000x1000', function(){
   largeCanvas.toBuffer();
 });
 
-bm('toBuffer().toString("base64") 200x200', 50, function(){
+bm('toBuffer() async 200x200', function(done){
+  canvas.toBuffer(function (err, buf) {
+    done();
+  });
+});
+
+bm('toBuffer() async 1000x1000', function(done){
+  largeCanvas.toBuffer(function (err, buf) {
+    done();
+  });
+});
+
+bm('toBuffer().toString("base64") 200x200', function(){
   canvas.toBuffer().toString('base64');
 });
 
-bm('toDataURL() 200x200', 50, function(){
+bm('toDataURL() 200x200', function(){
   canvas.toDataURL();
 });
 
@@ -109,14 +140,12 @@ bm('getImageData(0,0,100,100)', function(){
   ctx.getImageData(0,0,100,100);
 });
 
-// bm('PNGStream 200x200', 50, function(done){
-//   var stream = canvas.createSyncPNGStream();
-//   stream.on('data', function(chunk){
-//     // whatever
-//   });
-//   stream.on('end', function(){
-//     done();
-//   });
-// });
-
-console.log();
+bm('PNGStream 200x200', function(done){
+  var stream = canvas.createSyncPNGStream();
+  stream.on('data', function(chunk){
+    // whatever
+  });
+  stream.on('end', function(){
+    done();
+  });
+});
