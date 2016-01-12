@@ -35,6 +35,29 @@ describe('Image', function () {
     assert.strictEqual(320, img.height);
   });
 
+  it('Image#onerror src=null', function() {
+    var img = new Image
+      , n = 0
+      , error;
+
+
+    img.onload = function() {
+      assert.fail('called onload');
+    };
+
+    img.onerror = function(err) {
+      error = err;
+      ++n;
+    };
+
+    img.src = null;
+
+    assert.ok(error instanceof Error, 'did not invoke onerror() with error');
+    assert.strictEqual(error.message, 'invalid value for an input cairo_content_t');
+    assert.strictEqual(img.complete, false);
+    assert.equal(n, 1);
+  });
+
   it('Image#onerror', function () {
     var img = new Image
       , error
