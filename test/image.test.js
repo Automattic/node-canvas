@@ -38,10 +38,10 @@ describe('Image', function () {
 
   it('test Image#onload multiple times', function() {
     var img = new Image
-      , n = 0;
+      , onloadCalled = 0;
 
     img.onload = function() {
-      ++n;
+      ++onloadCalled;
     };
 
     img.src = png_checkers;
@@ -56,14 +56,14 @@ describe('Image', function () {
     assert.strictEqual(320, img.width);
     assert.strictEqual(320, img.height);
 
-    assert.equal(n, 2);
+    assert.equal(onloadCalled, 2);
 
-    n = 0;
+    onloadCalled = 0;
     img.onload = function() {
-      ++n;
+      ++onloadCalled;
     };
     img.src = png_clock;
-    assert.equal(n, 1);
+    assert.equal(onloadCalled, 1);
   });
 
   it('Image#onerror', function () {
@@ -98,7 +98,7 @@ describe('Image', function () {
 
   it('test Image#onerror multiple calls', function() {
     var img = new Image
-      , n = 0;
+      , onloadCalled = 0;
 
 
     img.onload = function() {
@@ -106,7 +106,7 @@ describe('Image', function () {
     };
 
     img.onerror = function() {
-      ++n;
+      ++onloadCalled;
     };
 
     img.src = png_clock + 's1';
@@ -115,15 +115,15 @@ describe('Image', function () {
     img.src = png_clock + 's2';
     assert.equal(img.src, png_clock + 's2');
 
-    assert.equal(n, 2);
+    assert.equal(onloadCalled, 2);
 
-    n = 0;
+    onloadCalled = 0;
     img.onerror = function() {
-      ++n;
+      ++onloadCalled;
     };
     img.src = png_clock + 's3';
     assert.equal(img.src, png_clock + 's3');
-    assert.equal(n, 1);
+    assert.equal(onloadCalled, 1);
   });
 
   it('Image#{width,height}', function () {
