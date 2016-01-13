@@ -1,3 +1,8 @@
+1.3.7 / 2016-01-13
+==================
+
+  * Don't unbind onload/onerror callbacks after invoking them (#615)
+
 1.3.6 / 2016-01-06
 ==================
 
