@@ -13,7 +13,7 @@
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
         # disable pango as it causes issues with freetype.
-        'with_pango%': '<!(./util/has_lib.sh pangocairo)',
+        'with_pango%': 'false',
         'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
       }
     }]
