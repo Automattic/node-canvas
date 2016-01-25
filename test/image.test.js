@@ -156,7 +156,7 @@ describe('Image', function () {
       , onloadCalled = 0;
 
     img.onload = function() {
-      ++onloadCalled;
+      onloadCalled += 1;
     };
 
     img.src = png_checkers;
@@ -188,7 +188,7 @@ describe('Image', function () {
     };
 
     img.onerror = function() {
-      ++onerrorCalled;
+      onerrorCalled += 1;
     };
 
     img.src = png_clock + 's1';
