@@ -1,3 +1,8 @@
+1.3.9 / 2016-01-27
+==================
+
+  * Allow to unbind onload/onerror callback handlers (#706)
+
 1.3.8 / 2016-01-22
 ==================
 
