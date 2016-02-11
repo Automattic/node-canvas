@@ -13,10 +13,6 @@
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
 
-#ifdef HAVE_FREETYPE
-#include "FontFace.h"
-#endif
-
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
@@ -29,9 +25,6 @@ NAN_MODULE_INIT(init) {
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
-#ifdef HAVE_FREETYPE
-  FontFace::Initialize(target);
-#endif
 
   target->Set(Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked());
 #ifdef HAVE_JPEG
