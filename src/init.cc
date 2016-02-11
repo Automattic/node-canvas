@@ -12,11 +12,24 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
+#include "register_font.h"
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
 #endif
+
+NAN_METHOD(register_font_js) {
+  if (!info[0]->IsString()) {
+    return Nan::ThrowError("Wrong argument type");
+  }
+
+  String::Utf8Value filePath(info[0]);
+
+  if (!register_font((unsigned char*) *filePath)) {
+    Nan::ThrowError("Could not load font to the system's font host");
+  }
+}
 
 NAN_MODULE_INIT(init) {
   Canvas::Initialize(target);
@@ -25,6 +38,8 @@ NAN_MODULE_INIT(init) {
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
+
+  Nan::SetMethod(target, "registerFont", register_font_js);
 
   target->Set(Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked());
 #ifdef HAVE_JPEG

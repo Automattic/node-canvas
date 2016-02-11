@@ -53,6 +53,7 @@
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
+        'src/register_font.cc',
         'src/init.cc'
       ],
       'conditions': [

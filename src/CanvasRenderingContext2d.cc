@@ -6,11 +6,11 @@
 //
 
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
 #include <limits>
 #include <vector>
 #include <algorithm>
+
 #include "Canvas.h"
 #include "Point.h"
 #include "Image.h"
@@ -31,6 +31,28 @@
 #endif
 
 Nan::Persistent<FunctionTemplate> Context2d::constructor;
+
+/*
+ * Custom strndup since Windows doesn't have it
+ */
+static char*
+_strndup(const char *s, size_t n) {
+  size_t i;
+  const char *p = s;
+  char *ret = NULL;
+
+  for (i = 0; i < n && *p; i++, p++)
+    ;
+
+  ret = (char*)malloc(i + 1);
+
+  if (ret) {
+    memcpy(ret, s, i);
+    ret[i] = '\0';
+  }
+
+  return ret;
+}
 
 /*
  * Rectangle arg assertions.
@@ -65,7 +87,7 @@ enum {
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str) {
   free(state->fontFamily);
-  state->fontFamily = strndup(str, 100);
+  state->fontFamily = _strndup(str, 100);
 }
 
 

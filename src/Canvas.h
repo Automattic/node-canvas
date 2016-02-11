@@ -8,16 +8,16 @@
 #ifndef __NODE_CANVAS_H__
 #define __NODE_CANVAS_H__
 
-#include <v8.h>
 #include <node.h>
+#include <v8.h>
 #include <node_object_wrap.h>
 #include <node_version.h>
 #include <pango/pangocairo.h>
 #include <cairo.h>
 #include <nan.h>
 
-using namespace v8;
 using namespace node;
+using namespace v8;
 
 /*
  * Maxmimum states per context.

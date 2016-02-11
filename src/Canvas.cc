@@ -4,9 +4,6 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "Canvas.h"
-#include "PNG.h"
-#include "CanvasRenderingContext2d.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +11,10 @@
 #include <node_version.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+
+#include "Canvas.h"
+#include "PNG.h"
+#include "CanvasRenderingContext2d.h"
 #include "closure.h"
 
 #ifdef HAVE_JPEG
