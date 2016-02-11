@@ -28,8 +28,6 @@ NAN_METHOD(register_font_js) {
 
   if (!register_font((unsigned char*) *filePath)) {
     Nan::ThrowError("Could not load font to the system's font host");
-  } else {
-    printf("registered %s ok\n", *filePath);
   }
 }
 
