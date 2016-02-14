@@ -16,10 +16,10 @@
 #if HAVE_PANGO
 #include <pango/pangocairo.h>
 #else
-#include <cairo/cairo.h>
+#include <cairo.h>
 #endif
 
-#include "nan.h"
+#include <nan.h>
 
 using namespace v8;
 using namespace node;
@@ -39,20 +39,21 @@ using namespace node;
 
 typedef enum {
   CANVAS_TYPE_IMAGE,
-  CANVAS_TYPE_PDF
+  CANVAS_TYPE_PDF,
+  CANVAS_TYPE_SVG
 } canvas_type_t;
 
 /*
  * Canvas.
  */
 
-class Canvas: public node::ObjectWrap {
+class Canvas: public Nan::ObjectWrap {
   public:
     int width;
     int height;
     canvas_type_t type;
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    static Nan::Persistent<FunctionTemplate> constructor;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
     static NAN_GETTER(GetType);
@@ -78,12 +79,13 @@ class Canvas: public node::ObjectWrap {
 #endif
 
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
+    inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
     inline cairo_surface_t *surface(){ return _surface; }
     inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     Canvas(int width, int height, canvas_type_t type);
-    void resurface(Handle<Object> canvas);
+    void resurface(Local<Object> canvas);
 
   private:
     ~Canvas();

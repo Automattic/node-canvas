@@ -1,43 +1,239 @@
+1.3.10 / 2016-02-07
+===================
+
+  * Fix segfault on node 0.10.x (#712)
+
+1.3.9 / 2016-01-27
+==================
+
+  * Allow to unbind onload/onerror callback handlers (#706)
+
+1.3.8 / 2016-01-22
+==================
+
+  * Cleanup build scripts and fix pangocairo detection (#701)
+
+1.3.7 / 2016-01-13
+==================
+
+  * Don't unbind onload/onerror callbacks after invoking them (#615)
+
+1.3.6 / 2016-01-06
+==================
+
+  * Allow optional arguments in `toDataURL` to be `undefined` and improve `toDataURL`'s spec compliance (#690)
+
+1.3.5 / 2015-12-07
+==================
+
+  * Add image/jpeg support to `toDataUrl` (#685)
+
+1.3.4 / 2015-11-21
+==================
+
+  * Upgrade nan to 2.1.0 (#671)
+
+1.3.3 / 2015-11-21
+==================
+
+  * Fix compilation on Visual Studio 2015 (#670)
+
+1.3.2 / 2015-11-18
+==================
+
+  * Fix incorrect Y offset and scaling for shadows (#669)
+
+1.3.1 / 2015-11-09
+==================
+
+  * Wrap std::min calls in paranthesis to prevent macro expansion on windows (#660)
+
+1.3.0 / 2015-10-26
+==================
+
+  * Expose ImageData constructor and make it more spec-compliant (#569)
+
+1.2.11 / 2015-10-20
+===================
+
+  * Implement blur on images (#648)
+
+1.2.10 / 2015-10-12
+===================
+
+  * Fix segfault in Canvas#jpegStream (#629)
+
+1.2.9 / 2015-09-14
+==================
+
+  * Upgrade to Nan 2.x with support for iojs 3.x and Node.js 4.x (#622)
+
+1.2.8 / 2015-08-30
+==================
+
+  * Clean up the tests (#612)
+  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#604)
+  * Specify travis iojs versions (#611)
+
+1.2.7 / 2015-07-29
+==================
+
+  * Avoid future reserved keyword (#592)
+
+1.2.6 / 2015-07-29
+==================
+
+  * Fix the build on windows (#589)
+
+1.2.5 / 2015-07-28
+==================
+
+  * Another npm release, since 1.2.4 was botched (see #596)
+
+1.2.4 / 2015-07-23
+==================
+
+  * Point `homepage` and `repository` links to [`github.com/Automattic/node-canvas`][repo]
+  * Fix Travis builds and Cairo include paths (thanks, Linus Unnebäck!)
+
+1.2.3 / 2015-05-21
+==================
+
+  * Update TJ Holowaychuk's username in the readme
+  * Fix segmentation fault in `Image::loadFromBuffer` when buffer is empty
+  * Optimize getImageData()
+  * package: add "license" attribute
+  * package: update "nan" to v1.8.4
+  * package: append `.git` to "repository" URL
+
+1.2.2 / 2015-04-18
+==================
+
+  * Now works on io.js
+  * Fix 'drawImage' scaling (the dimensions of the region that gets clipped also needs to be scaled).
+  * Fix bug in StreamPNGSync
+
+1.2.1 / 2015-02-10
+==================
+
+  * Use non-cairo 1.12 API for shadow blur
+
+1.2.0 / 2015-01-31
+==================
+
+  * travis: drop support for node v0.6
+  * Merge pull request #507 from salzhrani/iojs
+  * io.js compatibility
+  * Merge pull request #505 from woodcoder/shadow-blur
+  * Fix issue with line width not being correct in stroked shadows.
+  * Add another shadow/transform test.
+  * Refactor setSourceRGBA to allow the context to be supplied.
+  * Simple image shadow (no blurring or handling current transforms) based on image's alpha channel.
+  * Test showing issue #133, that images don't have shadows.
+  * The +1 on the offset seems to match the browser's output better, but I can't work out why it would be needed (unless it's pixel alignment related).
+  * Make the shadow radius more accurately match the browser's, making use of sigma scale as used in SKIA: https://github.com/google/skia/blob/master/src/effects/SkBlurMask.cpp#L26.
+  * Create a new image surface to render blurred shadows to, this means that vector formats like PDF will now render blurs.
+  * Add recommended calls to flush and dirty buffer, as per http://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-data.
+  * Add PDF button to test page to easily generate PDF version of the test image.
+  * Fix to ensure shadowOffset is unaffected by the current transform.
+  * New test illustrating that canvas implementation doesn't translate the shadowOffset.
+  * Merge pull request #490 from AllYearbooks/master
+  * Merge pull request #501 from motiz88/hsl-color
+  * Code style + attribution. Also removed parseClipped() and commented out wrapInt (now wrap_int).
+  * Added visual tests for hsl() and hsla() color parsing.
+  * Fixed <number> handling in hsl/hsla color parser. parseNumber() was erroring out on numbers with long fractional parts.
+  * hsl/hsla color parsing + rebeccapurple hsl() and hsla() color values are now supported, with corresponding unit tests. Also added rebeccapurple (from CSS Color Level 4) to the named color list.
+  * float rather than int for drawImage arguments
+  * with_pango to true and use fontconfig to load fonts
+  * Merge pull request #399 from nulltask/fix/lighten
+  * Merge pull request #465 from espadrine/master
+  * Merge pull request #470 from tonylukasavage/patch-1
+  * Add one-liner MacPorts install to docs
+  * Offer SVG output.
+  * Readme update: node-gyp.
+  * Readme: fix subheading size
+  * Readme: remove Gemnasium badge, use SVG for npm badge
+  * Readme: add Travis-CI badge
+  * change operator lighter to lighten
+
+1.1.6 / 2014-08-01
+==================
+
+  * export canvas.CanvasPixelArray instead of canvas.PixelArray which is undefined
+  * Glib version test into giflib exists test
+  * Giflib 5.1
+  * install: use an even older version of giflib (v4.1.6)
+  * install: use an older version of giflib (v4.2.3)
+  * install: install `giflib`
+  * install: use more compatible sh syntax
+  * travis: attempt to run the ./install script before testintg
+  * travis: test node v0.6, v0.8, v0.10, and v0.11
+  * Distinguish between 'add' and 'lighter'
+
+1.1.5 / 2014-06-26
+==================
+
+  * Readme: remove Contributors section
+  * Readme: update copyright
+  * On Windows, copy required DLLs next to ".node" file (#442 @pandell)
+  * Duplicate "msvc_settings" for "Debug" configuration
+  * Remove unneeded #include <nan.h>
+  * Use float constants to prevent double->float conversion warning
+  * Ignore Visual C++ 2013 warnings (#441 @pandell)
+  * Add algorithm include to CanvasRenderingContext2d.cc for std::min (#435 @kkoopa)
+  * Updated NAN to 1.2.0 (#434 @kkoopa)
+
+1.1.4 / 2014-06-08
+==================
+
+  * Fix compile error with Visual C++
+  * Add support for the lineDash API
+  * Update NAN
+  * New V8 compatibility
+  * Correctly limit bounds in PutImageData to prevent segment fault
+  * Fix segfault when onload and onerror are not function
+  * Add support for Node 0.11.9
+
 1.1.3 / 2014-01-08
 ==================
 
-* Add CAIRO_FORMAT_INVALID
-* Readjust the amount of allocated memory
-* Fix argument index for filter parameter
-* Make has_lib.sh work properly on Debian 64bit
+  * Add CAIRO_FORMAT_INVALID
+  * Readjust the amount of allocated memory
+  * Fix argument index for filter parameter
+  * Make has_lib.sh work properly on Debian 64bit
 
 1.1.2 / 2013-10-31
 ==================
 
- * NAN dep upgrade, full node@<=0.11.8 compatibility
- * Use node::MakeCallback() instead of v8::Function::Call()
- * Improve nan location discovery
- * Fix enabling gif/jpeg options on Ubuntu 13.04
+  * NAN dep upgrade, full node@<=0.11.8 compatibility
+  * Use node::MakeCallback() instead of v8::Function::Call()
+  * Improve nan location discovery
+  * Fix enabling gif/jpeg options on Ubuntu 13.04
 
 1.1.1 / 2013-10-09
 ==================
 
- * add better support for outdated versions of Cairo
+  * add better support for outdated versions of Cairo
 
 1.1.0 / 2013-08-01
 ==================
 
- * add png compression options
- * add jpeg stream progressive mode option
- * fix resource leaks on read errors
+  * add png compression options
+  * add jpeg stream progressive mode option
+  * fix resource leaks on read errors
 
 1.0.4 / 2013-07-23
 ==================
 
- * 0.11.4+ compatibility using NAN
- * fix typo in context2d for imageSmoothingEnabled
+  * 0.11.4+ compatibility using NAN
+  * fix typo in context2d for imageSmoothingEnabled
 
 1.0.3 / 2013-06-04
 ==================
 
- * add "nearest" and "bilinear" to patternQuality
- * fix fread() retval check (items not bytes)
- * removed unneeded private fields
+  * add "nearest" and "bilinear" to patternQuality
+  * fix fread() retval check (items not bytes)
+  * removed unneeded private fields
 
 1.0.2 / 2013-03-22
 ==================
@@ -376,3 +572,5 @@
 ==================
 
   * Initial release
+
+[repo]: https://github.com/Automattic/node-canvas

@@ -6,7 +6,6 @@
 #ifndef __NODE_JPEG_STREAM_H__
 #define __NODE_JPEG_STREAM_H__
 
-#include "nan.h"
 #include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
@@ -30,15 +29,19 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
-  NanScope();
+  Nan::HandleScope scope;
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
-  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, dest->bufsize);
-  Local<Value> argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(buf)
-    , Integer::New(dest->bufsize)
+
+  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
+
+  // emit "data"
+  Local<Value> argv[2] = {
+      Nan::Null()
+    , buf
   };
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, argv);
+
+  dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
   return true;
@@ -46,28 +49,26 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
-  NanScope();
+  Nan::HandleScope scope;
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
-  /* emit remaining data */
-  size_t remaining = dest->bufsize - cinfo->dest->free_in_buffer;
-  Local<Object> buf = NanNewBufferHandle((char *)dest->buffer, remaining);
 
-  Local<Value> data_argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(buf)
-    , Integer::New(remaining)
+  /* emit remaining data */
+  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
+
+  Local<Value> data_argv[2] = {
+      Nan::Null()
+    , buf
   };
 
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, data_argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, data_argv);
 
   // emit "end"
-  Local<Value> end_argv[3] = {
-      NanNewLocal<Value>(Null())
-    , NanNewLocal<Value>(Null())
-    , Integer::New(0)
+  Local<Value> end_argv[2] = {
+      Nan::Null()
+    , Nan::Null()
   };
 
-  dest->closure->fn->Call(Context::GetCurrent()->Global(), 3, end_argv);
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, end_argv);
 }
 
 void
@@ -83,7 +84,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
          sizeof(closure_destination_mgr));
   }
 
-  dest  = (closure_destination_mgr *) cinfo->dest;
+  dest = (closure_destination_mgr *) cinfo->dest;
 
   cinfo->dest->init_destination = &init_closure_destination;
   cinfo->dest->empty_output_buffer = &empty_closure_output_buffer;
@@ -95,16 +96,6 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
-}
-
-void
-jpeg_free_custom_allocations(j_compress_ptr cinfo){
-  closure_destination_mgr * dest;
-  dest = (closure_destination_mgr *) cinfo->dest;
-  if (dest->buffer) {
-    free(dest->buffer);
-    dest->buffer = NULL;
-  }
 }
 
 void
@@ -149,7 +140,6 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
   }
   free(dst);
   jpeg_finish_compress(&cinfo);
-  jpeg_free_custom_allocations(&cinfo);
   jpeg_destroy_compress(&cinfo);
 }
 

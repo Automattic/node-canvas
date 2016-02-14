@@ -1,19 +1,37 @@
-[![NPM version](https://badge.fury.io/js/canvas.png)](http://badge.fury.io/js/canvas)
-[![Dependency Status](https://gemnasium.com/LearnBoost/node-canvas.png)](https://gemnasium.com/LearnBoost/node-canvas)
+node-canvas
+===========
+### Canvas graphics API backed by Cairo
+[![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
+[![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
 
-# node-canvas
-
- Node canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
+  node-canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
 
 ## Authors
 
-  - TJ Holowaychuk ([visionmedia](http://github.com/visionmedia))
+  - TJ Holowaychuk ([tj](http://github.com/tj))
+  - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
+  - Rod Vagg ([rvagg](http://github.com/rvagg))
+  - Juriy Zaytsev ([kangax](http://github.com/kangax))
 
 ## Installation
 
-    $ npm install canvas
+```bash
+$ npm install canvas
+```
 
-Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/LearnBoost/node-canvas/wiki/_pages).
+Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+
+You can quickly install the dependencies by using the command for your OS:
+
+OS | Command
+----- | -----
+OS X | `brew install pkg-config cairo libpng jpeg giflib`
+Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
+Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
+Solaris | `pkgin install cairo pkg-config xproto renderproto kbproto xextproto`
+Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
+
+**El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
 
 ## Screencasts
 
@@ -23,7 +41,8 @@ Unless previously installed you'll _need_ __Cairo__. For system-specific install
 
 ```javascript
 var Canvas = require('canvas')
-  , canvas = new Canvas(200,200)
+  , Image = Canvas.Image
+  , canvas = new Canvas(200, 200)
   , ctx = canvas.getContext('2d');
 
 ctx.font = '30px Impact';
@@ -137,22 +156,18 @@ canvas.toBuffer(function(err, buf){
 });
 ```
 
-### Canvas#toDataURL() async
+### Canvas#toDataURL() sync and async
 
-Optionally we may pass a callback function to `Canvas#toDataURL()`, and this process will be performed asynchronously, and will `callback(err, str)`.
-
-```javascript
-canvas.toDataURL(function(err, str){
-
-});
-```
-
-or specify the mime type:
+The following syntax patterns are supported:
 
 ```javascript
-canvas.toDataURL('image/png', function(err, str){
-
-});
+var dataUrl = canvas.toDataURL(); // defaults to PNG
+var dataUrl = canvas.toDataURL('image/png');
+canvas.toDataURL(function(err, png){ }); // defaults to PNG
+canvas.toDataURL('image/png', function(err, png){ });
+canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
+canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
+canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
 ### CanvasRenderingContext2d#patternQuality
@@ -238,13 +253,24 @@ ctx.fillText('Hello World 3', 50, 80);
 ctx.addPage();
 ```
 
+## SVG support
+
+ Just like PDF support, make sure to install cairo with `--enable-svg=yes`.
+ You also need to tell node-canvas that it is working on SVG upon its initialization:
+
+```js
+var canvas = new Canvas(200, 500, 'svg');
+// Use the normal primitives.
+fs.writeFile('out.svg', canvas.toBuffer());
+```
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
 
 ## Contribute
 
- Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/LearnBoost/node-canvas/issues) for existing issues.
+ Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/Automattic/node-canvas/issues) for existing issues.
 
 ## Examples
 
@@ -256,9 +282,13 @@ If you have not previously, init git submodules:
 
     $ git submodule update --init
 
+Install the node modules:
+
+    $ npm install
+
 Build node-canvas:
 
-    $ node-waf configure build
+    $ node-gyp rebuild
 
 Unit tests:
 
@@ -278,45 +308,13 @@ Tested with and designed for:
 For node 0.2.x `node-canvas` <= 0.4.3 may be used,
 0.5.0 and above are designed for node 0.4.x only.
 
-## Contributors
-
-```
-project  : node-canvas
- repo age : 1 year, 11 months
- active   : 120 days
- commits  : 963
- files    : 72
- authors  :
-   816	Tj Holowaychuk          84.7%
-    58	TJ Holowaychuk          6.0%
-    23	c-spencer               2.4%
-    16	Nathan Rajlich          1.7%
-    12	atomizer                1.2%
-     6	Elijah Hamovitz         0.6%
-     5	Luigi Pinca             0.5%
-     5	Robert Sköld            0.5%
-     4	obarthel                0.4%
-     3	Don Park                0.3%
-     2	Andreas Botsikas        0.2%
-     2	Gabriel Falcao          0.2%
-     1	Brian McKinney          0.1%
-     1	Seiya Konno             0.1%
-     1	Syoyo Fujita            0.1%
-     1	Marcello Bastea-Forte   0.1%
-     1	Tharit                  0.1%
-     1	Konstantin Käfer        0.1%
-     1	Tom Carden              0.1%
-     1	Walt Lin                0.1%
-     1	David Björklund         0.1%
-     1	Brian White             0.1%
-     1	Philippe Plantier       0.1%
-```
-
 ## License
 
 (The MIT License)
 
-Copyright (c) 2010 LearnBoost &lt;dev@learnboost.ca&gt;
+Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
+
+Copyright (c) 2014 Automattic, Inc and contributors &lt;dev@automattic.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

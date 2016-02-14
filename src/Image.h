@@ -8,7 +8,6 @@
 #ifndef __NODE_IMAGE_H__
 #define __NODE_IMAGE_H__
 
-#include "nan.h"
 #include "Canvas.h"
 
 #ifdef HAVE_JPEG
@@ -18,16 +17,24 @@
 
 #ifdef HAVE_GIF
 #include <gif_lib.h>
+
+  #if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
+    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
+  #else
+    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
+  #endif
 #endif
 
-class Image: public node::ObjectWrap {
+
+
+class Image: public Nan::ObjectWrap {
   public:
     char *filename;
     int width, height;
-    NanCallback *onload;
-    NanCallback *onerror;
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    Nan::Callback *onload;
+    Nan::Callback *onerror;
+    static Nan::Persistent<FunctionTemplate> constructor;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetSource);
     static NAN_GETTER(GetOnload);
@@ -40,9 +47,9 @@ class Image: public node::ObjectWrap {
     static NAN_SETTER(SetOnload);
     static NAN_SETTER(SetOnerror);
     static NAN_SETTER(SetDataMode);
-    inline cairo_surface_t *surface(){ return _surface; } 
-    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); } 
-    inline int stride(){ return cairo_image_surface_get_stride(_surface); } 
+    inline cairo_surface_t *surface(){ return _surface; }
+    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
+    inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);

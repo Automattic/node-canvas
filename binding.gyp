@@ -12,13 +12,31 @@
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
-        # disable pango as it causes issues with freetype.
-        'with_pango%': 'false',
-        'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
+        'with_pango%': '<!(./util/has_lib.sh pango)',
+        'with_freetype%': '<!(./util/has_lib.sh freetype)'
       }
     }]
   ],
   'targets': [
+    {
+      'target_name': 'canvas-postbuild',
+      'dependencies': ['canvas'],
+      'conditions': [
+        ['OS=="win"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              '<(GTK_Root)/bin/libcairo-2.dll',
+              '<(GTK_Root)/bin/libexpat-1.dll',
+              '<(GTK_Root)/bin/libfontconfig-1.dll',
+              '<(GTK_Root)/bin/libfreetype-6.dll',
+              '<(GTK_Root)/bin/libpng14-14.dll',
+              '<(GTK_Root)/bin/zlib1.dll',
+            ]
+          }]
+        }]
+      ]
+    },
     {
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
@@ -30,8 +48,7 @@
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
-        'src/init.cc',
-        'src/PixelArray.cc'
+        'src/init.cc'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -41,11 +58,31 @@
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
+            '<(GTK_Root)/include/cairo',
           ],
           'defines': [
-            'snprintf=_snprintf',
             '_USE_MATH_DEFINES' # for M_PI
-          ]
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
+                }
+              }
+            },
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WarningLevel': 4,
+                  'ExceptionHandling': 1,
+                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
+                }
+              }
+            }
+          }
         }, { # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',

@@ -63,14 +63,14 @@ typedef struct {
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
 #endif
 
-class Context2d: public node::ObjectWrap {
+class Context2d: public Nan::ObjectWrap {
   public:
     short stateno;
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    static Nan::Persistent<FunctionTemplate> constructor;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(DrawImage);
     static NAN_METHOD(PutImageData);
@@ -100,6 +100,8 @@ class Context2d: public node::ObjectWrap {
     static NAN_METHOD(SetStrokePattern);
     static NAN_METHOD(SetTextBaseline);
     static NAN_METHOD(SetTextAlignment);
+    static NAN_METHOD(SetLineDash);
+    static NAN_METHOD(GetLineDash);
     static NAN_METHOD(MeasureText);
     static NAN_METHOD(BezierCurveTo);
     static NAN_METHOD(QuadraticCurveTo);
@@ -111,6 +113,7 @@ class Context2d: public node::ObjectWrap {
     static NAN_METHOD(Rect);
     static NAN_METHOD(Arc);
     static NAN_METHOD(ArcTo);
+    static NAN_METHOD(GetImageData);
     static NAN_GETTER(GetPatternQuality);
     static NAN_GETTER(GetGlobalCompositeOperation);
     static NAN_GETTER(GetGlobalAlpha);
@@ -121,6 +124,7 @@ class Context2d: public node::ObjectWrap {
     static NAN_GETTER(GetLineCap);
     static NAN_GETTER(GetLineJoin);
     static NAN_GETTER(GetLineWidth);
+    static NAN_GETTER(GetLineDashOffset);
     static NAN_GETTER(GetShadowOffsetX);
     static NAN_GETTER(GetShadowOffsetY);
     static NAN_GETTER(GetShadowBlur);
@@ -135,6 +139,7 @@ class Context2d: public node::ObjectWrap {
     static NAN_SETTER(SetLineCap);
     static NAN_SETTER(SetLineJoin);
     static NAN_SETTER(SetLineWidth);
+    static NAN_SETTER(SetLineDashOffset);
     static NAN_SETTER(SetShadowOffsetX);
     static NAN_SETTER(SetShadowOffsetY);
     static NAN_SETTER(SetShadowBlur);
@@ -146,6 +151,7 @@ class Context2d: public node::ObjectWrap {
     inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
+    void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
     void setTextPath(const char *str, double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
