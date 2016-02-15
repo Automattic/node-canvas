@@ -37,6 +37,10 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Pattern::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   int w = 0
     , h = 0;
   cairo_surface_t *surface;

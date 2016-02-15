@@ -67,6 +67,10 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Image::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
   img->Wrap(info.This());

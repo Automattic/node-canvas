@@ -35,6 +35,10 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(ImageData::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
   Local<v8::Object> clampedArray;
   Local<Object> global = Context::GetCurrent()->Global();

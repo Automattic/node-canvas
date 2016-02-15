@@ -35,6 +35,10 @@ Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Gradient::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   // Linear
   if (4 == info.Length()) {
     Gradient *grad = new Gradient(

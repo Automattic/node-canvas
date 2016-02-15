@@ -63,6 +63,10 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Canvas::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   int width = 0, height = 0;
   canvas_type_t type = CANVAS_TYPE_IMAGE;
   if (info[0]->IsNumber()) width = info[0]->Uint32Value();

@@ -11,6 +11,10 @@ var png_checkers = __dirname + '/fixtures/checkers.png';
 var png_clock = __dirname + '/fixtures/clock.png';
 
 describe('Image', function () {
+  it('should require new', function () {
+    assert.throws(function () { Image(); }, TypeError);
+  });
+
   it('Image', function () {
     assert.ok(Image instanceof Function);
   });

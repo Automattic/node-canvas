@@ -53,6 +53,10 @@ static cairo_user_data_key_t key;
  */
 
 NAN_METHOD(FontFace::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   if (!info[0]->IsString()
     || !info[1]->IsNumber()) {
     return Nan::ThrowError("Wrong argument types passed to FontFace constructor");
@@ -107,4 +111,3 @@ NAN_METHOD(FontFace::New) {
   face->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
-
