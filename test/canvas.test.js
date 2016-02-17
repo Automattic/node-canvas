@@ -956,6 +956,96 @@ describe('Canvas', function () {
     s.on('end', done);
   });
 
+  it('should handle PNG streams returned asynchronously, (AKA in a Promise)', function (done) {
+
+    function build_stream(funk) {
+      var canvas = new Canvas(20, 20)
+        , stream = canvas.createSyncPNGStream();
+
+      process.nextTick(function () {
+        funk(stream);
+      });
+    }
+
+    build_stream(function (stream) {
+      var firstChunk = true;
+      stream.on('data', function(chunk){
+        if (firstChunk) {
+          firstChunk = false;
+          assert.equal('PNG', chunk.slice(1,4).toString());
+        }
+      });
+      stream.on('end', function(){
+        done();
+      });
+      stream.on('error', function(err) {
+        done(err);
+      });
+    })
+  });
+
+  it('should handle JPEG streams returned asynchronously, (AKA in a Promise)', function (done) {
+
+    function build_stream(funk) {
+      var canvas = new Canvas(640, 480)
+        , stream = canvas.jpegStream();
+
+      process.nextTick(function () {
+        funk(stream);
+      });
+    }
+
+    build_stream(function (stream) {
+      var firstChunk = true;
+      var bytes = 0;
+      stream.on('data', function(chunk){
+        if (firstChunk) {
+          firstChunk = false;
+          assert.equal(0xFF, chunk[0]);
+          assert.equal(0xD8, chunk[1]);
+          assert.equal(0xFF, chunk[2]);
+        }
+        bytes += chunk.length;
+      });
+      stream.on('end', function(){
+        assert.equal(bytes, 5427);
+        done();
+      });
+      stream.on('error', function(err) {
+        done(err);
+      });
+    })
+  });
+
+  it('should handle PDF streams returned asynchronously, (AKA in a Promise)', function (done) {
+
+    function build_stream(funk) {
+      var canvas = new Canvas(640, 480, 'pdf')
+        , stream = canvas.createSyncPDFStream();
+
+      process.nextTick(function () {
+        funk(stream);
+      });
+    }
+
+    build_stream(function (stream) {
+      var firstChunk = true;
+      var bytes = 0;
+      stream.on('data', function (chunk) {
+        if (firstChunk) {
+          firstChunk = false;
+          assert.equal(chunk.slice(1, 4).toString(), 'PDF');
+        }
+      });
+      stream.on('end', function () {
+        done();
+      });
+      stream.on('error', function (err) {
+        done(err);
+      });
+    })
+  });
+  
   it('Context2d#fill()', function() {
     var canvas = new Canvas(2, 2);
     var ctx = canvas.getContext('2d');
