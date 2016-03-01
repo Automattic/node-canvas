@@ -2,6 +2,7 @@
 ===================
 
   * Properly clamp quality in toDataURL (#728)
+  * Strict mode (#719)
 
 1.3.10 / 2016-02-07
 ===================
