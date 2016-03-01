@@ -536,6 +536,10 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
  */
 
 NAN_METHOD(Context2d::New) {
+  if (!info.IsConstructCall()) {
+    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+  }
+
   Local<Object> obj = info[0]->ToObject();
   if (!Nan::New(Canvas::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("Canvas expected");

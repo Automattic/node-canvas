@@ -5,6 +5,10 @@ var Canvas = require('../')
     , assert = require('assert');
 
 describe('ImageData', function () {
+  it('should require new', function () {
+    assert.throws(function () { ImageData(); }, TypeError);
+  });
+
   it('should throw with invalid numeric arguments', function () {
       assert.throws(function () {
         new ImageData(0, 0);

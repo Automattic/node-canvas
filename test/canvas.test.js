@@ -12,6 +12,10 @@ console.log('   canvas: %s', Canvas.version);
 console.log('   cairo: %s', Canvas.cairoVersion);
 
 describe('Canvas', function () {
+  it('should require new', function () {
+    assert.throws(function () { Canvas(); }, TypeError);
+  });
+
   it('.version', function () {
     assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.version));
   });
