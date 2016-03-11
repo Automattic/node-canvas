@@ -161,6 +161,7 @@ class Context2d: public Nan::ObjectWrap {
     void restorePath();
     void saveState();
     void restoreState();
+    void inline setFillRule(v8::Local<v8::Value> value);
     void fill(bool preserve = false);
     void stroke(bool preserve = false);
     void save();
