@@ -26,6 +26,11 @@ typedef enum {
   TEXT_DRAW_GLYPHS
 } canvas_draw_mode_t;
 
+typedef enum {
+  FILL_RULE_WINDING,
+  FILL_RULE_EVEN_ODD
+} canvas_fill_rule_t;
+
 /*
  * State struct.
  *
@@ -161,7 +166,7 @@ class Context2d: public Nan::ObjectWrap {
     void restorePath();
     void saveState();
     void restoreState();
-    void fill(bool preserve = false);
+    void fill(bool preserve = false, cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING);
     void stroke(bool preserve = false);
     void save();
     void restore();
