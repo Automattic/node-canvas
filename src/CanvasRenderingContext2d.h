@@ -166,7 +166,8 @@ class Context2d: public Nan::ObjectWrap {
     void restorePath();
     void saveState();
     void restoreState();
-    void fill(bool preserve = false, cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING);
+    void inline setFillRule(cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING);
+    void fill(bool preserve = false);
     void stroke(bool preserve = false);
     void save();
     void restore();

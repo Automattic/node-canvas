@@ -297,7 +297,12 @@ Context2d::restorePath() {
  */
 
 void
-Context2d::fill(bool preserve, cairo_fill_rule_t rule) {
+Context2d::setFillRule(cairo_fill_rule_t rule) {
+  cairo_set_fill_rule(_context, rule);
+}
+
+void
+Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     cairo_set_source(_context, state->fillPattern);
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
@@ -308,7 +313,6 @@ Context2d::fill(bool preserve, cairo_fill_rule_t rule) {
   } else {
     setSourceRGBA(state->fill);
   }
-  cairo_set_fill_rule(_context, rule);
 
   if (preserve) {
     hasShadow()
@@ -1686,15 +1690,16 @@ NAN_METHOD(Context2d::Clip) {
 
 NAN_METHOD(Context2d::Fill) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
-  if (info.Length() == 1) {
-	  String::Utf8Value str(info[0]->ToString());
-	  const char *c_arg = *str;
-	  if (std::strcmp(c_arg, "evenodd") == 0) {
-		  rule = CAIRO_FILL_RULE_EVEN_ODD;
-	  }
+  if (info.Length() == 1 && info[0]->IsString()) {
+    cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
+    String::Utf8Value str(info[0]);
+    const char *c_arg = *str;
+    if (std::strcmp(c_arg, "evenodd") == 0) {
+      rule = CAIRO_FILL_RULE_EVEN_ODD;
+    }
+	context->setFillRule(rule);
   }
-  context->fill(true, rule);
+  context->fill(true);
 }
 
 /*
