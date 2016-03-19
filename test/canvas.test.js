@@ -786,4 +786,14 @@ describe('Canvas', function () {
       done(err);
     });
   });
+
+  it('Canvas#jpegStream() should clamp buffer size (#674)', function (done) {
+    var c = new Canvas(10, 10);
+    var SIZE = 10 * 1024 * 1024;
+    var s = c.jpegStream({bufsize: SIZE});
+    s.on('data', function (chunk) {
+      assert(chunk.length < SIZE);
+    });
+    s.on('end', done);
+  })
 });
