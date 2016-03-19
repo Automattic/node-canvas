@@ -6,7 +6,8 @@ var Canvas = require('../')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
   , fs = require('fs')
-  , os = require('os');
+  , os = require('os')
+  , Readable = require('stream').Readable;
 
 console.log();
 console.log('   canvas: %s', Canvas.version);
@@ -878,6 +879,7 @@ describe('Canvas', function () {
   it('Canvas#createSyncPNGStream()', function (done) {
     var canvas = new Canvas(20, 20);
     var stream = canvas.createSyncPNGStream();
+    assert(stream instanceof Readable);
     var firstChunk = true;
     stream.on('data', function(chunk){
       if (firstChunk) {
@@ -896,6 +898,7 @@ describe('Canvas', function () {
   it('Canvas#createSyncPDFStream()', function (done) {
     var canvas = new Canvas(20, 20, 'pdf');
     var stream = canvas.createSyncPDFStream();
+    assert(stream instanceof Readable);
     var firstChunk = true;
     stream.on('data', function (chunk) {
       if (firstChunk) {
@@ -914,6 +917,7 @@ describe('Canvas', function () {
   it('Canvas#jpegStream()', function (done) {
     var canvas = new Canvas(640, 480);
     var stream = canvas.jpegStream();
+    assert(stream instanceof Readable);
     var firstChunk = true;
     var bytes = 0;
     stream.on('data', function(chunk){

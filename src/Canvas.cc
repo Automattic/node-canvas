@@ -460,7 +460,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 1, argv);
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 3, argv);
   }
   return;
 }
