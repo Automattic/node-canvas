@@ -24,11 +24,13 @@ register_font(unsigned char *filepath) {
   success = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(filepath));
   #endif
   
+  if (!success) return false;
+
   // Tell Pango to throw away the current FontMap and create a new one. This
   // has the effect of registering the new font in Pango by re-looking up all
   // font families.
-  if (success) pango_cairo_font_map_set_default(NULL);
-  
-  return success;
+  pango_cairo_font_map_set_default(NULL);
+
+  return true;
 }
 
