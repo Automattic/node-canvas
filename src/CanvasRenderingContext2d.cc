@@ -571,6 +571,8 @@ NAN_METHOD(Context2d::AddPage) {
  */
 
 NAN_METHOD(Context2d::PutImageData) {
+  if (!info[0]->IsObject())
+    return Nan::ThrowTypeError("ImageData expected");
   Local<Object> obj = info[0]->ToObject();
   if (!Nan::New(ImageData::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("ImageData expected");
