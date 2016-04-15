@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 has_ldconfig() {
   hash ldconfig 2>/dev/null
