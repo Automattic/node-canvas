@@ -10,10 +10,10 @@
       }
     }, { # 'OS!="win"'
       'variables': {
-        'with_jpeg%': '<!(sh ./util/has_lib.sh jpeg)',
-        'with_gif%': '<!(sh ./util/has_lib.sh gif)',
-        'with_pango%': '<!(sh ./util/has_lib.sh pango)',
-        'with_freetype%': '<!(sh ./util/has_lib.sh freetype)'
+        'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
+        'with_gif%': '<!(./util/has_lib.sh gif)',
+        'with_pango%': '<!(./util/has_lib.sh pango)',
+        'with_freetype%': '<!(./util/has_lib.sh freetype)'
       }
     }]
   ],
