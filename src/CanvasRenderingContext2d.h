@@ -45,11 +45,7 @@ typedef struct {
   double shadowOffsetX;
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
-  PangoWeight fontWeight;
-  PangoStyle fontStyle;
-  double fontSize;
-  char *fontFamily;
-
+  PangoFontDescription *fontDescription;
 } canvas_state_t;
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str);

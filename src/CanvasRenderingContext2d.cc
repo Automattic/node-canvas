@@ -33,28 +33,6 @@
 Nan::Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
- * Custom strndup since Windows doesn't have it
- */
-static char*
-_strndup(const char *s, size_t n) {
-  size_t i;
-  const char *p = s;
-  char *ret = NULL;
-
-  for (i = 0; i < n && *p; i++, p++)
-    ;
-
-  ret = (char*)malloc(i + 1);
-
-  if (ret) {
-    memcpy(ret, s, i);
-    ret[i] = '\0';
-  }
-
-  return ret;
-}
-
-/*
  * Rectangle arg assertions.
  */
 
@@ -80,16 +58,6 @@ enum {
   , TEXT_BASELINE_IDEOGRAPHIC
   , TEXT_BASELINE_HANGING
 };
-
-/*
- * State helper function
- */
-
-void state_assign_fontFamily(canvas_state_t *state, const char *str) {
-  free(state->fontFamily);
-  state->fontFamily = _strndup(str, 100);
-}
-
 
 /*
  * Simple helper macro for a rather verbose function call.
@@ -199,12 +167,9 @@ Context2d::Context2d(Canvas *canvas) {
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
   state->textDrawingMode = TEXT_DRAW_PATHS;
-  state->fontWeight = PANGO_WEIGHT_NORMAL;
-  state->fontStyle = PANGO_STYLE_NORMAL;
-  state->fontSize = 10;
-  state->fontFamily = NULL;
-  state_assign_fontFamily(state, "sans serif");
-  setFontFromState();
+  state->fontDescription = pango_font_description_from_string("sans serif");
+  pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
+  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -213,7 +178,7 @@ Context2d::Context2d(Canvas *canvas) {
 
 Context2d::~Context2d() {
   while(stateno >= 0) {
-    free(states[stateno]->fontFamily);
+    pango_font_description_free(states[stateno]->fontDescription);
     free(states[stateno--]);
   }
   g_object_unref(_layout);
@@ -249,7 +214,7 @@ Context2d::saveState() {
   if (stateno == CANVAS_MAX_STATES) return;
   states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   memcpy(states[stateno], state, sizeof(canvas_state_t));
-  states[stateno]->fontFamily = _strndup(state->fontFamily, 100);
+  states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
   state = states[stateno];
 }
 
@@ -260,12 +225,11 @@ Context2d::saveState() {
 void
 Context2d::restoreState() {
   if (0 == stateno) return;
-  // Olaf (2011-02-21): Free old state data
-  free(states[stateno]->fontFamily);
+  pango_font_description_free(states[stateno]->fontDescription);
   free(states[stateno]);
   states[stateno] = NULL;
   state = states[--stateno];
-  setFontFromState();
+  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -1868,9 +1832,13 @@ NAN_METHOD(Context2d::SetFont) {
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
-  if (strlen(*family) > 0) state_assign_fontFamily(context->state, *family);
+  PangoFontDescription *desc = pango_font_description_copy(context->state->fontDescription);
+  pango_font_description_free(context->state->fontDescription);
+  context->state->fontDescription = desc;
 
-  if (size > 0) context->state->fontSize = size;
+  if (strlen(*family) > 0) pango_font_description_set_family(desc, *family);
+
+  if (size > 0) pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
 
   PangoStyle s = PANGO_STYLE_NORMAL;
   if (strlen(*style) > 0) {
@@ -1880,7 +1848,8 @@ NAN_METHOD(Context2d::SetFont) {
       s = PANGO_STYLE_OBLIQUE;
     }
   }
-  context->state->fontStyle = s;
+
+  pango_font_description_set_style(desc, s);
 
   PangoWeight w = PANGO_WEIGHT_NORMAL;
   if (strlen(*weight) > 0) {
@@ -1904,26 +1873,10 @@ NAN_METHOD(Context2d::SetFont) {
       w = PANGO_WEIGHT_HEAVY;
     }
   }
-  context->state->fontWeight = w;
 
-  context->setFontFromState();
-}
+  pango_font_description_set_weight(desc, w);
 
-/*
- * Sets PangoLayout options from the current font state
- */
-
-void
-Context2d::setFontFromState() {
-  PangoFontDescription *fd = pango_font_description_new();
-
-  pango_font_description_set_family(fd, state->fontFamily);
-  pango_font_description_set_absolute_size(fd, state->fontSize * PANGO_SCALE);
-  pango_font_description_set_style(fd, state->fontStyle);
-  pango_font_description_set_weight(fd, state->fontWeight);
-
-  pango_layout_set_font_description(_layout, fd);
-  pango_font_description_free(fd);
+  pango_layout_set_font_description(context->_layout, desc);
 }
 
 /*
