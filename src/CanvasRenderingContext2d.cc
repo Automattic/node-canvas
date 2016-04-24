@@ -1834,47 +1834,21 @@ NAN_METHOD(Context2d::SetFont) {
 
   PangoFontDescription *desc = pango_font_description_copy(context->state->fontDescription);
   pango_font_description_free(context->state->fontDescription);
-  context->state->fontDescription = desc;
+
+  pango_font_description_set_style(desc, Canvas::GetStyleFromCSSString(*style));
+  pango_font_description_set_weight(desc, Canvas::GetWeightFromCSSString(*weight));
 
   if (strlen(*family) > 0) pango_font_description_set_family(desc, *family);
 
+  PangoFontDescription *target_desc;
+  if ((target_desc = Canvas::FindCustomFace(desc))) {
+    pango_font_description_free(desc);
+    desc = pango_font_description_copy(target_desc);
+  }
+
   if (size > 0) pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
 
-  PangoStyle s = PANGO_STYLE_NORMAL;
-  if (strlen(*style) > 0) {
-    if (0 == strcmp("italic", *style)) {
-      s = PANGO_STYLE_ITALIC;
-    } else if (0 == strcmp("oblique", *style)) {
-      s = PANGO_STYLE_OBLIQUE;
-    }
-  }
-
-  pango_font_description_set_style(desc, s);
-
-  PangoWeight w = PANGO_WEIGHT_NORMAL;
-  if (strlen(*weight) > 0) {
-    if (0 == strcmp("bold", *weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("200", *weight)) {
-      w = PANGO_WEIGHT_ULTRALIGHT;
-    } else if (0 == strcmp("300", *weight)) {
-      w = PANGO_WEIGHT_LIGHT;
-    } else if (0 == strcmp("400", *weight)) {
-      w = PANGO_WEIGHT_NORMAL;
-    } else if (0 == strcmp("500", *weight)) {
-      w = PANGO_WEIGHT_MEDIUM;
-    } else if (0 == strcmp("600", *weight)) {
-      w = PANGO_WEIGHT_SEMIBOLD;
-    } else if (0 == strcmp("700", *weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("800", *weight)) {
-      w = PANGO_WEIGHT_ULTRABOLD;
-    } else if (0 == strcmp("900", *weight)) {
-      w = PANGO_WEIGHT_HEAVY;
-    }
-  }
-
-  pango_font_description_set_weight(desc, w);
+  context->state->fontDescription = desc;
 
   pango_layout_set_font_description(context->_layout, desc);
 }

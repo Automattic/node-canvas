@@ -13,8 +13,10 @@
 #include <node_object_wrap.h>
 #include <node_version.h>
 #include <pango/pangocairo.h>
+#include <vector>
 #include <cairo.h>
 #include <nan.h>
+
 
 using namespace node;
 using namespace v8;
@@ -38,6 +40,16 @@ typedef enum {
   CANVAS_TYPE_SVG
 } canvas_type_t;
 
+/**
+ * FontFace describes a font file in terms of one PangoFontDescription that
+ * will resolve to it and one that the user describes it as (like @font-face)
+ */
+class FontFace {
+  public:
+    PangoFontDescription *target_desc;
+    PangoFontDescription *user_desc;
+};
+
 /*
  * Canvas.
  */
@@ -60,6 +72,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPNGSync);
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
+    static NAN_METHOD(RegisterFont);
     static Local<Value> Error(cairo_status_t status);
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsync(uv_work_t *req);
@@ -74,6 +87,9 @@ class Canvas: public Nan::ObjectWrap {
       EIO_ToBuffer(eio_req *req);
     static int EIO_AfterToBuffer(eio_req *req);
 #endif
+    static PangoWeight GetWeightFromCSSString(char *weight);
+    static PangoStyle GetStyleFromCSSString(char *style);
+    static PangoFontDescription* FindCustomFace(PangoFontDescription *desc);
 
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
     inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
@@ -89,6 +105,7 @@ class Canvas: public Nan::ObjectWrap {
     ~Canvas();
     cairo_surface_t *_surface;
     void *_closure;
+    static std::vector<FontFace> _font_face_list;
 };
 
 #endif

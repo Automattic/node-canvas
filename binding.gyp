@@ -4,11 +4,13 @@
       'variables': {
         'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
+        'with_freetype%': 'false',
         'with_gif%': 'false'
       }
     }, { # 'OS!="win"'
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
+        'with_freetype%': '<!(./util/has_lib.sh freetype)',
         'with_gif%': '<!(./util/has_lib.sh gif)'
       }
     }]
@@ -101,12 +103,14 @@
             '<!@(pkg-config pixman-1 --libs)',
             '<!@(pkg-config cairo --libs)',
             '<!@(pkg-config libpng --libs)',
-            '<!@(pkg-config pangocairo --libs)'
+            '<!@(pkg-config pangocairo --libs)',
+            '<!@(pkg-config freetype2 --libs)'
           ],
           'include_dirs': [
             '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
             '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
-            '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
+            '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)',
+            '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)'
           ]
         }],
         ['with_jpeg=="true"', {
