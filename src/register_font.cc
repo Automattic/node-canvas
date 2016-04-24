@@ -121,7 +121,9 @@ get_pango_weight(FT_UShort weight) {
     case 100: return PANGO_WEIGHT_THIN;
     case 200: return PANGO_WEIGHT_ULTRALIGHT;
     case 300: return PANGO_WEIGHT_LIGHT;
+    #if PANGO_VERSION >= PANGO_VERSION_ENCODE(1, 36, 7)
     case 350: return PANGO_WEIGHT_SEMILIGHT;
+    #endif
     case 380: return PANGO_WEIGHT_BOOK;
     case 400: return PANGO_WEIGHT_NORMAL;
     case 500: return PANGO_WEIGHT_MEDIUM;
