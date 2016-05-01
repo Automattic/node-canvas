@@ -23,6 +23,11 @@
 #include "JPEGStream.h"
 #endif
 
+#define GENERIC_FACE_ERROR \
+  "The second argument to registerFont is required, and should be an object " \
+  "with at least a family (string) and optionally weight (string/number) " \
+  "and style (string)."
+
 Nan::Persistent<FunctionTemplate> Canvas::constructor;
 
 /*
@@ -61,7 +66,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
 
   // Class methods
-  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
+  Nan::SetMethod(ctor, "registerFont", RegisterFont);
 
   Nan::Set(target, Nan::New("Canvas").ToLocalChecked(), ctor->GetFunction());
 }
@@ -582,26 +587,59 @@ NAN_METHOD(Canvas::RegisterFont) {
   if (!register_font((unsigned char*) *filePath, &face.target_desc)) {
     Nan::ThrowError("Could not load font to the system's font host");
   } else {
-    PangoFontDescription* d  = pango_font_description_copy(face.target_desc);
+    PangoFontDescription* d = pango_font_description_new();
 
-    if (!info[1]->Equals(Nan::Null())) {
-      String::Utf8Value weight(info[1]->ToString());
-      pango_font_description_set_weight(d, Canvas::GetWeightFromCSSString(*weight));
+    if (!info[1]->IsObject()) {
+      Nan::ThrowError(GENERIC_FACE_ERROR);
+    } else { // now check the attrs, there are many ways to be wrong
+      Local<Object> desc = info[1]->ToObject();
+      Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
+      Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
+      Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
+
+      const char* family;
+      const char* weight = "normal";
+      const char* style = "normal";
+
+      Local<Value> family_val = desc->Get(family_prop);
+      if (family_val->IsString()) {
+        family = strdup(*String::Utf8Value(family_val));
+      } else {
+        Nan::ThrowError(GENERIC_FACE_ERROR);
+        return;
+      }
+
+      if (desc->HasOwnProperty(weight_prop)) {
+        Local<Value> weight_val = desc->Get(weight_prop);
+        if (weight_val->IsString() || weight_val->IsNumber()) {
+          weight = strdup(*String::Utf8Value(weight_val));
+        } else {
+          Nan::ThrowError(GENERIC_FACE_ERROR);
+          return;
+        }
+      }
+
+      if (desc->HasOwnProperty(style_prop)) {
+        Local<Value> style_val = desc->Get(style_prop);
+        if (style_val->IsString()) {
+          style = strdup(*String::Utf8Value(style_val));
+        } else {
+          Nan::ThrowError(GENERIC_FACE_ERROR);
+          return;
+        }
+      }
+
+      pango_font_description_set_weight(d, Canvas::GetWeightFromCSSString(weight));
+      pango_font_description_set_style(d, Canvas::GetStyleFromCSSString(style));
+      pango_font_description_set_family(d, family);
+
+      free((char*)family);
+      if (desc->HasOwnProperty(weight_prop)) free((char*)weight);
+      if (desc->HasOwnProperty(style_prop)) free((char*)style);
+
+      face.user_desc = d;
+      _font_face_list.push_back(face);
     }
-
-    if (!info[2]->Equals(Nan::Null())) {
-      String::Utf8Value style(info[2]->ToString());
-      pango_font_description_set_style(d, Canvas::GetStyleFromCSSString(*style));
-    }
-
-    if (!info[3]->Equals(Nan::Null())) {
-      String::Utf8Value family(info[3]->ToString());
-      pango_font_description_set_family(d, *family);
-    }
-
-    face.user_desc = d;
-
-    _font_face_list.push_back(face);
   }
 }
 
@@ -669,7 +707,7 @@ std::vector<FontFace> Canvas::_font_face_list = _init_font_face_list();
  */
 
 PangoStyle
-Canvas::GetStyleFromCSSString(char *style) {
+Canvas::GetStyleFromCSSString(const char *style) {
   PangoStyle s = PANGO_STYLE_NORMAL;
 
   if (strlen(style) > 0) {
@@ -688,7 +726,7 @@ Canvas::GetStyleFromCSSString(char *style) {
  */
 
 PangoWeight
-Canvas::GetWeightFromCSSString(char *weight) {
+Canvas::GetWeightFromCSSString(const char *weight) {
   PangoWeight w = PANGO_WEIGHT_NORMAL;
 
   if (strlen(weight) > 0) {
@@ -732,11 +770,12 @@ Canvas::FindCustomFace(PangoFontDescription *desc) {
     FontFace f = *it;
 
     if (g_ascii_strcasecmp(pango_font_description_get_family(desc),
-      pango_font_description_get_family(f.user_desc)) == 0
-      && pango_font_description_better_match(desc, best_match, f.user_desc)) {
+      pango_font_description_get_family(f.user_desc)) == 0) {
 
-      best_match = f.user_desc;
-      best_match_target = f.target_desc;
+      if (best_match == NULL || pango_font_description_better_match(desc, best_match, f.user_desc)) {
+        best_match = f.user_desc;
+        best_match_target = f.target_desc;
+      }
     }
 
     ++it;

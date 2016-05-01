@@ -182,16 +182,16 @@ canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
-### Canvas#registerFont for bundled fonts
+### Canvas.registerFont for bundled fonts
 
-It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts they have installed.
+It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts are installed.
 
-To do that, you should use `Canvas#registerFont`.
+To do that, you should use `Canvas.registerFont`.
 
 **You need to call it before the Canvas is created**
 
 ```javascript
-Canvas.registerFont('comicsans.ttf');
+Canvas.registerFont('comicsans.ttf', {family: 'Comic Sans'});
 
 var canvas = new Canvas(500, 500),
   ctx = canvas.getContext('2d');
@@ -199,6 +199,8 @@ var canvas = new Canvas(500, 500),
 ctx.font = '12px "Comic Sans"';
 ctx.fillText(250, 10, 'Everyone hates this font :(');
 ```
+
+The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
 
 ### CanvasRenderingContext2D#patternQuality
 

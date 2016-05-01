@@ -11,9 +11,9 @@ function fontFile (name) {
 // name as it is embedded in the TTF. If you aren't sure, open the font in
 // FontForge and visit Element -> Font Information and copy the Family Name
 Canvas.registerFont(fontFile('Pfennig.ttf'), {family: 'pfennigFont'})
-Canvas.registerFont(fontFile('PfennigBold.ttf'), {family: 'pfennigFont'})
-Canvas.registerFont(fontFile('PfennigItalic.ttf'), {family: 'pfennigFont'})
-Canvas.registerFont(fontFile('PfennigBoldItalic.ttf'), {family: 'pfennigFont'})
+Canvas.registerFont(fontFile('PfennigBold.ttf'), {family: 'pfennigFont', weight: 'bold'})
+Canvas.registerFont(fontFile('PfennigItalic.ttf'), {family: 'pfennigFont', style: 'italic'})
+Canvas.registerFont(fontFile('PfennigBoldItalic.ttf'), {family: 'pfennigFont', weight: 'bold', style: 'italic'})
 
 var canvas = new Canvas(320, 320)
 var ctx = canvas.getContext('2d')
