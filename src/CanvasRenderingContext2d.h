@@ -26,11 +26,6 @@ typedef enum {
   TEXT_DRAW_GLYPHS
 } canvas_draw_mode_t;
 
-typedef enum {
-  FILL_RULE_WINDING,
-  FILL_RULE_EVEN_ODD
-} canvas_fill_rule_t;
-
 /*
  * State struct.
  *

@@ -1693,11 +1693,10 @@ NAN_METHOD(Context2d::Fill) {
   if (info.Length() == 1 && info[0]->IsString()) {
     cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
     String::Utf8Value str(info[0]);
-    const char *c_arg = *str;
-    if (std::strcmp(c_arg, "evenodd") == 0) {
+    if (std::strcmp(*str, "evenodd") == 0) {
       rule = CAIRO_FILL_RULE_EVEN_ODD;
     }
-	context->setFillRule(rule);
+    context->setFillRule(rule);
   }
   context->fill(true);
 }
