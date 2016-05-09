@@ -1403,7 +1403,22 @@ NAN_METHOD(Context2d::IsPointInPath) {
     cairo_t *ctx = context->context();
     double x = info[0]->NumberValue()
          , y = info[1]->NumberValue();
+    bool ctxSaved = false;
+    if (info.Length() == 3 && info[2]->IsString()) {
+      cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
+      String::Utf8Value str(info[2]);
+      if (std::strcmp(*str, "evenodd") == 0) {
+        rule = CAIRO_FILL_RULE_EVEN_ODD;
+      }
+      // save cairo context for following tests
+      cairo_save(ctx);
+      ctxSaved = true;
+      context->setFillRule(rule);
+    }
     info.GetReturnValue().Set(Nan::New<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
+    if (ctxSaved) {
+      cairo_restore(ctx);
+    }
     return;
   }
   info.GetReturnValue().Set(Nan::False());
