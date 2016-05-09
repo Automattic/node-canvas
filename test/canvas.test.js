@@ -746,6 +746,44 @@ describe('Canvas', function () {
     assert.equal(255, imageData.data[i+3]);
   });
 
+  it('Context2d#getImageData()', function () {
+    var canvas = new Canvas(1, 1)
+      , ctx = canvas.getContext('2d');
+
+    assert.throws(function () { ctx.getImageData(0, 0, 0, 0); }, /IndexSizeError/);
+
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(0, 0, 1, 1);
+
+    var pixel = ctx.getImageData(0, 0, 1, 1);
+
+    assert.equal(pixel.data[0], 255);
+    assert.equal(pixel.data[1], 0);
+    assert.equal(pixel.data[2], 0);
+    assert.equal(pixel.data[3], 255);
+  });
+
+  it('Context2d#putImageData()', function () {
+    var canvas = new Canvas(2, 1)
+      , ctx = canvas.getContext('2d');
+
+    assert.throws(function () { ctx.putImageData({}, 0, 0); }, TypeError);
+    assert.throws(function () { ctx.putImageData(undefined, 0, 0); }, TypeError);
+
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(0, 0, 1, 1);
+
+    // Copy left pixel to the right pixel
+    ctx.putImageData(ctx.getImageData(0, 0, 1, 1), 1, 0);
+
+    var pixel = ctx.getImageData(1, 0, 1, 1);
+
+    assert.equal(pixel.data[0], 255);
+    assert.equal(pixel.data[1], 0);
+    assert.equal(pixel.data[2], 0);
+    assert.equal(pixel.data[3], 255);
+  });
+
   it('Canvas#createSyncPNGStream()', function (done) {
     var canvas = new Canvas(20, 20);
     var stream = canvas.createSyncPNGStream();
