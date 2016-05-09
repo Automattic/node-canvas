@@ -1680,6 +1680,14 @@ NAN_METHOD(Context2d::Scale) {
 
 NAN_METHOD(Context2d::Clip) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  if (info.Length() == 1 && info[0]->IsString()) {
+    cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
+    String::Utf8Value str(info[0]);
+    if (std::strcmp(*str, "evenodd") == 0) {
+      rule = CAIRO_FILL_RULE_EVEN_ODD;
+    }
+    context->setFillRule(rule);
+  }
   cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
 }
