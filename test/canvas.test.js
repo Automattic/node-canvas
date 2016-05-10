@@ -795,5 +795,202 @@ describe('Canvas', function () {
       assert(chunk.length < SIZE);
     });
     s.on('end', done);
-  })
+  });
+
+  it('Context2d#fill()', function() {
+    var canvas = new Canvas(2, 2);
+    var ctx = canvas.getContext('2d');
+
+    // fill whole canvas with white
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 2, 2);
+
+    // black
+    ctx.fillStyle = '#000';
+    ctx.rect(0, 0, 2, 1);
+    ctx.rect(1, 0, 1, 2);
+    ctx.fill();
+
+    // b | b
+    // -----
+    // w | b
+    var imageData = ctx.getImageData(0, 0, 2, 2);
+    var n;
+    // (0, 0) black
+    n = 0;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (0, 1) black
+    n = 1;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 0) white
+    n = 2;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 1) black
+    n = 3;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+  });
+
+  it('Context2d#fill(evenodd)', function () {
+    var canvas = new Canvas(2, 2);
+    var ctx = canvas.getContext('2d');
+
+    // fill whole canvas with white
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 2, 2);
+
+    // black
+    ctx.fillStyle = '#000';
+    ctx.rect(0, 0, 2, 1);
+    ctx.rect(1, 0, 1, 2);
+    ctx.fill('evenodd');
+
+    // b | w
+    // -----
+    // w | b
+    var imageData = ctx.getImageData(0, 0, 2, 2);
+    var n;
+    // (0, 0) black
+    n = 0;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (0, 1) white
+    n = 1;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 0) white
+    n = 2;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 1) black
+    n = 3;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+  });
+
+  it('Context2d#clip()', function () {
+    var canvas = new Canvas(2, 2);
+    var ctx = canvas.getContext('2d');
+
+    // fill whole canvas with white
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 2, 2);
+
+    // black
+    ctx.fillStyle = '#000';
+    ctx.rect(0, 0, 2, 1);
+    ctx.rect(1, 0, 1, 2);
+    ctx.clip();
+    ctx.fillRect(0, 0, 2, 2);
+
+    // b | b
+    // -----
+    // w | b
+    var imageData = ctx.getImageData(0, 0, 2, 2);
+    var n;
+    // (0, 0) black
+    n = 0;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (0, 1) black
+    n = 1;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 0) white
+    n = 2;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 1) black
+    n = 3;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+  });
+
+  it('Context2d#clip(evenodd)', function () {
+    var canvas = new Canvas(2, 2);
+    var ctx = canvas.getContext('2d');
+
+    // fill whole canvas with white
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 2, 2);
+
+    // black
+    ctx.fillStyle = '#000';
+    ctx.rect(0, 0, 2, 1);
+    ctx.rect(1, 0, 1, 2);
+    ctx.clip('evenodd');
+    ctx.fillRect(0, 0, 2, 2);
+
+    // b | w
+    // -----
+    // w | b
+    var imageData = ctx.getImageData(0, 0, 2, 2);
+    var n;
+    // (0, 0) black
+    n = 0;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (0, 1) white
+    n = 1;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 0) white
+    n = 2;
+    assert.equal(imageData.data[n*4+0], 255);
+    assert.equal(imageData.data[n*4+1], 255);
+    assert.equal(imageData.data[n*4+2], 255);
+    assert.equal(imageData.data[n*4+3], 255);
+    // (1, 1) black
+    n = 3;
+    assert.equal(imageData.data[n*4+0], 0);
+    assert.equal(imageData.data[n*4+1], 0);
+    assert.equal(imageData.data[n*4+2], 0);
+    assert.equal(imageData.data[n*4+3], 255);
+  });
+
+  it('Context2d#IsPointInPath(evenodd)', function () {
+    var canvas = new Canvas(4, 4);
+    var ctx = canvas.getContext('2d');
+
+    ctx.rect(0, 0, 4, 2);
+    ctx.rect(2, 0, 2, 4);
+    ctx.stroke();
+
+    assert.ok(ctx.isPointInPath(1, 1, 'evenodd'));
+    assert.ok(!ctx.isPointInPath(3, 1, 'evenodd'));
+    assert.ok(!ctx.isPointInPath(1, 3, 'evenodd'));
+    assert.ok(ctx.isPointInPath(3, 3, 'evenodd'));
+  });
+
 });
