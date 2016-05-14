@@ -39,10 +39,11 @@ using namespace node;
  * Canvas.
  */
 
-class Canvas: public node::ObjectWrap {
+class Canvas: public Nan::ObjectWrap {
   public:
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    canvas_type_t type;
+    static Nan::Persistent<FunctionTemplate> constructor;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
     static NAN_GETTER(GetType);
@@ -59,6 +60,7 @@ class Canvas: public node::ObjectWrap {
 
     inline Backend *backend() { return _backend; }
     inline cairo_surface_t *surface(){ return backend()->getSurface(); }
+    inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(backend()->getSurface()); }
     inline int stride(){ return cairo_image_surface_get_stride(backend()->getSurface()); }
 
@@ -66,7 +68,7 @@ class Canvas: public node::ObjectWrap {
     inline int getHeight() { return backend()->getHeight(); }
 
     Canvas(Backend *backend);
-    void resurface(Handle<Object> canvas);
+    void resurface(Local<Object> canvas);
 
     inline void *closure(){ return _closure; }
 

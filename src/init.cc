@@ -10,23 +10,24 @@
 #include "Canvas.h"
 #include "Image.h"
 #include "ImageData.h"
-#include "PixelArray.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
 
 #ifdef HAVE_FREETYPE
 #include "FontFace.h"
+#include FT_FREETYPE_H
 #endif
 
-extern "C" void
-init (Handle<Object> target) {
-  NanScope();
-  Backends::Initialize(target);
+// Compatibility with Visual Studio versions prior to VS2015
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
+
+NAN_MODULE_INIT(init) {
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
-  PixelArray::Initialize(target);
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
@@ -34,7 +35,7 @@ init (Handle<Object> target) {
   FontFace::Initialize(target);
 #endif
 
-  target->Set(NanNew<String>("cairoVersion"), NanNew<String>(cairo_version_string()));
+  target->Set(Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked());
 #ifdef HAVE_JPEG
 
 #ifndef JPEG_LIB_VERSION_MAJOR
@@ -59,17 +60,23 @@ init (Handle<Object> target) {
   } else {
     snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
   }
-  target->Set(NanNew<String>("jpegVersion"), NanNew<String>(jpeg_version));
+  target->Set(Nan::New<String>("jpegVersion").ToLocalChecked(), Nan::New<String>(jpeg_version).ToLocalChecked());
 #endif
 
 #ifdef HAVE_GIF
 #ifndef GIF_LIB_VERSION
   char gif_version[10];
   snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
-  target->Set(NanNew<String>("gifVersion"), NanNew<String>(gif_version));
+  target->Set(Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(gif_version).ToLocalChecked());
 #else
-  target->Set(NanNew<String>("gifVersion"), NanNew<String>(GIF_LIB_VERSION));
+  target->Set(Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(GIF_LIB_VERSION).ToLocalChecked());
 #endif
+#endif
+
+#ifdef HAVE_FREETYPE
+  char freetype_version[10];
+  snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
+  target->Set(Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked());
 #endif
 }
 

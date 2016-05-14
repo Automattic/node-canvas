@@ -37,7 +37,6 @@
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
-        'src/PixelArray.cc',
     ],
     'cflags!':    ['-fno-exceptions'],
     'cflags_cc!': ['-fno-exceptions']

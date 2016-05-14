@@ -17,9 +17,8 @@
             {
                 'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
                 'with_gif%': '<!(./util/has_lib.sh gif)',
-                # disable pango as it causes issues with freetype.
-                'with_pango%': '<!(./util/has_lib.sh pangocairo)',
-                'with_freetype%': '<!(./util/has_cairo_freetype.sh)'
+                'with_pango%': '<!(./util/has_lib.sh pango)',
+                'with_freetype%': '<!(./util/has_lib.sh freetype)'
             }
         }]
     ],
@@ -59,7 +58,11 @@
                         '-l<(GTK_Root)/lib/cairo.lib',
                         '-l<(GTK_Root)/lib/libpng.lib'
                     ],
-                    'include_dirs': ['<(GTK_Root)/include'],
+                    'include_dirs':
+                    [
+                        '<(GTK_Root)/include',
+                        '<(GTK_Root)/include/cairo',
+                    ],
                     'defines':
                     [
                         'snprintf=_snprintf',
@@ -75,7 +78,11 @@
                                 {
                                     'WarningLevel': 4,
                                     'ExceptionHandling': 1,
-                                    'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                                    'DisableSpecificWarnings':
+                                    [
+                                        4100, 4127, 4201, 4244, 4267, 4506,
+                                        4611, 4714
+                                    ]
                                 }
                             }
                         },
@@ -87,7 +94,11 @@
                                 {
                                     'WarningLevel': 4,
                                     'ExceptionHandling': 1,
-                                    'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714]
+                                    'DisableSpecificWarnings':
+                                    [
+                                        4100, 4127, 4201, 4244, 4267, 4506,
+                                        4611, 4714
+                                    ]
                                 }
                             }
                         }

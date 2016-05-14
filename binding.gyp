@@ -12,5 +12,5 @@
         {
             'includes': ['static.gyp']
         }]
-    ],
+    ]
 }

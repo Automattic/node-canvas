@@ -23,8 +23,8 @@
  */
 
 typedef struct {
-  NanCallback *pfn;
-  Handle<Function> fn;
+  Nan::Callback *pfn;
+  Local<Function> fn;
   unsigned len;
   unsigned max_len;
   uint8_t *data;
@@ -58,7 +58,7 @@ void
 closure_destroy(closure_t *closure) {
   if (closure->len) {
     free(closure->data);
-    NanAdjustExternalMemory(-((intptr_t) closure->max_len));
+    Nan::AdjustExternalMemory(-((intptr_t) closure->max_len));
   }
 }
 

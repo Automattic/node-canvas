@@ -1,11 +1,127 @@
+1.3.15 / 2016-05-09
+===================
+
+  * Fix segfault in putImageData (#750)
+
+1.3.14 / 2016-05-05
+===================
+
+  * Clamp JPEG buffer size (#739)
+
+1.3.13 / 2016-05-01
+===================
+
+  * Bumb NAN version (#759)
+
+1.3.12 / 2016-03-01
+===================
+
+  * Expose freetype version (#718)
+  * Require new in constructor (#717)
+
+1.3.11 / 2016-03-01
+===================
+
+  * Properly clamp quality in toDataURL (#728)
+  * Strict mode (#719)
+
+1.3.10 / 2016-02-07
+===================
+
+  * Fix segfault on node 0.10.x (#712)
+
+1.3.9 / 2016-01-27
+==================
+
+  * Allow to unbind onload/onerror callback handlers (#706)
+
+1.3.8 / 2016-01-22
+==================
+
+  * Cleanup build scripts and fix pangocairo detection (#701)
+
+1.3.7 / 2016-01-13
+==================
+
+  * Don't unbind onload/onerror callbacks after invoking them (#615)
+
+1.3.6 / 2016-01-06
+==================
+
+  * Allow optional arguments in `toDataURL` to be `undefined` and improve `toDataURL`'s spec compliance (#690)
+
+1.3.5 / 2015-12-07
+==================
+
+  * Add image/jpeg support to `toDataUrl` (#685)
+
+1.3.4 / 2015-11-21
+==================
+
+  * Upgrade nan to 2.1.0 (#671)
+
+1.3.3 / 2015-11-21
+==================
+
+  * Fix compilation on Visual Studio 2015 (#670)
+
+1.3.2 / 2015-11-18
+==================
+
+  * Fix incorrect Y offset and scaling for shadows (#669)
+
+1.3.1 / 2015-11-09
+==================
+
+  * Wrap std::min calls in paranthesis to prevent macro expansion on windows (#660)
+
+1.3.0 / 2015-10-26
+==================
+
+  * Expose ImageData constructor and make it more spec-compliant (#569)
+
+1.2.11 / 2015-10-20
+===================
+
+  * Implement blur on images (#648)
+
+1.2.10 / 2015-10-12
+===================
+
+  * Fix segfault in Canvas#jpegStream (#629)
+
+1.2.9 / 2015-09-14
+==================
+
+  * Upgrade to Nan 2.x with support for iojs 3.x and Node.js 4.x (#622)
+
+1.2.8 / 2015-08-30
+==================
+
+  * Clean up the tests (#612)
+  * Replace CanvasPixelArray with Uint8ClampedArray to be API-compliant (#604)
+  * Specify travis iojs versions (#611)
+
+1.2.7 / 2015-07-29
+==================
+
+  * Avoid future reserved keyword (#592)
+
+1.2.6 / 2015-07-29
+==================
+
+  * Fix the build on windows (#589)
+
+1.2.5 / 2015-07-28
+==================
+
+  * Another npm release, since 1.2.4 was botched (see #596)
+
 1.2.4 / 2015-07-23
 ==================
 
-  * Point `homepage` and `repository` links to
-    [`github.com/Automattic/node-canvas`][repo]
+  * Point `homepage` and `repository` links to [`github.com/Automattic/node-canvas`][repo]
   * Fix Travis builds and Cairo include paths (thanks, Linus Unnebäck!)
-
-[repo]: [https://github.com/Automattic/node-canvas]
 
 1.2.3 / 2015-05-21
 ==================
@@ -483,3 +599,5 @@
 ==================
 
   * Initial release
+
+[repo]: https://github.com/Automattic/node-canvas
