@@ -989,6 +989,7 @@ describe('Canvas', function () {
 
     assert.ok(ctx.isPointInPath(1, 1, 'evenodd'));
     assert.ok(!ctx.isPointInPath(3, 1, 'evenodd'));
+    assert.ok(ctx.isPointInPath(3, 1));
     assert.ok(!ctx.isPointInPath(1, 3, 'evenodd'));
     assert.ok(ctx.isPointInPath(3, 3, 'evenodd'));
   });
