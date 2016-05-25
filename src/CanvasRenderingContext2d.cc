@@ -298,14 +298,14 @@ Context2d::restorePath() {
 
 void
 Context2d::setFillRule(v8::Local<v8::Value> value) {
+  cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
   if (value->IsString()) {
-    cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
     String::Utf8Value str(value);
     if (std::strcmp(*str, "evenodd") == 0) {
       rule = CAIRO_FILL_RULE_EVEN_ODD;
     }
-    cairo_set_fill_rule(_context, rule);
   }
+  cairo_set_fill_rule(_context, rule);
 }
 
 void
@@ -1410,10 +1410,8 @@ NAN_METHOD(Context2d::IsPointInPath) {
     cairo_t *ctx = context->context();
     double x = info[0]->NumberValue()
          , y = info[1]->NumberValue();
-    cairo_save(ctx);
     context->setFillRule(info[2]);
     info.GetReturnValue().Set(Nan::New<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
-    cairo_restore(ctx);
     return;
   }
   info.GetReturnValue().Set(Nan::False());
