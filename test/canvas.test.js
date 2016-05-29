@@ -817,7 +817,7 @@ describe('Canvas', function () {
       bytes += chunk.length;
     });
     stream.on('end', function(){
-      assert.equal(bytes, 8192);
+      assert.equal(bytes, 5427);
       done();
     });
     stream.on('error', function(err) {
