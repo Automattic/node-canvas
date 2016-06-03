@@ -170,7 +170,7 @@ canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
-### CanvasRenderingContext2d#patternQuality
+### CanvasRenderingContext2D#patternQuality
 
 Given one of the values below will alter pattern (gradients, images, etc) render quality, defaults to _good_.
 
@@ -180,7 +180,7 @@ Given one of the values below will alter pattern (gradients, images, etc) render
   - nearest
   - bilinear
 
-### CanvasRenderingContext2d#textDrawingMode
+### CanvasRenderingContext2D#textDrawingMode
 
 Can be either `path` or `glyph`. Using `glyph` is much faster than `path` for drawing, and when using a PDF context will embed the text natively, so will be selectable and lower filesize. The downside is that cairo does not have any subpixel precision for `glyph`, so this will be noticeably lower quality for text positioning in cases such as rotated text. Also, strokeText in `glyph` will act the same as fillText, except using the stroke style for the fill.
 
@@ -188,7 +188,7 @@ Defaults to _path_.
 
 This property is tracked as part of the canvas state in save/restore.
 
-### CanvasRenderingContext2d#filter
+### CanvasRenderingContext2D#filter
 
 Like `patternQuality`, but applies to transformations effecting more than just patterns. Defaults to _good_.
 
