@@ -43,9 +43,6 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Image").ToLocalChecked());
-
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
