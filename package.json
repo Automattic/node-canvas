@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "1.3.16",
+  "version": "1.3.17",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net>",
