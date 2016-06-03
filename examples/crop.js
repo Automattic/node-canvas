@@ -1,36 +1,29 @@
+var fs = require('fs')
+var path = require('path')
+var Canvas = require('..')
 
-/**
- * Module dependencies.
- */
+var Image = Canvas.Image
+var img = new Image()
 
-var Canvas = require('../lib/canvas')
-  , Image = Canvas.Image
-  , fs = require('fs');
+img.onerror = function (err) {
+  throw err
+}
 
-var img = new Image;
-
-img.onerror = function(err){
-  throw err;
-};
-
-img.onload = function(){
+img.onload = function () {
   var w = img.width / 2
-    , h = img.height / 2
-    , canvas = new Canvas(w, h)
-    , ctx = canvas.getContext('2d');
+  var h = img.height / 2
+  var canvas = new Canvas(w, h)
+  var ctx = canvas.getContext('2d')
 
-  ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h)
 
-  var out = fs.createWriteStream(__dirname + '/crop.jpg');
-
+  var out = fs.createWriteStream(path.join(__dirname, 'crop.png'))
   var stream = canvas.createJPEGStream({
-    bufsize : 2048,
-    quality : 80
-  });
+    bufsize: 2048,
+    quality: 80
+  })
 
-  stream.pipe(out);
-};
+  stream.pipe(out)
+}
 
-img.src = __dirname + '/images/squid.png';
-
-
+img.src = path.join(__dirname, 'images', 'squid.png')
