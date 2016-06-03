@@ -1,3 +1,10 @@
+1.3.17 / 2016-06-03
+===================
+
+ * Removing redundant duplicate calls (#769)
+ * Cleanup examples (#776)
+ * Fix CanvasRenderingContext2D class name (#777)
+
 1.3.16 / 2016-05-29
 ===================
 
