@@ -98,7 +98,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Context2d::New);
   constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasRenderingContext2d").ToLocalChecked());
+  ctor->SetClassName(Nan::New("CanvasRenderingContext2D").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
