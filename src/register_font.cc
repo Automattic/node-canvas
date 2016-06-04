@@ -33,6 +33,9 @@
 #define IS_PREFERRED_ENC(X) \
   X.platform_id == PREFERRED_PLATFORM_ID && X.encoding_id == PREFERRED_ENCODING_ID
 
+#define GET_NAME_RANK(X) \
+  (IS_PREFERRED_ENC(X) ? 1 : 0) + (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
+
 /*
  * Return a UTF-8 encoded string given a TrueType name buf+len
  * and its platform and encoding
@@ -89,28 +92,41 @@ to_utf8(FT_Byte* buf, FT_UInt len, FT_UShort pid, FT_UShort eid) {
  * system, fall back to the other
  */
 
+typedef struct _NameDef {
+  const char *buf;
+  int rank; // the higher the more desirable
+} NameDef;
+
+gint
+_name_def_compare(gconstpointer a, gconstpointer b) {
+  return ((NameDef*)a)->rank > ((NameDef*)b)->rank ? -1 : 1;
+}
+
 char *
 get_family_name(FT_Face face) {
   FT_SfntName name;
+  GList *list = NULL;
   char *utf8name = NULL;
 
   for (unsigned i = 0; i < FT_Get_Sfnt_Name_Count(face); ++i) {
     FT_Get_Sfnt_Name(face, i, &name);
 
-    if (name.name_id == TT_NAME_ID_FONT_FAMILY) {
-      char *utf8candidate = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
+    if (name.name_id == TT_NAME_ID_FONT_FAMILY || name.name_id == TT_NAME_ID_PREFERRED_FAMILY) {
+      char *buf = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
 
-      if (utf8candidate) {
-        if (utf8name) free(utf8name);
+      if (buf) {
+        NameDef *d = (NameDef*)malloc(sizeof(NameDef));
+        d->buf = (const char*)buf;
+        d->rank = GET_NAME_RANK(name);
 
-        if (IS_PREFERRED_ENC(name)) {
-          return utf8candidate;
-        } else {
-          utf8name = utf8candidate;
-        }
+        list = g_list_insert_sorted(list, (gpointer)d, _name_def_compare);
       }
     }
   }
+
+  GList *best_def = g_list_first(list);
+  if (best_def) utf8name = (char*) strdup(((NameDef*)best_def->data)->buf);
+  if (list) g_list_free_full(list, free);
 
   return utf8name;
 }
