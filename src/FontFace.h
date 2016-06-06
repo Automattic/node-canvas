@@ -19,12 +19,11 @@ class FontFace: public Nan::ObjectWrap {
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     FontFace(FT_Face ftFace, cairo_font_face_t *crFace)
-      :_ftFace(ftFace), _crFace(crFace) {}
+      :_crFace(crFace) {}
 
     inline cairo_font_face_t *cairoFace(){ return _crFace; }
   private:
     ~FontFace();
-    FT_Face   _ftFace;
     cairo_font_face_t *_crFace;
     static bool _initLibrary;
 };

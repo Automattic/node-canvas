@@ -79,8 +79,7 @@ NAN_METHOD(Pattern::New) {
  * Initialize linear gradient.
  */
 
-Pattern::Pattern(cairo_surface_t *surface, int w, int h):
-  _width(w), _height(h) {
+Pattern::Pattern(cairo_surface_t *surface, int w, int h) {
   _pattern = cairo_pattern_create_for_surface(surface);
 }
 
