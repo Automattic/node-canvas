@@ -802,6 +802,24 @@ describe('Canvas', function () {
     });
   });
 
+  it('Canvas#createSyncPDFStream()', function (done) {
+    var canvas = new Canvas(20, 20, 'pdf');
+    var stream = canvas.createSyncPDFStream();
+    var firstChunk = true;
+    stream.on('data', function (chunk) {
+      if (firstChunk) {
+        firstChunk = false;
+        assert.equal('PDF', chunk.slice(1, 4).toString());
+      }
+    });
+    stream.on('end', function () {
+      done();
+    });
+    stream.on('error', function (err) {
+      done(err);
+    });
+  });
+
   it('Canvas#jpegStream()', function (done) {
     var canvas = new Canvas(640, 480);
     var stream = canvas.jpegStream();
