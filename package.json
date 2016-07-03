@@ -18,12 +18,11 @@
     "images",
     "pdf"
   ],
-  "homepage": "https://github.com/Automattic/node-canvas",
-  "repository": "git://github.com/Automattic/node-canvas.git",
+  "homepage": "https://github.com/chearon/node-canvas",
+  "repository": {"type": "git", "url": "git://github.com/chearon/node-canvas.git"},
   "scripts": {
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
-    "pretest": "node-gyp build",
     "test": "standard examples/*.js && mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js"
@@ -40,6 +39,12 @@
   },
   "engines": {
     "node": ">=0.8.0"
+  },
+  "binary": {
+    "module_name": "canvas",
+    "module_path": "build/Release",
+    "host": "https://github.com/chearon/node-canvas/releases/download/",
+    "remote_path": "{version}"
   },
   "main": "./lib/canvas.js",
   "license": "MIT"

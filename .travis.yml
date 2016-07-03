@@ -39,4 +39,5 @@ deploy:
   file: canvas-*.tar.gz
   file_glob: true
   on:
+    branch: deploy-experiment
     repo: chearon/node-canvas
