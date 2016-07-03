@@ -1,31 +1,41 @@
 language: node_js
 node_js:
-  - "0.8"
-  - "0.10"
-  - "0.12"
-  - "iojs-v1.8.4"
-  - "iojs-v2.5.0"
-  - "iojs-v3.3.0"
-  - "4"
-  - "5"
+- '0.8'
+- '0.10'
+- '0.12'
+- iojs-v1.8.4
+- iojs-v2.5.0
+- iojs-v3.3.0
+- '4'
+- '5'
 matrix:
   allow_failures:
-    - node_js: "5"
+  - node_js: '5'
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - libcairo2-dev
-      - libjpeg8-dev
-      - libpango1.0-dev
-      - libgif-dev
-      - g++-4.8
+    - libcairo2-dev
+    - libjpeg8-dev
+    - libpango1.0-dev
+    - libgif-dev
+    - g++-4.8
 env:
-  - CXX=g++-4.8
+- CXX=g++-4.8
 before_install:
-  - if [[ $TRAVIS_NODE_VERSION == 0.8 ]]; then npm install -g npm@1.4.28; fi
-  - npm explore npm -g -- npm install node-gyp@latest
+- if [[ $TRAVIS_NODE_VERSION == 0.8 ]]; then npm install -g npm@1.4.28; fi
+- npm explore npm -g -- npm install node-gyp@latest
 after_script:
-  - npm run benchmark
+- npm run benchmark
 sudo: false
+before_deploy:
+  - sh zip_release.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: UdMjRujl12IljM9JuMw4K0nvaTD+2e6OmVyuS7rVZmeVs1ElUdl/RhBkT7YkBbFxuMiIIBaWevMVkR60N912tw0I1FfdXiaXYWyHa5O2v30I8XwnGeyYwwoN6HVgQlQUoNrKLZ5dbIHJx3ulVTQKZyt8ujK8p7Y4w9Au6tpEazU9JvJDN116GPRhkejA+TtJIiZ7qaB9xOappF/f1r5Ar9eDnwWtxX2hu9i3EouYeLanQFq+s49eo7ntDTBiuWhEIo4k6CCXn1a7o8j96nnoEzz/osTdgGqG7wU3hnbvN5yhOX6ieydW87tcJu8teZjZpFGl19UZUQxc4n26rX9d8V9W0rZMPR4KYJa8vdFw6EYVM0VdF4pIOiudWO24ZpMIY+fUSQQC1b5Wi6glpDlzoqHToSOq9FC1WDtE3vm4S96ZjibY8jQkq9Kd/PrLuBIa2N97KP1afBq0h9tW02HQ6QAxHEkhjbwK0y+AMOIJo7b99CgeDcWVWtoca8pS+KWTnwiBwR5VIkjTcmLx9dTvwQwZhey+caj2pkO/1CFcbLP6b1IN6hl6ByTafP7PDOi0JMnOkLITM7ggpKs360hqDkM+BSwBs0eUpGU66kK47I/il/dbaC+SRQC7UAQc6NeDZzWB0zafHMjgVOJcmLJ0Bi5ay/D+V467k8YlkCQupgc=
+  file: canvas-*.tar.gz
+  file_glob: true
+  on:
+    repo: chearon/node-canvas
