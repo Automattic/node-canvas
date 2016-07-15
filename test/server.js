@@ -12,7 +12,7 @@ var express = require('express')
 // Config
 
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
 // Middleware
 
