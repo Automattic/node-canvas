@@ -1925,7 +1925,7 @@ tests['putImageData() png data 3'] = function(ctx, done){
   img.src = 'state.png';
 };
 
-tests['setLineDash']  = function(ctx, done){
+tests['setLineDash']  = function(ctx){
   ctx.setLineDash([10, 5, 25, 15]);
   ctx.lineWidth = 17;
 
@@ -1956,7 +1956,7 @@ tests['setLineDash']  = function(ctx, done){
   })(), "orange");
 };
 
-tests['lineDashOffset']  = function(ctx, done){
+tests['lineDashOffset']  = function(ctx){
   ctx.setLineDash([10, 5, 25, 15]);
   ctx.lineWidth = 4;
 
