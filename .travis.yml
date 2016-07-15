@@ -1,4 +1,8 @@
 language: node_js
+os:
+  - linux
+  - osx
+osx_image: xcode8 # has everything we need but cairo
 node_js:
   - '6'
   - '4'
@@ -10,6 +14,7 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
+      - pax-utils
       - libcairo2-dev
       - libjpeg8-dev
       - libpango1.0-dev
@@ -18,6 +23,7 @@ addons:
 env:
   - CXX=g++-4.9
 before_install:
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update && brew install cairo; fi
   - if [[ $TRAVIS_NODE_VERSION == 0.8 ]]; then npm install -g npm@1.4.28; fi
   - npm explore npm -g -- npm install node-gyp@latest
 sudo: false
