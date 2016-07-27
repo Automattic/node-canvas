@@ -20,6 +20,4 @@ env:
 before_install:
   - if [[ $TRAVIS_NODE_VERSION == 0.8 ]]; then npm install -g npm@1.4.28; fi
   - npm explore npm -g -- npm install node-gyp@latest
-after_script:
-  - npm run benchmark
 sudo: false
