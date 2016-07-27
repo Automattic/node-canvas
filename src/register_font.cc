@@ -102,6 +102,20 @@ _name_def_compare(gconstpointer a, gconstpointer b) {
   return ((NameDef*)a)->rank > ((NameDef*)b)->rank ? -1 : 1;
 }
 
+// Some versions of GTK+ do not have this, particualrly the one we
+// currently link to in node-canvas's wiki
+void
+_free_g_list_item(gpointer data, gpointer user_data) {
+  NameDef *d = (NameDef *)data;
+  free((void *)(d->buf));
+}
+
+void
+_g_list_free_full(GList *list) {
+  g_list_foreach(list, _free_g_list_item, NULL);
+  g_list_free(list);
+}
+
 char *
 get_family_name(FT_Face face) {
   FT_SfntName name;
@@ -126,7 +140,7 @@ get_family_name(FT_Face face) {
 
   GList *best_def = g_list_first(list);
   if (best_def) utf8name = (char*) strdup(((NameDef*)best_def->data)->buf);
-  if (list) g_list_free_full(list, free);
+  if (list) _g_list_free_full(list);
 
   return utf8name;
 }
