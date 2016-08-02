@@ -1840,17 +1840,14 @@ NAN_METHOD(Context2d::SetFont) {
 
   if (strlen(*family) > 0) pango_font_description_set_family(desc, *family);
 
-  PangoFontDescription *target_desc;
-  if ((target_desc = Canvas::FindCustomFace(desc))) {
-    pango_font_description_free(desc);
-    desc = pango_font_description_copy(target_desc);
-  }
+  PangoFontDescription *sys_desc = Canvas::ResolveFontDescription(desc);
+  pango_font_description_free(desc);
 
-  if (size > 0) pango_font_description_set_absolute_size(desc, size * PANGO_SCALE);
+  if (size > 0) pango_font_description_set_absolute_size(sys_desc, size * PANGO_SCALE);
 
-  context->state->fontDescription = desc;
+  context->state->fontDescription = sys_desc;
 
-  pango_layout_set_font_description(context->_layout, desc);
+  pango_layout_set_font_description(context->_layout, sys_desc);
 }
 
 /*

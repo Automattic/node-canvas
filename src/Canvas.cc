@@ -584,10 +584,10 @@ NAN_METHOD(Canvas::RegisterFont) {
 
   String::Utf8Value filePath(info[0]);
 
-  if (!register_font((unsigned char*) *filePath, &face.target_desc)) {
+  if (!register_font((unsigned char *) *filePath, &face.sys_desc)) {
     Nan::ThrowError("Could not load font to the system's font host");
   } else {
-    PangoFontDescription* d = pango_font_description_new();
+    PangoFontDescription *d = pango_font_description_new();
 
     if (!info[1]->IsObject()) {
       Nan::ThrowError(GENERIC_FACE_ERROR);
@@ -597,9 +597,9 @@ NAN_METHOD(Canvas::RegisterFont) {
       Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
       Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
 
-      const char* family;
-      const char* weight = "normal";
-      const char* style = "normal";
+      const char *family;
+      const char *weight = "normal";
+      const char *style = "normal";
 
       Local<Value> family_val = desc->Get(family_prop);
       if (family_val->IsString()) {
@@ -633,9 +633,9 @@ NAN_METHOD(Canvas::RegisterFont) {
       pango_font_description_set_style(d, Canvas::GetStyleFromCSSString(style));
       pango_font_description_set_family(d, family);
 
-      free((char*)family);
-      if (desc->HasOwnProperty(weight_prop)) free((char*)weight);
-      if (desc->HasOwnProperty(style_prop)) free((char*)style);
+      free((char *)family);
+      if (desc->HasOwnProperty(weight_prop)) free((char *)weight);
+      if (desc->HasOwnProperty(style_prop)) free((char *)style);
 
       face.user_desc = d;
       _font_face_list.push_back(face);
@@ -757,31 +757,48 @@ Canvas::GetWeightFromCSSString(const char *weight) {
 }
 
 /*
- * Tries to find a matching font given to registerFont
+ * Given a user description, return a description that will select the
+ * font either from the system or @font-face
  */
 
 PangoFontDescription *
-Canvas::FindCustomFace(PangoFontDescription *desc) {
-  PangoFontDescription* best_match = NULL;
-  PangoFontDescription* best_match_target = NULL;
-  std::vector<FontFace>::iterator it = _font_face_list.begin();
+Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
+  FontFace best;
+  PangoFontDescription *ret = NULL;
 
-  while (it != _font_face_list.end()) {
-    FontFace f = *it;
+  // One of the user-specified families could map to multiple SFNT family names
+  // if someone registered two different fonts under the same family name.
+  // https://drafts.csswg.org/css-fonts-3/#font-style-matching
+  char **families = g_strsplit(pango_font_description_get_family(desc), ",", -1);
+  GString *resolved_families = g_string_new("");
 
-    if (g_ascii_strcasecmp(pango_font_description_get_family(desc),
-      pango_font_description_get_family(f.user_desc)) == 0) {
+  for (int i = 0; families[i]; ++i) {
+    GString *renamed_families = g_string_new("");
+    std::vector<FontFace>::iterator it = _font_face_list.begin();
 
-      if (best_match == NULL || pango_font_description_better_match(desc, best_match, f.user_desc)) {
-        best_match = f.user_desc;
-        best_match_target = f.target_desc;
+    for (; it != _font_face_list.end(); ++it) {
+      if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
+        if (renamed_families->len) g_string_append(renamed_families, ",");
+        g_string_append(renamed_families, pango_font_description_get_family(it->sys_desc));
+
+        if (i == 0 && (best.user_desc == NULL || pango_font_description_better_match(desc, best.user_desc, it->user_desc))) {
+          best = *it;
+        }
       }
     }
 
-    ++it;
+    if (resolved_families->len) g_string_append(resolved_families, ",");
+    g_string_append(resolved_families, renamed_families->len ? renamed_families->str : families[i]);
+    g_string_free(renamed_families, true);
   }
 
-  return best_match_target;
+  ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
+  pango_font_description_set_family_static(ret, resolved_families->str);
+
+  g_strfreev(families);
+  g_string_free(resolved_families, false);
+
+  return ret;
 }
 
 /*
