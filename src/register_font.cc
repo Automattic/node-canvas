@@ -191,6 +191,10 @@ get_pango_style(FT_Long flags) {
   }
 }
 
+/*
+ * Return a PangoFontDescription that will resolve to the font file
+ */
+
 PangoFontDescription *
 get_pango_font_description(unsigned char* filepath) {
   FT_Library library;
@@ -199,16 +203,18 @@ get_pango_font_description(unsigned char* filepath) {
 
   if (!FT_Init_FreeType(&library) && !FT_New_Face(library, (const char*)filepath, 0, &face)) {
     TT_OS2 *table = (TT_OS2*)FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
-    char *family = get_family_name(face);
+    if (table) {
+      char *family = get_family_name(face);
 
-    if (family) pango_font_description_set_family_static(desc, family);
-    pango_font_description_set_weight(desc, get_pango_weight(table->usWeightClass));
-    pango_font_description_set_stretch(desc, get_pango_stretch(table->usWidthClass));
-    pango_font_description_set_style(desc, get_pango_style(face->style_flags));
+      if (family) pango_font_description_set_family_static(desc, family);
+      pango_font_description_set_weight(desc, get_pango_weight(table->usWeightClass));
+      pango_font_description_set_stretch(desc, get_pango_stretch(table->usWidthClass));
+      pango_font_description_set_style(desc, get_pango_style(face->style_flags));
 
-    FT_Done_Face(face);
+      FT_Done_Face(face);
 
-    return desc;
+      return desc;
+    }
   }
 
   pango_font_description_free(desc);
@@ -221,7 +227,7 @@ get_pango_font_description(unsigned char* filepath) {
  */
 
 bool
-register_font(unsigned char *filepath, PangoFontDescription **desc) {
+register_font(unsigned char *filepath) {
   bool success;
   
   #ifdef __APPLE__
@@ -234,8 +240,6 @@ register_font(unsigned char *filepath, PangoFontDescription **desc) {
   #endif
 
   if (!success) return false;
-
-  *desc = get_pango_font_description(filepath);
 
   // Tell Pango to throw away the current FontMap and create a new one. This
   // has the effect of registering the new font in Pango by re-looking up all

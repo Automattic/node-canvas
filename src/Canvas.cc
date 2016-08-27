@@ -66,7 +66,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
 
   // Class methods
-  Nan::SetMethod(ctor, "registerFont", RegisterFont);
+  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
 
   Nan::Set(target, Nan::New("Canvas").ToLocalChecked(), ctor->GetFunction());
 }
@@ -575,72 +575,75 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
 
 #endif
 
-NAN_METHOD(Canvas::RegisterFont) {
-  FontFace face;
+char *
+str_value(Local<Value> val, const char *fallback, bool can_be_number) {
+  if (val->IsString() || (can_be_number && val->IsNumber())) {
+    return g_strdup(*String::Utf8Value(val));
+  } else if (fallback) {
+    return g_strdup(fallback);
+  } else {
+    return NULL;
+  }
+}
 
+NAN_METHOD(Canvas::RegisterFont) {
   if (!info[0]->IsString()) {
     return Nan::ThrowError("Wrong argument type");
+  } else if (!info[1]->IsObject()) {
+    return Nan::ThrowError(GENERIC_FACE_ERROR);
   }
 
   String::Utf8Value filePath(info[0]);
+  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *) *filePath);
 
-  if (!register_font((unsigned char *) *filePath, &face.sys_desc)) {
-    Nan::ThrowError("Could not load font to the system's font host");
-  } else {
-    PangoFontDescription *d = pango_font_description_new();
+  if (!sys_desc) return Nan::ThrowError("Could not parse font file");
 
-    if (!info[1]->IsObject()) {
-      Nan::ThrowError(GENERIC_FACE_ERROR);
-    } else { // now check the attrs, there are many ways to be wrong
-      Local<Object> desc = info[1]->ToObject();
-      Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
-      Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
-      Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
+  PangoFontDescription *user_desc = pango_font_description_new();
 
-      const char *family;
-      const char *weight = "normal";
-      const char *style = "normal";
+  // now check the attrs, there are many ways to be wrong
+  Local<Object> js_user_desc = info[1]->ToObject();
+  Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
+  Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
+  Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
 
-      Local<Value> family_val = desc->Get(family_prop);
-      if (family_val->IsString()) {
-        family = strdup(*String::Utf8Value(family_val));
-      } else {
-        Nan::ThrowError(GENERIC_FACE_ERROR);
-        return;
+  char *family = str_value(js_user_desc->Get(family_prop), NULL, false);
+  char *weight = str_value(js_user_desc->Get(weight_prop), "normal", true);
+  char *style = str_value(js_user_desc->Get(style_prop), "normal", false);
+
+  if (family && weight && style) {
+    pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
+    pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
+    pango_font_description_set_family(user_desc, family);
+
+    std::vector<FontFace>::iterator it = _font_face_list.begin();
+    FontFace *already_registered = NULL;
+
+    for (; it != _font_face_list.end() && !already_registered; ++it) {
+      if (pango_font_description_equal(it->sys_desc, sys_desc)) {
+        already_registered = &(*it);
       }
-
-      if (desc->HasOwnProperty(weight_prop)) {
-        Local<Value> weight_val = desc->Get(weight_prop);
-        if (weight_val->IsString() || weight_val->IsNumber()) {
-          weight = strdup(*String::Utf8Value(weight_val));
-        } else {
-          Nan::ThrowError(GENERIC_FACE_ERROR);
-          return;
-        }
-      }
-
-      if (desc->HasOwnProperty(style_prop)) {
-        Local<Value> style_val = desc->Get(style_prop);
-        if (style_val->IsString()) {
-          style = strdup(*String::Utf8Value(style_val));
-        } else {
-          Nan::ThrowError(GENERIC_FACE_ERROR);
-          return;
-        }
-      }
-
-      pango_font_description_set_weight(d, Canvas::GetWeightFromCSSString(weight));
-      pango_font_description_set_style(d, Canvas::GetStyleFromCSSString(style));
-      pango_font_description_set_family(d, family);
-
-      free((char *)family);
-      if (desc->HasOwnProperty(weight_prop)) free((char *)weight);
-      if (desc->HasOwnProperty(style_prop)) free((char *)style);
-
-      face.user_desc = d;
-      _font_face_list.push_back(face);
     }
+
+    if (already_registered) {
+      pango_font_description_free(already_registered->user_desc);
+      already_registered->user_desc = user_desc;
+    } else if (register_font((unsigned char *) *filePath)) {
+      FontFace face;
+      face.user_desc = user_desc;
+      face.sys_desc = sys_desc;
+      _font_face_list.push_back(face);
+    } else {
+      pango_font_description_free(user_desc);
+      Nan::ThrowError("Could not load font to the system's font host");
+    }
+  } else {
+    pango_font_description_free(user_desc);
+    Nan::ThrowError(GENERIC_FACE_ERROR);
   }
+
+  g_free(family);
+  g_free(weight);
+  g_free(style);
 }
 
 /*
