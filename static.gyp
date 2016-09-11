@@ -29,6 +29,6 @@
             'static/gif.gyp:gif',
         ],
         'sources': ['src/FontFace.cc'],
-        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG' ,'HAVE_GIF'],
+        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF'],
     }]
 }

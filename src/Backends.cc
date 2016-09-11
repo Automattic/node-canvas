@@ -9,10 +9,12 @@
 #include "backend/X11Backend.h"
 #endif
 
-void Backends::Initialize(Handle<Object> target) {
-  NanScope();
+using namespace v8;
 
-  Local<Object> obj = NanNew<Object>();
+void Backends::Initialize(Handle<Object> target) {
+  Nan::HandleScope scope;
+
+  Local<Object> obj = Nan::New<Object>();
   ImageBackend::Initialize(obj);
 
   #ifdef HAS_FBDEV
@@ -22,5 +24,5 @@ void Backends::Initialize(Handle<Object> target) {
     X11Backend::Initialize(obj);
   #endif
 
-  target->Set(NanNew("Backends"), obj);
+  target->Set(Nan::New<String>("Backends").ToLocalChecked(), obj);
 }

@@ -12,6 +12,9 @@
 #include "FBDevBackend.h"
 
 
+using namespace v8;
+
+
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
@@ -112,25 +115,26 @@ void FBDevBackend::setHeight(int height)
 }
 
 
-Persistent<FunctionTemplate> FBDevBackend::constructor;
+Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;
 
 void FBDevBackend::Initialize(Handle<Object> target)
 {
-	NanScope();
-	Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(FBDevBackend::New);
-	NanAssignPersistent(FBDevBackend::constructor, ctor);
+	Nan::HandleScope scope;
+
+	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(FBDevBackend::New);
+	FBDevBackend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	ctor->SetClassName(NanNew("FBDevBackend"));
-	target->Set(NanNew("FBDevBackend"), ctor->GetFunction());
+	ctor->SetClassName(Nan::New<String>("FBDevBackend").ToLocalChecked());
+	target->Set(Nan::New<String>("FBDevBackend").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(FBDevBackend::New)
 {
 	string fbDevice = "/dev/fb0";
-	if(args[0]->IsString()) fbDevice = *String::Utf8Value(args[0].As<String>());
+	if(info[0]->IsString()) fbDevice = *String::Utf8Value(info[0].As<String>());
 
 	FBDevBackend* backend = new FBDevBackend(fbDevice);
 
-	backend->Wrap(args.This());
-	NanReturnValue(args.This());
+	backend->Wrap(info.This());
+	info.GetReturnValue().Set(info.This());
 }

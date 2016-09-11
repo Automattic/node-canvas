@@ -36,6 +36,14 @@ has_pkgconfig_lib() {
 }
 
 case "$1" in
+  cairo)
+    has_system_lib "cairo" > /dev/null
+    result=$?
+    ;;
+  freetype)
+    has_freetype > /dev/null
+    result=$?
+    ;;
   gif)
     has_system_lib "gif" > /dev/null
     result=$?
@@ -48,8 +56,8 @@ case "$1" in
     has_pkgconfig_lib "pango" > /dev/null
     result=$?
     ;;
-  freetype)
-    has_freetype > /dev/null
+  X11)
+    has_system_lib "X11" > /dev/null
     result=$?
     ;;
   *)

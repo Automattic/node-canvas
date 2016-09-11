@@ -41,7 +41,6 @@ using namespace node;
 
 class Canvas: public Nan::ObjectWrap {
   public:
-    canvas_type_t type;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
@@ -56,21 +55,23 @@ class Canvas: public Nan::ObjectWrap {
     static Local<Value> Error(cairo_status_t status);
 
     static void ToBufferAsync(uv_work_t *req);
+    #if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsyncAfter(uv_work_t *req);
+    #else
+    static int EIO_AfterToBuffer(eio_req *req);
+    #endif
 
     inline Backend *backend() { return _backend; }
     inline cairo_surface_t *surface(){ return backend()->getSurface(); }
     inline void *closure(){ return _closure; }
-    inline uint8_t *data(){ return cairo_image_surface_get_data(backend()->getSurface()); }
-    inline int stride(){ return cairo_image_surface_get_stride(backend()->getSurface()); }
+    inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
+    inline int stride(){ return cairo_image_surface_get_stride(surface()); }
 
     inline int getWidth() { return backend()->getWidth(); }
     inline int getHeight() { return backend()->getHeight(); }
 
     Canvas(Backend *backend);
     void resurface(Local<Object> canvas);
-
-    inline void *closure(){ return _closure; }
 
   private:
     ~Canvas();

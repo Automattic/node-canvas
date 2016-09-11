@@ -713,8 +713,10 @@ NAN_METHOD(Context2d::GetImageData) {
     sh = -sh;
   }
 
-  if (sx + sw > canvas->width) sw = canvas->width - sx;
-  if (sy + sh > canvas->height) sh = canvas->height - sy;
+  int width  = canvas->getWidth();
+  int height = canvas->getHeight();
+  if (sx + sw > width ) sw = width  - sx;
+  if (sy + sh > height) sh = height - sy;
 
   // WebKit/moz functionality. node-canvas used to return in either case.
   if (sw <= 0) sw = 1;

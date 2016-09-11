@@ -6,10 +6,6 @@
 #include <sstream>
 #include <exception>
 
-#include <v8.h>
-#include <node.h>
-#include <node_object_wrap.h>
-#include <node_version.h>
 #include <nan.h>
 
 #if HAVE_PANGO
@@ -18,11 +14,9 @@
   #include <cairo/cairo.h>
 #endif
 
-using namespace v8;
-using namespace node;
 using namespace std;
 
-class Backend : public ObjectWrap
+class Backend : public Nan::ObjectWrap
 {
   private:
     const string name;

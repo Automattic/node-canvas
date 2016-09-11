@@ -1,5 +1,7 @@
 #include "X11Backend.h"
 
+using namespace v8;
+
 X11Backend::X11Backend(int width, int height)
 	: Backend("x11", width, height)
 {
@@ -45,27 +47,28 @@ void X11Backend::setHeight(int height)
 }
 
 
-Persistent<FunctionTemplate> X11Backend::constructor;
+Nan::Persistent<FunctionTemplate> X11Backend::constructor;
 
 void X11Backend::Initialize(Handle<Object> target)
 {
-	NanScope();
-	Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(X11Backend::New);
-	NanAssignPersistent(X11Backend::constructor, ctor);
+	Nan::HandleScope scope;
+
+	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(X11Backend::New);
+	X11Backend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	ctor->SetClassName(NanNew("X11Backend"));
-	target->Set(NanNew("X11Backend"), ctor->GetFunction());
+	ctor->SetClassName(Nan::New<String>("X11Backend").ToLocalChecked());
+	target->Set(Nan::New<String>("X11Backend").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(X11Backend::New)
 {
 	int width  = 0;
 	int height = 0;
-	if(args[0]->IsNumber()) width  = args[0]->Uint32Value();
-	if(args[1]->IsNumber()) height = args[1]->Uint32Value();
+	if(info[0]->IsNumber()) width  = info[0]->Uint32Value();
+	if(info[1]->IsNumber()) height = info[1]->Uint32Value();
 
 	X11Backend *backend = new X11Backend(width, height);
 
-	backend->Wrap(args.This());
-	NanReturnValue(args.This());
+	backend->Wrap(info.This());
+	info.GetReturnValue().Set(info.This());
 }

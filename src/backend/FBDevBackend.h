@@ -6,6 +6,8 @@
 
 #include <linux/fb.h>
 
+#include <v8.h>
+
 #include "Backend.h"
 
 
@@ -30,8 +32,8 @@ class FBDevBackend : public Backend
   public:
     FBDevBackend(string deviceName);
 
-    static Persistent<FunctionTemplate> constructor;
-    static void Initialize(Handle<Object> target);
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
+    static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
 };
 

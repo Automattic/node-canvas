@@ -1,18 +1,16 @@
 {
     'conditions':
     [
-        ['OS=="win"',
-        {
+        ['OS=="win"', {
             'variables':
             {
-                'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
+                'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
                 'with_jpeg%': 'false',
                 'with_gif%': 'false',
                 'with_pango%': 'false',
                 'with_freetype%': 'false'
             }
-        },
-        { # 'OS!="win"'
+        }, {  # OS!="win"'
             'variables':
             {
                 'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
@@ -29,8 +27,7 @@
             'dependencies': ['canvas'],
             'conditions':
             [
-                ['OS=="win"',
-                {
+                ['OS=="win"', {
                     'copies':
                     [{
                         'destination': '<(PRODUCT_DIR)',
@@ -51,8 +48,7 @@
             'includes': ['canvas.gypi'],
             'conditions':
             [
-                ['OS=="win"',
-                {
+                ['OS=="win"', {
                     'libraries':
                     [
                         '-l<(GTK_Root)/lib/cairo.lib',
@@ -66,7 +62,7 @@
                     'defines':
                     [
                         'snprintf=_snprintf',
-                        '_USE_MATH_DEFINES' # for M_PI
+                        '_USE_MATH_DEFINES'  # for M_PI
                     ],
                     'configurations':
                     {
@@ -103,8 +99,7 @@
                             }
                         }
                     }
-                },
-                { # 'OS!="win"'
+                }, {  # OS!="win"'
                     'libraries':
                     [
                         '<!@(pkg-config pixman-1 --libs)',
@@ -118,15 +113,13 @@
                     ]
                 }],
 
-                ['with_freetype=="true"',
-                {
+                ['with_freetype=="true"', {
                     'defines': ['HAVE_FREETYPE'],
                     'sources': ['src/FontFace.cc'],
                     'conditions':
                     [
-                        ['OS!="win"',
-                        {
-                            'include_dirs': [ # tried to pass through cflags but failed.
+                        ['OS!="win"', {
+                            'include_dirs': [  # tried to pass through cflags but failed.
                                 # Need to include the header files of cairo AND freetype.
                                 # Looking up the includes of cairo does both.
                                 '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)'
@@ -134,47 +127,38 @@
                         }]
                     ]
                 }],
-                ['with_pango=="true"',
-                {
+                ['with_pango=="true"', {
                     'defines': ['HAVE_PANGO'],
                     'conditions':
                     [
-                        ['OS=="win"',
-                        {
+                        ['OS=="win"', {
                             'libraries': ['-l<(GTK_Root)/lib/pangocairo.lib']
-                        },
-                        { # 'OS!="win"'
-                            'include_dirs': [ # tried to pass through cflags but failed
+                        }, {  #'OS!="win"'
+                            'include_dirs': [  # tried to pass through cflags but failed
                                 '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
                             ],
                             'libraries': ['<!@(pkg-config pangocairo --libs)']
                         }]
                     ]
                 }],
-                ['with_jpeg=="true"',
-                {
+                ['with_jpeg=="true"', {
                     'defines': ['HAVE_JPEG'],
                     'conditions':
                     [
-                        ['OS=="win"',
-                        {
+                        ['OS=="win"', {
                             'libraries': ['-l<(GTK_Root)/lib/jpeg.lib']
-                        },
-                        {
+                        }, {
                             'libraries': ['-ljpeg']
                         }]
                     ]
                 }],
-                ['with_gif=="true"',
-                    {
+                ['with_gif=="true"', {
                     'defines': ['HAVE_GIF'],
                     'conditions':
                     [
-                        ['OS=="win"',
-                        {
+                        ['OS=="win"', {
                             'libraries': ['-l<(GTK_Root)/lib/gif.lib']
-                        },
-                        {
+                        }, {
                             'libraries': ['-lgif']
                         }]
                     ]

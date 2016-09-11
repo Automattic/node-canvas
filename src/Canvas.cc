@@ -70,14 +70,17 @@ NAN_METHOD(Canvas::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
+  Backend* backend;
 	Canvas *canvas = NULL;
-	if (args[0]->IsNumber() && args[1]->IsNumber()) {
-		canvas = new Canvas(new ImageBackend(args[0]->Uint32Value(), args[1]->Uint32Value()));
-	} else if (args[0]->IsObject()) {
-		Backend* backend = ObjectWrap::Unwrap<Backend>(args[0]->ToObject());
-		canvas = new Canvas(backend);
+	if (info[0]->IsNumber() && info[1]->IsNumber()) {
+		backend = new ImageBackend(info[0]->Uint32Value(), info[1]->Uint32Value());
 	}
+  else if (info[0]->IsObject()) {
+		backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+	}
+  canvas = new Canvas(backend);
 	canvas->Wrap(info.This());
+
   info.GetReturnValue().Set(info.This());
 }
 
@@ -87,7 +90,7 @@ NAN_METHOD(Canvas::New) {
 
 NAN_GETTER(Canvas::GetType) {
 	Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-	info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName());
+	info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName()).ToLocalChecked());
 }
 
 /*
@@ -178,7 +181,7 @@ Canvas::ToBufferAsync(uv_work_t *req) {
  * EIO after toBuffer callback.
  */
 
-#if !NODE_VERSION_AT_LEAST(0, 6, 0)
+#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 #else
@@ -225,15 +228,15 @@ NAN_METHOD(Canvas::ToBuffer) {
   uint32_t filter = PNG_ALL_FILTERS;
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
-  // TODO: async / move this out
-  if (canvas->isPDF() || canvas->isSVG()) {
-    cairo_surface_finish(canvas->surface());
-    closure_t *closure = (closure_t *) canvas->closure();
-
-    Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
-    info.GetReturnValue().Set(buf);
-    return;
-  }
+  // // TODO: async / move this out
+  // if (canvas->isPDF() || canvas->isSVG()) {
+  //   cairo_surface_finish(canvas->surface());
+  //   closure_t *closure = (closure_t *) canvas->closure();
+  //
+  //   Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
+  //   info.GetReturnValue().Set(buf);
+  //   return;
+  // }
 
   if (info.Length() > 1 && !(info[1]->IsUndefined() && info[2]->IsUndefined())) {
     if (!info[1]->IsUndefined()) {
