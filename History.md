@@ -1,3 +1,12 @@
+1.5.0 / 2016-09-11
+==================
+
+ * Crude PDF stream implementation (#781)
+ * Update CI settings (#797)
+ * Reduce some of the install warnings (#794)
+ * Fix lineDash browser tests never finishing (#793)
+ * Add issue template (#791)
+
 1.4.0 / 2016-06-03
 ==================
 
