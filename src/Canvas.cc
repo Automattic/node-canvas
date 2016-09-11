@@ -40,6 +40,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
   Nan::SetPrototypeMethod(ctor, "streamPNGSync", StreamPNGSync);
+  Nan::SetPrototypeMethod(ctor, "streamPDFSync", StreamPDFSync);
 #ifdef HAVE_JPEG
   Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
@@ -432,6 +433,84 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 1, argv);
   }
   return;
+}
+
+/*
+ * Canvas::StreamPDF FreeCallback
+ */
+
+void stream_pdf_free(char *, void *) {}
+
+/*
+ * Canvas::StreamPDF callback.
+ */
+
+static cairo_status_t
+streamPDF(void *c, const uint8_t *data, unsigned len) {
+  Nan::HandleScope scope;
+  closure_t *closure = static_cast<closure_t *>(c);
+  Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
+  Local<Value> argv[3] = {
+      Nan::Null()
+    , buf
+    , Nan::New<Number>(len) };
+  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), closure->fn, 3, argv);
+  return CAIRO_STATUS_SUCCESS;
+}
+
+
+cairo_status_t canvas_write_to_pdf_stream(cairo_surface_t *surface, cairo_write_func_t write_func, void *closure) {
+  closure_t *pdf_closure = static_cast<closure_t *>(closure);
+  size_t whole_chunks = pdf_closure->len / PAGE_SIZE;
+  size_t remainder = pdf_closure->len - whole_chunks * PAGE_SIZE;
+
+  for (size_t i = 0; i < whole_chunks; ++i) {
+    write_func(pdf_closure, &pdf_closure->data[i * PAGE_SIZE], PAGE_SIZE);
+  }
+
+  if (remainder) {
+    write_func(pdf_closure, &pdf_closure->data[whole_chunks * PAGE_SIZE], remainder);
+  }
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Stream PDF data synchronously.
+ */
+
+NAN_METHOD(Canvas::StreamPDFSync) {
+  if (!info[0]->IsFunction())
+    return Nan::ThrowTypeError("callback function required");
+
+  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.Holder());
+
+  if (!canvas->isPDF())
+    return Nan::ThrowTypeError("wrong canvas type");
+
+  cairo_surface_finish(canvas->surface());
+
+  closure_t closure;
+  closure.data = static_cast<closure_t *>(canvas->closure())->data;
+  closure.len = static_cast<closure_t *>(canvas->closure())->len;
+  closure.fn = info[0].As<Function>();
+
+  Nan::TryCatch try_catch;
+
+  cairo_status_t status = canvas_write_to_pdf_stream(canvas->surface(), streamPDF, &closure);
+
+  if (try_catch.HasCaught()) {
+    try_catch.ReThrow();
+  } else if (status) {
+    Local<Value> error = Canvas::Error(status);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), 1, &error);
+  } else {
+    Local<Value> argv[3] = {
+        Nan::Null()
+      , Nan::Null()
+      , Nan::New<Uint32>(0) };
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), 3, argv);
+  }
 }
 
 /*

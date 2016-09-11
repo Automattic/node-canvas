@@ -62,6 +62,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_SETTER(SetWidth);
     static NAN_SETTER(SetHeight);
     static NAN_METHOD(StreamPNGSync);
+    static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static Local<Value> Error(cairo_status_t status);
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
