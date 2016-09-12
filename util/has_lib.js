@@ -103,6 +103,8 @@ function main (query) {
       return hasPkgconfigLib(query)
     case 'freetype':
       return hasFreetype()
+    case 'rsvg':
+      return hasPkgconfigLib('librsvg-2.0')
     default:
       throw new Error('Unknown library: ' + query)
   }

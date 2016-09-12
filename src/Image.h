@@ -25,6 +25,10 @@
   #endif
 #endif
 
+#ifdef HAVE_RSVG
+#include <librsvg/rsvg.h>
+#endif
+
 
 
 class Image: public Nan::ObjectWrap {
@@ -53,6 +57,7 @@ class Image: public Nan::ObjectWrap {
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
+    static int isSVG(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
     cairo_status_t loadSurface();
@@ -60,6 +65,10 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();
+#ifdef HAVE_RSVG
+    cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadSVG(FILE *stream);
+#endif
 #ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadGIF(FILE *stream);
@@ -94,6 +103,7 @@ class Image: public Nan::ObjectWrap {
       , GIF
       , JPEG
       , PNG
+      , SVG
     } type;
 
     static type extension(const char *filename);

@@ -218,6 +218,14 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   }
 #endif
 #endif
+#ifdef HAVE_RSVG
+  // confirm svg using first 1000 chars
+  // if a very long comment precedes the root <svg> tag, isSVG returns false
+  uint8_t head[1000] = {0};
+  unsigned head_len = (len < 1000 ? len : 1000);
+  memcpy(head, buf, head_len * sizeof(uint8_t));
+  if (isSVG(head, head_len)) return loadSVGFromBuffer(buf, len);
+#endif
   return CAIRO_STATUS_READ_ERROR;
 }
 
@@ -418,6 +426,24 @@ Image::loadSurface() {
   // jpeg
 #ifdef HAVE_JPEG
   if (isJPEG(buf)) return loadJPEG(stream);
+#endif
+
+// svg
+#ifdef HAVE_RSVG
+  // confirm svg using first 1000 chars
+  // if a very long comment precedes the root <svg> tag, isSVG returns false
+  uint8_t head[1000] = {0};
+  fseek(stream, 0 , SEEK_END);
+  long len = ftell(stream);
+  unsigned head_len = (len < 1000 ? len : 1000);
+  unsigned head_size = head_len * sizeof(uint8_t);
+  rewind(stream);
+  if (head_size != fread(&head, 1, head_size, stream)) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+  fseek(stream, 0, SEEK_SET);
+  if (isSVG(head, head_len)) return loadSVG(stream);
 #endif
 
   fclose(stream);
@@ -941,8 +967,89 @@ Image::loadJPEG(FILE *stream) {
 
 #endif /* HAVE_JPEG */
 
+#ifdef HAVE_RSVG
+
 /*
- * Return UNKNOWN, JPEG, or PNG based on the filename.
+ * Load SVG from buffer
+ */
+
+cairo_status_t
+Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  cairo_status_t status;
+  RsvgHandle *rsvg;
+  GError *gerr = NULL;
+
+  if (NULL == (rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  RsvgDimensionData *dims = new RsvgDimensionData();
+  rsvg_handle_get_dimensions(rsvg, dims);
+
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dims->width, dims->height);
+
+  status = cairo_surface_status(_surface);
+  if (status != CAIRO_STATUS_SUCCESS) {
+    g_object_unref(rsvg);
+    return status;
+  }
+
+  cairo_t *cr = cairo_create(_surface);
+  status = cairo_status(cr);
+  if (status != CAIRO_STATUS_SUCCESS) {
+    g_object_unref(rsvg);
+    return status;
+  }
+
+  gboolean render_ok = !rsvg_handle_render_cairo(rsvg, cr);
+  if (render_ok) {
+    g_object_unref(rsvg);
+    cairo_destroy(cr);
+    return CAIRO_STATUS_READ_ERROR; // or WRITE?
+  }
+
+  g_object_unref(rsvg);
+  cairo_destroy(cr);
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Load SVG
+ */
+
+cairo_status_t
+Image::loadSVG(FILE *stream) {
+  struct stat s;
+  int fd = fileno(stream);
+
+  // stat
+  if (fstat(fd, &s) < 0) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  uint8_t *buf = (uint8_t *) malloc(s.st_size);
+
+  if (!buf) {
+    fclose(stream);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t read = fread(buf, s.st_size, 1, stream);
+  fclose(stream);
+
+  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
+  if (1 == read) result = loadSVGFromBuffer(buf, s.st_size);
+  free(buf);
+
+  return result;
+}
+
+#endif /* HAVE_RSVG */
+
+/*
+ * Return UNKNOWN, SVG, GIF, JPEG, or PNG based on the filename.
  */
 
 Image::type
@@ -953,6 +1060,7 @@ Image::extension(const char *filename) {
   if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return Image::GIF;
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
+  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return Image::SVG;
   return Image::UNKNOWN;
 }
 
@@ -981,4 +1089,25 @@ Image::isGIF(uint8_t *data) {
 int
 Image::isPNG(uint8_t *data) {
   return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
+}
+
+/*
+ * Skip "<?" and "<!" tags to test if root tag starts "<svg"
+ */
+int
+Image::isSVG(uint8_t *data, unsigned len) {
+  for (unsigned i = 3; i < len; i++) {
+    if ('<' == data[i-3]) {
+      switch (data[i-2]) {
+        case '?':
+        case '!':
+          break;
+        case 's':
+          return ('v' == data[i-1] && 'g' == data[i]);
+        default:
+          return false;
+      }
+    }
+  }
+  return false;
 }

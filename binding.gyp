@@ -5,6 +5,7 @@
         'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
         'with_gif%': 'false',
+        'with_rsvg%': 'false',
         'variables': { # Nest jpeg_root to evaluate it before with_jpeg
           'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
         },
@@ -20,7 +21,8 @@
     }, {  # 'OS!="win"'
       'variables': {
         'with_jpeg%': '<!(node ./util/has_lib.js jpeg)',
-        'with_gif%': '<!(node ./util/has_lib.js gif)'
+        'with_gif%': '<!(node ./util/has_lib.js gif)',
+        'with_rsvg%': '<!(node ./util/has_lib.js rsvg)'
       }
     }]
   ],
@@ -172,6 +174,25 @@
             }, {
               'libraries': [
                 '-lgif'
+              ]
+            }]
+          ]
+        }],
+        ['with_rsvg=="true"', {
+          'defines': [
+            'HAVE_RSVG'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/librsvg-2-2.lib'
+              ]
+            }, {
+              'include_dirs': [
+                '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+              ],
+              'libraries': [
+                '<!@(pkg-config librsvg-2.0 --libs)'
               ]
             }]
           ]
