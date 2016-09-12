@@ -27,6 +27,10 @@
 
 #ifdef HAVE_RSVG
 #include <librsvg/rsvg.h>
+  // librsvg <= 2.36.1, identified by undefined macro, needs an extra include
+  #ifndef LIBRSVG_CHECK_VERSION
+  #include <librsvg/rsvg-cairo.h>
+  #endif
 #endif
 
 
