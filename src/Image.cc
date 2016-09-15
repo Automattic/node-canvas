@@ -221,10 +221,8 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 #ifdef HAVE_RSVG
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
-  uint8_t head[1000] = {0};
   unsigned head_len = (len < 1000 ? len : 1000);
-  memcpy(head, buf, head_len * sizeof(uint8_t));
-  if (isSVG(head, head_len)) return loadSVGFromBuffer(buf, len);
+  if (isSVG(buf, head_len)) return loadSVGFromBuffer(buf, len);
 #endif
   return CAIRO_STATUS_READ_ERROR;
 }
