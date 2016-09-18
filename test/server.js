@@ -4,7 +4,7 @@
  */
 
 var express = require('express')
-  , Canvas = require('../lib/canvas')
+  , Canvas = require('..')
   , Image = Canvas.Image
   , bodyParser = require('body-parser')
   , app = express();

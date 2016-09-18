@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var Canvas = require('../')
+var Canvas = require('..')
   , assert = require('assert')
   , parseFont = Canvas.Context2d.parseFont
   , fs = require('fs');
@@ -214,13 +214,13 @@ describe('Canvas', function () {
 
   it('Canvas#type', function () {
     var canvas = new Canvas(10, 10);
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
     var canvas = new Canvas(10, 10, 'pdf');
-    assert('pdf' == canvas.type);
+    assert.equal(canvas.type, 'pdf');
     var canvas = new Canvas(10, 10, 'svg');
-    assert('svg' == canvas.type);
+    assert.equal(canvas.type, 'svg');
     var canvas = new Canvas(10, 10, 'hey');
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
   });
 
   it('Canvas#getContext("2d")', function () {

@@ -19,7 +19,8 @@ has_system_lib() {
   fi
 
   # Try just checking common library locations
-  for dir in /lib /usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/i386-linux-gnu; do
+  for dir in /lib /usr/lib /usr/local/lib /opt/local/lib \
+             /usr/lib/x86_64-linux-gnu /usr/lib/i386-linux-gnu; do
     test -d $dir && ls $dir | grep -E "$regex" && return 0
   done
 
@@ -35,6 +36,14 @@ has_pkgconfig_lib() {
 }
 
 case "$1" in
+  cairo)
+    has_system_lib "cairo" > /dev/null
+    result=$?
+    ;;
+  freetype)
+    has_freetype > /dev/null
+    result=$?
+    ;;
   gif)
     has_system_lib "gif" > /dev/null
     result=$?
@@ -45,10 +54,6 @@ case "$1" in
     ;;
   pango)
     has_pkgconfig_lib "pango" > /dev/null
-    result=$?
-    ;;
-  freetype)
-    has_freetype > /dev/null
     result=$?
     ;;
   *)

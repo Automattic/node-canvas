@@ -10,6 +10,8 @@ out.pdf
 out.svg
 .pomo
 node_modules
+deps/
+npm-debug.log
 
 # Vim cruft
 *.swp
