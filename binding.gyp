@@ -3,6 +3,7 @@
     ['OS=="win"', {
       'variables': {
         'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
+        'jpeg_root%': 'c:/libjpeg-turbo64',
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
@@ -138,6 +139,15 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '<(jpeg_root)/bin/jpeg62.dll',
+                ]
+              }],
+              'include_dirs': [
+                '<(jpeg_root)/include'
+              ],
               'libraries': [
                 '-l<(GTK_Root)/lib/jpeg.lib'
               ]
