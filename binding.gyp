@@ -149,7 +149,7 @@
                 '<(jpeg_root)/include'
               ],
               'libraries': [
-                '-l<(GTK_Root)/lib/jpeg.lib'
+                '-l<(jpeg_root)/lib/jpeg.lib',
               ]
             }, {
               'libraries': [
