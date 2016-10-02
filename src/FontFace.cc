@@ -107,7 +107,7 @@ NAN_METHOD(FontFace::New) {
   // get released by cairo although the JS font face object is still alive.
   cairo_font_face_reference(crFace);
 
-  FontFace *face = new FontFace(ftFace, crFace);
+  FontFace *face = new FontFace(crFace);
   face->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
