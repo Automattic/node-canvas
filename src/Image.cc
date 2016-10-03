@@ -640,8 +640,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
 // libjpeg 6.2 does not have jpeg_mem_src; define it ourselves here unless
 // libjpeg 8 is installed.
-#if JPEG_LIB_VERSION < 80
-
+#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 /* Read JPEG image from a memory segment */
 static void
 init_source(j_decompress_ptr cinfo) {}
@@ -881,6 +880,27 @@ Image::loadJPEG(FILE *stream) {
   cairo_status_t status;
 
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
+#if defined (_MSC_VER)
+    uint8_t *buf;
+    unsigned len;
+
+    fseek(stream, 0, SEEK_END);
+    len = ftell(stream);
+    fseek(stream, 0, SEEK_SET);
+
+    buf = (uint8_t *) malloc(len);
+
+    if (!buf) return CAIRO_STATUS_NO_MEMORY;
+
+    if (fread(buf, len, 1, stream) != 1) {
+      status = CAIRO_STATUS_READ_ERROR;
+    } else {
+      status = loadJPEGFromBuffer(buf, len);
+    }
+
+    fclose(stream);
+    free(buf);
+#else
     // JPEG setup
     struct jpeg_decompress_struct args;
     struct jpeg_error_mgr err;
@@ -896,6 +916,7 @@ Image::loadJPEG(FILE *stream) {
 
     status = decodeJPEGIntoSurface(&args);
     fclose(stream);
+#endif
   } else { // We'll need the actual source jpeg data, so read fully.
 #if CAIRO_VERSION_MINOR >= 10
     uint8_t *buf;
@@ -906,6 +927,7 @@ Image::loadJPEG(FILE *stream) {
     fseek(stream, 0, SEEK_SET);
 
     buf = (uint8_t *) malloc(len);
+
     if (!buf) return CAIRO_STATUS_NO_MEMORY;
 
     if (fread(buf, len, 1, stream) != 1) {
