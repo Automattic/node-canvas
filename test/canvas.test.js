@@ -418,13 +418,21 @@ describe('Canvas', function () {
     var buf = canvas.toBuffer('raw');
     var stride = canvas.stride;
 
+    var isBE = (function() {
+      var b = new ArrayBuffer(4);
+      var u32 = new Uint32Array(b);
+      var u8 = new Uint8Array(b);
+      u32[0] = 1;
+      return u8[0] ? 'LE' : 'BE';
+    }());
+
     function assertPixel(u32, x, y, message) {
       var expected = '0x' + u32.toString(16);
 
       // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
       // readUInt32BE().
       var px = buf.readUInt32BE(y * stride + x * 4);
-      if (os.endianness() === 'LE') {
+      if (isBE) {
         px = (((px & 0xff) << 24)
           | ((px & 0xff00) << 8)
           | ((px & 0xff0000) >> 8)
