@@ -140,10 +140,22 @@ var stream = canvas.jpegStream({
 
 ### Canvas#toBuffer()
 
-A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
+A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing image data.
 
 ```javascript
-canvas.toBuffer();
+// PNG Buffer, default settings
+var buf = canvas.toBuffer();
+
+// PNG Buffer, zlib compression level 3 (from 0-9), faster but bigger
+var buf2 = canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE);
+
+// ARGB32 Buffer, native-endian
+var buf3 = canvas.toBuffer('raw');
+var stride = canvas.stride;
+// In memory, this is `canvas.height * canvas.stride` bytes long.
+// The top row of pixels, in ARGB order, left-to-right, is:
+var topPixelsARGBLeftToRight = buf3.slice(0, canvas.width * 4);
+var row3 = buf3.slice(2 * canvas.stride, 2 * canvas.stride + canvas.width * 4);
 ```
 
 ### Canvas#toBuffer() async

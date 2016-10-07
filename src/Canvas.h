@@ -57,6 +57,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
     static NAN_GETTER(GetType);
+    static NAN_GETTER(GetStride);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);
     static NAN_SETTER(SetWidth);
@@ -85,6 +86,7 @@ class Canvas: public Nan::ObjectWrap {
     inline void *closure(){ return _closure; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
+    inline int nBytes(){ return height * stride(); }
     Canvas(int width, int height, canvas_type_t type);
     void resurface(Local<Object> canvas);
 
