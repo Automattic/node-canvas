@@ -418,13 +418,21 @@ describe('Canvas', function () {
     var buf = canvas.toBuffer('raw');
     var stride = canvas.stride;
 
-    // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
-    // readUInt32BE().
-    if (os.endianness() === 'LE') buf.swap32();
-
     function assertPixel(u32, x, y, message) {
       var expected = '0x' + u32.toString(16);
-      var actual = '0x' + buf.readUInt32BE(y * stride + x * 4).toString(16);
+
+      // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
+      // readUInt32BE().
+      var px = buf.readUInt32BE(y * stride + x * 4);
+      if (os.endianness() === 'LE') {
+        px = (((px & 0xff) << 24)
+          | ((px & 0xff00) << 8)
+          | ((px & 0xff0000) >> 8)
+          | ((px & 0xff000000) >> 24))
+          >>> 0; // -1 => 0xffffffff
+      }
+      var actual = '0x' + px.toString(16);
+
       assert.equal(actual, expected, message);
     }
 
