@@ -262,7 +262,6 @@ NAN_METHOD(Canvas::ToBuffer) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
     const unsigned char *data = cairo_image_surface_get_data(surface);
-    printf("%x %x %x %x %x\n", data[0], data[1], data[2], data[3], data[4]);
     Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), canvas->nBytes()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
