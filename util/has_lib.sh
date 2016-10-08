@@ -53,7 +53,7 @@ case "$1" in
     result=$?
     ;;
   *)
-    echo "Unknown library: $1"
+    >&2 echo "Unknown library: $1"
     exit 1
 esac
 
