@@ -6,7 +6,7 @@
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
-        'with_freetype%': 'false'
+        'with_freetype%': 'true'
       }
     }, { # 'OS!="win"'
       'variables': {
@@ -103,7 +103,13 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              # No support for windows right now.
+              'libraries' : [
+                '-l<(GTK_Root)/lib/freetype.lib',
+              ],
+              'include_dirs': [
+                '<(GTK_Root)/include/cairo',
+                '<(GTK_Root)/include/freetype2'
+              ]
             }, { # 'OS!="win"'
               'include_dirs': [ # tried to pass through cflags but failed.
                 # Need to include the header files of cairo AND freetype.
