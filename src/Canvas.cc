@@ -257,7 +257,7 @@ NAN_METHOD(Canvas::ToBuffer) {
     return;
   }
 
-  if (info.Length() == 1 && info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
+  if (info.Length() >= 1 && info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     // Return raw ARGB data -- just a memcpy()
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
