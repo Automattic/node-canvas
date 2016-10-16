@@ -45,6 +45,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
   Nan::SetAccessor(proto, Nan::New("type").ToLocalChecked(), GetType);
+  Nan::SetAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride);
   Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
   Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
 
@@ -89,6 +90,14 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : "image").ToLocalChecked());
+}
+
+/*
+ * Get stride.
+ */
+NAN_GETTER(Canvas::GetStride) {
+  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(canvas->stride()));
 }
 
 /*
@@ -244,6 +253,16 @@ NAN_METHOD(Canvas::ToBuffer) {
     closure_t *closure = (closure_t *) canvas->closure();
 
     Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
+    info.GetReturnValue().Set(buf);
+    return;
+  }
+
+  if (info.Length() >= 1 && info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
+    // Return raw ARGB data -- just a memcpy()
+    cairo_surface_t *surface = canvas->surface();
+    cairo_surface_flush(surface);
+    const unsigned char *data = cairo_image_surface_get_data(surface);
+    Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), canvas->nBytes()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
@@ -571,7 +590,7 @@ Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
-    Nan::AdjustExternalMemory(4 * w * h);
+    Nan::AdjustExternalMemory(nBytes());
   }
 }
 
@@ -589,8 +608,9 @@ Canvas::~Canvas() {
       cairo_surface_destroy(_surface);
       break;
     case CANVAS_TYPE_IMAGE:
+      int oldNBytes = nBytes();
       cairo_surface_destroy(_surface);
-      Nan::AdjustExternalMemory(-4 * width * height);
+      Nan::AdjustExternalMemory(-oldNBytes);
       break;
   }
 }
@@ -626,11 +646,10 @@ Canvas::resurface(Local<Object> canvas) {
       break;
     case CANVAS_TYPE_IMAGE:
       // Re-surface
-      int old_width = cairo_image_surface_get_width(_surface);
-      int old_height = cairo_image_surface_get_height(_surface);
+      size_t oldNBytes = nBytes();
       cairo_surface_destroy(_surface);
       _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-      Nan::AdjustExternalMemory(4 * (width * height - old_width * old_height));
+      Nan::AdjustExternalMemory(nBytes() - oldNBytes);
 
       // Reset context
       context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
