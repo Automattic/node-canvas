@@ -418,7 +418,8 @@ describe('Canvas', function () {
     var buf = canvas.toBuffer('raw');
     var stride = canvas.stride;
 
-    var isBE = (function() {
+    // emulate os.endianness() (until node v0.8 support is dropped)
+    var endianness = (function() {
       var b = new ArrayBuffer(4);
       var u32 = new Uint32Array(b);
       var u8 = new Uint8Array(b);
@@ -431,14 +432,7 @@ describe('Canvas', function () {
 
       // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
       // readUInt32BE().
-      var px = buf.readUInt32BE(y * stride + x * 4);
-      if (isBE) {
-        px = (((px & 0xff) << 24)
-          | ((px & 0xff00) << 8)
-          | ((px & 0xff0000) >> 8)
-          | ((px & 0xff000000) >> 24))
-          >>> 0; // -1 => 0xffffffff
-      }
+      var px = buf['readUInt32' + endianness](y * stride + x * 4);
       var actual = '0x' + px.toString(16);
 
       assert.equal(actual, expected, message);
