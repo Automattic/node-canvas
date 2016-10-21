@@ -3,6 +3,10 @@
     ['OS=="win"', {
       'variables': {
         'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
+        'JPEG_ROOT%': 'C:/libjpeg-turbo', # Set the location of LibJpeg Turbo
+		'GIF_Root': 'C:/giflib', # Set the location of GifLib source root
+		# NOTE: Freetype2 when built and installed by CMake, creates the include directory like: linclude/freetype2. You need to rename freetype2 to freetype.
+		'FT_Root': 'C:/freetype', # Points to Freetype root of CMake install directory
         'with_jpeg%': 'false',
         'with_gif%': 'false',
         'with_pango%': 'false',
@@ -59,6 +63,7 @@
           'include_dirs': [
             '<(GTK_Root)/include',
             '<(GTK_Root)/include/cairo',
+			'src/unistd' # needed for Freetype, GifLib, and Pango
           ],
           'defines': [
             '_USE_MATH_DEFINES' # for M_PI
@@ -103,7 +108,29 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              # No support for windows right now.
+              'libraries': [
+                '-l<(FT_Root)/lib/freetype.lib'
+              ],
+			  'include_dirs': [
+                '<(FT_Root)/include',
+                '<(FT_Root)/include/freetype'
+              ],
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'IgnoreDefaultLibraryNames': ['libcmtd']
+                    }
+                  }
+                },
+                'Release': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'IgnoreDefaultLibraryNames': ['libcmt']
+                    }
+                  }
+                }
+              }
             }, { # 'OS!="win"'
               'include_dirs': [ # tried to pass through cflags but failed.
                 # Need to include the header files of cairo AND freetype.
@@ -120,8 +147,16 @@
           'conditions': [
             ['OS=="win"', {
               'libraries': [
-                '-l<(GTK_Root)/lib/pangocairo.lib'
-              ]
+                '-l<(GTK_Root)/lib/fontconfig.lib',
+                '-l<(GTK_Root)/lib/gobject-2.0.lib',
+                '-l<(GTK_Root)/lib/pango-1.0.lib',
+                '-l<(GTK_Root)/lib/pangocairo-1.0.lib'
+              ],
+			  'include_dirs': [
+                '<(GTK_Root)/include/glib-2.0',
+                '<(GTK_Root)/lib/glib-2.0/include',
+                '<(GTK_Root)/include/pango-1.0',
+			  ]
             }, { # 'OS!="win"'
               'include_dirs': [ # tried to pass through cflags but failed
                 '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
@@ -139,7 +174,10 @@
           'conditions': [
             ['OS=="win"', {
               'libraries': [
-                '-l<(GTK_Root)/lib/jpeg.lib'
+                '-l<(JPEG_ROOT)/lib/jpeg.lib'
+              ],
+              'include_dirs': [
+               '<(JPEG_ROOT)/include'
               ]
             }, {
               'libraries': [
@@ -154,9 +192,16 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'libraries': [
-                '-l<(GTK_Root)/lib/gif.lib'
-              ]
+              'sources': [
+                '<(GIF_Root)/lib/dgif_lib.c',
+                '<(GIF_Root)/lib/egif_lib.c',
+                '<(GIF_Root)/lib/gif_err.c',
+                '<(GIF_Root)/lib/gif_font.c',
+                '<(GIF_Root)/lib/gif_hash.c',
+                '<(GIF_Root)/lib/quantize.c',
+                '<(GIF_Root)/lib/gifalloc.c'
+              ],
+		      'include_dirs': ["<(GIF_Root)/lib"]
             }, {
               'libraries': [
                 '-lgif'
