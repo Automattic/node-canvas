@@ -418,14 +418,7 @@ describe('Canvas', function () {
     var buf = canvas.toBuffer('raw');
     var stride = canvas.stride;
 
-    // emulate os.endianness() (until node v0.8 support is dropped)
-    var endianness = (function() {
-      var b = new ArrayBuffer(4);
-      var u32 = new Uint32Array(b);
-      var u8 = new Uint8Array(b);
-      u32[0] = 1;
-      return u8[0] ? 'LE' : 'BE';
-    }());
+    var endianness = os.endianness();
 
     function assertPixel(u32, x, y, message) {
       var expected = '0x' + u32.toString(16);
