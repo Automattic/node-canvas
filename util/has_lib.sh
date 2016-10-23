@@ -1,18 +1,19 @@
-#!/bin/bash
+#!/bin/sh
 
 has_ldconfig() {
   hash ldconfig 2>/dev/null
 }
 
 has_system_lib() {
-  local regex="lib$1.+(so|dylib)"
+  regex="lib$1.+(so|dylib)"
 
   # Add /sbin to path as ldconfig is located there on some systems - e.g. Debian
   # (and it still can be used by unprivileged users):
   PATH="$PATH:/sbin"
   export PATH
-  # Try using ldconfig on linux systems
-  if $(has_ldconfig); then
+
+  # Try using ldconfig on Linux systems
+  if has_ldconfig; then
     for _ in $(ldconfig -p 2>/dev/null | grep -E "$regex"); do
       return 0
     done
@@ -20,7 +21,7 @@ has_system_lib() {
 
   # Try just checking common library locations
   for dir in /lib /usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu /usr/lib/i386-linux-gnu; do
-    test -d $dir && ls $dir | grep -E "$regex" && return 0
+    test -d "$dir" && echo "$dir"/* | grep -E "$regex" && return 0
   done
 
   return 1
