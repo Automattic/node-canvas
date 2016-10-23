@@ -4,7 +4,7 @@
 
 ## This is the documentation for the unreleased version 2.0
 
-**For the current version 1.x documentation, see [the v1.x branch](tree/v1.x)**
+**For the current version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
 
 -----
 
