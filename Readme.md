@@ -1,5 +1,13 @@
-node-canvas
-===========
+# node-canvas
+
+-----
+
+## This is the documentation for the unreleased version 2.0
+
+**For the current version 1.x documentation, see [the v1.x branch](tree/v1.x)**
+
+-----
+
 ### Canvas graphics API backed by Cairo
 [![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
 [![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
