@@ -1,3 +1,8 @@
+1.6.1 / 2016-10-23
+==================
+
+ * Convert has_lib.sh to sh so it also works on BSD OSes (#820)
+
 1.6.0 / 2016-10-16
 ==================
 
