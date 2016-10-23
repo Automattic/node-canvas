@@ -8,21 +8,18 @@
 #ifndef __NODE_CANVAS_H__
 #define __NODE_CANVAS_H__
 
-#include <v8.h>
 #include <node.h>
+#include <v8.h>
 #include <node_object_wrap.h>
 #include <node_version.h>
-
-#if HAVE_PANGO
 #include <pango/pangocairo.h>
-#else
+#include <vector>
 #include <cairo.h>
-#endif
-
 #include <nan.h>
 
-using namespace v8;
+
 using namespace node;
+using namespace v8;
 
 /*
  * Maxmimum states per context.
@@ -42,6 +39,16 @@ typedef enum {
   CANVAS_TYPE_PDF,
   CANVAS_TYPE_SVG
 } canvas_type_t;
+
+/*
+ * FontFace describes a font file in terms of one PangoFontDescription that
+ * will resolve to it and one that the user describes it as (like @font-face)
+ */
+class FontFace {
+  public:
+    PangoFontDescription *sys_desc = NULL;
+    PangoFontDescription *user_desc = NULL;
+};
 
 /*
  * Canvas.
@@ -65,6 +72,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPNGSync);
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
+    static NAN_METHOD(RegisterFont);
     static Local<Value> Error(cairo_status_t status);
 #if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsync(uv_work_t *req);
@@ -79,6 +87,9 @@ class Canvas: public Nan::ObjectWrap {
       EIO_ToBuffer(eio_req *req);
     static int EIO_AfterToBuffer(eio_req *req);
 #endif
+    static PangoWeight GetWeightFromCSSString(const char *weight);
+    static PangoStyle GetStyleFromCSSString(const char *style);
+    static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
     inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
     inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
@@ -94,6 +105,7 @@ class Canvas: public Nan::ObjectWrap {
     ~Canvas();
     cairo_surface_t *_surface;
     void *_closure;
+    static std::vector<FontFace> _font_face_list;
 };
 
 #endif

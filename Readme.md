@@ -27,16 +27,16 @@
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
 You can quickly install the dependencies by using the command for your OS:
 
 OS | Command
 ----- | -----
-OS X | `brew install pkg-config cairo libpng jpeg giflib`
+OS X | `brew install pkg-config cairo pango libpng jpeg giflib`
 Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
 Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
-Solaris | `pkgin install cairo pkg-config xproto renderproto kbproto xextproto`
+Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
 Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
 
 **El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
@@ -189,6 +189,26 @@ canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supp
 canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
+
+### Canvas.registerFont for bundled fonts
+
+It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts are installed.
+
+To do that, you should use `Canvas.registerFont`.
+
+**You need to call it before the Canvas is created**
+
+```javascript
+Canvas.registerFont('comicsans.ttf', {family: 'Comic Sans'});
+
+var canvas = new Canvas(500, 500),
+  ctx = canvas.getContext('2d');
+
+ctx.font = '12px "Comic Sans"';
+ctx.fillText(250, 10, 'Everyone hates this font :(');
+```
+
+The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
 
 ### CanvasRenderingContext2D#patternQuality
 

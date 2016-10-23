@@ -6,17 +6,16 @@
 //
 
 #include <stdio.h>
+#include <pango/pango.h>
+#include <glib.h>
 #include "Canvas.h"
 #include "Image.h"
 #include "ImageData.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
-
-#ifdef HAVE_FREETYPE
-#include "FontFace.h"
+#include <ft2build.h>
 #include FT_FREETYPE_H
-#endif
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -30,9 +29,6 @@ NAN_MODULE_INIT(init) {
   Context2d::Initialize(target);
   Gradient::Initialize(target);
   Pattern::Initialize(target);
-#ifdef HAVE_FREETYPE
-  FontFace::Initialize(target);
-#endif
 
   target->Set(Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked());
 #ifdef HAVE_JPEG
@@ -72,11 +68,9 @@ NAN_MODULE_INIT(init) {
 #endif
 #endif
 
-#ifdef HAVE_FREETYPE
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
   target->Set(Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked());
-#endif
 }
 
 NODE_MODULE(canvas,init);

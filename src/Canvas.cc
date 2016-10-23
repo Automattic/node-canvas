@@ -4,21 +4,29 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "Canvas.h"
-#include "PNG.h"
-#include "CanvasRenderingContext2d.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <node_buffer.h>
 #include <node_version.h>
+#include <glib.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+
+#include "Canvas.h"
+#include "PNG.h"
+#include "CanvasRenderingContext2d.h"
 #include "closure.h"
+#include "register_font.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
 #endif
+
+#define GENERIC_FACE_ERROR \
+  "The second argument to registerFont is required, and should be an object " \
+  "with at least a family (string) and optionally weight (string/number) " \
+  "and style (string)."
 
 Nan::Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -56,6 +64,9 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetTemplate(proto, "PNG_FILTER_AVG", Nan::New<Uint32>(PNG_FILTER_AVG));
   Nan::SetTemplate(proto, "PNG_FILTER_PAETH", Nan::New<Uint32>(PNG_FILTER_PAETH));
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
+
+  // Class methods
+  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
 
   Nan::Set(target, Nan::New("Canvas").ToLocalChecked(), ctor->GetFunction());
 }
@@ -564,6 +575,77 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
 
 #endif
 
+char *
+str_value(Local<Value> val, const char *fallback, bool can_be_number) {
+  if (val->IsString() || (can_be_number && val->IsNumber())) {
+    return g_strdup(*String::Utf8Value(val));
+  } else if (fallback) {
+    return g_strdup(fallback);
+  } else {
+    return NULL;
+  }
+}
+
+NAN_METHOD(Canvas::RegisterFont) {
+  if (!info[0]->IsString()) {
+    return Nan::ThrowError("Wrong argument type");
+  } else if (!info[1]->IsObject()) {
+    return Nan::ThrowError(GENERIC_FACE_ERROR);
+  }
+
+  String::Utf8Value filePath(info[0]);
+  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *) *filePath);
+
+  if (!sys_desc) return Nan::ThrowError("Could not parse font file");
+
+  PangoFontDescription *user_desc = pango_font_description_new();
+
+  // now check the attrs, there are many ways to be wrong
+  Local<Object> js_user_desc = info[1]->ToObject();
+  Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
+  Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
+  Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
+
+  char *family = str_value(js_user_desc->Get(family_prop), NULL, false);
+  char *weight = str_value(js_user_desc->Get(weight_prop), "normal", true);
+  char *style = str_value(js_user_desc->Get(style_prop), "normal", false);
+
+  if (family && weight && style) {
+    pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
+    pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
+    pango_font_description_set_family(user_desc, family);
+
+    std::vector<FontFace>::iterator it = _font_face_list.begin();
+    FontFace *already_registered = NULL;
+
+    for (; it != _font_face_list.end() && !already_registered; ++it) {
+      if (pango_font_description_equal(it->sys_desc, sys_desc)) {
+        already_registered = &(*it);
+      }
+    }
+
+    if (already_registered) {
+      pango_font_description_free(already_registered->user_desc);
+      already_registered->user_desc = user_desc;
+    } else if (register_font((unsigned char *) *filePath)) {
+      FontFace face;
+      face.user_desc = user_desc;
+      face.sys_desc = sys_desc;
+      _font_face_list.push_back(face);
+    } else {
+      pango_font_description_free(user_desc);
+      Nan::ThrowError("Could not load font to the system's font host");
+    }
+  } else {
+    pango_font_description_free(user_desc);
+    Nan::ThrowError(GENERIC_FACE_ERROR);
+  }
+
+  g_free(family);
+  g_free(weight);
+  g_free(style);
+}
+
 /*
  * Initialize cairo surface.
  */
@@ -613,6 +695,113 @@ Canvas::~Canvas() {
       Nan::AdjustExternalMemory(-oldNBytes);
       break;
   }
+}
+
+std::vector<FontFace>
+_init_font_face_list() {
+  std::vector<FontFace> x;
+  return x;
+}
+
+std::vector<FontFace> Canvas::_font_face_list = _init_font_face_list();
+
+/*
+ * Get a PangoStyle from a CSS string (like "italic")
+ */
+
+PangoStyle
+Canvas::GetStyleFromCSSString(const char *style) {
+  PangoStyle s = PANGO_STYLE_NORMAL;
+
+  if (strlen(style) > 0) {
+    if (0 == strcmp("italic", style)) {
+      s = PANGO_STYLE_ITALIC;
+    } else if (0 == strcmp("oblique", style)) {
+      s = PANGO_STYLE_OBLIQUE;
+    }
+  }
+
+  return s;
+}
+
+/*
+ * Get a PangoWeight from a CSS string ("bold", "100", etc)
+ */
+
+PangoWeight
+Canvas::GetWeightFromCSSString(const char *weight) {
+  PangoWeight w = PANGO_WEIGHT_NORMAL;
+
+  if (strlen(weight) > 0) {
+    if (0 == strcmp("bold", weight)) {
+      w = PANGO_WEIGHT_BOLD;
+    } else if (0 == strcmp("100", weight)) {
+      w = PANGO_WEIGHT_THIN;
+    } else if (0 == strcmp("200", weight)) {
+      w = PANGO_WEIGHT_ULTRALIGHT;
+    } else if (0 == strcmp("300", weight)) {
+      w = PANGO_WEIGHT_LIGHT;
+    } else if (0 == strcmp("400", weight)) {
+      w = PANGO_WEIGHT_NORMAL;
+    } else if (0 == strcmp("500", weight)) {
+      w = PANGO_WEIGHT_MEDIUM;
+    } else if (0 == strcmp("600", weight)) {
+      w = PANGO_WEIGHT_SEMIBOLD;
+    } else if (0 == strcmp("700", weight)) {
+      w = PANGO_WEIGHT_BOLD;
+    } else if (0 == strcmp("800", weight)) {
+      w = PANGO_WEIGHT_ULTRABOLD;
+    } else if (0 == strcmp("900", weight)) {
+      w = PANGO_WEIGHT_HEAVY;
+    }
+  }
+
+  return w;
+}
+
+/*
+ * Given a user description, return a description that will select the
+ * font either from the system or @font-face
+ */
+
+PangoFontDescription *
+Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
+  FontFace best;
+  PangoFontDescription *ret = NULL;
+
+  // One of the user-specified families could map to multiple SFNT family names
+  // if someone registered two different fonts under the same family name.
+  // https://drafts.csswg.org/css-fonts-3/#font-style-matching
+  char **families = g_strsplit(pango_font_description_get_family(desc), ",", -1);
+  GString *resolved_families = g_string_new("");
+
+  for (int i = 0; families[i]; ++i) {
+    GString *renamed_families = g_string_new("");
+    std::vector<FontFace>::iterator it = _font_face_list.begin();
+
+    for (; it != _font_face_list.end(); ++it) {
+      if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
+        if (renamed_families->len) g_string_append(renamed_families, ",");
+        g_string_append(renamed_families, pango_font_description_get_family(it->sys_desc));
+
+        if (i == 0 && (best.user_desc == NULL || pango_font_description_better_match(desc, best.user_desc, it->user_desc))) {
+          best = *it;
+        }
+      }
+    }
+
+    if (resolved_families->len) g_string_append(resolved_families, ",");
+    g_string_append(resolved_families, renamed_families->len ? renamed_families->str : families[i]);
+    g_string_free(renamed_families, true);
+  }
+
+  ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
+  pango_font_description_set_family_static(ret, resolved_families->str);
+
+  g_strfreev(families);
+  g_string_free(resolved_families, false);
+
+  return ret;
 }
 
 /*

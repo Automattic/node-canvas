@@ -44,15 +44,15 @@ describe('Canvas', function () {
       , '20px monospace'
       , { size: 20, unit: 'px', family: 'monospace' }
       , '50px Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Arial' }
+      , { size: 50, unit: 'px', family: 'Arial,sans-serif' }
       , 'bold italic 50px Arial, sans-serif'
-      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial' }
+      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial,sans-serif' }
       , '50px Helvetica ,  Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica' }
+      , { size: 50, unit: 'px', family: 'Helvetica,Arial,sans-serif' }
       , '50px "Helvetica Neue", sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue,sans-serif' }
       , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
+      , { size: 50, unit: 'px', family: 'Helvetica Neue,foo bar baz,sans-serif' }
       , "50px 'Helvetica Neue'"
       , { size: 50, unit: 'px', family: 'Helvetica Neue' }
       , 'italic 20px Arial'
