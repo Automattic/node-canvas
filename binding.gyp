@@ -2,11 +2,11 @@
   'conditions': [
     ['OS=="win"', {
       'variables': {
-        'GTK_Root%': 'C:/GTK', # Set the location of GTK all-in-one bundle
+        'GTK_Root%': 'C:/GTK',  # Set the location of GTK all-in-one bundle
         'with_jpeg%': 'false',
         'with_gif%': 'false'
       }
-    }, { # 'OS!="win"'
+    }, {  # 'OS!="win"'
       'variables': {
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)'
@@ -46,15 +46,22 @@
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
+        'src/backend/Backend.cc',
+        'src/backend/ImageBackend.cc',
+        'src/backend/PdfBackend.cc',
+        'src/backend/SvgBackend.cc',
+        'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
         'src/CanvasRenderingContext2d.cc',
+        'src/closure.cc',
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
+        'src/init.cc',
         'src/register_font.cc',
-        'src/init.cc'
+        'src/toBuffer.cc'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -76,7 +83,7 @@
             '<(GTK_Root)/lib/glib-2.0/include'
           ],
           'defines': [
-            '_USE_MATH_DEFINES' # for M_PI
+            '_USE_MATH_DEFINES'  # for M_PI
           ],
           'configurations': {
             'Debug': {
@@ -84,7 +91,9 @@
                 'VCCLCompilerTool': {
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
-                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
+                  'DisableSpecificWarnings': [
+                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                  ]
                 }
               }
             },
@@ -93,12 +102,14 @@
                 'VCCLCompilerTool': {
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
-                  'DisableSpecificWarnings': [4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512]
+                  'DisableSpecificWarnings': [
+                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                  ]
                 }
               }
             }
           }
-        }, { # 'OS!="win"'
+        }, {  # 'OS!="win"'
           'libraries': [
             '<!@(pkg-config pixman-1 --libs)',
             '<!@(pkg-config cairo --libs)',
