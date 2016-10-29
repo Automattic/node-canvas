@@ -32,9 +32,9 @@
     "nan": "^2.3.2"
   },
   "devDependencies": {
-    "express": "^4.13.2",
-    "mocha": "*",
-    "standard": "^7.1.1"
+    "express": "^4.14.0",
+    "mocha": "^3.1.2",
+    "standard": "^8.5.0"
   },
   "engines": {
     "node": ">=0.10.0"
