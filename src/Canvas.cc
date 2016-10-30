@@ -342,7 +342,7 @@ NAN_METHOD(Canvas::ToBuffer) {
       return Nan::ThrowError(Canvas::Error(status));
     }
 
-    TryCatch try_catch;
+    Nan::TryCatch try_catch;
     status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
 
     if (try_catch.HasCaught()) {
@@ -434,7 +434,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   closure.compression_level = compression_level;
   closure.filter = filter;
 
-  TryCatch try_catch;
+  Nan::TryCatch try_catch;
 
   cairo_status_t status = canvas_write_to_png_stream(canvas->surface(), streamPNG, &closure);
 
@@ -553,7 +553,7 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
   closure_t closure;
   closure.fn = Local<Function>::Cast(info[3]);
 
-  TryCatch try_catch;
+  Nan::TryCatch try_catch;
   write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), &closure);
 
   if (try_catch.HasCaught()) {
