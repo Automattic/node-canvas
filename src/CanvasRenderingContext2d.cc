@@ -191,8 +191,13 @@ Context2d::~Context2d() {
 
 void
 Context2d::save() {
-  cairo_save(_context);
-  saveState();
+  if (stateno < CANVAS_MAX_STATES) {
+    cairo_save(_context);
+    states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+    memcpy(states[stateno], state, sizeof(canvas_state_t));
+    states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
+    state = states[stateno];
+  }
 }
 
 /*
@@ -201,35 +206,14 @@ Context2d::save() {
 
 void
 Context2d::restore() {
-  cairo_restore(_context);
-  restoreState();
-}
-
-/*
- * Save the current state.
- */
-
-void
-Context2d::saveState() {
-  if (stateno == CANVAS_MAX_STATES) return;
-  states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  memcpy(states[stateno], state, sizeof(canvas_state_t));
-  states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
-  state = states[stateno];
-}
-
-/*
- * Restore state.
- */
-
-void
-Context2d::restoreState() {
-  if (0 == stateno) return;
-  pango_font_description_free(states[stateno]->fontDescription);
-  free(states[stateno]);
-  states[stateno] = NULL;
-  state = states[--stateno];
-  pango_layout_set_font_description(_layout, state->fontDescription);
+  if (stateno > 0) {
+    cairo_restore(_context);
+    pango_font_description_free(states[stateno]->fontDescription);
+    free(states[stateno]);
+    states[stateno] = NULL;
+    state = states[--stateno];
+    pango_layout_set_font_description(_layout, state->fontDescription);
+  }
 }
 
 /*
