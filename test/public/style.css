@@ -2,38 +2,38 @@ body {
   padding: 40px 50px;
   font: 13px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+
 p {
   margin: 15px 5px;
 }
-em {
-  color: #00C5F7;
-}
+
 a {
   color: #00C5F7;
 }
+
 canvas, img {
   padding: 5px;
   border: 1px solid #eee;
 }
-pre {
-  height: 200px;
-  font-size: 12px;
-  overflow: auto;
-}
+
 p.msg {
   width: 400px;
 }
+
 #tests {
   width: 100%;
   margin-top: 35px;
 }
+
 table tr td:nth-child(1),
 table tr td:nth-child(2) {
   width: 200px;
 }
+
 table tr td:nth-child(3) {
   padding: 0 45px;
 }
+
 table tr td p {
   margin: 5px 0;
 }

@@ -1,106 +1,54 @@
-
-/**
- * Module dependencies.
- */
-
+var path = require('path')
 var express = require('express')
-  , Canvas = require('../lib/canvas')
-  , Image = Canvas.Image
-  , bodyParser = require('body-parser')
-  , app = express();
 
-// Config
+var Canvas = require('../')
+var tests = require('./public/tests')
 
-app.set('views', __dirname + '/views');
-app.set('view engine', 'pug');
+var app = express()
+var port = parseInt(process.argv[2] || '4000', 10)
 
-// Middleware
+function renderTest (canvas, name, cb) {
+  if (!tests[name]) {
+    throw new Error('Unknown test: ' + name)
+  }
 
-app.use(bodyParser.json());
-app.use(express.static(__dirname + '/public'));
-
-// Routes
-
-app.get('/', function(req, res){
-  res.render('tests');
-});
-
-function testFn(req){
-  // Normalize state.png as ./public/state.png
-  // no good way around this at the moment
-  req.body.fn = req.body.fn
-    .replace("'state.png'", "'" + __dirname + "/public/state.png'")
-    .replace("'face.jpeg'", "'" + __dirname + "/public/face.jpeg'")
-    .replace("'star.png'", "'" + __dirname + "/public/star.png'");
-
-  // Do not try this at home :)
-  return eval('(' + req.body.fn + ')');
-}
-
-function executeTestFn(ctx, fn, done) {
-  if(2 === fn.length) {
-    fn(ctx, done);
+  if (tests[name].length === 2) {
+    tests[name](canvas.getContext('2d'), cb)
   } else {
-    fn(ctx);
-    done();
+    tests[name](canvas.getContext('2d'))
+    cb(null)
   }
 }
 
-function createCanvas(req, type){
-  var width = req.body.width
-    , height = req.body.height;
-  return new Canvas(width, height, type);
-}
+app.use(express.static(path.join(__dirname, 'fixtures')))
+app.use(express.static(path.join(__dirname, 'public')))
 
-app.post('/render', function(req, res, next){
-  var fn = testFn(req)
-    , canvas = createCanvas(req)
-    , ctx = canvas.getContext('2d')
-    , start = new Date;
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'app.html'))
+})
 
-  function done(){
-    var duration = new Date - start;
-    canvas.toDataURL(function(err, str){
-      if (err) throw err;
-      res.send({ data: str, duration: duration });
-    });
-  }
+app.get('/render', function (req, res, next) {
+  var canvas = new Canvas(200, 200)
 
-  executeTestFn(ctx, fn, done);
-});
+  renderTest(canvas, req.query.name, function (err) {
+    if (err) return next(err)
 
-app.post('/pdf', function(req, res, next){
-  req.body = JSON.parse(req.body.json);
-  var fn = testFn(req)
-    , canvas = createCanvas(req, 'pdf')
-    , ctx = canvas.getContext('2d');
+    res.writeHead(200, { 'Content-Type': 'image/png' })
+    canvas.pngStream().pipe(res)
+  })
+})
 
-  function done(){
-    res.writeHead(200, {'Content-Type' : 'application/pdf'});
-    res.write(canvas.toBuffer());
-    res.end();
-  }
+app.get('/pdf', function (req, res, next) {
+  var canvas = new Canvas(200, 200, 'pdf')
 
-  executeTestFn(ctx, fn, done);
-});
+  renderTest(canvas, req.query.name, function (err) {
+    if (err) return next(err)
 
-app.post('/jpeg', function(req, res, next){
-  // Send nothing if jpeg isn't available.
-  if (!Canvas.jpegVersion) { return res.send({}).end(); }
-  var fn = testFn(req)
-    , canvas = createCanvas(req)
-    , ctx = canvas.getContext('2d');
+    res.writeHead(200, { 'Content-Type': 'application/pdf' })
+    canvas.pdfStream().pipe(res)
+  })
+})
 
-  function done(){
-    canvas.toDataURL('image/jpeg', function (err, str){
-      if (err) throw err;
-      res.send({data: str});
-    });
-  }
-
-  executeTestFn(ctx, fn, done);
-});
-
-var port = parseInt(process.argv[2] || '4000', 10);
-app.listen(port);
-console.log('Test server listening on port %d', port);
+app.listen(port, function () {
+  console.log('👉  http://localhost:%d/', port)
+})

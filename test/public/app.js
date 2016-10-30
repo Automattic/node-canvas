@@ -1,145 +1,55 @@
+window.addEventListener('load', runTests)
 
-function log() {
-  if (window.console) console.log.apply(this, arguments);
-}
+function create (type, attrs, children) {
+  const element = Object.assign(document.createElement(type), attrs)
 
-window.onload = function(){
-  runTests();
-  get('run').addEventListener('click', runTests, false);
-};
-
-document.addEventListener('keypress', function(event){
-  if (114 == event.charCode) runTests();
-}, false);
-
-function get(id) {
-  return document.getElementById(id);
-}
-
-function create(type, str) {
-  var el = document.createElement(type);
-  if (str) el.appendChild(text(str));
-  return el;
-}
-
-function text(str) {
-  return document.createTextNode(str);
-}
-
-function pdfForm(fn, canvas) {
-  var form = create('form')
-    , input = create('input')
-    , submit = create('input');
-
-  form.setAttribute('action', '/pdf');
-  form.setAttribute('method', 'post');
-  form.setAttribute('target', '_blank');
-
-  input.setAttribute('type', 'hidden');
-  input.setAttribute('name', 'json');
-  input.setAttribute('value', JSON.stringify({
-    fn: fn.toString()
-    , width: canvas.width
-    , height: canvas.height
-  }));
-
-  submit.setAttribute('type', 'submit');
-  submit.setAttribute('value', 'PDF');
-
-  form.appendChild(input);
-  form.appendChild(submit);
-
-  return form;
-}
-
-function clearTests() {
-  var table = get('tests');
-  table.removeChild(table.children[1]);
-}
-
-function runTests() {
-  clearTests();
-  var table = get('tests')
-    , tbody = create('tbody');
-  for (var name in tests) {
-    var fn = tests[name]
-      , canvas = create('canvas')
-      , tr = create('tr')
-      , tds = [create('td'), create('td'), create('td'), create('td')];
-
-    canvas.width = 200;
-    canvas.height = 200;
-    canvas.title = name;
-
-    tds[2].appendChild(canvas);
-    tds[3].appendChild(create('h3', name));
-    tds[3].appendChild(pdfForm(fn, canvas));
-
-    tr.appendChild(tds[0]);
-    tr.appendChild(tds[1]);
-    tr.appendChild(tds[2]);
-    tr.appendChild(tds[3]);
-
-    tbody.appendChild(tr);
-    table.appendChild(tbody);
-    runTest(name, canvas, tds[0], tds[1], tds[3]);
+  if (children) {
+    children.forEach(function (child) { element.appendChild(child) })
   }
+
+  return element
 }
 
-function runTest(name, canvas, dest, jpegDest, stats) {
-  var fn = tests[name]
-    , start = new Date;
-  try {
-    fn(canvas.getContext('2d'), function(){});
-  } catch (err) {
-    log(err);
-  }
-  var duration = new Date - start;
-  stats.appendChild(create('p', 'browser: ' + duration + 'ms'));
-  stats.appendChild(create('p', 'fps: ' + (1000 / duration).toFixed(0)));
-  renderOnServer('/render', name, canvas, function(res){
-    if (res.error) {
-      var p = create('p');
-      p.innerText = res.error;
-      dest.appendChild(p);
-    } else if (res.data) {
-      var img = create('img');
-      img.src = res.data;
-      stats.appendChild(create('p', 'node: ' + res.duration + 'ms'));
-      stats.appendChild(create('p', 'fps: ' + (1000 / res.duration).toFixed(0)));
-      dest.appendChild(img);
-    }
-  });
-  renderOnServer('/jpeg', name, canvas, function(res){
-    if (res.error) {
-      var p = create('p');
-      p.innerText = res.error;
-      jpegDest.appendChild(p);
-    } else if (res.data) {
-      var img = create('img');
-      img.src = res.data;
-      jpegDest.appendChild(img);
-    }
-  });
+function pdfLink (name) {
+  return create('a', {
+    href: '/pdf?name=' + encodeURIComponent(name),
+    target: '_blank',
+    textContent: 'PDF'
+  })
 }
 
-function renderOnServer(url, name, canvas, fn) {
-  var req = new XMLHttpRequest
-    , json = JSON.stringify({
-      fn: tests[name].toString()
-      , width: canvas.width
-      , height: canvas.height
-    });
-  req.open('POST', url);
-  req.setRequestHeader('Content-Type', 'application/json');
-  req.onreadystatechange = function(){
-    if (4 == req.readyState) {
-      try {
-        fn(JSON.parse(req.responseText));
-      } catch (err) {
-        fn({ error: err });
-      }
-    }
-  };
-  req.send(json);
+function localRendering (name) {
+  var canvas = create('canvas', { width: 200, height: 200, title: name })
+
+  window.tests[name](canvas.getContext('2d'), function () {})
+
+  return canvas
+}
+
+function clearTests () {
+  var table = document.getElementById('tests')
+  if (table) document.body.removeChild(table)
+}
+
+function runTests () {
+  clearTests()
+
+  var testNames = Object.keys(window.tests)
+
+  var table = create('table', { id: 'tests' }, [
+    create('thead', {}, [
+      create('th', { textContent: 'node-canvas' }),
+      create('th', { textContent: 'browser canvas' }),
+      create('th', { textContent: '' })
+    ]),
+    create('tbody', {}, testNames.map(function (name) {
+      return create('tr', {}, [
+        create('td', {}, [create('img', { src: '/render?name=' + encodeURIComponent(name) })]),
+        create('td', {}, [localRendering(name)]),
+        create('td', {}, [create('h3', { textContent: name }), pdfLink(name)])
+      ])
+    }))
+  ])
+
+  document.body.appendChild(table)
 }

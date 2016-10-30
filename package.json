@@ -24,7 +24,7 @@
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
     "pretest": "node-gyp build",
-    "test": "standard examples/*.js && mocha test/*.test.js",
+    "test": "standard examples/*.js test/server.js test/public/*.js && mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js"
   },
@@ -32,11 +32,9 @@
     "nan": "^2.3.2"
   },
   "devDependencies": {
-    "body-parser": "^1.13.3",
-    "express": "^4.13.2",
-    "pug": "^2.0.0-beta3",
-    "mocha": "*",
-    "standard": "^7.1.1"
+    "express": "^4.14.0",
+    "mocha": "^3.1.2",
+    "standard": "^8.5.0"
   },
   "engines": {
     "node": ">=0.10.0"
