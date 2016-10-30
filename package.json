@@ -29,7 +29,7 @@
     "test-server": "node test/server.js"
   },
   "dependencies": {
-    "nan": "^2.3.2"
+    "nan": "^2.4.0"
   },
   "devDependencies": {
     "express": "^4.14.0",
