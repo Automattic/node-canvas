@@ -29,6 +29,8 @@ $ npm install canvas
 
 Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
+Currently the minimum version of node required is __0.10.0__
+
 You can quickly install the dependencies by using the command for your OS:
 
 OS | Command
@@ -337,16 +339,6 @@ Unit tests:
 Visual tests:
 
     $ make test-server
-
-## Versions
-
-Tested with and designed for:
-
-  - node 0.4.2
-  - cairo 1.8.6
-
-For node 0.2.x `node-canvas` <= 0.4.3 may be used,
-0.5.0 and above are designed for node 0.4.x only.
 
 ## License
 
