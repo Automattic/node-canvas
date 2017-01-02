@@ -5,7 +5,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <limits>
 #include <vector>
