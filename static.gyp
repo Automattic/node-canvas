@@ -28,7 +28,6 @@
             'static/jpeg.gyp:libjpeg',
             'static/gif.gyp:gif',
         ],
-        'sources': ['src/FontFace.cc'],
         'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF'],
     }]
 }
