@@ -1,6 +1,13 @@
 {
     'target_name': 'canvas',
-    'include_dirs': ["<!(node -e \"require('nan')\")"],
+    'libraries': [
+        '<!@(pkg-config pangocairo --libs)'
+    ],
+    'include_dirs': [
+        "<!(node -e \"require('nan')\")",
+        '<!@(pkg-config glib-2.0   --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
+    ],
     'sources':
     [
         'src/Canvas.cc',
