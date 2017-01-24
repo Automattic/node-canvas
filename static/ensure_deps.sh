@@ -6,7 +6,7 @@ GIFLIB_VERSION=4.2.3
 LIBJPEG_VERSION=1.2.1
 LIBPNG_VERSION=1.2.56
 PIXMAN_VERSION=0.32.6
-ZLIB_VERSION=1.2.8
+ZLIB_VERSION=1.2.11
 
 CAIRO_URL=http://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz
 FONTCONFIG_URL=http://cgit.freedesktop.org/fontconfig/plain/fontconfig/fontconfig.h
@@ -15,7 +15,7 @@ GIFLIB_URL=http://sourceforge.net/projects/giflib/files/giflib-4.x/giflib-$GIFLI
 LIBJPEG_URL=http://downloads.sourceforge.net/project/libjpeg-turbo/$LIBJPEG_VERSION/libjpeg-turbo-$LIBJPEG_VERSION.tar.gz
 LIBPNG_URL=http://sourceforge.net/projects/libpng/files/libpng12/$LIBPNG_VERSION/libpng-$LIBPNG_VERSION.tar.xz
 PIXMAN_URL=http://cairographics.org/releases/pixman-$PIXMAN_VERSION.tar.gz
-ZLIB_URL=http://zlib.net/zlib-$ZLIB_VERSION.tar.gz
+ZLIB_URL=https://sourceforge.net/projects/libpng/files/zlib/$ZLIB_VERSION/zlib-$ZLIB_VERSION.tar.gz
 
 
 DEPS="$(dirname $0)/../deps"
