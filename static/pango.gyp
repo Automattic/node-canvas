@@ -28,12 +28,13 @@
             'custom-include/cairo',
             '<(freetype_root)/include',
             '<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)',
-            '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
+            '<(harfbuzz_root)/src'
         ],
         'dependencies':
         [
             '../static/cairo.gyp:cairo',
             '../static/freetype.gyp:freetype',
+            '../static/harfbuzz.gyp:harfbuzz',
             'pango/mini-fribidi'
         ],
         'defines': [
