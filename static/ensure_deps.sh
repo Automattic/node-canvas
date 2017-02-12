@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 CAIRO_VERSION=1.12.18
+FONTCONFIG_VERSION=2.12.1
 FREETYPE_VERSION=2.6
 GIFLIB_VERSION=4.2.3
 GLIB_VERSION=2.50.2
@@ -12,7 +13,7 @@ PIXMAN_VERSION=0.32.6
 ZLIB_VERSION=1.2.11
 
 CAIRO_URL=http://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz
-FONTCONFIG_URL=http://cgit.freedesktop.org/fontconfig/plain/fontconfig/fontconfig.h
+FONTCONFIG_URL=https://www.freedesktop.org/software/fontconfig/release/fontconfig-$FONTCONFIG_VERSION.tar.bz2
 FREETYPE_URL=http://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VERSION.tar.gz
 GIFLIB_URL=http://sourceforge.net/projects/giflib/files/giflib-4.x/giflib-$GIFLIB_VERSION.tar.gz
 GLIB_URL=https://download.gnome.org/sources/glib/2.50/glib-$GLIB_VERSION.tar.xz
@@ -60,26 +61,22 @@ if [ ! -d cairo ]; then
   mv cairo/src cairo/cairo  || exit $?
 fi
 
-if [ ! -d fontconfig ]; then
-  mkdir -p fontconfig                                   &&
-  curl -s -L $FONTCONFIG_URL >> fontconfig/fontconfig.h || exit $?
-fi
-
-fetch     $FREETYPE_URL freetype &&
-fetch     $GIFLIB_URL   giflib   &&
-fetch_xz  $GLIB_URL     glib     &&
-fetch_bz2 $HARFBUZZ_URL harfbuzz &&
-fetch     $LIBJPEG_URL  libjpeg  &&
-fetch_xz  $LIBPNG_URL   libpng   &&
-fetch_xz  $PANGO_URL    pango    &&
-fetch     $PIXMAN_URL   pixman   &&
-fetch     $ZLIB_URL     zlib     || exit $?
+fetch_bz2 $FONTCONFIG_URL fontconfig &&
+fetch     $FREETYPE_URL   freetype   &&
+fetch     $GIFLIB_URL     giflib     &&
+fetch_xz  $GLIB_URL       glib       &&
+fetch_bz2 $HARFBUZZ_URL   harfbuzz   &&
+fetch     $LIBJPEG_URL    libjpeg    &&
+fetch_xz  $LIBPNG_URL     libpng     &&
+fetch_xz  $PANGO_URL      pango      &&
+fetch     $PIXMAN_URL     pixman     &&
+fetch     $ZLIB_URL       zlib       || exit $?
 
 
-if [ ! -d "cairo"  ] || [ ! -d "freetype" ] || [ ! -d "giflib"  ] \
-|| [ ! -d "glib"   ] || [ ! -d "harfbuzz" ] || [ ! -d "libjpeg" ] \
-|| [ ! -d "libpng" ] || [ ! -d "pango"    ] || [ ! -d "pixman"  ] \
-|| [ ! -d "zlib"   ]                                            ; then
+if [ ! -d "cairo"   ] || [ ! -d "fontconfig" ] || [ ! -d "freetype" ] \
+|| [ ! -d "giflib"  ] || [ ! -d "glib"       ] || [ ! -d "harfbuzz" ] \
+|| [ ! -d "libjpeg" ] || [ ! -d "libpng"     ] || [ ! -d "pango"    ] \
+|| [ ! -d "pixman"  ] || [ ! -d "zlib"       ]                      ; then
   echo false
 else
   echo true

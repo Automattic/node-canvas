@@ -8,7 +8,7 @@
     [{
         'includes': ['canvas.gypi'],
         'libraries': [
-            '<!@(pkg-config fontconfig --libs)',
+            '<!@(pkg-config expat --libs)',
             '<!@(pkg-config libffi --libs)',
         ],
         'include_dirs':
@@ -17,6 +17,8 @@
             'deps/<(cairo_root)',
             'deps/<(cairo_root)cairo',
             'static/custom-include/cairo',
+            'deps/<(fontconfig_root)/src',
+            'static/custom-include/fontconfig',
             'deps/<(freetype_root)/include',
             'deps/<(gif_root)/lib',
             'deps/<(glib_root)',
@@ -33,6 +35,7 @@
         'dependencies':
         [
             'static/cairo.gyp:cairo',
+            'static/fontconfig.gyp:fontconfig',
             'static/gif.gyp:gif',
             'static/glib.gyp:glib',
             'static/glib.gyp:gobject',
