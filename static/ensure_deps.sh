@@ -2,6 +2,7 @@
 
 CAIRO_VERSION=1.12.18
 EXPAT_VERSION=2.2.0
+FFI_VERSION=3.2.1
 FONTCONFIG_VERSION=2.12.1
 FREETYPE_VERSION=2.6
 GIFLIB_VERSION=4.2.3
@@ -15,6 +16,7 @@ ZLIB_VERSION=1.2.11
 
 CAIRO_URL=http://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz
 EXPAT_URL=https://downloads.sourceforge.net/project/expat/expat/$EXPAT_VERSION/expat-$EXPAT_VERSION.tar.bz2
+FFI_URL=ftp://sourceware.org/pub/libffi/libffi-$FFI_VERSION.tar.gz
 FONTCONFIG_URL=https://www.freedesktop.org/software/fontconfig/release/fontconfig-$FONTCONFIG_VERSION.tar.bz2
 FREETYPE_URL=http://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VERSION.tar.gz
 GIFLIB_URL=http://sourceforge.net/projects/giflib/files/giflib-4.x/giflib-$GIFLIB_VERSION.tar.gz
@@ -64,6 +66,7 @@ if [ ! -d cairo ]; then
 fi
 
 fetch_bz2 $EXPAT_URL      expat      &&
+fetch     $FFI_URL        ffi        &&
 fetch_bz2 $FONTCONFIG_URL fontconfig &&
 fetch     $FREETYPE_URL   freetype   &&
 fetch     $GIFLIB_URL     giflib     &&
@@ -76,10 +79,11 @@ fetch     $PIXMAN_URL     pixman     &&
 fetch     $ZLIB_URL       zlib       || exit $?
 
 
-if [ ! -d "cairo"    ] || [ ! -d "expat"   ] || [ ! -d "fontconfig" ] \
-|| [ ! -d "freetype" ] || [ ! -d "giflib"  ] || [ ! -d "glib"       ] \
-|| [ ! -d "harfbuzz" ] || [ ! -d "libjpeg" ] || [ ! -d "libpng"     ] \
-|| [ ! -d "pango"    ] || [ ! -d "pixman"  ] || [ ! -d "zlib"       ] ; then
+if [ ! -d "cairo"      ] || [ ! -d "expat"    ] || [ ! -d "ffi"     ] \
+|| [ ! -d "fontconfig" ] || [ ! -d "freetype" ] || [ ! -d "giflib"  ] \
+|| [ ! -d "glib"       ] || [ ! -d "harfbuzz" ] || [ ! -d "libjpeg" ] \
+|| [ ! -d "libpng"     ] || [ ! -d "pango"    ] || [ ! -d "pixman"  ] \
+|| [ ! -d "zlib"       ]                                            ; then
   echo false
 else
   echo true

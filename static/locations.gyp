@@ -2,6 +2,7 @@
     'variables': {
         'cairo_root%': "../deps/cairo/",
         'expat_root%': "../deps/expat/",
+        'ffi_root%': "../deps/ffi/",
         'fontconfig_root%': "../deps/fontconfig/",
         'freetype_root%': "../deps/freetype/",
         'gif_root%': "../deps/giflib/",

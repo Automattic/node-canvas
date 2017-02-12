@@ -7,9 +7,6 @@
     'targets':
     [{
         'includes': ['canvas.gypi'],
-        'libraries': [
-            '<!@(pkg-config libffi --libs)',
-        ],
         'include_dirs':
         [
             'deps',
@@ -35,6 +32,7 @@
         [
             'static/cairo.gyp:cairo',
             'static/expat.gyp:expat',
+            'static/ffi.gyp:ffi',
             'static/fontconfig.gyp:fontconfig',
             'static/gif.gyp:gif',
             'static/glib.gyp:glib',
