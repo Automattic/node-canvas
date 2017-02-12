@@ -7,6 +7,8 @@
             '<(fontconfig_root)',
             '<(fontconfig_root)src',
             'custom-include/fontconfig',
+
+            '<(expat_root)/lib',
             '<(freetype_root)/include',
         ],
         'defines': [

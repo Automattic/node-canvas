@@ -8,7 +8,6 @@
     [{
         'includes': ['canvas.gypi'],
         'libraries': [
-            '<!@(pkg-config expat --libs)',
             '<!@(pkg-config libffi --libs)',
         ],
         'include_dirs':
@@ -35,6 +34,7 @@
         'dependencies':
         [
             'static/cairo.gyp:cairo',
+            'static/expat.gyp:expat',
             'static/fontconfig.gyp:fontconfig',
             'static/gif.gyp:gif',
             'static/glib.gyp:glib',
