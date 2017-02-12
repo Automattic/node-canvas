@@ -4,7 +4,9 @@
         'target_name': 'pango/mini-fribidi',
         'type': 'static_library',
         'include_dirs': [
-            '<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)',
+            '<(glib_root)',
+            '<(glib_root)/glib',
+            'custom-include/glib',
             '<(pango_root)pango/mini-fribidi',
             'custom-include/pango',
         ],
@@ -27,7 +29,9 @@
             '<(cairo_root)cairo',
             'custom-include/cairo',
             '<(freetype_root)/include',
-            '<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)',
+            '<(glib_root)',
+            '<(glib_root)/glib',
+            'custom-include/glib',
             '<(harfbuzz_root)/src'
         ],
         'dependencies':

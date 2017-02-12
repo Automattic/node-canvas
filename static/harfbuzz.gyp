@@ -12,11 +12,14 @@
         'target_name': 'harfbuzz',
         'type': 'static_library',
         'include_dirs': [
-            '<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)',
-            '<(freetype_root)/include',
             '<(harfbuzz_root)src',
             '<(harfbuzz_root)src/hb-ucdn',
             'custom-include/harfbuzz',
+
+            '<(freetype_root)/include',
+            '<(glib_root)',
+            '<(glib_root)/glib',
+            'custom-include/glib',
         ],
         'dependencies': ['hb-ucdn'],
         'defines': ['HAVE_CONFIG_H'],

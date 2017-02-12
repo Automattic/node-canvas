@@ -3,6 +3,7 @@
         'cairo_root%': "../deps/cairo/",
         'freetype_root%': "../deps/freetype/",
         'gif_root%': "../deps/giflib/",
+        'glib_root%': "../deps/glib/",
         'harfbuzz_root%': "../deps/harfbuzz/",
         'jpeg_root%': "../deps/libjpeg/",
         'libpng_root%': "../deps/libpng/",

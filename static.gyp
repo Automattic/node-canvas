@@ -9,7 +9,7 @@
         'includes': ['canvas.gypi'],
         'libraries': [
             '<!@(pkg-config fontconfig --libs)',
-            '<!@(pkg-config gobject-2.0 --libs)',
+            '<!@(pkg-config libffi --libs)',
         ],
         'include_dirs':
         [
@@ -19,7 +19,9 @@
             'static/custom-include/cairo',
             'deps/<(freetype_root)/include',
             'deps/<(gif_root)/lib',
-            '<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)',
+            'deps/<(glib_root)',
+            'deps/<(glib_root)/glib',
+            'static/custom-include/glib',
             'deps/<(jpeg_root)',
             'static/custom-include/jpeg',
             'deps/<(libpng_root)',
@@ -32,6 +34,8 @@
         [
             'static/cairo.gyp:cairo',
             'static/gif.gyp:gif',
+            'static/glib.gyp:glib',
+            'static/glib.gyp:gobject',
             'static/jpeg.gyp:libjpeg',
             'static/libpng.gyp:png',
             'static/pango.gyp:pango'
