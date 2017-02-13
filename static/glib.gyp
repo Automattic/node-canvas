@@ -165,7 +165,10 @@
             '<(glib_root)',
             '<(glib_root)/glib',
             '<(glib_root)/gobject',
-            'custom-include/glib'
+            'custom-include/glib',
+
+            '<(ffi_root)src/x86',
+            'custom-include/ffi'
         ],
         'defines': [
             'HAVE_CONFIG_H', 'G_LOG_DOMAIN=\"GLib-GObject\"',

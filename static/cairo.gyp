@@ -2,8 +2,7 @@
     'includes': ['common.gyp', 'locations.gyp'],
     'conditions':
     [
-        ['OS!="win"',
-        {
+        ['OS!="win"', {
             'variables':
             {
                 'cairo_src%': "<(cairo_root)cairo/"
@@ -19,17 +18,13 @@
             'custom-include/cairo',
             '<(cairo_root)',
             '<(cairo_src)',
+            '<(fontconfig_root)',
             '<(freetype_root)include',
             '<(libpng_root)',
             'custom-include/png',
             '<(pixman_root)',
             '<(pixman_root)pixman',
             '<(zlib_root)',
-
-            # '<!@(pkg-config --cflags-only-I  pixman-1 | sed s/-I//g)'
-        ],
-        'libraries': [
-            # '<!@(pkg-config pixman-1 --libs)'
         ],
         'dependencies':
         [

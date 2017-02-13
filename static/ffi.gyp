@@ -5,6 +5,7 @@
         'type': 'static_library',
         'include_dirs': [
             '<(ffi_root)include/',
+            '<(ffi_root)src/x86',
             'custom-include/ffi'
         ],
         'defines': ['HAVE_CONFIG_H'],

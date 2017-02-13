@@ -28,6 +28,7 @@
             'custom-include/pango',
             '<(cairo_root)cairo',
             'custom-include/cairo',
+            '<(fontconfig_root)',
             '<(freetype_root)/include',
             '<(glib_root)',
             '<(glib_root)/glib',

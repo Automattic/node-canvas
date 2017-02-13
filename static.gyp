@@ -15,6 +15,7 @@
             'static/custom-include/cairo',
             'deps/<(fontconfig_root)/src',
             'static/custom-include/fontconfig',
+            'deps/<(fontconfig_root)',
             'deps/<(freetype_root)/include',
             'deps/<(gif_root)/lib',
             'deps/<(glib_root)',
