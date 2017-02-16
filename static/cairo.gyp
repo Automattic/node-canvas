@@ -1,5 +1,5 @@
 {
-    'includes': ['common.gyp', 'locations.gyp'],
+    'includes': ['common.gypi', 'locations.gypi'],
     'conditions':
     [
         ['OS!="win"', {
@@ -28,8 +28,8 @@
         ],
         'dependencies':
         [
-            'pixman.gyp:pixman',
-            'freetype.gyp:freetype',
+            'pixman.gypi:pixman',
+            'freetype.gypi:freetype',
         ],
         'defines': ['HAVE_CONFIG_H'],
 

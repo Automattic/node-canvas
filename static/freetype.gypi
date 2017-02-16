@@ -1,12 +1,12 @@
 {
-  'includes': [ 'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'freetype',
       'type': 'static_library',
-      'include_dirs': [ '<(freetype_root)include/'],
+      'include_dirs': ['<(freetype_root)include/'],
 
-      'defines': [ 'FT2_BUILD_LIBRARY' ],
+      'defines': ['FT2_BUILD_LIBRARY'],
       'sources': [
         #"<(freetype_root)src/autofit/afangles.c",
         #"<(freetype_root)src/autofit/afcjk.c",

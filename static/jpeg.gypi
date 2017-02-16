@@ -1,13 +1,13 @@
 {
 
-  'includes': [  'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'libjpeg',
       'type': 'static_library',
       'include_dirs': [
             '../static/custom-include/jpeg/',
-            '<(jpeg_root)' ,
+            '<(jpeg_root)',
         ],
 
       'dependencies': [],

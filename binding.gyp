@@ -5,12 +5,10 @@
     },
     'conditions':
     [
-        ['has_cairo=="true"',
-        {
-            'includes': ['shared.gyp']
-        },
-        {
-            'includes': ['static.gyp']
+        ['has_cairo=="true"', {
+            'includes': ['shared.gypi']
+        }, {
+            'includes': ['static.gypi']
         }]
     ]
 }

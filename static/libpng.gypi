@@ -1,18 +1,18 @@
 {
 
-  'includes': [ 'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'png',
       'type': 'static_library',
       'include_dirs': [
-            '<(libpng_root)' ,
+            '<(libpng_root)',
             '../static/custom-include/png/',
             '<(zlib_root)',
         ],
 
       'dependencies': [
-            'zlib.gyp:zlib'
+            'zlib.gypi:zlib'
         ],
       'defines': [],
       'sources': [

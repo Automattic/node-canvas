@@ -1,16 +1,10 @@
 {
-
-  'includes': [ 'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'zlib',
       'type': 'static_library',
-      'include_dirs': [ '<(zlib_root)' ],
-
-      'libraries': [
-
-      ],
-      'defines': [ ],
+      'include_dirs': ['<(zlib_root)'],
       'sources': [
         "<(zlib_root)adler32.c",
         "<(zlib_root)compress.c",

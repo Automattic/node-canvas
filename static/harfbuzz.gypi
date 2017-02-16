@@ -1,5 +1,5 @@
 {
-    'includes': ['common.gyp', 'locations.gyp'],
+    'includes': ['common.gypi', 'locations.gypi'],
     'targets': [{
         'target_name': 'hb-ucdn',
         'type': 'static_library',

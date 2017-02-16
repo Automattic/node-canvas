@@ -1,5 +1,5 @@
 {
-    'includes': ['common.gyp', 'locations.gyp'],
+    'includes': ['common.gypi', 'locations.gypi'],
     'targets': [{
         'target_name': 'pango/mini-fribidi',
         'type': 'static_library',
@@ -37,9 +37,9 @@
         ],
         'dependencies':
         [
-            '../static/cairo.gyp:cairo',
-            '../static/freetype.gyp:freetype',
-            '../static/harfbuzz.gyp:harfbuzz',
+            '../static/cairo.gypi:cairo',
+            '../static/freetype.gypi:freetype',
+            '../static/harfbuzz.gypi:harfbuzz',
             'pango/mini-fribidi'
         ],
         'defines': [

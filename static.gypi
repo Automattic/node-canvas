@@ -1,8 +1,8 @@
 {
-    'includes': ['static/locations.gyp'],
+    'includes': ['static/locations.gypi'],
     'variables':
     {
-        'ensure_deps%': '<!(static/ensure_deps.sh)',
+        'ensure_deps%': '<!(static/ensure_deps.sh)'
     },
     'targets':
     [{
@@ -31,17 +31,17 @@
         ],
         'dependencies':
         [
-            'static/cairo.gyp:cairo',
-            'static/expat.gyp:expat',
-            'static/ffi.gyp:ffi',
-            'static/fontconfig.gyp:fontconfig',
-            'static/gif.gyp:gif',
-            'static/glib.gyp:glib',
-            'static/glib.gyp:gobject',
-            'static/jpeg.gyp:libjpeg',
-            'static/libpng.gyp:png',
-            'static/pango.gyp:pango'
+            'static/cairo.gypi:cairo',
+            'static/expat.gypi:expat',
+            'static/ffi.gypi:ffi',
+            'static/fontconfig.gypi:fontconfig',
+            'static/gif.gypi:gif',
+            'static/glib.gypi:glib',
+            'static/glib.gypi:gobject',
+            'static/jpeg.gypi:libjpeg',
+            'static/libpng.gypi:png',
+            'static/pango.gypi:pango'
         ],
-        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF'],
+        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF']
     }]
 }

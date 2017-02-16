@@ -60,6 +60,7 @@ fetch_xz()
 }
 
 
+# TODO Don't modify source code location
 if [ ! -d cairo ]; then
   fetch_xz $CAIRO_URL cairo &&
   mv cairo/src cairo/cairo  || exit $?

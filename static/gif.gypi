@@ -1,14 +1,13 @@
 {
 
-  'includes': [ 'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'gif',
       'type': 'static_library',
-      'include_dirs': [ '<(gif_root)lib/'],
+      'include_dirs': ['<(gif_root)lib/'],
       'libraries': [
        ],
-      'defines': [  ],
       'sources': [
             "<(gif_root)lib/dgif_lib.c",
             "<(gif_root)lib/egif_lib.c",

@@ -1,6 +1,5 @@
 {
-
-  'includes': [ 'common.gyp' , 'locations.gyp'],
+  'includes': ['common.gypi', 'locations.gypi'],
   'targets': [
     {
       'target_name': 'pixman',
@@ -9,13 +8,8 @@
             '../static/custom-include/pixman/',
             '<(pixman_root)',
             '<(pixman_root)pixman',
-            ],
-
-      'libraries': [
-
-      ]
-      ,
-      'defines': [ 'HAVE_CONFIG_H' ],
+        ],
+      'defines': ['HAVE_CONFIG_H'],
       'sources': [
         "<(pixman_root)pixman/pixman-access-accessors.c",
         "<(pixman_root)pixman/pixman-access.c",
@@ -46,15 +40,15 @@
         "<(pixman_root)pixman/pixman-radial-gradient.c",
         "<(pixman_root)pixman/pixman-region16.c",
         "<(pixman_root)pixman/pixman-region32.c",
-        #"<(pixman_root)pixman/pixman-region.c",
+        # "<(pixman_root)pixman/pixman-region.c",
         "<(pixman_root)pixman/pixman-solid-fill.c",
         "<(pixman_root)pixman/pixman-sse2.c",
         "<(pixman_root)pixman/pixman-timer.c",
         "<(pixman_root)pixman/pixman-trap.c",
         "<(pixman_root)pixman/pixman-utils.c",
-        #"<(pixman_root)pixman/pixman-vmx.c",
-        "<(pixman_root)pixman/pixman-x86.c",
-      ],
-    },
+        # "<(pixman_root)pixman/pixman-vmx.c",
+        "<(pixman_root)pixman/pixman-x86.c"
+      ]
+    }
   ]
 }
