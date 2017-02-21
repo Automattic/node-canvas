@@ -8,8 +8,8 @@
       }
     }, { # 'OS!="win"'
       'variables': {
-        'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
-        'with_gif%': '<!(./util/has_lib.sh gif)'
+        'with_jpeg%': '<!(node ./util/has_lib.js jpeg)',
+        'with_gif%': '<!(node ./util/has_lib.js gif)'
       }
     }]
   ],
