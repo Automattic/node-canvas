@@ -519,6 +519,14 @@ describe('Canvas', function () {
       });
     });
 
+    it('toDataURL(function (err, str) {...}) is async even with no canvas data', function (done) {
+      new Canvas().toDataURL(function(err, str){
+        assert.ifError(err);
+        assert.ok('data:,' === str);
+        done();
+      });
+    });
+
     it('toDataURL(0.5, function (err, str) {...}) works and defaults to PNG', function (done) {
       new Canvas(200,200).toDataURL(0.5, function(err, str){
         assert.ifError(err);
