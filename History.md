@@ -1,3 +1,8 @@
+1.6.4 / 2017-02-26
+==================
+
+ * Make sure Canvas#toDataURL is always async if a callback is passed in (#874)
+
 1.6.3 / 2017-02-14
 ==================
 
