@@ -1,3 +1,8 @@
+Unreleased / patch
+==================
+
+ * Port has_lib.sh to javascript (#872)
+
 1.6.0 / 2016-10-16
 ==================
 
