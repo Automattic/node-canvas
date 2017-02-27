@@ -26,6 +26,7 @@
 #endif
 
 NAN_MODULE_INIT(init) {
+  Backends::Initialize(target);
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
