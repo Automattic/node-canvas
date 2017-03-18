@@ -999,6 +999,18 @@ tests['font family invalid'] = function (ctx) {
   ctx.fillText('14px Invalid, Impact', 100, 100)
 }
 
+tests['font style variant weight size family'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 100)
+  ctx.lineTo(200, 100)
+  ctx.stroke()
+
+  ctx.font = 'normal normal normal 16px Impact'
+  ctx.textAlign = 'center'
+  ctx.fillText('normal normal normal 16px', 100, 100)
+}
+
 tests['globalCompositeOperation source-over'] = function (ctx) {
   ctx.fillStyle = 'blue'
   ctx.fillRect(0, 0, 100, 100)
