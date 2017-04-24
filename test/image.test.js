@@ -70,6 +70,14 @@ describe('Image', function () {
     assert.equal(onloadCalled, 1);
   });
 
+  it('Image#getRawData', function() {
+      var img = new Image();
+      img.src = png_clock;
+      var buf = img.getRawData();
+      assert.ok(buf instanceof Buffer);
+      assert.strictEqual(409600, img.getRawData().byteLength);
+  });
+
   it('Image#onerror', function () {
     var img = new Image
       , error

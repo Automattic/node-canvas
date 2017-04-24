@@ -36,6 +36,7 @@ class Image: public Nan::ObjectWrap {
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
+    static NAN_METHOD(GetRawData);
     static NAN_GETTER(GetSource);
     static NAN_GETTER(GetOnload);
     static NAN_GETTER(GetOnerror);
