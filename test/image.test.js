@@ -75,7 +75,7 @@ describe('Image', function () {
       img.src = png_clock;
       var buf = img.getRawData();
       assert.ok(buf instanceof Buffer);
-      assert.strictEqual(409600, img.getRawData().byteLength);
+      assert.strictEqual(409600, img.getRawData().length);
   });
 
   it('Image#onerror', function () {
