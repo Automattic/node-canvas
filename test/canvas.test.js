@@ -215,13 +215,13 @@ describe('Canvas', function () {
 
   it('Canvas#type', function () {
     var canvas = new Canvas(10, 10);
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
     var canvas = new Canvas(10, 10, 'pdf');
-    assert('pdf' == canvas.type);
+    assert.equal(canvas.type, 'pdf');
     var canvas = new Canvas(10, 10, 'svg');
-    assert('svg' == canvas.type);
+    assert.equal(canvas.type, 'svg');
     var canvas = new Canvas(10, 10, 'hey');
-    assert('image' == canvas.type);
+    assert.equal(canvas.type, 'image');
   });
 
   it('Canvas#getContext("2d")', function () {
@@ -908,7 +908,7 @@ describe('Canvas', function () {
     stream.on('data', function (chunk) {
       if (firstChunk) {
         firstChunk = false;
-        assert.equal('PDF', chunk.slice(1, 4).toString());
+        assert.equal(chunk.slice(1, 4).toString(), 'PDF');
       }
     });
     stream.on('end', function () {
