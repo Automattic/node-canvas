@@ -9,6 +9,7 @@ var Canvas = require('../')
 
 var png_checkers = __dirname + '/fixtures/checkers.png';
 var png_clock = __dirname + '/fixtures/clock.png';
+var jpg_face = __dirname + '/fixtures/face.jpeg';
 
 describe('Image', function () {
   it('should require new', function () {
@@ -17,6 +18,32 @@ describe('Image', function () {
 
   it('Image', function () {
     assert.ok(Image instanceof Function);
+  });
+
+  it('Image set src to JPEG', function () {
+    var img = new Image
+      , onloadCalled = 0
+      , onerrorCalled = 0;
+
+    assert.strictEqual(null, img.onload);
+    assert.strictEqual(false, img.complete);
+
+    img.onload = function () {
+      onloadCalled += 1;
+      assert.strictEqual(img.src, jpg_face);
+      assert.strictEqual(485, img.width);
+      assert.strictEqual(401, img.height);
+      assert.strictEqual(true, img.complete);
+    };
+
+    img.onerror = function (e) {
+      onerrorCalled += 1;
+    };
+
+    img.src = jpg_face;
+    assert.strictEqual(1, onloadCalled);
+    assert.strictEqual(0, onerrorCalled);
+    assert.strictEqual(img.src, jpg_face);
   });
 
   it('Image#onload', function () {
