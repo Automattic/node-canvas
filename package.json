@@ -39,7 +39,7 @@
     "standard": "^8.5.0"
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=4"
   },
   "main": "./lib/canvas.js",
   "license": "MIT"
