@@ -19,7 +19,7 @@ describe('Canvas', function () {
   });
 
   it('.version', function () {
-    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.version));
+    assert.ok(/^\d+\.\d+\.\d+(-(alpha|beta)\.\d+)?$/.test(Canvas.version));
   });
 
   it('.cairoVersion', function () {
