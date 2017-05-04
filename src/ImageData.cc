@@ -39,13 +39,7 @@ NAN_METHOD(ImageData::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-  Local<v8::Object> clampedArray;
-  Local<Object> global = Context::GetCurrent()->Global();
-#else
   Local<Uint8ClampedArray> clampedArray;
-#endif
-
   uint32_t width;
   uint32_t height;
   int length;
@@ -63,23 +57,11 @@ NAN_METHOD(ImageData::New) {
     }
     length = width * height * 4;
 
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-    Local<Int32> sizeHandle = Nan::New(length);
-    Local<Value> caargv[] = { sizeHandle };
-    clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(1, caargv);
-#else
     clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
-#endif
 
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-  } else if (info[0]->ToObject()->GetIndexedPropertiesExternalArrayDataType() == kExternalPixelArray && info[1]->IsUint32()) {
-    clampedArray = info[0]->ToObject();
-    length = clampedArray->GetIndexedPropertiesExternalArrayDataLength();
-#else
   } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
     clampedArray = info[0].As<Uint8ClampedArray>();
     length = clampedArray->Length();
-#endif
     if (length == 0) {
       Nan::ThrowRangeError("The input data has a zero byte length.");
       return;
