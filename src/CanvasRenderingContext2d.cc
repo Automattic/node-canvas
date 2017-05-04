@@ -512,7 +512,7 @@ NAN_METHOD(Context2d::New) {
 
 NAN_METHOD(Context2d::AddPage) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  if (!context->canvas()->isPDF()) {
+  if (context->canvas()->backend()->getName() != "pdf") {
     return Nan::ThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
@@ -557,8 +557,8 @@ NAN_METHOD(Context2d::PutImageData) {
     case 3:
       // Need to wrap std::min calls using parens to prevent macro expansion on
       // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
-      cols = (std::min)(imageData->width(), context->canvas()->width - dx);
-      rows = (std::min)(imageData->height(), context->canvas()->height - dy);
+      cols = (std::min)(imageData->width(), context->canvas()->getWidth() - dx);
+      rows = (std::min)(imageData->height(), context->canvas()->getHeight() - dy);
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -584,8 +584,8 @@ NAN_METHOD(Context2d::PutImageData) {
       // clamp width at canvas size
       // Need to wrap std::min calls using parens to prevent macro expansion on
       // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
-      cols = (std::min)(sw, context->canvas()->width - dx);
-      rows = (std::min)(sh, context->canvas()->height - dy);
+      cols = (std::min)(sw, context->canvas()->getWidth() - dx);
+      rows = (std::min)(sh, context->canvas()->getHeight() - dy);
       break;
     default:
       return Nan::ThrowError("invalid arguments");
@@ -670,8 +670,10 @@ NAN_METHOD(Context2d::GetImageData) {
     sh = -sh;
   }
 
-  if (sx + sw > canvas->width) sw = canvas->width - sx;
-  if (sy + sh > canvas->height) sh = canvas->height - sy;
+  int width  = canvas->getWidth();
+  int height = canvas->getHeight();
+  if (sx + sw > width) sw = width - sx;
+  if (sy + sh > height) sh = height - sy;
 
   // WebKit/moz functionality. node-canvas used to return in either case.
   if (sw <= 0) sw = 1;
@@ -785,8 +787,8 @@ NAN_METHOD(Context2d::DrawImage) {
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->width;
-    sh = canvas->height;
+    sw = canvas->getWidth();
+    sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid

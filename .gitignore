@@ -16,3 +16,4 @@ npm-debug.log
 # Vim cruft
 *.swp
 *.un~
+npm-debug.log

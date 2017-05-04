@@ -18,10 +18,15 @@
 #include "CanvasRenderingContext2d.h"
 #include "closure.h"
 #include "register_font.h"
+#include "toBuffer.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
 #endif
+
+#include "backend/ImageBackend.h"
+#include "backend/PdfBackend.h"
+#include "backend/SvgBackend.h"
 
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
@@ -80,17 +85,35 @@ NAN_METHOD(Canvas::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
-  int width = 0, height = 0;
-  canvas_type_t type = CANVAS_TYPE_IMAGE;
-  if (info[0]->IsNumber()) width = info[0]->Uint32Value();
-  if (info[1]->IsNumber()) height = info[1]->Uint32Value();
-  if (info[2]->IsString()) type = !strcmp("pdf", *String::Utf8Value(info[2]))
-    ? CANVAS_TYPE_PDF
-    : !strcmp("svg", *String::Utf8Value(info[2]))
-      ? CANVAS_TYPE_SVG
-      : CANVAS_TYPE_IMAGE;
-  Canvas *canvas = new Canvas(width, height, type);
+  Backend* backend = NULL;
+  if (info[0]->IsNumber()) {
+    int width = info[0]->Uint32Value(), height = 0;
+
+    if (info[1]->IsNumber()) height = info[1]->Uint32Value();
+
+    if (info[2]->IsString()) {
+      if (0 == strcmp("pdf", *String::Utf8Value(info[2])))
+        backend = new PdfBackend(width, height);
+      else if (0 == strcmp("svg", *String::Utf8Value(info[2])))
+        backend = new SvgBackend(width, height);
+      else
+        backend = new ImageBackend(width, height);
+    }
+    else
+      backend = new ImageBackend(width, height);
+  }
+  else if (info[0]->IsObject()) {
+    backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+  }
+  else {
+    backend = new ImageBackend(0, 0);
+  }
+
+  Canvas* canvas = new Canvas(backend);
   canvas->Wrap(info.This());
+
+  backend->setCanvas(canvas);
+
   info.GetReturnValue().Set(info.This());
 }
 
@@ -100,7 +123,7 @@ NAN_METHOD(Canvas::New) {
 
 NAN_GETTER(Canvas::GetType) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : "image").ToLocalChecked());
+  info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName()).ToLocalChecked());
 }
 
 /*
@@ -117,7 +140,7 @@ NAN_GETTER(Canvas::GetStride) {
 
 NAN_GETTER(Canvas::GetWidth) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<Number>(canvas->width));
+  info.GetReturnValue().Set(Nan::New<Number>(canvas->getWidth()));
 }
 
 /*
@@ -127,7 +150,7 @@ NAN_GETTER(Canvas::GetWidth) {
 NAN_SETTER(Canvas::SetWidth) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->width = value->Uint32Value();
+    canvas->backend()->setWidth(value->Uint32Value());
     canvas->resurface(info.This());
   }
 }
@@ -138,7 +161,7 @@ NAN_SETTER(Canvas::SetWidth) {
 
 NAN_GETTER(Canvas::GetHeight) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<Number>(canvas->height));
+  info.GetReturnValue().Set(Nan::New<Number>(canvas->getHeight()));
 }
 
 /*
@@ -148,37 +171,9 @@ NAN_GETTER(Canvas::GetHeight) {
 NAN_SETTER(Canvas::SetHeight) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->height = value->Uint32Value();
+    canvas->backend()->setHeight(value->Uint32Value());
     canvas->resurface(info.This());
   }
-}
-
-/*
- * Canvas::ToBuffer callback.
- */
-
-static cairo_status_t
-toBuffer(void *c, const uint8_t *data, unsigned len) {
-  closure_t *closure = (closure_t *) c;
-
-  if (closure->len + len > closure->max_len) {
-    uint8_t *data;
-    unsigned max = closure->max_len;
-
-    do {
-      max *= 2;
-    } while (closure->len + len > max);
-
-    data = (uint8_t *) realloc(closure->data, max);
-    if (!data) return CAIRO_STATUS_NO_MEMORY;
-    closure->data = data;
-    closure->max_len = max;
-  }
-
-  memcpy(closure->data + closure->len, data, len);
-  closure->len += len;
-
-  return CAIRO_STATUS_SUCCESS;
 }
 
 /*
@@ -259,9 +254,10 @@ NAN_METHOD(Canvas::ToBuffer) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   // TODO: async / move this out
-  if (canvas->isPDF() || canvas->isSVG()) {
+  const string name = canvas->backend()->getName();
+  if (name == "pdf" || name == "svg") {
     cairo_surface_finish(canvas->surface());
-    closure_t *closure = (closure_t *) canvas->closure();
+    closure_t *closure = (closure_t *) canvas->backend()->closure();
 
     Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
     info.GetReturnValue().Set(buf);
@@ -460,7 +456,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 1, argv);
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 3, argv);
   }
   return;
 }
@@ -515,14 +511,14 @@ NAN_METHOD(Canvas::StreamPDFSync) {
 
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.Holder());
 
-  if (!canvas->isPDF())
+  if (canvas->backend()->getName() != "pdf")
     return Nan::ThrowTypeError("wrong canvas type");
 
   cairo_surface_finish(canvas->surface());
 
   closure_t closure;
-  closure.data = static_cast<closure_t *>(canvas->closure())->data;
-  closure.len = static_cast<closure_t *>(canvas->closure())->len;
+  closure.data = static_cast<closure_t*>(canvas->backend()->closure())->data;
+  closure.len = static_cast<closure_t*>(canvas->backend()->closure())->len;
   closure.fn = info[0].As<Function>();
 
   Nan::TryCatch try_catch;
@@ -650,30 +646,9 @@ NAN_METHOD(Canvas::RegisterFont) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
-  type = t;
-  width = w;
-  height = h;
-  _surface = NULL;
-  _closure = NULL;
-
-  if (CANVAS_TYPE_PDF == t) {
-    _closure = malloc(sizeof(closure_t));
-    assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-    assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else if (CANVAS_TYPE_SVG == t) {
-    _closure = malloc(sizeof(closure_t));
-    assert(_closure);
-    cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-    assert(status == CAIRO_STATUS_SUCCESS);
-    _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
-  } else {
-    _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-    assert(_surface);
-    Nan::AdjustExternalMemory(nBytes());
-  }
+Canvas::Canvas(Backend* backend) : ObjectWrap() {
+  _backend = backend;
+  this->backend()->createSurface();
 }
 
 /*
@@ -681,20 +656,9 @@ Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
  */
 
 Canvas::~Canvas() {
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-    case CANVAS_TYPE_SVG:
-      cairo_surface_finish(_surface);
-      closure_destroy((closure_t *) _closure);
-      free(_closure);
-      cairo_surface_destroy(_surface);
-      break;
-    case CANVAS_TYPE_IMAGE:
-      int oldNBytes = nBytes();
-      cairo_surface_destroy(_surface);
-      Nan::AdjustExternalMemory(-oldNBytes);
-      break;
-  }
+  if (_backend != NULL) {
+		delete _backend;
+	}
 }
 
 std::vector<FontFace>
@@ -812,44 +776,17 @@ void
 Canvas::resurface(Local<Object> canvas) {
   Nan::HandleScope scope;
   Local<Value> context;
-  switch (type) {
-    case CANVAS_TYPE_PDF:
-      cairo_pdf_surface_set_size(_surface, width, height);
-      break;
-    case CANVAS_TYPE_SVG:
-      // Re-surface
-      cairo_surface_finish(_surface);
-      closure_destroy((closure_t *) _closure);
-      cairo_surface_destroy(_surface);
-      closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-      _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, width, height);
 
-      // Reset context
-      context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
-      if (!context->IsUndefined()) {
-        Context2d *context2d = Nan::ObjectWrap::Unwrap<Context2d>(context->ToObject());
-        cairo_t *prev = context2d->context();
-        context2d->setContext(cairo_create(surface()));
-        cairo_destroy(prev);
-      }
-      break;
-    case CANVAS_TYPE_IMAGE:
-      // Re-surface
-      size_t oldNBytes = nBytes();
-      cairo_surface_destroy(_surface);
-      _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-      Nan::AdjustExternalMemory(nBytes() - oldNBytes);
+  backend()->recreateSurface();
 
-      // Reset context
-      context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
-      if (!context->IsUndefined()) {
-        Context2d *context2d = Nan::ObjectWrap::Unwrap<Context2d>(context->ToObject());
-        cairo_t *prev = context2d->context();
-        context2d->setContext(cairo_create(surface()));
-        cairo_destroy(prev);
-      }
-      break;
-  }
+  // Reset context
+	context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
+	if (!context->IsUndefined()) {
+		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+		cairo_t *prev = context2d->context();
+		context2d->setContext(cairo_create(surface()));
+		cairo_destroy(prev);
+	}
 }
 
 /*

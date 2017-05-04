@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include <pango/pango.h>
 #include <glib.h>
+
+#include "Backends.h"
 #include "Canvas.h"
-#include "Image.h"
-#include "ImageData.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2d.h"
+#include "Image.h"
+#include "ImageData.h"
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -23,6 +26,7 @@
 #endif
 
 NAN_MODULE_INIT(init) {
+  Backends::Initialize(target);
   Canvas::Initialize(target);
   Image::Initialize(target);
   ImageData::Initialize(target);
@@ -73,4 +77,4 @@ NAN_MODULE_INIT(init) {
   target->Set(Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked());
 }
 
-NODE_MODULE(canvas,init);
+NODE_MODULE(canvas, init);

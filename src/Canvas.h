@@ -17,6 +17,8 @@
 #include <cairo.h>
 #include <nan.h>
 
+#include "backend/Backend.h"
+
 
 using namespace node;
 using namespace v8;
@@ -29,16 +31,6 @@ using namespace v8;
 #ifndef CANVAS_MAX_STATES
 #define CANVAS_MAX_STATES 64
 #endif
-
-/*
- * Canvas types.
- */
-
-typedef enum {
-  CANVAS_TYPE_IMAGE,
-  CANVAS_TYPE_PDF,
-  CANVAS_TYPE_SVG
-} canvas_type_t;
 
 /*
  * FontFace describes a font file in terms of one PangoFontDescription that
@@ -56,9 +48,6 @@ class FontFace {
 
 class Canvas: public Nan::ObjectWrap {
   public:
-    int width;
-    int height;
-    canvas_type_t type;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
@@ -91,20 +80,22 @@ class Canvas: public Nan::ObjectWrap {
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
-    inline bool isPDF(){ return CANVAS_TYPE_PDF == type; }
-    inline bool isSVG(){ return CANVAS_TYPE_SVG == type; }
-    inline cairo_surface_t *surface(){ return _surface; }
-    inline void *closure(){ return _closure; }
-    inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
-    inline int stride(){ return cairo_image_surface_get_stride(_surface); }
-    inline int nBytes(){ return height * stride(); }
-    Canvas(int width, int height, canvas_type_t type);
+    inline Backend* backend() { return _backend; }
+    inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+
+    inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
+    inline int stride(){ return cairo_image_surface_get_stride(surface()); }
+    inline int nBytes(){ return backend()->getWidth() * stride(); }
+
+    inline int getWidth() { return backend()->getWidth(); }
+    inline int getHeight() { return backend()->getHeight(); }
+
+    Canvas(Backend* backend);
     void resurface(Local<Object> canvas);
 
   private:
     ~Canvas();
-    cairo_surface_t *_surface;
-    void *_closure;
+    Backend* _backend;
     static std::vector<FontFace> _font_face_list;
 };
 
