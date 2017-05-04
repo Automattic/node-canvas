@@ -386,10 +386,10 @@ describe('Canvas', function () {
   });
 
   describe('#toBuffer("raw")', function() {
-    var canvas = new Canvas(10, 10)
+    var canvas = new Canvas(11, 10)
         , ctx = canvas.getContext('2d');
 
-    ctx.clearRect(0, 0, 10, 10);
+    ctx.clearRect(0, 0, 11, 10);
 
     ctx.fillStyle = 'rgba(200, 200, 200, 0.505)';
     ctx.fillRect(0, 0, 5, 5);
@@ -404,16 +404,16 @@ describe('Canvas', function () {
     ctx.fillRect(5, 5, 4, 5);
 
     /** Output:
-     *    *****RRRRR
-     *    *****RRRRR
-     *    *****RRRRR
-     *    *****RRRRR
-     *    *****RRRRR
-     *    GGGGGBBBB-
-     *    GGGGGBBBB-
-     *    GGGGGBBBB-
-     *    GGGGGBBBB-
-     *    GGGGGBBBB-
+     *    *****RRRRR-
+     *    *****RRRRR-
+     *    *****RRRRR-
+     *    *****RRRRR-
+     *    *****RRRRR-
+     *    GGGGGBBBB--
+     *    GGGGGBBBB--
+     *    GGGGGBBBB--
+     *    GGGGGBBBB--
+     *    GGGGGBBBB--
      */
 
     var buf = canvas.toBuffer('raw');

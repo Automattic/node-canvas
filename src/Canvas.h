@@ -85,7 +85,7 @@ class Canvas: public Nan::ObjectWrap {
 
     inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    inline int nBytes(){ return backend()->getWidth() * stride(); }
+    inline int nBytes(){ return getHeight() * stride(); }
 
     inline int getWidth() { return backend()->getWidth(); }
     inline int getHeight() { return backend()->getHeight(); }
