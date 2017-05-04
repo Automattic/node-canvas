@@ -53,7 +53,7 @@ function hasLdconfig () {
   try {
     // Add /sbin to path as ldconfig is located there on some systems -- e.g.
     // Debian (and it can still be used by unprivileged users):
-    childProcess.execSync('export PATH="$PATH:/sbin"')
+    childProcess.execSync('export PATH="$PATH:/sbin"', {stdio: 'ignore'})
     process.env.PATH = '...'
     // execSync throws on nonzero exit
     childProcess.execSync('hash ldconfig 2>/dev/null')

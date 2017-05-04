@@ -5,7 +5,7 @@
     },
     'conditions':
     [
-        ['has_cairo=="true"', {
+        ['has_cairo=="true" or OS=="win"', {
             'includes': ['shared.gypi']
         }, {
             'includes': ['static.gypi']
