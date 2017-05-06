@@ -9,7 +9,7 @@
  */
 
 cairo_status_t
-toBuffer(void *c, const uint8_t *data, unsigned len) {
+toBuffer(void *c, const uint8_t *odata, unsigned len) {
   closure_t *closure = (closure_t *) c;
 
   if (closure->len + len > closure->max_len) {
@@ -26,7 +26,7 @@ toBuffer(void *c, const uint8_t *data, unsigned len) {
     closure->max_len = max;
   }
 
-  memcpy(closure->data + closure->len, data, len);
+  memcpy(closure->data + closure->len, odata, len);
   closure->len += len;
 
   return CAIRO_STATUS_SUCCESS;

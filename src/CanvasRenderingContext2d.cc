@@ -745,8 +745,8 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<Int32> shHandle = Nan::New(sh);
   Local<Value> argv[argc] = { clampedArray, swHandle, shHandle };
 
-  Local<Function> constructor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
-  Local<Object> instance = Nan::NewInstance(constructor, argc, argv).ToLocalChecked();
+  Local<Function> ctor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
+  Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
 }

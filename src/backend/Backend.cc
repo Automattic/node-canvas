@@ -16,9 +16,9 @@ Backend::~Backend()
 }
 
 
-void Backend::setCanvas(Canvas* canvas)
+void Backend::setCanvas(Canvas* _canvas)
 {
-	this->canvas = canvas;
+	this->canvas = _canvas;
 }
 
 
@@ -53,9 +53,9 @@ int Backend::getWidth()
 {
 	return this->width;
 }
-void Backend::setWidth(int width)
+void Backend::setWidth(int width_)
 {
-	this->width = width;
+	this->width = width_;
 	this->recreateSurface();
 }
 
@@ -63,9 +63,9 @@ int Backend::getHeight()
 {
 	return this->height;
 }
-void Backend::setHeight(int height)
+void Backend::setHeight(int height_)
 {
-	this->height = height;
+	this->height = height_;
 	this->recreateSurface();
 }
 
