@@ -80,7 +80,7 @@ console.log('<img src="' + canvas.toDataURL() + '" />');
 ```javascript
 fs.readFile(__dirname + '/images/squid.png', function(err, squid){
   if (err) throw err;
-  img = new Image;
+  img = new Canvas.Image;
   img.src = squid;
   ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
 });
@@ -89,7 +89,7 @@ fs.readFile(__dirname + '/images/squid.png', function(err, squid){
  Below is an example of a canvas drawing it-self as the source several time:
 
 ```javascript
-var img = new Image;
+var img = new Canvas.Image;
 img.src = canvas.toBuffer();
 ctx.drawImage(img, 0, 0, 50, 50);
 ctx.drawImage(img, 50, 0, 50, 50);
@@ -103,7 +103,7 @@ node-canvas adds `Image#dataMode` support, which can be used to opt-in to mime d
 When mime data is tracked, in PDF mode JPEGs can be embedded directly into the output, rather than being re-encoded into PNG. This can drastically reduce filesize, and speed up rendering.
 
 ```javascript
-var img = new Image;
+var img = new Canvas.Image;
 img.dataMode = Image.MODE_IMAGE; // Only image data tracked
 img.dataMode = Image.MODE_MIME; // Only mime data tracked
 img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
