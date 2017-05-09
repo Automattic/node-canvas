@@ -1,33 +1,31 @@
-
-/**
- * Module dependencies.
- */
-
+var fs = require('fs')
+var path = require('path')
 var Canvas = require('..')
-  , Image = Canvas.Image
-  , fs = require('fs');
 
-var img = new Image
-  , start = new Date;
+var Image = Canvas.Image
 
-img.onerror = function(err){
-  throw err;
-};
+var img = new Image()
+var start = new Date()
 
-img.onload = function(){
-  var width = 100;
-  var height = 100;
-  var canvas = new Canvas(width, height);
-  var ctx = canvas.getContext('2d');
+img.onerror = function (err) {
+  throw err
+}
 
-  ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(img, 0, 0, width, height);
+img.onload = function () {
+  var width = 100
+  var height = 100
+  var canvas = new Canvas(width, height)
+  var ctx = canvas.getContext('2d')
+  var out = fs.createWriteStream(path.join(__dirname, 'resize.png'))
 
-  canvas.toBuffer(function(err, buf){
-    fs.writeFile(__dirname + '/resize.png', buf, function(){
-      console.log('Resized and saved in %dms', new Date - start);
-    });
-  });
-};
+  ctx.imageSmoothingEnabled = true
+  ctx.drawImage(img, 0, 0, width, height)
 
-img.src = process.argv[2] || __dirname + '/images/squid.png';
+  canvas.pngStream().pipe(out)
+
+  out.on('finish', function () {
+    console.log('Resized and saved in %dms', new Date() - start)
+  })
+}
+
+img.src = (process.argv[2] || path.join(__dirname, 'images', 'squid.png'))

@@ -10,7 +10,7 @@
 
 #include "Canvas.h"
 #include <stdlib.h>
-#include "v8.h"
+#include <v8.h>
 
 class ImageData: public Nan::ObjectWrap {
   public:

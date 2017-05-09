@@ -1,5 +1,13 @@
-node-canvas
-===========
+# node-canvas
+
+-----
+
+## This is the documentation for the unreleased version 2.0
+
+**For the current version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
+
+-----
+
 ### Canvas graphics API backed by Cairo
 [![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
 [![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
@@ -19,16 +27,18 @@ node-canvas
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+
+Currently the minimum version of node required is __4.0.0__
 
 You can quickly install the dependencies by using the command for your OS:
 
 OS | Command
 ----- | -----
-OS X | `brew install pkg-config cairo libpng jpeg giflib`
+OS X | `brew install pkg-config cairo pango libpng jpeg giflib`
 Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
 Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
-Solaris | `pkgin install cairo pkg-config xproto renderproto kbproto xextproto`
+Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
 Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
 
 **El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
@@ -140,10 +150,22 @@ var stream = canvas.jpegStream({
 
 ### Canvas#toBuffer()
 
-A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing all of the PNG data.
+A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing image data.
 
 ```javascript
-canvas.toBuffer();
+// PNG Buffer, default settings
+var buf = canvas.toBuffer();
+
+// PNG Buffer, zlib compression level 3 (from 0-9), faster but bigger
+var buf2 = canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE);
+
+// ARGB32 Buffer, native-endian
+var buf3 = canvas.toBuffer('raw');
+var stride = canvas.stride;
+// In memory, this is `canvas.height * canvas.stride` bytes long.
+// The top row of pixels, in ARGB order, left-to-right, is:
+var topPixelsARGBLeftToRight = buf3.slice(0, canvas.width * 4);
+var row3 = buf3.slice(2 * canvas.stride, 2 * canvas.stride + canvas.width * 4);
 ```
 
 ### Canvas#toBuffer() async
@@ -170,7 +192,27 @@ canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
-### CanvasRenderingContext2d#patternQuality
+### Canvas.registerFont for bundled fonts
+
+It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts are installed.
+
+To do that, you should use `Canvas.registerFont`.
+
+**You need to call it before the Canvas is created**
+
+```javascript
+Canvas.registerFont('comicsans.ttf', {family: 'Comic Sans'});
+
+var canvas = new Canvas(500, 500),
+  ctx = canvas.getContext('2d');
+
+ctx.font = '12px "Comic Sans"';
+ctx.fillText(250, 10, 'Everyone hates this font :(');
+```
+
+The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
+
+### CanvasRenderingContext2D#patternQuality
 
 Given one of the values below will alter pattern (gradients, images, etc) render quality, defaults to _good_.
 
@@ -180,7 +222,7 @@ Given one of the values below will alter pattern (gradients, images, etc) render
   - nearest
   - bilinear
 
-### CanvasRenderingContext2d#textDrawingMode
+### CanvasRenderingContext2D#textDrawingMode
 
 Can be either `path` or `glyph`. Using `glyph` is much faster than `path` for drawing, and when using a PDF context will embed the text natively, so will be selectable and lower filesize. The downside is that cairo does not have any subpixel precision for `glyph`, so this will be noticeably lower quality for text positioning in cases such as rotated text. Also, strokeText in `glyph` will act the same as fillText, except using the stroke style for the fill.
 
@@ -188,7 +230,7 @@ Defaults to _path_.
 
 This property is tracked as part of the canvas state in save/restore.
 
-### CanvasRenderingContext2d#filter
+### CanvasRenderingContext2D#filter
 
 Like `patternQuality`, but applies to transformations effecting more than just patterns. Defaults to _good_.
 
@@ -297,16 +339,6 @@ Unit tests:
 Visual tests:
 
     $ make test-server
-
-## Versions
-
-Tested with and designed for:
-
-  - node 0.4.2
-  - cairo 1.8.6
-
-For node 0.2.x `node-canvas` <= 0.4.3 may be used,
-0.5.0 and above are designed for node 0.4.x only.
 
 ## License
 

@@ -2,7 +2,7 @@
     'variables':
     {
         'has_FBDev%': 'true',
-        'has_X11%': '<!(./util/has_lib.sh X11)'
+        'has_X11%': '<!(node ./util/has_lib.js X11)'
     },
     'conditions':
     [
@@ -28,15 +28,20 @@
     [
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
+        'src/backend/PdfBackend.cc',
+        'src/backend/SvgBackend.cc',
         'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
         'src/CanvasRenderingContext2d.cc',
+        'src/closure.cc',
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
+        'src/register_font.cc',
+        'src/toBuffer.cc'
     ],
     'cflags!':    ['-fno-exceptions'],
     'cflags_cc!': ['-fno-exceptions']

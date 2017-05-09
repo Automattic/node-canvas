@@ -43,9 +43,6 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Image").ToLocalChecked());
-
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
@@ -643,7 +640,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
 // libjpeg 6.2 does not have jpeg_mem_src; define it ourselves here unless
 // libjpeg 8 is installed.
-#if JPEG_LIB_VERSION < 80
+#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 
 /* Read JPEG image from a memory segment */
 static void
@@ -813,7 +810,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  Nan::AdjustExternalMemory(-((read_closure_t *)closure)->len);
+  Nan::AdjustExternalMemory(-static_cast<int>(((read_closure_t *)closure)->len));
   free(((read_closure_t *) closure)->buf);
   free(closure);
 }
@@ -883,7 +880,11 @@ cairo_status_t
 Image::loadJPEG(FILE *stream) {
   cairo_status_t status;
 
+#if defined(_MSC_VER)
+  if (false) { // Force using loadJPEGFromBuffer
+#else
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
+#endif
     // JPEG setup
     struct jpeg_decompress_struct args;
     struct jpeg_error_mgr err;
@@ -918,7 +919,13 @@ Image::loadJPEG(FILE *stream) {
       if (!status) status = assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     } else if (DATA_MIME == data_mode) {
       status = decodeJPEGBufferIntoMimeSurface(buf, len);
-    } else {
+    }
+#if defined(_MSC_VER)
+    else if (DATA_IMAGE == data_mode) {
+      status = loadJPEGFromBuffer(buf, len);
+    }
+#endif
+    else {
       status = CAIRO_STATUS_READ_ERROR;
     }
 

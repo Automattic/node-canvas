@@ -5,12 +5,12 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include <math.h>
-#include <string.h>
+#include <cmath>
 #include <stdlib.h>
 #include <limits>
 #include <vector>
 #include <algorithm>
+
 #include "Canvas.h"
 #include "Point.h"
 #include "Image.h"
@@ -18,10 +18,6 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
-
-#ifdef HAVE_FREETYPE
-#include "FontFace.h"
-#endif
 
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
@@ -63,18 +59,6 @@ enum {
   , TEXT_BASELINE_HANGING
 };
 
-#if HAVE_PANGO
-
-/*
- * State helper function
- */
-
-void state_assign_fontFamily(canvas_state_t *state, const char *str) {
-  free(state->fontFamily);
-  state->fontFamily = strndup(str, 100);
-}
-
-
 /*
  * Simple helper macro for a rather verbose function call.
  */
@@ -83,8 +67,6 @@ void state_assign_fontFamily(canvas_state_t *state, const char *str) {
    pango_layout_get_context(LAYOUT), \
    pango_layout_get_font_description(LAYOUT), \
    pango_context_get_language(pango_layout_get_context(LAYOUT)))
-
-#endif
 
 /*
  * Initialize Context2d.
@@ -98,7 +80,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Context2d::New);
   constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasRenderingContext2d").ToLocalChecked());
+  ctor->SetClassName(Nan::New("CanvasRenderingContext2D").ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -135,9 +117,6 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "setLineDash", SetLineDash);
   Nan::SetPrototypeMethod(ctor, "getLineDash", GetLineDash);
   Nan::SetPrototypeMethod(ctor, "_setFont", SetFont);
-#ifdef HAVE_FREETYPE
-  Nan::SetPrototypeMethod(ctor, "_setFontFace", SetFontFace);
-#endif
   Nan::SetPrototypeMethod(ctor, "_setFillColor", SetFillColor);
   Nan::SetPrototypeMethod(ctor, "_setStrokeColor", SetStrokeColor);
   Nan::SetPrototypeMethod(ctor, "_setFillPattern", SetFillPattern);
@@ -171,9 +150,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = cairo_create(canvas->surface());
-#if HAVE_PANGO
   _layout = pango_cairo_create_layout(_context);
-#endif
   cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
@@ -190,14 +167,9 @@ Context2d::Context2d(Canvas *canvas) {
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
   state->textDrawingMode = TEXT_DRAW_PATHS;
-#if HAVE_PANGO
-  state->fontWeight = PANGO_WEIGHT_NORMAL;
-  state->fontStyle = PANGO_STYLE_NORMAL;
-  state->fontSize = 10;
-  state->fontFamily = NULL;
-  state_assign_fontFamily(state, "sans serif");
-  setFontFromState();
-#endif
+  state->fontDescription = pango_font_description_from_string("sans serif");
+  pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
+  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -206,14 +178,10 @@ Context2d::Context2d(Canvas *canvas) {
 
 Context2d::~Context2d() {
   while(stateno >= 0) {
-#if HAVE_PANGO
-    free(states[stateno]->fontFamily);
-#endif
+    pango_font_description_free(states[stateno]->fontDescription);
     free(states[stateno--]);
   }
-#if HAVE_PANGO
   g_object_unref(_layout);
-#endif
   cairo_destroy(_context);
 }
 
@@ -223,8 +191,13 @@ Context2d::~Context2d() {
 
 void
 Context2d::save() {
-  cairo_save(_context);
-  saveState();
+  if (stateno < CANVAS_MAX_STATES) {
+    cairo_save(_context);
+    states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
+    memcpy(states[stateno], state, sizeof(canvas_state_t));
+    states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
+    state = states[stateno];
+  }
 }
 
 /*
@@ -233,42 +206,14 @@ Context2d::save() {
 
 void
 Context2d::restore() {
-  cairo_restore(_context);
-  restoreState();
-}
-
-/*
- * Save the current state.
- */
-
-void
-Context2d::saveState() {
-  if (stateno == CANVAS_MAX_STATES) return;
-  states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  memcpy(states[stateno], state, sizeof(canvas_state_t));
-#if HAVE_PANGO
-  states[stateno]->fontFamily = strndup(state->fontFamily, 100);
-#endif
-  state = states[stateno];
-}
-
-/*
- * Restore state.
- */
-
-void
-Context2d::restoreState() {
-  if (0 == stateno) return;
-  // Olaf (2011-02-21): Free old state data
-#if HAVE_PANGO
-  free(states[stateno]->fontFamily);
-#endif
-  free(states[stateno]);
-  states[stateno] = NULL;
-  state = states[--stateno];
-#if HAVE_PANGO
-  setFontFromState();
-#endif
+  if (stateno > 0) {
+    cairo_restore(_context);
+    pango_font_description_free(states[stateno]->fontDescription);
+    free(states[stateno]);
+    states[stateno] = NULL;
+    state = states[--stateno];
+    pango_layout_set_font_description(_layout, state->fontDescription);
+  }
 }
 
 /*
@@ -295,6 +240,18 @@ Context2d::restorePath() {
 /*
  * Fill and apply shadow.
  */
+
+void
+Context2d::setFillRule(v8::Local<v8::Value> value) {
+  cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
+  if (value->IsString()) {
+    String::Utf8Value str(value);
+    if (std::strcmp(*str, "evenodd") == 0) {
+      rule = CAIRO_FILL_RULE_EVEN_ODD;
+    }
+  }
+  cairo_set_fill_rule(_context, rule);
+}
 
 void
 Context2d::fill(bool preserve) {
@@ -715,7 +672,7 @@ NAN_METHOD(Context2d::GetImageData) {
 
   int width  = canvas->getWidth();
   int height = canvas->getHeight();
-  if (sx + sw > width ) sw = width  - sx;
+  if (sx + sw > width) sw = width - sx;
   if (sy + sh > height) sh = height - sy;
 
   // WebKit/moz functionality. node-canvas used to return in either case.
@@ -788,8 +745,8 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<Int32> shHandle = Nan::New(sh);
   Local<Value> argv[argc] = { clampedArray, swHandle, shHandle };
 
-  Local<FunctionTemplate> cons = Nan::New(ImageData::constructor);
-  Local<Object> instance = cons->GetFunction()->NewInstance(argc, argv);
+  Local<Function> ctor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
+  Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
 }
@@ -1402,6 +1359,7 @@ NAN_METHOD(Context2d::IsPointInPath) {
     cairo_t *ctx = context->context();
     double x = info[0]->NumberValue()
          , y = info[1]->NumberValue();
+    context->setFillRule(info[2]);
     info.GetReturnValue().Set(Nan::New<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
     return;
   }
@@ -1679,6 +1637,7 @@ NAN_METHOD(Context2d::Scale) {
 
 NAN_METHOD(Context2d::Clip) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  context->setFillRule(info[0]);
   cairo_t *ctx = context->context();
   cairo_clip_preserve(ctx);
 }
@@ -1689,6 +1648,7 @@ NAN_METHOD(Context2d::Clip) {
 
 NAN_METHOD(Context2d::Fill) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  context->setFillRule(info[0]);
   context->fill(true);
 }
 
@@ -1757,8 +1717,6 @@ NAN_METHOD(Context2d::StrokeText) {
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
-#if HAVE_PANGO
-
   PangoRectangle ink_rect, logical_rect;
   PangoFontMetrics *metrics = NULL;
 
@@ -1801,59 +1759,6 @@ Context2d::setTextPath(const char *str, double x, double y) {
   } else if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     pango_cairo_show_layout(_context, _layout);
   }
-
-#else
-
-  cairo_text_extents_t te;
-  cairo_font_extents_t fe;
-
-  // Alignment
-  switch (state->textAlignment) {
-    // center
-    case 0:
-      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
-      cairo_text_extents(_context, str, &te);
-      x -= te.width / 2;
-      break;
-    // right
-    case 1:
-      // Olaf (2011-02-19): te.x_bearing does not concern the alignment
-      cairo_text_extents(_context, str, &te);
-      x -= te.width;
-      break;
-  }
-
-  // Baseline approx
-  switch (state->textBaseline) {
-    case TEXT_BASELINE_TOP:
-    case TEXT_BASELINE_HANGING:
-      // Olaf (2011-02-26): fe.ascent approximates the distance between
-      // the top of the em square and the alphabetic baseline
-      cairo_font_extents(_context, &fe);
-      y += fe.ascent;
-      break;
-    case TEXT_BASELINE_MIDDLE:
-      // Olaf (2011-02-26): fe.ascent approximates the distance between
-      // the top of the em square and the alphabetic baseline
-      cairo_font_extents(_context, &fe);
-      y += (fe.ascent - fe.descent)/2;
-      break;
-    case TEXT_BASELINE_BOTTOM:
-      // Olaf (2011-02-26): we need to know the distance between the alphabetic
-      // baseline and the bottom of the em square
-      cairo_font_extents(_context, &fe);
-      y -= fe.descent;
-      break;
-  }
-
-  cairo_move_to(_context, x, y);
-  if (state->textDrawingMode == TEXT_DRAW_PATHS) {
-    cairo_text_path(_context, str);
-  } else if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    cairo_show_text(_context, str);
-  }
-
-#endif
 }
 
 /*
@@ -1889,35 +1794,6 @@ NAN_METHOD(Context2d::MoveTo) {
 }
 
 /*
- * Set font face.
- */
-
-#ifdef HAVE_FREETYPE
-NAN_METHOD(Context2d::SetFontFace) {
-  // Ignore invalid args
-  if (!info[0]->IsObject()
-    || !info[1]->IsNumber())
-    return Nan::ThrowTypeError("Expected object and number");
-
-  Local<Object> obj = info[0]->ToObject();
-
-  if (!Nan::New(FontFace::constructor)->HasInstance(obj))
-    return Nan::ThrowTypeError("FontFace expected");
-
-  FontFace *face = Nan::ObjectWrap::Unwrap<FontFace>(obj);
-  double size = info[1]->NumberValue();
-
-  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_t *ctx = context->context();
-
-  cairo_set_font_size(ctx, size);
-  cairo_set_font_face(ctx, face->cairoFace());
-
-  return;
-}
-#endif
-
-/*
  * Set font:
  *   - weight
  *   - style
@@ -1942,94 +1818,23 @@ NAN_METHOD(Context2d::SetFont) {
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
-#if HAVE_PANGO
+  PangoFontDescription *desc = pango_font_description_copy(context->state->fontDescription);
+  pango_font_description_free(context->state->fontDescription);
 
-  if (strlen(*family) > 0) state_assign_fontFamily(context->state, *family);
+  pango_font_description_set_style(desc, Canvas::GetStyleFromCSSString(*style));
+  pango_font_description_set_weight(desc, Canvas::GetWeightFromCSSString(*weight));
 
-  if (size > 0) context->state->fontSize = size;
+  if (strlen(*family) > 0) pango_font_description_set_family(desc, *family);
 
-  PangoStyle s = PANGO_STYLE_NORMAL;
-  if (strlen(*style) > 0) {
-    if (0 == strcmp("italic", *style)) {
-      s = PANGO_STYLE_ITALIC;
-    } else if (0 == strcmp("oblique", *style)) {
-      s = PANGO_STYLE_OBLIQUE;
-    }
-  }
-  context->state->fontStyle = s;
+  PangoFontDescription *sys_desc = Canvas::ResolveFontDescription(desc);
+  pango_font_description_free(desc);
 
-  PangoWeight w = PANGO_WEIGHT_NORMAL;
-  if (strlen(*weight) > 0) {
-    if (0 == strcmp("bold", *weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("200", *weight)) {
-      w = PANGO_WEIGHT_ULTRALIGHT;
-    } else if (0 == strcmp("300", *weight)) {
-      w = PANGO_WEIGHT_LIGHT;
-    } else if (0 == strcmp("400", *weight)) {
-      w = PANGO_WEIGHT_NORMAL;
-    } else if (0 == strcmp("500", *weight)) {
-      w = PANGO_WEIGHT_MEDIUM;
-    } else if (0 == strcmp("600", *weight)) {
-      w = PANGO_WEIGHT_SEMIBOLD;
-    } else if (0 == strcmp("700", *weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("800", *weight)) {
-      w = PANGO_WEIGHT_ULTRABOLD;
-    } else if (0 == strcmp("900", *weight)) {
-      w = PANGO_WEIGHT_HEAVY;
-    }
-  }
-  context->state->fontWeight = w;
+  if (size > 0) pango_font_description_set_absolute_size(sys_desc, size * PANGO_SCALE);
 
-  context->setFontFromState();
+  context->state->fontDescription = sys_desc;
 
-#else
-
-  cairo_t *ctx = context->context();
-
-  // Size
-  cairo_set_font_size(ctx, size);
-
-  // Style
-  cairo_font_slant_t s = CAIRO_FONT_SLANT_NORMAL;
-  if (0 == strcmp("italic", *style)) {
-    s = CAIRO_FONT_SLANT_ITALIC;
-  } else if (0 == strcmp("oblique", *style)) {
-    s = CAIRO_FONT_SLANT_OBLIQUE;
-  }
-
-  // Weight
-  cairo_font_weight_t w = CAIRO_FONT_WEIGHT_NORMAL;
-  if (0 == strcmp("bold", *weight)) {
-    w = CAIRO_FONT_WEIGHT_BOLD;
-  }
-
-  cairo_select_font_face(ctx, *family, s, w);
-
-#endif
+  pango_layout_set_font_description(context->_layout, sys_desc);
 }
-
-#if HAVE_PANGO
-
-/*
- * Sets PangoLayout options from the current font state
- */
-
-void
-Context2d::setFontFromState() {
-  PangoFontDescription *fd = pango_font_description_new();
-
-  pango_font_description_set_family(fd, state->fontFamily);
-  pango_font_description_set_absolute_size(fd, state->fontSize * PANGO_SCALE);
-  pango_font_description_set_style(fd, state->fontStyle);
-  pango_font_description_set_weight(fd, state->fontWeight);
-
-  pango_layout_set_font_description(_layout, fd);
-  pango_font_description_free(fd);
-}
-
-#endif
 
 /*
  * Return the given text extents.
@@ -2044,8 +1849,6 @@ NAN_METHOD(Context2d::MeasureText) {
 
   String::Utf8Value str(info[0]->ToString());
   Local<Object> obj = Nan::New<Object>();
-
-#if HAVE_PANGO
 
   PangoRectangle ink_rect, logical_rect;
   PangoFontMetrics *metrics;
@@ -2103,61 +1906,6 @@ NAN_METHOD(Context2d::MeasureText) {
                        + y_offset));
 
   pango_font_metrics_unref(metrics);
-
-#else
-
-  cairo_text_extents_t te;
-  cairo_font_extents_t fe;
-
-  cairo_text_extents(ctx, *str, &te);
-  cairo_font_extents(ctx, &fe);
-
-  double x_offset;
-  switch (context->state->textAlignment) {
-    case 0: // center
-      x_offset = te.width / 2;
-      break;
-    case 1: // right
-      x_offset = te.width;
-      break;
-    default: // left
-      x_offset = 0.0;
-  }
-
-  double y_offset;
-  switch (context->state->textBaseline) {
-    case TEXT_BASELINE_TOP:
-    case TEXT_BASELINE_HANGING:
-      y_offset = fe.ascent;
-      break;
-    case TEXT_BASELINE_MIDDLE:
-      y_offset = (fe.ascent - fe.descent)/2;
-      break;
-    case TEXT_BASELINE_BOTTOM:
-      y_offset = -fe.descent;
-      break;
-    default:
-      y_offset = 0.0;
-  }
-
-  obj->Set(Nan::New<String>("width").ToLocalChecked(),
-           Nan::New<Number>(te.x_advance));
-  obj->Set(Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
-           Nan::New<Number>(x_offset - te.x_bearing));
-  obj->Set(Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
-           Nan::New<Number>((te.x_bearing + te.width) - x_offset));
-  obj->Set(Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
-           Nan::New<Number>(-(te.y_bearing + y_offset)));
-  obj->Set(Nan::New<String>("actualBoundingBoxDescent").ToLocalChecked(),
-           Nan::New<Number>(te.height + te.y_bearing + y_offset));
-  obj->Set(Nan::New<String>("emHeightAscent").ToLocalChecked(),
-           Nan::New<Number>(fe.ascent - y_offset));
-  obj->Set(Nan::New<String>("emHeightDescent").ToLocalChecked(),
-           Nan::New<Number>(fe.descent + y_offset));
-  obj->Set(Nan::New<String>("alphabeticBaseline").ToLocalChecked(),
-           Nan::New<Number>(y_offset));
-
-#endif
 
   info.GetReturnValue().Set(obj);
 }

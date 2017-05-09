@@ -1,3 +1,39 @@
+Unreleased / patch
+==================
+
+ * Port has_lib.sh to javascript (#872)
+
+1.6.0 / 2016-10-16
+==================
+
+ * Support canvas.getBuffer('raw') (#819)
+
+1.5.0 / 2016-09-11
+==================
+
+ * Crude PDF stream implementation (#781)
+ * Update CI settings (#797)
+ * Reduce some of the install warnings (#794)
+ * Fix lineDash browser tests never finishing (#793)
+ * Add issue template (#791)
+
+1.4.0 / 2016-06-03
+==================
+
+ * Add support for evenodd fill rule (#762)
+
+1.3.17 / 2016-06-03
+===================
+
+ * Removing redundant duplicate calls (#769)
+ * Cleanup examples (#776)
+ * Fix CanvasRenderingContext2D class name (#777)
+
+1.3.16 / 2016-05-29
+===================
+
+  * Fix leak of data when streaming JPEG (#774)
+
 1.3.15 / 2016-05-09
 ===================
 

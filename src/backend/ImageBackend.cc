@@ -4,14 +4,35 @@ using namespace v8;
 
 ImageBackend::ImageBackend(int width, int height)
 	: Backend("image", width, height)
-{}
+{
+	createSurface();
+}
 
+ImageBackend::~ImageBackend()
+{
+	destroySurface();
+
+	Nan::AdjustExternalMemory(-4 * width * height);
+}
 
 cairo_surface_t* ImageBackend::createSurface()
 {
 	this->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	assert(this->surface);
+  Nan::AdjustExternalMemory(4 * width * height);
 
 	return this->surface;
+}
+
+cairo_surface_t* ImageBackend::recreateSurface()
+{
+	// Re-surface
+	int old_width = cairo_image_surface_get_width(this->surface);
+	int old_height = cairo_image_surface_get_height(this->surface);
+	this->destroySurface();
+	Nan::AdjustExternalMemory(-4 * old_width * old_height);
+
+	return createSurface();
 }
 
 

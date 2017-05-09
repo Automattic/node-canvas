@@ -14,6 +14,8 @@
   #include <cairo/cairo.h>
 #endif
 
+class Canvas;
+
 using namespace std;
 
 class Backend : public Nan::ObjectWrap
@@ -26,15 +28,23 @@ class Backend : public Nan::ObjectWrap
     int height;
     cairo_surface_t* surface;
 
+    Canvas* canvas;
+
     Backend(string name);
     Backend(string name, int width, int height);
 
   public:
     virtual ~Backend();
 
-    virtual cairo_surface_t* createSurface() = 0;
+    // TODO Used only by SVG and PDF, move there
+    void* _closure;
+    inline void* closure(){ return _closure; }
 
-    cairo_surface_t* recreateSurface();
+    void setCanvas(Canvas* canvas);
+
+    virtual cairo_surface_t* createSurface() = 0;
+    virtual cairo_surface_t* recreateSurface();
+
     cairo_surface_t* getSurface();
     void             destroySurface();
 

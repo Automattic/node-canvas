@@ -1,46 +1,33 @@
-
-/**
- * Module dependencies.
- */
-
+var fs = require('fs')
+var path = require('path')
 var Canvas = require('..')
-  , canvas = new Canvas(40, 15)
-  , ctx = canvas.getContext('2d')
-  , fs = require('fs');
 
-Object.defineProperty(Array.prototype, 'max', {
-  get: function(){
-    var max = 0;
-    for (var i = 0, len = this.length; i < len; ++i) {
-      var n = this[i];
-      if (n > max) max = n;
-    }
-    return max;
-  }
-});
+var canvas = new Canvas(40, 15)
+var ctx = canvas.getContext('2d')
 
-function spark(ctx, data) {
+function spark (ctx, data) {
   var len = data.length
-    , pad = 1
-    , width = ctx.canvas.width
-    , height = ctx.canvas.height
-    , barWidth = width / len
-    , max = data.max;
-  ctx.fillStyle = 'rgba(0,0,255,0.5)';
-  ctx.strokeStyle = 'red';
-  ctx.lineWidth = 1;
-  data.forEach(function(n, i){
+  var pad = 1
+  var width = ctx.canvas.width
+  var height = ctx.canvas.height
+  var barWidth = width / len
+  var max = Math.max.apply(null, data)
+
+  ctx.fillStyle = 'rgba(0,0,255,0.5)'
+  ctx.strokeStyle = 'red'
+  ctx.lineWidth = 1
+
+  data.forEach(function (n, i) {
     var x = i * barWidth + pad
-      , y = height * (n / max)
-    ctx.lineTo(x, height - y);
-    ctx.fillRect(x, height, barWidth - pad, -y);
-  });
-  ctx.stroke();
+    var y = height * (n / max)
+
+    ctx.lineTo(x, height - y)
+    ctx.fillRect(x, height, barWidth - pad, -y)
+  })
+
+  ctx.stroke()
 }
 
-spark(ctx, [1,2,4,5,10,4,2,5,4,3,3,2]);
+spark(ctx, [1, 2, 4, 5, 10, 4, 2, 5, 4, 3, 3, 2])
 
-canvas.toBuffer(function(err, buf){
-  if (err) throw err;
-  fs.writeFile(__dirname + '/spark.png', buf);
-});
+canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'spark.png')))

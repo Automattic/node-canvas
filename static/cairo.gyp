@@ -7,7 +7,7 @@
             'variables':
             {
                 'cairo_src%': "<(cairo_root)cairo/",
-                'has_X11%': '<!(../util/has_lib.sh X11)'
+                'has_X11%': '<!(node ../util/has_lib.js X11)'
             },
         }]
     ],

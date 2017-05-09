@@ -1,6 +1,8 @@
 #include "Backends.h"
 
 #include "backend/ImageBackend.h"
+#include "backend/PdfBackend.h"
+#include "backend/SvgBackend.h"
 
 #ifdef HAS_FBDEV
 #include "backend/FBDevBackend.h"
@@ -16,6 +18,8 @@ void Backends::Initialize(Handle<Object> target) {
 
   Local<Object> obj = Nan::New<Object>();
   ImageBackend::Initialize(obj);
+  PdfBackend::Initialize(obj);
+  SvgBackend::Initialize(obj);
 
   #ifdef HAS_FBDEV
     FBDevBackend::Initialize(obj);

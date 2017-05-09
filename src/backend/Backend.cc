@@ -6,17 +6,27 @@ Backend::Backend(string name)
 	, width(0)
 	, height(0)
 	, surface(NULL)
+	, canvas(NULL)
+	, _closure(NULL)
 {}
 Backend::Backend(string name, int width, int height)
 	: name(name)
 	, width(width)
 	, height(height)
 	, surface(NULL)
+	, canvas(NULL)
+	, _closure(NULL)
 {}
 
 Backend::~Backend()
 {
 	this->destroySurface();
+}
+
+
+void Backend::setCanvas(Canvas* _canvas)
+{
+	this->canvas = _canvas;
 }
 
 

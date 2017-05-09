@@ -1,5 +1,5 @@
-#ifndef __IMAGE_BACKEND_H__
-#define __IMAGE_BACKEND_H__
+#ifndef __SVG_BACKEND_H__
+#define __SVG_BACKEND_H__
 
 #include <v8.h>
 
@@ -7,15 +7,15 @@
 
 using namespace std;
 
-class ImageBackend : public Backend
+class SvgBackend : public Backend
 {
   private:
     cairo_surface_t* createSurface();
     cairo_surface_t* recreateSurface();
 
   public:
-    ImageBackend(int width, int height);
-    ~ImageBackend();
+    SvgBackend(int width, int height);
+    ~SvgBackend();
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
