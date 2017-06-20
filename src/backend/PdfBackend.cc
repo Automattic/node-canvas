@@ -13,6 +13,8 @@ using namespace v8;
 PdfBackend::PdfBackend(int width, int height)
 	: Backend("pdf", width, height)
 {
+	_closure = malloc(sizeof(closure_t));
+	assert(_closure);
 	createSurface();
 }
 
@@ -28,8 +30,6 @@ PdfBackend::~PdfBackend()
 
 cairo_surface_t* PdfBackend::createSurface()
 {
-	_closure = malloc(sizeof(closure_t));
-	assert(_closure);
 	cairo_status_t status = closure_init((closure_t*)_closure, this->canvas, 0, PNG_NO_FILTERS);
 	assert(status == CAIRO_STATUS_SUCCESS);
 
