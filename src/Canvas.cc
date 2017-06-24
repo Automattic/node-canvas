@@ -180,47 +180,25 @@ NAN_SETTER(Canvas::SetHeight) {
  * EIO toBuffer callback.
  */
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsync(uv_work_t *req) {
-#elif NODE_VERSION_AT_LEAST(0, 5, 4)
-void
-Canvas::EIO_ToBuffer(eio_req *req) {
-#else
-int
-Canvas::EIO_ToBuffer(eio_req *req) {
-#endif
   closure_t *closure = (closure_t *) req->data;
 
   closure->status = canvas_write_to_png_stream(
       closure->canvas->surface()
     , toBuffer
     , closure);
-
-#if !NODE_VERSION_AT_LEAST(0, 5, 4)
-  return 0;
-#endif
 }
 
 /*
  * EIO after toBuffer callback.
  */
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
-#else
-int
-Canvas::EIO_AfterToBuffer(eio_req *req) {
-#endif
-
   Nan::HandleScope scope;
   closure_t *closure = (closure_t *) req->data;
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
   delete req;
-#else
-  ev_unref(EV_DEFAULT_UC);
-#endif
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
@@ -236,10 +214,6 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   delete closure->pfn;
   closure_destroy(closure);
   free(closure);
-
-#if !NODE_VERSION_AT_LEAST(0, 6, 0)
-  return 0;
-#endif
 }
 
 /*
@@ -328,14 +302,9 @@ NAN_METHOD(Canvas::ToBuffer) {
     canvas->Ref();
     closure->pfn = new Nan::Callback(info[0].As<Function>());
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
     req->data = closure;
     uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
-#else
-    eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
-    ev_ref(EV_DEFAULT_UC);
-#endif
 
     return;
   // Sync

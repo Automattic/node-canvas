@@ -697,16 +697,8 @@ NAN_METHOD(Context2d::GetImageData) {
 
   uint8_t *src = canvas->data();
 
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION <= 10
-  Local<Object> global = Context::GetCurrent()->Global();
-
-  Local<Int32> sizeHandle = Nan::New(size);
-  Local<Value> caargv[] = { sizeHandle };
-  Local<Object> clampedArray = global->Get(Nan::New("Uint8ClampedArray").ToLocalChecked()).As<Function>()->NewInstance(1, caargv);
-#else
   Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
   Local<Uint8ClampedArray> clampedArray = Uint8ClampedArray::New(buffer, 0, size);
-#endif
 
   Nan::TypedArrayContents<uint8_t> typedArrayContents(clampedArray);
   uint8_t* dst = *typedArrayContents;
