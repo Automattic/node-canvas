@@ -30,12 +30,12 @@
     "test-server": "node test/server.js"
   },
   "dependencies": {
-    "assert-rejects": "^0.1.1",
     "nan": "^2.4.0",
     "parse-css-font": "^2.0.2",
     "units-css": "^0.4.0"
   },
   "devDependencies": {
+    "assert-rejects": "^0.1.1",
     "express": "^4.14.0",
     "mocha": "^3.1.2",
     "standard": "^8.5.0"
