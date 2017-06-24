@@ -1,5 +1,7 @@
 /* eslint-env mocha */
 
+'use strict'
+
 const createImageData = require('../').createImageData
 
 const assert = require('assert')
