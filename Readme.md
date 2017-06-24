@@ -50,23 +50,29 @@ Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/w
 ## Example
 
 ```javascript
-var Canvas = require('canvas')
-  , Image = Canvas.Image
-  , canvas = new Canvas(200, 200)
-  , ctx = canvas.getContext('2d');
+const { createCanvas, loadImage } = require('canvas')
+const canvas = createCanvas(200, 200)
+const ctx = canvas.getContext('2d')
 
-ctx.font = '30px Impact';
-ctx.rotate(.1);
-ctx.fillText("Awesome!", 50, 100);
+// Write "Awesome!"
+ctx.font = '30px Impact'
+ctx.rotate(0.1)
+ctx.fillText('Awesome!', 50, 100)
 
-var te = ctx.measureText('Awesome!');
-ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-ctx.beginPath();
-ctx.lineTo(50, 102);
-ctx.lineTo(50 + te.width, 102);
-ctx.stroke();
+// Draw line under text
+var text = ctx.measureText('Awesome!')
+ctx.strokeStyle = 'rgba(0,0,0,0.5)'
+ctx.beginPath()
+ctx.lineTo(50, 102)
+ctx.lineTo(50 + text.width, 102)
+ctx.stroke()
 
-console.log('<img src="' + canvas.toDataURL() + '" />');
+// Draw cat with lime helmet
+loadImage('examples/images/lime-cat.jpg').then((image) => {
+  ctx.drawImage(image, 50, 0, 70, 70)
+
+  console.log('<img src="' + canvas.toDataURL() + '" />')
+})
 ```
 
 ## Non-Standard API
