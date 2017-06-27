@@ -617,7 +617,6 @@ NAN_METHOD(Canvas::RegisterFont) {
 
 Canvas::Canvas(Backend* backend) : ObjectWrap() {
   _backend = backend;
-  this->backend()->createSurface();
 }
 
 /*

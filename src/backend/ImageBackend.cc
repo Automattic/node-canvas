@@ -17,9 +17,10 @@ ImageBackend::~ImageBackend()
 
 cairo_surface_t* ImageBackend::createSurface()
 {
+	assert(!this->surface);
 	this->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 	assert(this->surface);
-  Nan::AdjustExternalMemory(4 * width * height);
+	Nan::AdjustExternalMemory(4 * width * height);
 
 	return this->surface;
 }
@@ -34,7 +35,6 @@ cairo_surface_t* ImageBackend::recreateSurface()
 
 	return createSurface();
 }
-
 
 Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
 

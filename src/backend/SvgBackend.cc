@@ -15,7 +15,6 @@ SvgBackend::SvgBackend(int width, int height)
 {
 	_closure = malloc(sizeof(closure_t));
 	assert(_closure);
-
 	createSurface();
 }
 
