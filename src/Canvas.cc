@@ -103,6 +103,7 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
+    // TODO need to check if this is actually an instance of a Backend to avoid a fault
     backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
   }
   else {
@@ -304,6 +305,8 @@ NAN_METHOD(Canvas::ToBuffer) {
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
+    // Make sure the surface exists since we won't have an isolate context in the async block:
+    canvas->surface();
     uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
 
     return;

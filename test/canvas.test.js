@@ -222,6 +222,54 @@ describe('Canvas', function () {
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
   });
 
+  it('Canvas#getContext("2d", {pixelFormat: string})', function () {
+    var canvas, context;
+
+    // default:
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "RGBA32"});
+    assert.equal(context.pixelFormat, "RGBA32");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "RGBA32"});
+    assert.equal(context.pixelFormat, "RGBA32");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "RGB24"});
+    assert.equal(context.pixelFormat, "RGB24");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "A8"});
+    assert.equal(context.pixelFormat, "A8");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "A1"});
+    assert.equal(context.pixelFormat, "A1");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "RGB16_565"});
+    assert.equal(context.pixelFormat, "RGB16_565");
+
+    // Not tested: RGB30
+  });
+
+  it('Canvas#getContext("2d", {alpha: boolean})', function () {
+    var canvas, context;
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {alpha: true});
+    assert.equal(context.pixelFormat, "RGBA32");
+
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {alpha: false});
+    assert.equal(context.pixelFormat, "RGB24");
+
+    // alpha takes priority:
+    canvas = createCanvas(10, 10);
+    context = canvas.getContext("2d", {pixelFormat: "RGBA32", alpha: false});
+    assert.equal(context.pixelFormat, "RGB24");
+  });
+
   it('Canvas#{width,height}=', function () {
     var canvas = createCanvas(100, 200);
     assert.equal(100, canvas.width);
@@ -241,6 +289,8 @@ describe('Canvas', function () {
     var canvas = createCanvas(24, 10);
     assert.ok(canvas.stride >= 24, 'canvas.stride is too short');
     assert.ok(canvas.stride < 1024, 'canvas.stride seems too long');
+
+    // TODO test stride on other formats
   });
 
   it('Canvas#getContext("invalid")', function () {
@@ -605,19 +655,77 @@ describe('Canvas', function () {
     });
   });
 
-  it('Context2d#createImageData(width, height)', function () {
-    var canvas = createCanvas(20, 20)
-      , ctx = canvas.getContext('2d');
+  describe('Context2d#createImageData(width, height)', function () {
+    it("works", function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d');
 
-    var imageData = ctx.createImageData(2,6);
-    assert.equal(2, imageData.width);
-    assert.equal(6, imageData.height);
-    assert.equal(2 * 6 * 4, imageData.data.length);
+      var imageData = ctx.createImageData(2,6);
+      assert.equal(2, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(2 * 6 * 4, imageData.data.length);
 
-    assert.equal(0, imageData.data[0]);
-    assert.equal(0, imageData.data[1]);
-    assert.equal(0, imageData.data[2]);
-    assert.equal(0, imageData.data[3]);
+      assert.equal(0, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(0, imageData.data[3]);
+    });
+
+    it("works, A8 format", function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d', {pixelFormat: "A8"});
+
+      var imageData = ctx.createImageData(2,6);
+      assert.equal(2, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(2 * 6 * 1, imageData.data.length);
+
+      assert.equal(0, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(0, imageData.data[3]);
+    });
+
+    it("works, A1 format", function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d', {pixelFormat: "A1"});
+
+      var imageData = ctx.createImageData(2,6);
+      assert.equal(2, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(Math.ceil(2 * 6 / 8), imageData.data.length);
+
+      assert.equal(0, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+    });
+
+    it("works, RGB24 format", function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d', {pixelFormat: "RGB24"});
+
+      var imageData = ctx.createImageData(2,6);
+      assert.equal(2, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(2 * 6 * 4, imageData.data.length);
+
+      assert.equal(0, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(0, imageData.data[3]);
+    });
+
+    it("works, RGB16_565 format", function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d', {pixelFormat: "RGB16_565"});
+
+      var imageData = ctx.createImageData(2,6);
+      assert.equal(2, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(2 * 6 * 2, imageData.data.length);
+
+      assert.equal(0, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+    });
   });
 
   it('Context2d#measureText().width', function () {
@@ -639,64 +747,189 @@ describe('Canvas', function () {
     assert.equal(2 * 6 * 4, imageData.data.length);
   });
 
-  it('Context2d#getImageData()', function () {
-    var canvas = createCanvas(3, 6)
-      , ctx = canvas.getContext('2d');
+  describe('Context2d#getImageData()', function () {
+    function createTestCanvas(useAlpha, attributes) {
+      var canvas = createCanvas(3, 6);
+      var ctx = canvas.getContext('2d', attributes);
 
-    ctx.fillStyle = '#f00';
-    ctx.fillRect(0,0,1,6);
+      ctx.fillStyle = useAlpha ? 'rgba(255,0,0,0.25)' : '#f00';
+      ctx.fillRect(0,0,1,6);
 
-    ctx.fillStyle = '#0f0';
-    ctx.fillRect(1,0,1,6);
+      ctx.fillStyle = useAlpha ? 'rgba(0,255,0,0.5)' : '#0f0';
+      ctx.fillRect(1,0,1,6);
 
-    ctx.fillStyle = '#00f';
-    ctx.fillRect(2,0,1,6);
+      ctx.fillStyle = useAlpha ? 'rgba(0,0,255,0.75)' : '#00f';
+      ctx.fillRect(2,0,1,6);
 
-    // Full width
-    var imageData = ctx.getImageData(0,0,3,6);
-    assert.equal(3, imageData.width);
-    assert.equal(6, imageData.height);
-    assert.equal(3 * 6 * 4, imageData.data.length);
+      return ctx;
+    }
 
-    assert.equal(255, imageData.data[0]);
-    assert.equal(0, imageData.data[1]);
-    assert.equal(0, imageData.data[2]);
-    assert.equal(255, imageData.data[3]);
+    it("works, full width, RGBA32", function () {
+      var ctx = createTestCanvas();
+      var imageData = ctx.getImageData(0,0,3,6);
 
-    assert.equal(0, imageData.data[4]);
-    assert.equal(255, imageData.data[5]);
-    assert.equal(0, imageData.data[6]);
-    assert.equal(255, imageData.data[7]);
+      assert.equal(3, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(3 * 6 * 4, imageData.data.length);
 
-    assert.equal(0, imageData.data[8]);
-    assert.equal(0, imageData.data[9]);
-    assert.equal(255, imageData.data[10]);
-    assert.equal(255, imageData.data[11]);
+      assert.equal(255, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(255, imageData.data[3]);
 
-    // Slice
-    var imageData = ctx.getImageData(0,0,2,1);
-    assert.equal(2, imageData.width);
-    assert.equal(1, imageData.height);
-    assert.equal(8, imageData.data.length);
+      assert.equal(0, imageData.data[4]);
+      assert.equal(255, imageData.data[5]);
+      assert.equal(0, imageData.data[6]);
+      assert.equal(255, imageData.data[7]);
 
-    assert.equal(255, imageData.data[0]);
-    assert.equal(0, imageData.data[1]);
-    assert.equal(0, imageData.data[2]);
-    assert.equal(255, imageData.data[3]);
+      assert.equal(0, imageData.data[8]);
+      assert.equal(0, imageData.data[9]);
+      assert.equal(255, imageData.data[10]);
+      assert.equal(255, imageData.data[11]);
+    });
 
-    assert.equal(0, imageData.data[4]);
-    assert.equal(255, imageData.data[5]);
-    assert.equal(0, imageData.data[6]);
-    assert.equal(255, imageData.data[7]);
+    it("works, full width, RGB24", function () {
+      var ctx = createTestCanvas(false, {pixelFormat: "RGB24"});
+      var imageData = ctx.getImageData(0,0,3,6);
+      assert.equal(3, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(3 * 6 * 4, imageData.data.length);
 
-    // Assignment
-    var data = ctx.getImageData(0,0,5,5).data;
-    data[0] = 50;
-    assert.equal(50, data[0]);
-    data[0] = 280;
-    assert.equal(255, data[0]);
-    data[0] = -4444;
-    assert.equal(0, data[0]);
+      assert.equal(255, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(255, imageData.data[3]);
+
+      assert.equal(0, imageData.data[4]);
+      assert.equal(255, imageData.data[5]);
+      assert.equal(0, imageData.data[6]);
+      assert.equal(255, imageData.data[7]);
+
+      assert.equal(0, imageData.data[8]);
+      assert.equal(0, imageData.data[9]);
+      assert.equal(255, imageData.data[10]);
+      assert.equal(255, imageData.data[11]);
+    });
+
+    it("works, full width, RGB16_565", function () {
+      var ctx = createTestCanvas(false, {pixelFormat: "RGB16_565"});
+      var imageData = ctx.getImageData(0,0,3,6);
+      assert.equal(3, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(3 * 6 * 2, imageData.data.length);
+
+      // TODO should be a Uint16Array already?
+      var uint16data = new Uint16Array(imageData.data.buffer, imageData.data.byteOffset, 18);
+
+      assert.equal((255 & 0b11111) << 11, uint16data[0]);
+      assert.equal((255 & 0b111111) << 5, uint16data[1]);
+      assert.equal((255 & 0b11111), uint16data[2]);
+
+      assert.equal((255 & 0b11111) << 11, uint16data[3]);
+      assert.equal((255 & 0b111111) << 5, uint16data[4]);
+      assert.equal((255 & 0b11111), uint16data[5]);
+    });
+
+    it("works, full width, A8", function () {
+      var ctx = createTestCanvas(true, {pixelFormat: "A8"});
+      var imageData = ctx.getImageData(0,0,3,6);
+      assert.equal(3, imageData.width);
+      assert.equal(6, imageData.height);
+      assert.equal(3 * 6, imageData.data.length);
+
+      assert.equal(63, imageData.data[0]);
+      assert.equal(127, imageData.data[1]);
+      assert.equal(191, imageData.data[2]);
+
+      assert.equal(63, imageData.data[3]);
+      assert.equal(127, imageData.data[4]);
+      assert.equal(191, imageData.data[5]);
+    });
+
+    it("works, full width, A1");
+
+    it("works, full width, RGB30");
+
+    it("works, slice, RGBA32", function () {
+      var ctx = createTestCanvas();
+      var imageData = ctx.getImageData(0,0,2,1);
+      assert.equal(2, imageData.width);
+      assert.equal(1, imageData.height);
+      assert.equal(8, imageData.data.length);
+
+      assert.equal(255, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(255, imageData.data[3]);
+
+      assert.equal(0, imageData.data[4]);
+      assert.equal(255, imageData.data[5]);
+      assert.equal(0, imageData.data[6]);
+      assert.equal(255, imageData.data[7]);
+    });
+
+    it("works, slice, RGB24", function () {
+      var ctx = createTestCanvas(false, {pixelFormat: "RGB24"});
+      var imageData = ctx.getImageData(0,0,2,1);
+      assert.equal(2, imageData.width);
+      assert.equal(1, imageData.height);
+      assert.equal(8, imageData.data.length);
+
+      assert.equal(255, imageData.data[0]);
+      assert.equal(0, imageData.data[1]);
+      assert.equal(0, imageData.data[2]);
+      assert.equal(255, imageData.data[3]);
+
+      assert.equal(0, imageData.data[4]);
+      assert.equal(255, imageData.data[5]);
+      assert.equal(0, imageData.data[6]);
+      assert.equal(255, imageData.data[7]);
+    });
+
+    it("works, slice, RGB16_565", function () {
+      var ctx = createTestCanvas(false, {pixelFormat: "RGB16_565"});
+      var imageData = ctx.getImageData(0,0,2,1);
+      assert.equal(2, imageData.width);
+      assert.equal(1, imageData.height);
+      assert.equal(2 * 1 * 2, imageData.data.length);
+
+      // TODO should be a Uint16Array already?
+      var uint16data = new Uint16Array(imageData.data.buffer, imageData.data.byteOffset, 2);
+
+      assert.equal((255 & 0b11111) << 11, uint16data[0]);
+      assert.equal((255 & 0b111111) << 5, uint16data[1]);
+    });
+
+    it("works, slice, A8", function () {
+      var ctx = createTestCanvas(true, {pixelFormat: "A8"});
+      var imageData = ctx.getImageData(0,0,2,1);
+      assert.equal(2, imageData.width);
+      assert.equal(1, imageData.height);
+      assert.equal(2 * 1, imageData.data.length);
+
+      assert.equal(63, imageData.data[0]);
+      assert.equal(127, imageData.data[1]);
+    });
+
+    it("works, slice, A1");
+
+    it("works, slice, RGB30");
+
+    it("works, assignment", function () {
+      var ctx = createTestCanvas();
+      var data = ctx.getImageData(0,0,5,5).data;
+      data[0] = 50;
+      assert.equal(50, data[0]);
+      data[0] = 280;
+      assert.equal(255, data[0]);
+      data[0] = -4444;
+      assert.equal(0, data[0]);
+    });
+
+    it("throws if indexes are invalid", function () {
+      var ctx = createTestCanvas();
+      assert.throws(function () { ctx.getImageData(0, 0, 0, 0); }, /IndexSizeError/);
+    });
   });
 
   it('Context2d#createPattern(Canvas)', function () {
@@ -834,42 +1067,77 @@ describe('Canvas', function () {
     assert.equal(255, imageData.data[i+3]);
   });
 
-  it('Context2d#getImageData()', function () {
-    var canvas = createCanvas(1, 1)
-      , ctx = canvas.getContext('2d');
+  describe('Context2d#putImageData()', function () {
+    it('throws for invalid arguments', function () {
+      var canvas = createCanvas(2, 1);
+      var ctx = canvas.getContext('2d');
+      assert.throws(function () { ctx.putImageData({}, 0, 0); }, TypeError);
+      assert.throws(function () { ctx.putImageData(undefined, 0, 0); }, TypeError);
+    });
 
-    assert.throws(function () { ctx.getImageData(0, 0, 0, 0); }, /IndexSizeError/);
+    it('works, RGBA32', function () {
+      var canvas = createCanvas(2, 1);
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#f00';
+      ctx.fillRect(0, 0, 1, 1);
 
-    ctx.fillStyle = '#f00';
-    ctx.fillRect(0, 0, 1, 1);
+      // Copy left pixel to the right pixel
+      ctx.putImageData(ctx.getImageData(0, 0, 1, 1), 1, 0);
 
-    var pixel = ctx.getImageData(0, 0, 1, 1);
+      var pixel = ctx.getImageData(1, 0, 1, 1);
 
-    assert.equal(pixel.data[0], 255);
-    assert.equal(pixel.data[1], 0);
-    assert.equal(pixel.data[2], 0);
-    assert.equal(pixel.data[3], 255);
-  });
+      assert.equal(pixel.data[0], 255);
+      assert.equal(pixel.data[1], 0);
+      assert.equal(pixel.data[2], 0);
+      assert.equal(pixel.data[3], 255);
+    });
 
-  it('Context2d#putImageData()', function () {
-    var canvas = createCanvas(2, 1)
-      , ctx = canvas.getContext('2d');
+    it('works, RGB24/alpha:false', function () {
+      var canvas = createCanvas(2, 1);
+      var ctx = canvas.getContext('2d', {pixelFormat: 'RGB24'});
+      ctx.fillStyle = '#f00';
+      ctx.fillRect(0, 0, 1, 1);
 
-    assert.throws(function () { ctx.putImageData({}, 0, 0); }, TypeError);
-    assert.throws(function () { ctx.putImageData(undefined, 0, 0); }, TypeError);
+      // Copy left pixel to the right pixel
+      ctx.putImageData(ctx.getImageData(0, 0, 1, 1), 1, 0);
 
-    ctx.fillStyle = '#f00';
-    ctx.fillRect(0, 0, 1, 1);
+      var pixel = ctx.getImageData(1, 0, 1, 1);
 
-    // Copy left pixel to the right pixel
-    ctx.putImageData(ctx.getImageData(0, 0, 1, 1), 1, 0);
+      assert.equal(pixel.data[0], 255);
+      assert.equal(pixel.data[1], 0);
+      assert.equal(pixel.data[2], 0);
+      assert.equal(pixel.data[3], 255);
+    });
 
-    var pixel = ctx.getImageData(1, 0, 1, 1);
+    it('works, A8', function () {
+      var canvas = createCanvas(2, 1);
+      var ctx = canvas.getContext('2d', {pixelFormat: 'A8'});
 
-    assert.equal(pixel.data[0], 255);
-    assert.equal(pixel.data[1], 0);
-    assert.equal(pixel.data[2], 0);
-    assert.equal(pixel.data[3], 255);
+      var imgData = ctx.getImageData(0, 0, 2, 1);
+      imgData.data[0] = 4;
+      imgData.data[1] = 21;
+      ctx.putImageData(imgData, 0, 0);
+
+      var pixel = ctx.getImageData(0, 0, 2, 1);
+
+      assert.equal(pixel.data[0], 4);
+      assert.equal(pixel.data[1], 21);
+    });
+
+    xit('works, RGB16_565', function () {
+      var canvas = createCanvas(2, 1);
+      var ctx = canvas.getContext('2d', {pixelFormat: 'RGB16_565'});
+
+      var imgData = ctx.getImageData(0, 0, 2, 1);
+      imgData.data[0] = 65535; // 2**16 - 1
+      imgData.data[1] = 65500;
+      ctx.putImageData(imgData, 0, 0);
+
+      var pixel = ctx.getImageData(0, 0, 2, 1);
+
+      assert.equal(pixel.data[0], 65535);
+      assert.equal(pixel.data[1], 65500);
+    });
   });
 
   it('Canvas#createSyncPNGStream()', function (done) {

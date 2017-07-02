@@ -25,10 +25,10 @@ describe('ImageData', function () {
 
   it('should throw with invalid typed array', function () {
     assert.throws(() => { createImageData(new Uint8ClampedArray(0), 0) }, /input data has a zero byte length/)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(3), 0) }, /input data byte length is not a multiple of 4/)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(16), 3) }, RangeError)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(12), 3, 5) }, RangeError)
-  })
+    assert.throws(() => { createImageData(new Uint8ClampedArray(3), 0) }, /source width is zero/)
+    // Note: Some errors thrown by browsers are not thrown by node-canvas
+    // because our ImageData can support different BPPs.
+  });
 
   it('should construct with typed array', function () {
     let data, imageData

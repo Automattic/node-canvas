@@ -55,36 +55,37 @@ NAN_METHOD(ImageData::New) {
       Nan::ThrowRangeError("The source height is zero.");
       return;
     }
-    length = width * height * 4;
+    length = width * height * 4; // ImageData(w, h) constructor assumes 4 BPP; documented.
 
     clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
 
   } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
     clampedArray = info[0].As<Uint8ClampedArray>();
+
     length = clampedArray->Length();
     if (length == 0) {
       Nan::ThrowRangeError("The input data has a zero byte length.");
       return;
     }
-    if (length % 4 != 0) {
-      Nan::ThrowRangeError("The input data byte length is not a multiple of 4.");
-      return;
-    }
+
+    // Don't assert that the ImageData length is a multiple of four because some
+    // data formats are not 4 BPP.
+
     width = info[1]->Uint32Value();
-    int size = length / 4;
     if (width == 0) {
       Nan::ThrowRangeError("The source width is zero.");
       return;
     }
-    if (size % width != 0) {
-      Nan::ThrowRangeError("The input data byte length is not a multiple of (4 * width).");
-      return;
+
+    // Don't assert that the byte length is a multiple of 4 * width, ditto.
+
+    if (info[2]->IsUint32()) { // Explicit height given
+      height = info[2]->Uint32Value();
+    } else { // Calculate height assuming 4 BPP
+      int size = length / 4;
+      height = size / width;
     }
-    height = size / width;
-    if (info[2]->IsUint32() && info[2]->Uint32Value() != height) {
-      Nan::ThrowRangeError("The input data byte length is not equal to (4 * width * height).");
-      return;
-    }
+
   } else {
     Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
     return;

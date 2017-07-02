@@ -312,6 +312,73 @@ var canvas = new Canvas(200, 500, 'svg');
 fs.writeFile('out.svg', canvas.toBuffer());
 ```
 
+## Image pixel formats (experimental)
+
+node-canvas has experimental support for additional pixel formats, roughly
+following the [Canvas color space proposal](https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md).
+
+```js
+var canvas = new Canvas(200, 200);
+var ctx = canvas.getContext('2d', {pixelFormat: 'A8'});
+```
+
+By default, canvases are created in the `RGBA32` format, which corresponds to
+the native HTML Canvas behavior. Each pixel is 32 bits. The JavaScript APIs
+that involve pixel data (`getImageData`, `putImageData`) store the colors in
+the order {red, green, blue, alpha} without alpha pre-multiplication. (The C++
+API stores the colors in the order {alpha, red, green, blue} in native-[endian](https://en.wikipedia.org/wiki/Endianness)
+ordering, with alpha pre-multiplication.)
+
+These additional pixel formats have experimental support:
+
+* `RGB24` Like `RGBA32`, but the 8 alpha bits are always opaque. This format is
+  always used if the `alpha` context attribute is set to false (i.e.
+  `canvas.getContext('2d', {alpha: false})`). This format can be faster than
+  `RGBA32` because transparency does not need to be calculated.
+* `A8` Each pixel is 8 bits. This format can either be used for creating
+  grayscale images (treating each byte as an alpha value), or for creating
+  indexed PNGs (treating each byte as a palette index).
+* `RGB16_565` Each pixel is 16 bits, with red in the upper 5 bits, green in the
+  middle 6 bits, and blue in the lower 5 bits, in native platform endianness.
+  Some hardware devices and frame buffers use this format. Note that PNG does
+  not support this format; when creating a PNG, the image will be converted to
+  24-bit RGB. This format is thus suboptimal for generating PNGs.
+* `A1` Each pixel is 1 bit, and pixels are packed together into 32-bit
+  quantities. The ordering of the bits matches the endianness of the
+  platform: on a little-endian machine, the first pixel is the least-
+  significant bit. This format can be used for creating single-color images.
+  *Support for this format is incomplete, see note below.*
+* `RGB30` Each pixel is 30 bits, with red in the upper 10, green
+  in the middle 10, and blue in the lower 10. (Requires Cairo 1.12 or later.)
+  *Support for this format is incomplete, see note below.*
+
+Notes and caveats:
+
+* Using a non-default format can affect the behavior of APIs that involve pixel
+  data:
+
+  * `context2d.createImageData` The size of the array returned depends on the
+    number of bit per pixel for the underlying image data format, per the above
+    descriptions.
+  * `context2d.getImageData` The format of the array returned depends on the
+    underlying image mode, per the above descriptions. Be aware of platform
+    endianness, which can be determined using node.js's [`os.endianness()`](https://nodejs.org/api/os.html#os_os_endianness)
+    function.
+  * `context2d.putImageData` As above.
+
+* `A1` and `RGB30` do not yet support `getImageData` or `putImageData`. Have a
+  use case and/or opinion on working with these formats? Open an issue and let
+  us know!
+
+* `A1`, `A8`, `RGB30` and `RGB16_565` with shadow blurs may crash or not render
+  properly.
+
+* The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)`
+  constructors assume 4 bytes per pixel. To create an `ImageData` instance with
+  a different number of bytes per pixel, use
+  `new ImageData(new Uint8ClampedArray(size), width, height)` or
+  `new ImageData(new Uint16ClampedArray(size), width, height)`.
+
 ## Benchmarks
 
  Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.

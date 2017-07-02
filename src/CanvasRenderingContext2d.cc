@@ -10,6 +10,7 @@
 #include <limits>
 #include <vector>
 #include <algorithm>
+#include <string>
 
 #include "Canvas.h"
 #include "Point.h"
@@ -18,6 +19,7 @@
 #include "CanvasRenderingContext2d.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
+#include "backend/ImageBackend.h"
 
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
@@ -123,6 +125,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "_setStrokePattern", SetStrokePattern);
   Nan::SetPrototypeMethod(ctor, "_setTextBaseline", SetTextBaseline);
   Nan::SetPrototypeMethod(ctor, "_setTextAlignment", SetTextAlignment);
+  Nan::SetAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat);
   Nan::SetAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality);
   Nan::SetAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
   Nan::SetAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha);
@@ -501,9 +504,59 @@ NAN_METHOD(Context2d::New) {
   if (!Nan::New(Canvas::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("Canvas expected");
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
+
+  bool isImageBackend = canvas->backend()->getName() == "image";
+  if (isImageBackend) {
+    cairo_format_t format = ImageBackend::DEFAULT_FORMAT;
+    if (info[1]->IsObject()) {
+      Local<Object> ctxAttributes = info[1]->ToObject();
+
+      Local<Value> pixelFormat = ctxAttributes->Get(Nan::New("pixelFormat").ToLocalChecked());
+      if (pixelFormat->IsString()) {
+        String::Utf8Value utf8PixelFormat(pixelFormat);
+        if (!strcmp(*utf8PixelFormat, "RGBA32")) format = CAIRO_FORMAT_ARGB32;
+        else if (!strcmp(*utf8PixelFormat, "RGB24")) format = CAIRO_FORMAT_RGB24;
+        else if (!strcmp(*utf8PixelFormat, "A8")) format = CAIRO_FORMAT_A8;
+        else if (!strcmp(*utf8PixelFormat, "RGB16_565")) format = CAIRO_FORMAT_RGB16_565;
+        else if (!strcmp(*utf8PixelFormat, "A1")) format = CAIRO_FORMAT_A1;
+#ifdef CAIRO_FORMAT_RGB30
+        else if (!strcmp(utf8PixelFormat, "RGB30")) format = CAIRO_FORMAT_RGB30;
+#endif
+      }
+
+      // alpha: false forces use of RGB24
+      Local<Value> alpha = ctxAttributes->Get(Nan::New("alpha").ToLocalChecked());
+      if (alpha->IsBoolean() && !alpha->BooleanValue()) {
+        format = CAIRO_FORMAT_RGB24;
+      }
+    }
+    static_cast<ImageBackend*>(canvas->backend())->setFormat(format);
+  }
+
   Context2d *context = new Context2d(canvas);
   context->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
+}
+
+/*
+* Get format (string).
+*/
+
+NAN_GETTER(Context2d::GetFormat) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  std::string pixelFormatString;
+  switch (context->canvas()->backend()->getFormat()) {
+  case CAIRO_FORMAT_ARGB32: pixelFormatString = "RGBA32"; break;
+  case CAIRO_FORMAT_RGB24: pixelFormatString = "RGB24"; break;
+  case CAIRO_FORMAT_A8: pixelFormatString = "A8"; break;
+  case CAIRO_FORMAT_A1: pixelFormatString = "A1"; break;
+  case CAIRO_FORMAT_RGB16_565: pixelFormatString = "RGB16_565"; break;
+#ifdef CAIRO_FORMAT_RGB30
+  case CAIRO_FORMAT_RGB30: pixelFormatString = "RGB30"; break;
+#endif
+  default: return info.GetReturnValue().SetNull();
+  }
+  info.GetReturnValue().Set(Nan::New<String>(pixelFormatString).ToLocalChecked());
 }
 
 /*
@@ -540,8 +593,9 @@ NAN_METHOD(Context2d::PutImageData) {
   uint8_t *src = imageData->data();
   uint8_t *dst = context->canvas()->data();
 
-  int srcStride = imageData->stride()
-    , dstStride = context->canvas()->stride();
+  int dstStride = context->canvas()->stride();
+  int Bpp = dstStride / context->canvas()->getWidth();
+  int srcStride = Bpp * imageData->width();
 
   int sx = 0
     , sy = 0
@@ -593,41 +647,111 @@ NAN_METHOD(Context2d::PutImageData) {
 
   if (cols <= 0 || rows <= 0) return;
 
-  src += sy * srcStride + sx * 4;
-  dst += dstStride * dy + 4 * dx;
-  for (int y = 0; y < rows; ++y) {
-    uint8_t *dstRow = dst;
-    uint8_t *srcRow = src;
-    for (int x = 0; x < cols; ++x) {
-      // rgba
-      uint8_t r = *srcRow++;
-      uint8_t g = *srcRow++;
-      uint8_t b = *srcRow++;
-      uint8_t a = *srcRow++;
+  switch (context->canvas()->backend()->getFormat()) {
+  case CAIRO_FORMAT_ARGB32: {
+    src += sy * srcStride + sx * 4;
+    dst += dstStride * dy + 4 * dx;
+    for (int y = 0; y < rows; ++y) {
+      uint8_t *dstRow = dst;
+      uint8_t *srcRow = src;
+      for (int x = 0; x < cols; ++x) {
+        // rgba
+        uint8_t r = *srcRow++;
+        uint8_t g = *srcRow++;
+        uint8_t b = *srcRow++;
+        uint8_t a = *srcRow++;
 
-      // argb
-      // performance optimization: fully transparent/opaque pixels can be
-      // processed more efficiently.
-      if (a == 0) {
-        *dstRow++ = 0;
-        *dstRow++ = 0;
-        *dstRow++ = 0;
-        *dstRow++ = 0;
-      } else if (a == 255) {
+        // argb
+        // performance optimization: fully transparent/opaque pixels can be
+        // processed more efficiently.
+        if (a == 0) {
+          *dstRow++ = 0;
+          *dstRow++ = 0;
+          *dstRow++ = 0;
+          *dstRow++ = 0;
+        } else if (a == 255) {
+          *dstRow++ = b;
+          *dstRow++ = g;
+          *dstRow++ = r;
+          *dstRow++ = a;
+        } else {
+          float alpha = (float)a / 255;
+          *dstRow++ = b * alpha;
+          *dstRow++ = g * alpha;
+          *dstRow++ = r * alpha;
+          *dstRow++ = a;
+        }
+      }
+      dst += dstStride;
+      src += srcStride;
+    }
+	  break;
+  }
+  case CAIRO_FORMAT_RGB24: {
+    src += sy * srcStride + sx * 4;
+    dst += dstStride * dy + 4 * dx;
+    for (int y = 0; y < rows; ++y) {
+      uint8_t *dstRow = dst;
+      uint8_t *srcRow = src;
+      for (int x = 0; x < cols; ++x) {
+        // rgba
+        uint8_t r = *srcRow++;
+        uint8_t g = *srcRow++;
+        uint8_t b = *srcRow++;
+        srcRow++;
+
+        // argb
         *dstRow++ = b;
         *dstRow++ = g;
         *dstRow++ = r;
-        *dstRow++ = a;
-      } else {
-        float alpha = (float)a / 255;
-        *dstRow++ = b * alpha;
-        *dstRow++ = g * alpha;
-        *dstRow++ = r * alpha;
-        *dstRow++ = a;
+        *dstRow++ = 255;
+      }
+      dst += dstStride;
+      src += srcStride;
+    }
+    break;
+  }
+  case CAIRO_FORMAT_A8: {
+    src += sy * srcStride + sx;
+    dst += dstStride * dy + dx;
+    if (srcStride == dstStride && cols == dstStride) {
+      // fast path: strides are the same and doing a full-width put
+      memcpy(dst, src, cols * rows);
+    } else {
+      for (int y = 0; y < rows; ++y) {
+        memcpy(dst, src, cols);
+        dst += dstStride;
+        src += srcStride;
       }
     }
-    dst += dstStride;
-    src += srcStride;
+    break;
+  }
+  case CAIRO_FORMAT_A1: {
+    // TODO Should this be totally packed, or maintain a stride divisible by 4?
+    Nan::ThrowError("putImageData for CANVAS_FORMAT_A1 is not yet implemented");
+    break;
+  }
+  case CAIRO_FORMAT_RGB16_565: {
+    src += sy * srcStride + sx * 2;
+    dst += dstStride * dy + 2 * dx;
+    for (int y = 0; y < rows; ++y) {
+      memcpy(dst, src, cols * 2);
+      dst += dstStride;
+      src += srcStride;
+    }
+    break;
+  }
+#ifdef CAIRO_FORMAT_RGB30
+  case CAIRO_FORMAT_RGB30: {
+    // TODO
+    Nan::ThrowError("putImageData for CANVAS_FORMAT_RGB30 is not yet implemented");
+    break;
+  }
+#endif
+  default: {
+    Nan::ThrowError("Invalid pixel format");
+    break;
+  }
   }
 
   cairo_surface_mark_dirty_rectangle(
@@ -690,10 +814,10 @@ NAN_METHOD(Context2d::GetImageData) {
     sy = 0;
   }
 
-  int size = sw * sh * 4;
-
   int srcStride = canvas->stride();
-  int dstStride = sw * 4;
+  int bpp = srcStride / canvas->getWidth();
+  int size = sw * sh * bpp;
+  int dstStride = sw * bpp;
 
   uint8_t *src = canvas->data();
 
@@ -703,33 +827,93 @@ NAN_METHOD(Context2d::GetImageData) {
   Nan::TypedArrayContents<uint8_t> typedArrayContents(clampedArray);
   uint8_t* dst = *typedArrayContents;
 
-  // Normalize data (argb -> rgba)
-  for (int y = 0; y < sh; ++y) {
+  switch (canvas->backend()->getFormat()) {
+  case CAIRO_FORMAT_ARGB32: {
+    // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
+    // and store in big-endian format
+    for (int y = 0; y < sh; ++y) {
+      uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
+      for (int x = 0; x < sw; ++x) {
+        int bx = x * 4;
+        uint32_t *pixel = row + x + sx;
+        uint8_t a = *pixel >> 24;
+        uint8_t r = *pixel >> 16;
+        uint8_t g = *pixel >> 8;
+        uint8_t b = *pixel;
+        dst[bx + 3] = a;
+
+        // Performance optimization: fully transparent/opaque pixels can be
+        // processed more efficiently.
+        if (a == 0 || a == 255) {
+          dst[bx + 0] = r;
+          dst[bx + 1] = g;
+          dst[bx + 2] = b;
+        } else {
+          // Undo alpha pre-multiplication
+          float alphaR = (float)255 / a;
+          dst[bx + 0] = (int)((float)r * alphaR);
+          dst[bx + 1] = (int)((float)g * alphaR);
+          dst[bx + 2] = (int)((float)b * alphaR);
+        }
+
+      }
+      dst += dstStride;
+    }
+    break;
+  }
+  case CAIRO_FORMAT_RGB24: {
+  // Rearrange alpha (argb -> rgba) and store in big-endian format
+    for (int y = 0; y < sh; ++y) {
     uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
     for (int x = 0; x < sw; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + sx;
-      uint8_t a = *pixel >> 24;
       uint8_t r = *pixel >> 16;
       uint8_t g = *pixel >> 8;
       uint8_t b = *pixel;
-      dst[bx + 3] = a;
 
-      // Performance optimization: fully transparent/opaque pixels can be
-      // processed more efficiently.
-      if (a == 0 || a == 255) {
-        dst[bx + 0] = r;
-        dst[bx + 1] = g;
-        dst[bx + 2] = b;
-      } else {
-        float alpha = (float)a / 255;
-        dst[bx + 0] = (int)((float)r / alpha);
-        dst[bx + 1] = (int)((float)g / alpha);
-        dst[bx + 2] = (int)((float)b / alpha);
-      }
-
+      dst[bx + 0] = r;
+      dst[bx + 1] = g;
+      dst[bx + 2] = b;
+      dst[bx + 3] = 255;
     }
     dst += dstStride;
+    }
+    break;
+  }
+  case CAIRO_FORMAT_A8: {
+    for (int y = 0; y < sh; ++y) {
+      uint8_t *row = (uint8_t *)(src + srcStride * (y + sy));
+      memcpy(dst, row + sx, dstStride);
+      dst += dstStride;
+    }
+    break;
+  }
+  case CAIRO_FORMAT_A1: {
+    // TODO Should this be totally packed, or maintain a stride divisible by 4?
+    Nan::ThrowError("getImageData for CANVAS_FORMAT_A1 is not yet implemented");
+    break;
+  }
+  case CAIRO_FORMAT_RGB16_565: {
+    for (int y = 0; y < sh; ++y) {
+      uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
+      memcpy(dst, row + sx, dstStride);
+      dst += dstStride;
+    }
+    break;
+  }
+#ifdef CAIRO_FORMAT_RGB30
+  case CAIRO_FORMAT_RGB30: {
+    // TODO
+    Nan::ThrowError("getImageData for CANVAS_FORMAT_RGB30 is not yet implemented");
+    break;
+  }
+#endif
+  default: {
+    // Unlikely
+    Nan::ThrowError("Invalid pixel format");
+    break;
+  }
   }
 
   const int argc = 3;
