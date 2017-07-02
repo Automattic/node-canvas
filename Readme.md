@@ -343,6 +343,7 @@ These additional pixel formats have experimental support:
   Some hardware devices and frame buffers use this format. Note that PNG does
   not support this format; when creating a PNG, the image will be converted to
   24-bit RGB. This format is thus suboptimal for generating PNGs.
+  `ImageData` instances for this mode use a `Uint16Array` instead of a `Uint8ClampedArray`.
 * `A1` Each pixel is 1 bit, and pixels are packed together into 32-bit
   quantities. The ordering of the bits matches the endianness of the
   platform: on a little-endian machine, the first pixel is the least-

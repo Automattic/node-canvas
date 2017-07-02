@@ -39,7 +39,7 @@ NAN_METHOD(ImageData::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
-  Local<Uint8ClampedArray> clampedArray;
+  Local<TypedArray> dataArray;
   uint32_t width;
   uint32_t height;
   int length;
@@ -57,12 +57,12 @@ NAN_METHOD(ImageData::New) {
     }
     length = width * height * 4; // ImageData(w, h) constructor assumes 4 BPP; documented.
 
-    clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
+    dataArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
 
   } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
-    clampedArray = info[0].As<Uint8ClampedArray>();
+    dataArray = info[0].As<Uint8ClampedArray>();
 
-    length = clampedArray->Length();
+    length = dataArray->Length();
     if (length == 0) {
       Nan::ThrowRangeError("The input data has a zero byte length.");
       return;
@@ -86,16 +86,38 @@ NAN_METHOD(ImageData::New) {
       height = size / width;
     }
 
-  } else {
-    Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
+  } else if (info[0]->IsUint16Array() && info[1]->IsUint32()) { // Intended for RGB16_565 format
+  dataArray = info[0].As<Uint16Array>();
+
+  length = dataArray->Length();
+  if (length == 0) {
+    Nan::ThrowRangeError("The input data has a zero byte length.");
     return;
   }
 
-  Nan::TypedArrayContents<uint8_t> dataPtr(clampedArray);
+  width = info[1]->Uint32Value();
+  if (width == 0) {
+    Nan::ThrowRangeError("The source width is zero.");
+    return;
+  }
+
+  if (info[2]->IsUint32()) { // Explicit height given
+    height = info[2]->Uint32Value();
+  } else { // Calculate height assuming 2 BPP
+    int size = length / 2;
+    height = size / width;
+  }
+
+  } else {
+    Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]), (Uint16Array, width[, height]) or (width, height)");
+    return;
+  }
+
+  Nan::TypedArrayContents<uint8_t> dataPtr(dataArray);
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
-  info.This()->Set(Nan::New("data").ToLocalChecked(), clampedArray);
+  info.This()->Set(Nan::New("data").ToLocalChecked(), dataArray);
   info.GetReturnValue().Set(info.This());
 }
 

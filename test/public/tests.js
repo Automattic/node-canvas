@@ -1912,8 +1912,10 @@ tests['putImageData() png data'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 3] = 80
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 3] = 80
+      }
     }
     ctx.putImageData(imageData, 50, 50)
     done(null)
@@ -1933,8 +1935,10 @@ tests['putImageData() png data 2'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 3] = 80
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 3] = 80
+      }
     }
     ctx.putImageData(imageData, 50, 50, 10, 10, 20, 20)
     done(null)
@@ -1954,10 +1958,12 @@ tests['putImageData() png data 3'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 0] = data[i + 0] * 0.2
-      data[i + 1] = data[i + 1] * 0.2
-      data[i + 2] = data[i + 2] * 0.2
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 0] = data[i + 0] * 0.2
+        data[i + 1] = data[i + 1] * 0.2
+        data[i + 2] = data[i + 2] * 0.2
+      }
     }
     ctx.putImageData(imageData, 50, 50)
     done(null)

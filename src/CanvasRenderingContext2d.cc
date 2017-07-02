@@ -822,9 +822,15 @@ NAN_METHOD(Context2d::GetImageData) {
   uint8_t *src = canvas->data();
 
   Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
-  Local<Uint8ClampedArray> clampedArray = Uint8ClampedArray::New(buffer, 0, size);
+  Local<TypedArray> dataArray;
 
-  Nan::TypedArrayContents<uint8_t> typedArrayContents(clampedArray);
+  if (canvas->backend()->getFormat() == CAIRO_FORMAT_RGB16_565) {
+    dataArray = Uint16Array::New(buffer, 0, size);
+  } else {
+    dataArray = Uint8ClampedArray::New(buffer, 0, size);
+  }
+
+  Nan::TypedArrayContents<uint8_t> typedArrayContents(dataArray);
   uint8_t* dst = *typedArrayContents;
 
   switch (canvas->backend()->getFormat()) {
@@ -919,7 +925,7 @@ NAN_METHOD(Context2d::GetImageData) {
   const int argc = 3;
   Local<Int32> swHandle = Nan::New(sw);
   Local<Int32> shHandle = Nan::New(sh);
-  Local<Value> argv[argc] = { clampedArray, swHandle, shHandle };
+  Local<Value> argv[argc] = { dataArray, swHandle, shHandle };
 
   Local<Function> ctor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();

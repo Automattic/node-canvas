@@ -719,9 +719,10 @@ describe('Canvas', function () {
         , ctx = canvas.getContext('2d', {pixelFormat: "RGB16_565"});
 
       var imageData = ctx.createImageData(2,6);
+      assert(imageData.data instanceof Uint16Array);
       assert.equal(2, imageData.width);
       assert.equal(6, imageData.height);
-      assert.equal(2 * 6 * 2, imageData.data.length);
+      assert.equal(2 * 6, imageData.data.length);
 
       assert.equal(0, imageData.data[0]);
       assert.equal(0, imageData.data[1]);
@@ -818,16 +819,13 @@ describe('Canvas', function () {
       assert.equal(6, imageData.height);
       assert.equal(3 * 6 * 2, imageData.data.length);
 
-      // TODO should be a Uint16Array already?
-      var uint16data = new Uint16Array(imageData.data.buffer, imageData.data.byteOffset, 18);
+      assert.equal((255 & 0b11111) << 11, imageData.data[0]);
+      assert.equal((255 & 0b111111) << 5, imageData.data[1]);
+      assert.equal((255 & 0b11111), imageData.data[2]);
 
-      assert.equal((255 & 0b11111) << 11, uint16data[0]);
-      assert.equal((255 & 0b111111) << 5, uint16data[1]);
-      assert.equal((255 & 0b11111), uint16data[2]);
-
-      assert.equal((255 & 0b11111) << 11, uint16data[3]);
-      assert.equal((255 & 0b111111) << 5, uint16data[4]);
-      assert.equal((255 & 0b11111), uint16data[5]);
+      assert.equal((255 & 0b11111) << 11, imageData.data[3]);
+      assert.equal((255 & 0b111111) << 5, imageData.data[4]);
+      assert.equal((255 & 0b11111), imageData.data[5]);
     });
 
     it("works, full width, A8", function () {
@@ -893,11 +891,8 @@ describe('Canvas', function () {
       assert.equal(1, imageData.height);
       assert.equal(2 * 1 * 2, imageData.data.length);
 
-      // TODO should be a Uint16Array already?
-      var uint16data = new Uint16Array(imageData.data.buffer, imageData.data.byteOffset, 2);
-
-      assert.equal((255 & 0b11111) << 11, uint16data[0]);
-      assert.equal((255 & 0b111111) << 5, uint16data[1]);
+      assert.equal((255 & 0b11111) << 11, imageData.data[0]);
+      assert.equal((255 & 0b111111) << 5, imageData.data[1]);
     });
 
     it("works, slice, A8", function () {
@@ -1124,7 +1119,7 @@ describe('Canvas', function () {
       assert.equal(pixel.data[1], 21);
     });
 
-    xit('works, RGB16_565', function () {
+    it('works, RGB16_565', function () {
       var canvas = createCanvas(2, 1);
       var ctx = canvas.getContext('2d', {pixelFormat: 'RGB16_565'});
 
