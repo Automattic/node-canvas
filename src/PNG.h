@@ -87,10 +87,10 @@ static void canvas_convert_565_to_888(png_structp png, png_row_infop row_info, p
 
 struct canvas_png_write_closure_t {
     cairo_write_func_t write_func;
-    void *closure;
+    closure_t *closure;
 };
 
-static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr write_func, void *closure) {
+static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr write_func, canvas_png_write_closure_t *closure) {
     unsigned int i;
     cairo_status_t status = CAIRO_STATUS_SUCCESS;
     uint8_t *data;
@@ -156,9 +156,8 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 #endif
 
     png_set_write_fn(png, closure, write_func, canvas_png_flush);
-    // FIXME why is this not typed properly?
-    png_set_compression_level(png, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->compression_level);
-    png_set_filter(png, 0, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->filter);
+    png_set_compression_level(png, closure->closure->compression_level);
+    png_set_filter(png, 0, closure->closure->filter);
 
     cairo_format_t format = cairo_image_surface_get_format(surface);
 
@@ -201,16 +200,16 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     }
 
     if ((format == CAIRO_FORMAT_A8 || format == CAIRO_FORMAT_A1) &&
-      ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->palette != NULL) {
+      closure->closure->palette != NULL) {
       png_color_type = PNG_COLOR_TYPE_PALETTE;
     }
 
     png_set_IHDR(png, info, width, height, bpc, png_color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
     if (png_color_type == PNG_COLOR_TYPE_PALETTE) {
-      size_t nColors = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->nPaletteColors;
-      uint8_t* colors = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->palette;
-      uint8_t backgroundIndex = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->backgroundIndex;
+      size_t nColors = closure->closure->nPaletteColors;
+      uint8_t* colors = closure->closure->palette;
+      uint8_t backgroundIndex = closure->closure->backgroundIndex;
       png_colorp pngPalette = (png_colorp)png_malloc(png, nColors * sizeof(png_colorp));
       png_bytep transparency = (png_bytep)png_malloc(png, nColors * sizeof(png_bytep));
       for (i = 0; i < nColors; i++) {
@@ -272,7 +271,7 @@ static void canvas_stream_write_func(png_structp png, png_bytep data, png_size_t
     }
 }
 
-static cairo_status_t canvas_write_to_png_stream(cairo_surface_t *surface, cairo_write_func_t write_func, void *closure) {
+static cairo_status_t canvas_write_to_png_stream(cairo_surface_t *surface, cairo_write_func_t write_func, closure_t *closure) {
     struct canvas_png_write_closure_t png_closure;
 
     if (cairo_surface_status(surface)) {
