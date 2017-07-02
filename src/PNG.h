@@ -156,10 +156,13 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 #endif
 
     png_set_write_fn(png, closure, write_func, canvas_png_flush);
+    // FIXME why is this not typed properly?
     png_set_compression_level(png, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->compression_level);
     png_set_filter(png, 0, ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->filter);
 
-    switch (cairo_image_surface_get_format(surface)) {
+    cairo_format_t format = cairo_image_surface_get_format(surface);
+
+    switch (format) {
     case CAIRO_FORMAT_ARGB32:
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
@@ -197,11 +200,40 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         return status;
     }
 
+    if ((format == CAIRO_FORMAT_A8 || format == CAIRO_FORMAT_A1) &&
+      ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->palette != NULL) {
+      png_color_type = PNG_COLOR_TYPE_PALETTE;
+    }
+
     png_set_IHDR(png, info, width, height, bpc, png_color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
-    white.gray = (1 << bpc) - 1;
-    white.red = white.blue = white.green = white.gray;
-    png_set_bKGD(png, info, &white);
+    if (png_color_type == PNG_COLOR_TYPE_PALETTE) {
+      size_t nColors = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->nPaletteColors;
+      uint8_t* colors = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->palette;
+      uint8_t backgroundIndex = ((closure_t *) ((canvas_png_write_closure_t *) closure)->closure)->backgroundIndex;
+      png_colorp pngPalette = (png_colorp)png_malloc(png, nColors * sizeof(png_colorp));
+      png_bytep transparency = (png_bytep)png_malloc(png, nColors * sizeof(png_bytep));
+      for (i = 0; i < nColors; i++) {
+        pngPalette[i].red = colors[4 * i];
+        pngPalette[i].green = colors[4 * i + 1];
+        pngPalette[i].blue = colors[4 * i + 2];
+        transparency[i] = colors[4 * i + 3];
+      }
+      png_set_PLTE(png, info, pngPalette, nColors);
+      png_set_tRNS(png, info, transparency, nColors, NULL);
+      png_set_packing(png); // pack pixels
+      // have libpng free palette and trans:
+      png_data_freer(png, info, PNG_DESTROY_WILL_FREE_DATA, PNG_FREE_PLTE | PNG_FREE_TRNS);
+      png_color_16 bkg;
+      bkg.index = backgroundIndex;
+      png_set_bKGD(png, info, &bkg);
+    }
+
+    if (png_color_type != PNG_COLOR_TYPE_PALETTE) {
+      white.gray = (1 << bpc) - 1;
+      white.red = white.blue = white.green = white.gray;
+      png_set_bKGD(png, info, &white);
+    }
 
     /* We have to call png_write_info() before setting up the write
      * transformation, since it stores data internally in 'png'
@@ -210,7 +242,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     png_write_info(png, info);
     if (png_color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
         png_set_write_user_transform_fn(png, canvas_unpremultiply_data);
-    } else if (cairo_image_surface_get_format(surface) == CAIRO_FORMAT_RGB16_565) {
+    } else if (format == CAIRO_FORMAT_RGB16_565) {
         png_set_write_user_transform_fn(png, canvas_convert_565_to_888);
     } else if (png_color_type == PNG_COLOR_TYPE_RGB) {
         png_set_write_user_transform_fn(png, canvas_convert_data_to_bytes);

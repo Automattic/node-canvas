@@ -4,6 +4,7 @@ Unreleased / patch
  * Port has_lib.sh to javascript (#872)
  * Support canvas.getContext("2d", {alpha: boolean}) and
    canvas.getContext("2d", {pixelFormat: "..."})
+ * Support indexed PNG encoding.
 
 1.6.0 / 2016-10-16
 ==================

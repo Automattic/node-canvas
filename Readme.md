@@ -117,7 +117,7 @@ img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
 
 If image data is not tracked, and the Image is drawn to an image rather than a PDF canvas, the output will be junk. Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
 
-### Canvas#pngStream()
+### Canvas#pngStream(options)
 
   To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
 
@@ -136,6 +136,22 @@ stream.on('end', function(){
 ```
 
 Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
+
+To encode indexed PNGs from canvases with `pixelFormat: 'A8'` or `'A1'`, provide an options object:
+
+```js
+var palette = new Uint8ClampedArray([
+  //r    g    b    a
+    0,  50,  50, 255, // index 1
+   10,  90,  90, 255, // index 2
+  127, 127, 255, 255
+  // ...
+]);
+canvas.pngStream({
+  palette: palette,
+  backgroundIndex: 0 // optional, defaults to 0
+})
+```
 
 ### Canvas#jpegStream() and Canvas#syncJPEGStream()
 
@@ -337,7 +353,9 @@ These additional pixel formats have experimental support:
   `RGBA32` because transparency does not need to be calculated.
 * `A8` Each pixel is 8 bits. This format can either be used for creating
   grayscale images (treating each byte as an alpha value), or for creating
-  indexed PNGs (treating each byte as a palette index).
+  indexed PNGs (treating each byte as a palette index) (see [the example using
+  alpha values with `fillStyle`](examples/indexed-png-alpha.js) and [the
+  example using `imageData`](examples/indexed-png-image-data.js)).
 * `RGB16_565` Each pixel is 16 bits, with red in the upper 5 bits, green in the
   middle 6 bits, and blue in the lower 5 bits, in native platform endianness.
   Some hardware devices and frame buffers use this format. Note that PNG does
@@ -369,7 +387,7 @@ Notes and caveats:
 
 * `A1` and `RGB30` do not yet support `getImageData` or `putImageData`. Have a
   use case and/or opinion on working with these formats? Open an issue and let
-  us know!
+  us know! (See #935.)
 
 * `A1`, `A8`, `RGB30` and `RGB16_565` with shadow blurs may crash or not render
   properly.

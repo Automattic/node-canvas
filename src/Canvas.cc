@@ -359,6 +359,10 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 
 /*
  * Stream PNG data synchronously.
+ * TODO the compression level and filter args don't seem to be documented.
+ * Maybe move them to named properties in the options object?
+ * StreamPngSync(this, options: {palette?: Uint8ClampedArray})
+ * StreamPngSync(this, compression_level?: uint32, filter?: uint32)
  */
 
 NAN_METHOD(Canvas::StreamPNGSync) {
@@ -367,6 +371,11 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   // TODO: async as well
   if (!info[0]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
+
+  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
+  uint8_t* paletteColors = NULL;
+  size_t nPaletteColors = 0;
+  uint8_t backgroundIndex = 0;
 
   if (info.Length() > 1 && !(info[1]->IsUndefined() && info[2]->IsUndefined())) {
     if (!info[1]->IsUndefined()) {
@@ -384,9 +393,32 @@ NAN_METHOD(Canvas::StreamPNGSync) {
               compression_level = tmp;
             }
           }
-       } else {
-         good = false;
-       }
+        } else if (info[1]->IsObject()) {
+          // If canvas is A8 or A1 and options obj has Uint8ClampedArray palette,
+          // encode as indexed PNG.
+          cairo_format_t format = canvas->backend()->getFormat();
+          if (format == CAIRO_FORMAT_A8 || format == CAIRO_FORMAT_A1) {
+            Local<Object> attrs = info[1]->ToObject();
+            Local<Value> palette = attrs->Get(Nan::New("palette").ToLocalChecked());
+            if (palette->IsUint8ClampedArray()) {
+              Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
+              nPaletteColors = palette_ta->Length();
+              if (nPaletteColors % 4 != 0) {
+                Nan::ThrowError("Palette length must be a multiple of 4.");
+              }
+              nPaletteColors /= 4;
+              Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
+              paletteColors = *_paletteColors;
+              // Optional background color index:
+              Local<Value> backgroundIndexVal = attrs->Get(Nan::New("backgroundIndex").ToLocalChecked());
+              if (backgroundIndexVal->IsUint32()) {
+                backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
+              }
+            }
+          }
+        } else {
+          good = false;
+        }
 
        if (good) {
          if (compression_level > 9) {
@@ -407,11 +439,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   }
 
 
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
   closure.fn = Local<Function>::Cast(info[0]);
   closure.compression_level = compression_level;
   closure.filter = filter;
+  closure.palette = paletteColors;
+  closure.nPaletteColors = nPaletteColors;
+  closure.backgroundIndex = backgroundIndex;
 
   Nan::TryCatch try_catch;
 
