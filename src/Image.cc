@@ -45,6 +45,7 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  Nan::SetPrototypeMethod(ctor, "getRawData", GetRawData);
   Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
   Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
   Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
@@ -813,6 +814,23 @@ clearMimeData(void *closure) {
   Nan::AdjustExternalMemory(-static_cast<int>(((read_closure_t *)closure)->len));
   free(((read_closure_t *) closure)->buf);
   free(closure);
+}
+
+NAN_METHOD(Image::GetRawData) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  if (img->_surface) {
+    // Return raw ARGB data -- just a memcpy()
+    cairo_surface_t *surface = img->_surface;
+    cairo_surface_flush(surface);
+    const unsigned char *data = cairo_image_surface_get_data(surface);
+
+    unsigned int nBytes = img->width * img->height * 4;
+    Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), nBytes).ToLocalChecked();
+    info.GetReturnValue().Set(buf);
+  } else {
+    info.GetReturnValue().Set(Nan::Undefined());
+  }
+  return;
 }
 
 /*
