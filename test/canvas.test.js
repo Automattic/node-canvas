@@ -1,31 +1,20 @@
+/* eslint-env mocha */
+
+'use strict'
+
 /**
  * Module dependencies.
  */
 
-var Canvas = require('../')
-  , assert = require('assert')
-  , parseFont = Canvas.Context2d.parseFont
-  , fs = require('fs')
-  , os = require('os')
-  , Readable = require('stream').Readable;
+const createCanvas = require('../').createCanvas
+const loadImage = require('../').loadImage
+const parseFont = require('../').parseFont
 
-console.log();
-console.log('   canvas: %s', Canvas.version);
-console.log('   cairo: %s', Canvas.cairoVersion);
+const assert = require('assert')
+const os = require('os')
+const Readable = require('stream').Readable
 
 describe('Canvas', function () {
-  it('should require new', function () {
-    assert.throws(function () { Canvas(); }, TypeError);
-  });
-
-  it('.version', function () {
-    assert.ok(/^\d+\.\d+\.\d+(-(alpha|beta)\.\d+)?$/.test(Canvas.version));
-  });
-
-  it('.cairoVersion', function () {
-    assert.ok(/^\d+\.\d+\.\d+$/.test(Canvas.cairoVersion));
-  });
-
   it('.parseFont()', function () {
     var tests = [
         '20px Arial'
@@ -85,7 +74,7 @@ describe('Canvas', function () {
   });
 
   it('color serialization', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ['fillStyle', 'strokeStyle', 'shadowColor'].forEach(function(prop){
@@ -113,7 +102,7 @@ describe('Canvas', function () {
   });
 
   it('color parser', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ctx.fillStyle = '#ffccaa';
@@ -215,18 +204,18 @@ describe('Canvas', function () {
   });
 
   it('Canvas#type', function () {
-    var canvas = new Canvas(10, 10);
+    var canvas = createCanvas(10, 10);
     assert.equal(canvas.type, 'image');
-    var canvas = new Canvas(10, 10, 'pdf');
+    var canvas = createCanvas(10, 10, 'pdf');
     assert.equal(canvas.type, 'pdf');
-    var canvas = new Canvas(10, 10, 'svg');
+    var canvas = createCanvas(10, 10, 'svg');
     assert.equal(canvas.type, 'svg');
-    var canvas = new Canvas(10, 10, 'hey');
+    var canvas = createCanvas(10, 10, 'hey');
     assert.equal(canvas.type, 'image');
   });
 
   it('Canvas#getContext("2d")', function () {
-    var canvas = new Canvas(200, 300)
+    var canvas = createCanvas(200, 300)
       , ctx = canvas.getContext('2d');
     assert.ok('object' == typeof ctx);
     assert.equal(canvas, ctx.canvas, 'context.canvas is not canvas');
@@ -234,11 +223,11 @@ describe('Canvas', function () {
   });
 
   it('Canvas#{width,height}=', function () {
-    var canvas = new Canvas(100, 200);
+    var canvas = createCanvas(100, 200);
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
 
-    canvas = new Canvas;
+    canvas = createCanvas();
     assert.equal(0, canvas.width);
     assert.equal(0, canvas.height);
 
@@ -249,17 +238,17 @@ describe('Canvas', function () {
   });
 
   it('Canvas#stride', function() {
-    var canvas = new Canvas(24, 10);
+    var canvas = createCanvas(24, 10);
     assert.ok(canvas.stride >= 24, 'canvas.stride is too short');
     assert.ok(canvas.stride < 1024, 'canvas.stride seems too long');
   });
 
   it('Canvas#getContext("invalid")', function () {
-    assert.equal(null, new Canvas(200, 300).getContext('invalid'));
+    assert.equal(null, createCanvas(200, 300).getContext('invalid'));
   });
 
   it('Context2d#patternQuality', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('good', ctx.patternQuality);
@@ -270,7 +259,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#font=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('10px sans-serif', ctx.font);
@@ -279,7 +268,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#lineWidth=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ctx.lineWidth = 10.0;
@@ -295,7 +284,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#antiAlias=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('default', ctx.antialias);
@@ -312,7 +301,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#lineCap=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('butt', ctx.lineCap);
@@ -321,7 +310,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#lineJoin=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('miter', ctx.lineJoin);
@@ -330,7 +319,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#globalAlpha=', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     assert.equal(1, ctx.globalAlpha);
@@ -339,7 +328,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#isPointInPath()', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ctx.rect(5,5,100,100);
@@ -358,7 +347,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#textAlign', function () {
-    var canvas = new Canvas(200,200)
+    var canvas = createCanvas(200,200)
       , ctx = canvas.getContext('2d');
 
     assert.equal('start', ctx.textAlign);
@@ -373,12 +362,12 @@ describe('Canvas', function () {
   });
 
   it('Canvas#toBuffer()', function () {
-    var buf = new Canvas(200,200).toBuffer();
+    var buf = createCanvas(200,200).toBuffer();
     assert.equal('PNG', buf.slice(1,4).toString());
   });
 
   it('Canvas#toBuffer() async', function (done) {
-    new Canvas(200, 200).toBuffer(function(err, buf){
+    createCanvas(200, 200).toBuffer(function(err, buf){
       assert.ok(!err);
       assert.equal('PNG', buf.slice(1,4).toString());
       done();
@@ -386,7 +375,7 @@ describe('Canvas', function () {
   });
 
   describe('#toBuffer("raw")', function() {
-    var canvas = new Canvas(11, 10)
+    var canvas = createCanvas(11, 10)
         , ctx = canvas.getContext('2d');
 
     ctx.clearRect(0, 0, 11, 10);
@@ -470,7 +459,7 @@ describe('Canvas', function () {
   });
 
   describe('#toDataURL()', function () {
-    var canvas = new Canvas(200, 200)
+    var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
 
     ctx.fillRect(0,0,100,100);
@@ -513,7 +502,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
-      new Canvas(200,200).toDataURL(function(err, str){
+      createCanvas(200,200).toDataURL(function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -521,7 +510,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL(function (err, str) {...}) is async even with no canvas data', function (done) {
-      new Canvas().toDataURL(function(err, str){
+      createCanvas().toDataURL(function(err, str){
         assert.ifError(err);
         assert.ok('data:,' === str);
         done();
@@ -529,7 +518,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL(0.5, function (err, str) {...}) works and defaults to PNG', function (done) {
-      new Canvas(200,200).toDataURL(0.5, function(err, str){
+      createCanvas(200,200).toDataURL(0.5, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -537,7 +526,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL(undefined, function (err, str) {...}) works and defaults to PNG', function (done) {
-      new Canvas(200,200).toDataURL(undefined, function(err, str){
+      createCanvas(200,200).toDataURL(undefined, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -545,7 +534,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/png", function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/png', function(err, str){
+      createCanvas(200,200).toDataURL('image/png', function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -553,7 +542,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/png", 0.5, function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/png', 0.5, function(err, str){
+      createCanvas(200,200).toDataURL('image/png', 0.5, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/png;base64,'));
         done();
@@ -576,7 +565,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/jpeg', function(err, str){
+      createCanvas(200,200).toDataURL('image/jpeg', function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();
@@ -584,7 +573,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("iMAge/JPEG", function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('iMAge/JPEG', function(err, str){
+      createCanvas(200,200).toDataURL('iMAge/JPEG', function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();
@@ -592,7 +581,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/jpeg", undefined, function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/jpeg', undefined, function(err, str){
+      createCanvas(200,200).toDataURL('image/jpeg', undefined, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();
@@ -600,7 +589,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/jpeg", 0.5, function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/jpeg', 0.5, function(err, str){
+      createCanvas(200,200).toDataURL('image/jpeg', 0.5, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();
@@ -608,7 +597,7 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/jpeg", opts, function (err, str) {...}) works', function (done) {
-      new Canvas(200,200).toDataURL('image/jpeg', {quality: 100}, function(err, str){
+      createCanvas(200,200).toDataURL('image/jpeg', {quality: 100}, function(err, str){
         assert.ifError(err);
         assert.ok(0 === str.indexOf('data:image/jpeg;base64,'));
         done();
@@ -617,7 +606,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#createImageData(width, height)', function () {
-    var canvas = new Canvas(20, 20)
+    var canvas = createCanvas(20, 20)
       , ctx = canvas.getContext('2d');
 
     var imageData = ctx.createImageData(2,6);
@@ -632,7 +621,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#measureText().width', function () {
-    var canvas = new Canvas(20, 20)
+    var canvas = createCanvas(20, 20)
       , ctx = canvas.getContext('2d');
 
     assert.ok(ctx.measureText('foo').width);
@@ -641,7 +630,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#createImageData(ImageData)', function () {
-    var canvas = new Canvas(20, 20)
+    var canvas = createCanvas(20, 20)
       , ctx = canvas.getContext('2d');
 
     var imageData = ctx.createImageData(ctx.createImageData(2, 6));
@@ -651,7 +640,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#getImageData()', function () {
-    var canvas = new Canvas(3, 6)
+    var canvas = createCanvas(3, 6)
       , ctx = canvas.getContext('2d');
 
     ctx.fillStyle = '#f00';
@@ -711,7 +700,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#createPattern(Canvas)', function () {
-    var pattern = new Canvas(2,2)
+    var pattern = createCanvas(2,2)
       , checkers = pattern.getContext('2d');
 
     // white
@@ -752,7 +741,7 @@ describe('Canvas', function () {
     assert.equal(0, imageData.data[14]);
     assert.equal(255, imageData.data[15]);
 
-    var canvas = new Canvas(20, 20)
+    var canvas = createCanvas(20, 20)
       , ctx = canvas.getContext('2d')
       , pattern = ctx.createPattern(pattern);
 
@@ -783,41 +772,40 @@ describe('Canvas', function () {
   });
 
   it('Context2d#createPattern(Image)', function () {
-    var img = new Canvas.Image();
-    img.src = __dirname + '/fixtures/checkers.png';
+    return loadImage(`${__dirname}/fixtures/checkers.png`).then((img) => {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d')
+        , pattern = ctx.createPattern(img);
 
-    var canvas = new Canvas(20, 20)
-      , ctx = canvas.getContext('2d')
-      , pattern = ctx.createPattern(img);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0,0,20,20);
 
-    ctx.fillStyle = pattern;
-    ctx.fillRect(0,0,20,20);
+      var imageData = ctx.getImageData(0,0,20,20);
+      assert.equal(20, imageData.width);
+      assert.equal(20, imageData.height);
+      assert.equal(1600, imageData.data.length);
 
-    var imageData = ctx.getImageData(0,0,20,20);
-    assert.equal(20, imageData.width);
-    assert.equal(20, imageData.height);
-    assert.equal(1600, imageData.data.length);
-
-    var i=0, b = true;
-    while(i<imageData.data.length){
-      if( b ){
-        assert.equal(  0, imageData.data[i++]);
-        assert.equal(  0, imageData.data[i++]);
-        assert.equal(  0, imageData.data[i++]);
-        assert.equal(255, imageData.data[i++]);
-      } else {
-        assert.equal(255, imageData.data[i++]);
-        assert.equal(255, imageData.data[i++]);
-        assert.equal(255, imageData.data[i++]);
-        assert.equal(255, imageData.data[i++]);
+      var i=0, b = true;
+      while (i<imageData.data.length){
+        if (b) {
+          assert.equal(  0, imageData.data[i++]);
+          assert.equal(  0, imageData.data[i++]);
+          assert.equal(  0, imageData.data[i++]);
+          assert.equal(255, imageData.data[i++]);
+        } else {
+          assert.equal(255, imageData.data[i++]);
+          assert.equal(255, imageData.data[i++]);
+          assert.equal(255, imageData.data[i++]);
+          assert.equal(255, imageData.data[i++]);
+        }
+        // alternate b, except when moving to a new row
+        b = i % (imageData.width*4) == 0 ? b : !b;
       }
-      // alternate b, except when moving to a new row
-      b = i % (imageData.width*4) == 0 ? b : !b;
-    }
+    })
   });
 
   it('Context2d#createLinearGradient()', function () {
-    var canvas = new Canvas(20, 1)
+    var canvas = createCanvas(20, 1)
       , ctx = canvas.getContext('2d')
       , gradient = ctx.createLinearGradient(1,1,19,1);
 
@@ -847,7 +835,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#getImageData()', function () {
-    var canvas = new Canvas(1, 1)
+    var canvas = createCanvas(1, 1)
       , ctx = canvas.getContext('2d');
 
     assert.throws(function () { ctx.getImageData(0, 0, 0, 0); }, /IndexSizeError/);
@@ -864,7 +852,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#putImageData()', function () {
-    var canvas = new Canvas(2, 1)
+    var canvas = createCanvas(2, 1)
       , ctx = canvas.getContext('2d');
 
     assert.throws(function () { ctx.putImageData({}, 0, 0); }, TypeError);
@@ -885,7 +873,7 @@ describe('Canvas', function () {
   });
 
   it('Canvas#createSyncPNGStream()', function (done) {
-    var canvas = new Canvas(20, 20);
+    var canvas = createCanvas(20, 20);
     var stream = canvas.createSyncPNGStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
@@ -904,7 +892,7 @@ describe('Canvas', function () {
   });
 
   it('Canvas#createSyncPDFStream()', function (done) {
-    var canvas = new Canvas(20, 20, 'pdf');
+    var canvas = createCanvas(20, 20, 'pdf');
     var stream = canvas.createSyncPDFStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
@@ -923,7 +911,7 @@ describe('Canvas', function () {
   });
 
   it('Canvas#jpegStream()', function (done) {
-    var canvas = new Canvas(640, 480);
+    var canvas = createCanvas(640, 480);
     var stream = canvas.jpegStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
@@ -947,7 +935,7 @@ describe('Canvas', function () {
   });
 
   it('Canvas#jpegStream() should clamp buffer size (#674)', function (done) {
-    var c = new Canvas(10, 10);
+    var c = createCanvas(10, 10);
     var SIZE = 10 * 1024 * 1024;
     var s = c.jpegStream({bufsize: SIZE});
     s.on('data', function (chunk) {
@@ -957,7 +945,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#fill()', function() {
-    var canvas = new Canvas(2, 2);
+    var canvas = createCanvas(2, 2);
     var ctx = canvas.getContext('2d');
 
     // fill whole canvas with white
@@ -1034,7 +1022,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#clip()', function () {
-    var canvas = new Canvas(2, 2);
+    var canvas = createCanvas(2, 2);
     var ctx = canvas.getContext('2d');
 
     // fill whole canvas with white
@@ -1112,7 +1100,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#IsPointInPath()', function () {
-    var canvas = new Canvas(4, 4);
+    var canvas = createCanvas(4, 4);
     var ctx = canvas.getContext('2d');
 
     ctx.rect(0, 0, 4, 2);
