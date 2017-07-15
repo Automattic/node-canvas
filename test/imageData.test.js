@@ -25,26 +25,42 @@ describe('ImageData', function () {
 
   it('should throw with invalid typed array', function () {
     assert.throws(() => { createImageData(new Uint8ClampedArray(0), 0) }, /input data has a zero byte length/)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(3), 0) }, /input data byte length is not a multiple of 4/)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(16), 3) }, RangeError)
-    assert.throws(() => { createImageData(new Uint8ClampedArray(12), 3, 5) }, RangeError)
-  })
+    assert.throws(() => { createImageData(new Uint8ClampedArray(3), 0) }, /source width is zero/)
+    // Note: Some errors thrown by browsers are not thrown by node-canvas
+    // because our ImageData can support different BPPs.
+  });
 
-  it('should construct with typed array', function () {
+  it('should construct with Uint8ClampedArray', function () {
     let data, imageData
 
     data = new Uint8ClampedArray(2 * 3 * 4)
     imageData = createImageData(data, 2)
     assert.strictEqual(imageData.width, 2)
     assert.strictEqual(imageData.height, 3)
-    assert.ok(imageData.data instanceof Uint8ClampedArray)
+    assert(imageData.data instanceof Uint8ClampedArray)
     assert.strictEqual(imageData.data.length, 24)
 
     data = new Uint8ClampedArray(3 * 4 * 4)
     imageData = createImageData(data, 3, 4)
     assert.strictEqual(imageData.width, 3)
     assert.strictEqual(imageData.height, 4)
-    assert.ok(imageData.data instanceof Uint8ClampedArray)
+    assert(imageData.data instanceof Uint8ClampedArray)
     assert.strictEqual(imageData.data.length, 48)
-  })
-})
+  });
+
+  it('should construct with Uint16Array', function () {
+    let data = new Uint16Array(2 * 3 * 2)
+    let imagedata = createImageData(data, 2)
+    assert.strictEqual(imagedata.width, 2)
+    assert.strictEqual(imagedata.height, 3)
+    assert(imagedata.data instanceof Uint16Array)
+    assert.strictEqual(imagedata.data.length, 12)
+
+    data = new Uint16Array(3 * 4 * 2)
+    imagedata = createImageData(data, 3, 4)
+    assert.strictEqual(imagedata.width, 3)
+    assert.strictEqual(imagedata.height, 4)
+    assert(imagedata.data instanceof Uint16Array)
+    assert.strictEqual(imagedata.data.length, 24)
+  });
+});

@@ -34,6 +34,9 @@ typedef struct {
   cairo_status_t status;
   uint32_t compression_level;
   uint32_t filter;
+  uint8_t *palette;
+  size_t nPaletteColors;
+  uint8_t backgroundIndex;
 } closure_t;
 
 /*

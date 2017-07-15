@@ -39,7 +39,7 @@ NAN_METHOD(ImageData::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
-  Local<Uint8ClampedArray> clampedArray;
+  Local<TypedArray> dataArray;
   uint32_t width;
   uint32_t height;
   int length;
@@ -55,46 +55,69 @@ NAN_METHOD(ImageData::New) {
       Nan::ThrowRangeError("The source height is zero.");
       return;
     }
-    length = width * height * 4;
+    length = width * height * 4; // ImageData(w, h) constructor assumes 4 BPP; documented.
 
-    clampedArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
+    dataArray = Uint8ClampedArray::New(ArrayBuffer::New(Isolate::GetCurrent(), length), 0, length);
 
   } else if (info[0]->IsUint8ClampedArray() && info[1]->IsUint32()) {
-    clampedArray = info[0].As<Uint8ClampedArray>();
-    length = clampedArray->Length();
+    dataArray = info[0].As<Uint8ClampedArray>();
+
+    length = dataArray->Length();
     if (length == 0) {
       Nan::ThrowRangeError("The input data has a zero byte length.");
       return;
     }
-    if (length % 4 != 0) {
-      Nan::ThrowRangeError("The input data byte length is not a multiple of 4.");
-      return;
-    }
+
+    // Don't assert that the ImageData length is a multiple of four because some
+    // data formats are not 4 BPP.
+
     width = info[1]->Uint32Value();
-    int size = length / 4;
     if (width == 0) {
       Nan::ThrowRangeError("The source width is zero.");
       return;
     }
-    if (size % width != 0) {
-      Nan::ThrowRangeError("The input data byte length is not a multiple of (4 * width).");
-      return;
+
+    // Don't assert that the byte length is a multiple of 4 * width, ditto.
+
+    if (info[2]->IsUint32()) { // Explicit height given
+      height = info[2]->Uint32Value();
+    } else { // Calculate height assuming 4 BPP
+      int size = length / 4;
+      height = size / width;
     }
-    height = size / width;
-    if (info[2]->IsUint32() && info[2]->Uint32Value() != height) {
-      Nan::ThrowRangeError("The input data byte length is not equal to (4 * width * height).");
-      return;
-    }
-  } else {
-    Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]) or (width, height)");
+
+  } else if (info[0]->IsUint16Array() && info[1]->IsUint32()) { // Intended for RGB16_565 format
+  dataArray = info[0].As<Uint16Array>();
+
+  length = dataArray->Length();
+  if (length == 0) {
+    Nan::ThrowRangeError("The input data has a zero byte length.");
     return;
   }
 
-  Nan::TypedArrayContents<uint8_t> dataPtr(clampedArray);
+  width = info[1]->Uint32Value();
+  if (width == 0) {
+    Nan::ThrowRangeError("The source width is zero.");
+    return;
+  }
+
+  if (info[2]->IsUint32()) { // Explicit height given
+    height = info[2]->Uint32Value();
+  } else { // Calculate height assuming 2 BPP
+    int size = length / 2;
+    height = size / width;
+  }
+
+  } else {
+    Nan::ThrowTypeError("Expected (Uint8ClampedArray, width[, height]), (Uint16Array, width[, height]) or (width, height)");
+    return;
+  }
+
+  Nan::TypedArrayContents<uint8_t> dataPtr(dataArray);
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
-  info.This()->Set(Nan::New("data").ToLocalChecked(), clampedArray);
+  info.This()->Set(Nan::New("data").ToLocalChecked(), dataArray);
   info.GetReturnValue().Set(info.This());
 }
 
