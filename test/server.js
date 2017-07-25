@@ -33,7 +33,7 @@ app.get('/', function (req, res) {
 })
 
 app.get('/render', function (req, res, next) {
-  var canvas = new Canvas(200, 200)
+  var canvas = Canvas.createCanvas(200, 200)
 
   renderTest(canvas, req.query.name, function (err) {
     if (err) return next(err)
@@ -44,7 +44,7 @@ app.get('/render', function (req, res, next) {
 })
 
 app.get('/pdf', function (req, res, next) {
-  var canvas = new Canvas(200, 200, 'pdf')
+  var canvas = Canvas.createCanvas(200, 200, 'pdf')
 
   renderTest(canvas, req.query.name, function (err) {
     if (err) return next(err)

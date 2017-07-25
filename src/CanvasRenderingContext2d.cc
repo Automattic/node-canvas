@@ -116,6 +116,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "closePath", ClosePath);
   Nan::SetPrototypeMethod(ctor, "arc", Arc);
   Nan::SetPrototypeMethod(ctor, "arcTo", ArcTo);
+  Nan::SetPrototypeMethod(ctor, "ellipse", Ellipse);
   Nan::SetPrototypeMethod(ctor, "setLineDash", SetLineDash);
   Nan::SetPrototypeMethod(ctor, "getLineDash", GetLineDash);
   Nan::SetPrototypeMethod(ctor, "_setFont", SetFont);
@@ -2389,4 +2390,61 @@ NAN_METHOD(Context2d::ArcTo) {
       , sa
       , ea);
   }
+}
+
+/*
+ * Adds an ellipse to the path which is centered at (x, y) position with the
+ * radii radiusX and radiusY starting at startAngle and ending at endAngle
+ * going in the given direction by anticlockwise (defaulting to clockwise).
+ */
+
+NAN_METHOD(Context2d::Ellipse) {
+  if (!info[0]->IsNumber()
+    || !info[1]->IsNumber()
+    || !info[2]->IsNumber()
+    || !info[3]->IsNumber()
+    || !info[4]->IsNumber()
+    || !info[5]->IsNumber()
+    || !info[6]->IsNumber()) return;
+
+  double radiusX = info[2]->NumberValue();
+  double radiusY = info[3]->NumberValue();
+
+  if (radiusX == 0 || radiusY == 0) return;
+
+  double x = info[0]->NumberValue();
+  double y = info[1]->NumberValue();
+  double rotation = info[4]->NumberValue();
+  double startAngle = info[5]->NumberValue();
+  double endAngle = info[6]->NumberValue();
+  bool anticlockwise = info[7]->BooleanValue();
+
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->context();
+
+  // See https://www.cairographics.org/cookbook/ellipses/
+  double xRatio = radiusX / radiusY;
+
+  cairo_matrix_t save_matrix;
+  cairo_get_matrix(ctx, &save_matrix);
+  cairo_translate(ctx, x, y);
+  cairo_rotate(ctx, rotation);
+  cairo_scale(ctx, xRatio, 1.0);
+  cairo_translate(ctx, -x, -y);
+  if (anticlockwise && M_PI * 2 != info[4]->NumberValue()) {
+    cairo_arc_negative(ctx,
+      x,
+      y,
+      radiusY,
+      startAngle,
+      endAngle);
+  } else {
+    cairo_arc(ctx,
+      x,
+      y,
+      radiusY,
+      startAngle,
+      endAngle);
+  }
+  cairo_set_matrix(ctx, &save_matrix);
 }

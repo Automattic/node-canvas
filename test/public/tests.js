@@ -162,6 +162,54 @@ tests['arcTo()'] = function (ctx) {
   ctx.fillText('node', 120, 155)
 }
 
+tests['ellipse() 1'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, 2 * Math.PI)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 2'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, a)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 3'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, a, true)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 4'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, a, 0, true)
+    ctx.stroke()
+  }
+}
+
 tests['bezierCurveTo()'] = function (ctx) {
   ctx.beginPath()
   ctx.moveTo(75, 40)
