@@ -1658,6 +1658,18 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
+tests['drawImage(img) svg'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('tree.svg')
+}
+
 tests['drawImage(img,x,y)'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
