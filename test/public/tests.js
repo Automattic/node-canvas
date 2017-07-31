@@ -2118,3 +2118,26 @@ tests['fillStyle=\'hsla(...)\''] = function (ctx) {
     }
   }
 }
+
+tests['textBaseline and scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.lineTo(0, 150)
+  ctx.lineTo(200, 150)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.textBaseline = 'bottom'
+  ctx.textAlign = 'center'
+  ctx.fillText('bottom', 100, 50)
+
+  ctx.scale(0.1, 0.1)
+  ctx.font = 'normal 200px Arial'
+  ctx.textBaseline = 'bottom'
+  ctx.textAlign = 'center'
+  ctx.fillText('bottom', 1000, 1500)
+}
