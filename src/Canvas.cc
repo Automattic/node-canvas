@@ -103,6 +103,7 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
+    // TODO need to check if this is actually an instance of a Backend to avoid a fault
     backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
   }
   else {
@@ -180,47 +181,25 @@ NAN_SETTER(Canvas::SetHeight) {
  * EIO toBuffer callback.
  */
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsync(uv_work_t *req) {
-#elif NODE_VERSION_AT_LEAST(0, 5, 4)
-void
-Canvas::EIO_ToBuffer(eio_req *req) {
-#else
-int
-Canvas::EIO_ToBuffer(eio_req *req) {
-#endif
   closure_t *closure = (closure_t *) req->data;
 
   closure->status = canvas_write_to_png_stream(
       closure->canvas->surface()
     , toBuffer
     , closure);
-
-#if !NODE_VERSION_AT_LEAST(0, 5, 4)
-  return 0;
-#endif
 }
 
 /*
  * EIO after toBuffer callback.
  */
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
-#else
-int
-Canvas::EIO_AfterToBuffer(eio_req *req) {
-#endif
-
   Nan::HandleScope scope;
   closure_t *closure = (closure_t *) req->data;
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
   delete req;
-#else
-  ev_unref(EV_DEFAULT_UC);
-#endif
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
@@ -236,10 +215,6 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
   delete closure->pfn;
   closure_destroy(closure);
   free(closure);
-
-#if !NODE_VERSION_AT_LEAST(0, 6, 0)
-  return 0;
-#endif
 }
 
 /*
@@ -328,14 +303,11 @@ NAN_METHOD(Canvas::ToBuffer) {
     canvas->Ref();
     closure->pfn = new Nan::Callback(info[0].As<Function>());
 
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
     uv_work_t* req = new uv_work_t;
     req->data = closure;
+    // Make sure the surface exists since we won't have an isolate context in the async block:
+    canvas->surface();
     uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
-#else
-    eio_custom(EIO_ToBuffer, EIO_PRI_DEFAULT, EIO_AfterToBuffer, closure);
-    ev_ref(EV_DEFAULT_UC);
-#endif
 
     return;
   // Sync
@@ -387,6 +359,10 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 
 /*
  * Stream PNG data synchronously.
+ * TODO the compression level and filter args don't seem to be documented.
+ * Maybe move them to named properties in the options object?
+ * StreamPngSync(this, options: {palette?: Uint8ClampedArray})
+ * StreamPngSync(this, compression_level?: uint32, filter?: uint32)
  */
 
 NAN_METHOD(Canvas::StreamPNGSync) {
@@ -395,6 +371,11 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   // TODO: async as well
   if (!info[0]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
+
+  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
+  uint8_t* paletteColors = NULL;
+  size_t nPaletteColors = 0;
+  uint8_t backgroundIndex = 0;
 
   if (info.Length() > 1 && !(info[1]->IsUndefined() && info[2]->IsUndefined())) {
     if (!info[1]->IsUndefined()) {
@@ -412,9 +393,32 @@ NAN_METHOD(Canvas::StreamPNGSync) {
               compression_level = tmp;
             }
           }
-       } else {
-         good = false;
-       }
+        } else if (info[1]->IsObject()) {
+          // If canvas is A8 or A1 and options obj has Uint8ClampedArray palette,
+          // encode as indexed PNG.
+          cairo_format_t format = canvas->backend()->getFormat();
+          if (format == CAIRO_FORMAT_A8 || format == CAIRO_FORMAT_A1) {
+            Local<Object> attrs = info[1]->ToObject();
+            Local<Value> palette = attrs->Get(Nan::New("palette").ToLocalChecked());
+            if (palette->IsUint8ClampedArray()) {
+              Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
+              nPaletteColors = palette_ta->Length();
+              if (nPaletteColors % 4 != 0) {
+                Nan::ThrowError("Palette length must be a multiple of 4.");
+              }
+              nPaletteColors /= 4;
+              Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
+              paletteColors = *_paletteColors;
+              // Optional background color index:
+              Local<Value> backgroundIndexVal = attrs->Get(Nan::New("backgroundIndex").ToLocalChecked());
+              if (backgroundIndexVal->IsUint32()) {
+                backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
+              }
+            }
+          }
+        } else {
+          good = false;
+        }
 
        if (good) {
          if (compression_level > 9) {
@@ -435,11 +439,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   }
 
 
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
   closure.fn = Local<Function>::Cast(info[0]);
   closure.compression_level = compression_level;
   closure.filter = filter;
+  closure.palette = paletteColors;
+  closure.nPaletteColors = nPaletteColors;
+  closure.backgroundIndex = backgroundIndex;
 
   Nan::TryCatch try_catch;
 
@@ -648,7 +654,6 @@ NAN_METHOD(Canvas::RegisterFont) {
 
 Canvas::Canvas(Backend* backend) : ObjectWrap() {
   _backend = backend;
-  this->backend()->createSurface();
 }
 
 /*

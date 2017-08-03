@@ -23,7 +23,6 @@ class ImageData: public Nan::ObjectWrap {
     inline int width() { return _width; }
     inline int height() { return _height; }
     inline uint8_t *data() { return _data; }
-    inline int stride() { return _width * 4; }
     ImageData(uint8_t *data, int width, int height) : _width(width), _height(height), _data(data) {}
 
   private:

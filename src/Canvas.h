@@ -63,19 +63,8 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
     static Local<Value> Error(cairo_status_t status);
-#if NODE_VERSION_AT_LEAST(0, 6, 0)
     static void ToBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
-#else
-    static
-#if NODE_VERSION_AT_LEAST(0, 5, 4)
-      void
-#else
-      int
-#endif
-      EIO_ToBuffer(eio_req *req);
-    static int EIO_AfterToBuffer(eio_req *req);
-#endif
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
@@ -85,7 +74,7 @@ class Canvas: public Nan::ObjectWrap {
 
     inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    inline int nBytes(){ return backend()->getWidth() * stride(); }
+    inline int nBytes(){ return getHeight() * stride(); }
 
     inline int getWidth() { return backend()->getWidth(); }
     inline int getHeight() { return backend()->getHeight(); }
