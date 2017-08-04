@@ -1,6 +1,5 @@
-var query = process.argv[2]
-var fs = require('fs')
 var childProcess = require('child_process')
+var fs = require('fs')
 
 var SYSTEM_PATHS = [
   '/lib',
@@ -24,7 +23,8 @@ function hasSystemLib (lib) {
     // Try using ldconfig on linux systems
   if (hasLdconfig()) {
     try {
-      if (childProcess.execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
+      if (childProcess.execSync('ldconfig -p 2>/dev/null | grep -E "' +
+                                libName + '"').length) {
         return true
       }
     } catch (err) {
@@ -69,13 +69,13 @@ function hasLdconfig () {
  */
 function hasFreetype () {
   try {
-    if (childProcess.execSync('pkg-config cairo --cflags-only-I 2>/dev/null | grep freetype2').length) {
+    if (childProcess.execSync('pkg-config cairo --cflags-only-I 2>/dev/null | ' +
+                              'grep freetype2').length) {
       return true
     }
   } catch (err) {
-    // noop
+    return false
   }
-  return false
 }
 
 /**
@@ -118,4 +118,4 @@ function main (query) {
   }
 }
 
-process.stdout.write(main(query).toString())
+process.stdout.write(main(process.argv[2]).toString())
