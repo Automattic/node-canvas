@@ -1,11 +1,11 @@
 {
     'variables':
     {
-        'has_cairo%': '<!(node ./util/has_lib.js cairo)'
+        'shared%': '<!(node ./util/has_lib.js)'
     },
     'conditions':
     [
-        ['has_cairo=="true" or OS=="win"', {
+        ['shared=="true" or OS=="win"', {
             'includes': ['shared.gypi']
         }, {
             'includes': ['static.gypi']

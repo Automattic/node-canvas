@@ -94,6 +94,14 @@ function hasPkgconfigLib (lib) {
 }
 
 function main (query) {
+  if (!query) {
+    for (var libname of ['gif', 'jpeg', 'cairo', 'pango', 'freetype', 'rsvg']) {
+      if (!main(libname)) return false
+    }
+
+    return true
+  }
+
   switch (query) {
     case 'gif':
     case 'jpeg':
