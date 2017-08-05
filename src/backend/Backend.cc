@@ -37,8 +37,8 @@ cairo_surface_t* Backend::recreateSurface()
 	return this->createSurface();
 }
 
-cairo_surface_t* Backend::getSurface()
-{
+cairo_surface_t* Backend::getSurface() {
+	if (!surface) createSurface();
 	return surface;
 }
 

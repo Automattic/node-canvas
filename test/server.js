@@ -1,7 +1,9 @@
 var path = require('path')
+
 var express = require('express')
 
-var Canvas = require('../')
+var Canvas = require('..')
+
 var tests = require('./public/tests')
 
 var app = express()
@@ -12,10 +14,15 @@ function renderTest (canvas, name, cb) {
     throw new Error('Unknown test: ' + name)
   }
 
+  var ctx = canvas.getContext('2d', {pixelFormat: 'RGBA32'})
+  var initialFillStyle = ctx.fillStyle
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = initialFillStyle
   if (tests[name].length === 2) {
-    tests[name](canvas.getContext('2d'), cb)
+    tests[name](ctx, cb)
   } else {
-    tests[name](canvas.getContext('2d'))
+    tests[name](ctx)
     cb(null)
   }
 }
@@ -28,7 +35,7 @@ app.get('/', function (req, res) {
 })
 
 app.get('/render', function (req, res, next) {
-  var canvas = new Canvas(200, 200)
+  var canvas = Canvas.createCanvas(200, 200)
 
   renderTest(canvas, req.query.name, function (err) {
     if (err) return next(err)
@@ -39,7 +46,7 @@ app.get('/render', function (req, res, next) {
 })
 
 app.get('/pdf', function (req, res, next) {
-  var canvas = new Canvas(200, 200, 'pdf')
+  var canvas = Canvas.createCanvas(200, 200, 'pdf')
 
   renderTest(canvas, req.query.name, function (err) {
     if (err) return next(err)

@@ -55,6 +55,9 @@ class Backend : public Nan::ObjectWrap
 
     int getHeight();
     virtual void setHeight(int height);
+
+    // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
+    virtual cairo_format_t getFormat() { return CAIRO_FORMAT_INVALID; }
 };
 
 

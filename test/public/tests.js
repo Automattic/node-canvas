@@ -162,6 +162,54 @@ tests['arcTo()'] = function (ctx) {
   ctx.fillText('node', 120, 155)
 }
 
+tests['ellipse() 1'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, 2 * Math.PI)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 2'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, a)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 3'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, 0, a, true)
+    ctx.stroke()
+  }
+}
+
+tests['ellipse() 4'] = function (ctx) {
+  var n = 8
+  for (var i = 0; i < n; i++) {
+    ctx.beginPath()
+    var a = i * 2 * Math.PI / n
+    var x = 100 + 50 * Math.cos(a)
+    var y = 100 + 50 * Math.sin(a)
+    ctx.ellipse(x, y, 10, 15, a, a, 0, true)
+    ctx.stroke()
+  }
+}
+
 tests['bezierCurveTo()'] = function (ctx) {
   ctx.beginPath()
   ctx.moveTo(75, 40)
@@ -1658,6 +1706,18 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
+tests['drawImage(img) svg'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('tree.svg')
+}
+
 tests['drawImage(img,x,y)'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
@@ -1912,8 +1972,10 @@ tests['putImageData() png data'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 3] = 80
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 3] = 80
+      }
     }
     ctx.putImageData(imageData, 50, 50)
     done(null)
@@ -1933,8 +1995,10 @@ tests['putImageData() png data 2'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 3] = 80
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 3] = 80
+      }
     }
     ctx.putImageData(imageData, 50, 50, 10, 10, 20, 20)
     done(null)
@@ -1954,10 +2018,12 @@ tests['putImageData() png data 3'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     var imageData = ctx.getImageData(0, 0, 50, 50)
     var data = imageData.data
-    for (var i = 0, len = data.length; i < len; i += 4) {
-      data[i + 0] = data[i + 0] * 0.2
-      data[i + 1] = data[i + 1] * 0.2
-      data[i + 2] = data[i + 2] * 0.2
+    if (data instanceof Uint8ClampedArray) {
+      for (var i = 0, len = data.length; i < len; i += 4) {
+        data[i + 0] = data[i + 0] * 0.2
+        data[i + 1] = data[i + 1] * 0.2
+        data[i + 2] = data[i + 2] * 0.2
+      }
     }
     ctx.putImageData(imageData, 50, 50)
     done(null)
@@ -2051,4 +2117,27 @@ tests['fillStyle=\'hsla(...)\''] = function (ctx) {
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
+}
+
+tests['textBaseline and scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.lineTo(0, 150)
+  ctx.lineTo(200, 150)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.textBaseline = 'bottom'
+  ctx.textAlign = 'center'
+  ctx.fillText('bottom', 100, 50)
+
+  ctx.scale(0.1, 0.1)
+  ctx.font = 'normal 200px Arial'
+  ctx.textBaseline = 'bottom'
+  ctx.textAlign = 'center'
+  ctx.fillText('bottom', 1000, 1500)
 }

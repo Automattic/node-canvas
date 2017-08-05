@@ -65,11 +65,13 @@ class Canvas: public Nan::ObjectWrap {
     static Local<Value> Error(cairo_status_t status);
 
     static void ToBufferAsync(uv_work_t *req);
+
     #if NODE_VERSION_AT_LEAST(0, 6, 0)
-    static void ToBufferAsyncAfter(uv_work_t *req);
+      static void ToBufferAsyncAfter(uv_work_t *req);
     #else
-    static int EIO_AfterToBuffer(eio_req *req);
-#endif
+      static int EIO_AfterToBuffer(eio_req *req);
+    #endif
+
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
