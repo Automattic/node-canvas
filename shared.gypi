@@ -9,7 +9,7 @@
                 'with_gif%': 'false',
                 'with_rsvg%': 'false',
                 'variables': {  # Nest jpeg_root to evaluate it before with_jpeg
-                  'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
+                    'jpeg_root%': '<!(node ./util/win_jpeg_lookup)'
                 },
                 'jpeg_root%': '<(jpeg_root)',  # Take value of nested variable
                 'conditions': [
@@ -210,7 +210,10 @@
                         ['OS=="win"', {
                             'libraries': ['-l<(GTK_Root)/lib/librsvg-2-2.lib']
                         }, {
-                            'include_dirs': ['<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'],
+                            'include_dirs':
+                            [
+                                '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+                            ],
                             'libraries': ['<!@(pkg-config librsvg-2.0 --libs)']
                         }]
                     ]
