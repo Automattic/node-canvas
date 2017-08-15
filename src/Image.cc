@@ -437,6 +437,13 @@ Image::error(Local<Value> err) {
 }
 
 /*
+ * Returns this image's surface.
+ */
+cairo_surface_t *surface() {
+  return _surface;
+}
+
+/*
  * Load cairo surface from the image src.
  *
  * TODO: support more formats
@@ -1040,7 +1047,7 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   return CAIRO_STATUS_SUCCESS;
 }
 
-/**
+/*
  * Renders the Rsvg handle to this image's surface
  */
 cairo_status_t
