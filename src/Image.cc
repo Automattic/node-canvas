@@ -196,8 +196,9 @@ Image::clearData() {
   filename = NULL;
 
 #ifdef HAVE_RSVG
-  if (_rsvg) {
+  if (_rsvg != NULL) {
     g_object_unref(_rsvg);
+    _rsvg = NULL;
   }
 #endif
 
@@ -378,6 +379,7 @@ Image::Image() {
   onload = NULL;
   onerror = NULL;
 #ifdef HAVE_RSVG
+  _rsvg = NULL;
   _is_svg = false;
   _svg_last_width = _svg_last_height = 0;
 #endif
