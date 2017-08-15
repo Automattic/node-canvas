@@ -47,8 +47,8 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
   Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
-  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
-  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
   Nan::SetAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload);
   Nan::SetAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
@@ -117,12 +117,32 @@ NAN_GETTER(Image::GetWidth) {
   info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
 /*
+ * Set width.
+ */
+
+NAN_SETTER(Image::SetWidth) {
+  if (value->IsNumber()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->width = value->Uint32Value();
+  }
+}
+/*
  * Get height.
  */
 
 NAN_GETTER(Image::GetHeight) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->height));
+}
+/*
+ * Set height.
+ */
+
+NAN_SETTER(Image::SetHeight) {
+  if (value->IsNumber()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->height = value->Uint32Value();
+  }
 }
 
 /*

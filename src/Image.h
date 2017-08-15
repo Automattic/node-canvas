@@ -55,6 +55,8 @@ class Image: public Nan::ObjectWrap {
     static NAN_SETTER(SetOnload);
     static NAN_SETTER(SetOnerror);
     static NAN_SETTER(SetDataMode);
+    static NAN_SETTER(SetWidth);
+    static NAN_SETTER(SetHeight);
     inline cairo_surface_t *surface(){ return _surface; }
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
