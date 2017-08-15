@@ -413,9 +413,9 @@ Image::loaded() {
   Nan::HandleScope scope;
   state = COMPLETE;
 
-  width = cairo_image_surface_get_width(_surface);
-  height = cairo_image_surface_get_height(_surface);
-  _data_len = height * cairo_image_surface_get_stride(_surface);
+  width = naturalWidth = cairo_image_surface_get_width(_surface);
+  height = naturalHeight = cairo_image_surface_get_height(_surface);
+  _data_len = naturalHeight * cairo_image_surface_get_stride(_surface);
   Nan::AdjustExternalMemory(_data_len);
 
   if (onload != NULL) {
@@ -592,10 +592,10 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  width = gif->SWidth;
-  height = gif->SHeight;
+  width = naturalWidth = gif->SWidth;
+  height = naturalHeight = gif->SHeight;
 
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_NO_MEMORY;
@@ -617,9 +617,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   uint32_t *dst_data = (uint32_t*) data;
 
   if (!gif->Image.Interlace) {
-    if (width == img->Width && height == img->Height) {
-      for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+    if (naturalWidth == img->Width && naturalHeight == img->Height) {
+      for (int y = 0; y < naturalHeight; ++y) {
+        for (int x = 0; x < naturalWidth; ++x) {
           *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
             | colormap->Colors[*src_data].Red << 16
             | colormap->Colors[*src_data].Green << 8
@@ -634,8 +634,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       int bottom = img->Top + img->Height;
       int right = img->Left + img->Width;
 
-      for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+      for (int y = 0; y < naturalHeight; ++y) {
+        for (int x = 0; x < naturalWidth; ++x) {
           if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
             *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[bgColor].Red << 16
@@ -664,9 +664,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     uint32_t *dst_ptr;
 
     for(int z = 0; z < 4; z++) {
-      for(int y = ioffs[z]; y < height; y += ijumps[z]) {
-        dst_ptr = dst_data + width * y;
-        for(int x = 0; x < width; ++x) {
+      for(int y = ioffs[z]; y < naturalHeight; y += ijumps[z]) {
+        dst_ptr = dst_data + naturalWidth * y;
+        for(int x = 0; x < naturalWidth; ++x) {
           *dst_ptr = ((*src_ptr == alphaColor) ? 0 : 255) << 24
             | (colormap->Colors[*src_ptr].Red) << 16
             | (colormap->Colors[*src_ptr].Green) << 8
@@ -685,9 +685,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
 
   cairo_status_t status = cairo_surface_status(_surface);
 
@@ -757,17 +757,17 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
-  int stride = width * 4;
+  int stride = naturalWidth * 4;
   cairo_status_t status;
 
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(width * args->output_components);
+  uint8_t *src = (uint8_t *) malloc(naturalWidth * args->output_components);
   if (!src) {
     free(data);
     jpeg_abort_decompress(args);
@@ -775,10 +775,10 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  for (int y = 0; y < height; ++y) {
+  for (int y = 0; y < naturalHeight; ++y) {
     jpeg_read_scanlines(args, &src, 1);
     uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < width; ++x) {
+    for (int x = 0; x < naturalWidth; ++x) {
       if (args->jpeg_color_space == 1) {
         uint32_t *pixel = row + x;
         *pixel = 255 << 24
@@ -799,9 +799,9 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
 
   jpeg_finish_decompress(args);
   jpeg_destroy_decompress(args);
@@ -840,12 +840,12 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
   jpeg_read_header(&args, 1);
   jpeg_start_decompress(&args);
-  width = args.output_width;
-  height = args.output_height;
+  width = naturalWidth = args.output_width;
+  height = naturalHeight = args.output_height;
 
   // Data alloc
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
-  int buf_size = height * cairo_format_stride_for_width(CAIRO_FORMAT_A1, width);
+  int buf_size = naturalHeight * cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth);
   uint8_t *data = (uint8_t *) malloc(buf_size);
   if (!data) return CAIRO_STATUS_NO_MEMORY;
 
@@ -853,9 +853,9 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_A1
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_A1, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth));
 
   // Cleanup
   jpeg_abort_decompress(&args);
@@ -934,8 +934,8 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
 
   jpeg_read_header(&args, 1);
   jpeg_start_decompress(&args);
-  width = args.output_width;
-  height = args.output_height;
+  width = naturalWidth = args.output_width;
+  height = naturalHeight = args.output_height;
 
   return decodeJPEGIntoSurface(&args);
 }
@@ -963,8 +963,8 @@ Image::loadJPEG(FILE *stream) {
 
     jpeg_read_header(&args, 1);
     jpeg_start_decompress(&args);
-    width = args.output_width;
-    height = args.output_height;
+    width = naturalWidth = args.output_width;
+    height = naturalHeight = args.output_height;
 
     status = decodeJPEGIntoSurface(&args);
     fclose(stream);
