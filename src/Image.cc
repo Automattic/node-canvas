@@ -1035,6 +1035,18 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
     return status;
   }
 
+  renderSVGToSurface();
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/**
+ * Renders the Rsvg handle to this image's surface
+ */
+cairo_status_t
+Image::renderSVGToSurface() {
+  cairo_status_t status;
+
   cairo_t *cr = cairo_create(_surface);
   status = cairo_status(cr);
   if (status != CAIRO_STATUS_SUCCESS) {
@@ -1052,7 +1064,7 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   g_object_unref(_rsvg);
   cairo_destroy(cr);
 
-  return CAIRO_STATUS_SUCCESS;
+  return status;
 }
 
 /*

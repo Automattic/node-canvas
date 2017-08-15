@@ -77,6 +77,7 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_RSVG
     cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadSVG(FILE *stream);
+    cairo_status_t renderSVGToSurface();
 #endif
 #ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
