@@ -371,6 +371,10 @@ Image::Image() {
   state = DEFAULT;
   onload = NULL;
   onerror = NULL;
+#ifdef HAVE_RSVG
+  _is_svg = false;
+  _svg_last_width = _svg_last_height = 0;
+#endif
 }
 
 /*
@@ -439,7 +443,22 @@ Image::error(Local<Value> err) {
 /*
  * Returns this image's surface.
  */
-cairo_surface_t *surface() {
+cairo_surface_t *Image::surface() {
+#ifdef HAVE_RSVG
+  if (_is_svg && (_svg_last_width != width || _svg_last_height != height)) {
+    if (_surface != NULL) {
+      cairo_surface_destroy(_surface);
+      _surface = NULL;
+    }
+
+    cairo_status_t status = renderSVGToSurface();
+    if (status != CAIRO_STATUS_SUCCESS) {
+      g_object_unref(_rsvg);
+      error(Canvas::Error(status));
+      return NULL;
+    }
+  }
+#endif
   return _surface;
 }
 
@@ -1034,15 +1053,14 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   RsvgDimensionData *dims = new RsvgDimensionData();
   rsvg_handle_get_dimensions(_rsvg, dims);
 
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dims->width, dims->height);
+  width = naturalWidth = dims->width;
+  height = naturalHeight = dims->height;
 
-  status = cairo_surface_status(_surface);
+  status = renderSVGToSurface();
   if (status != CAIRO_STATUS_SUCCESS) {
     g_object_unref(_rsvg);
     return status;
   }
-
-  renderSVGToSurface();
 
   return CAIRO_STATUS_SUCCESS;
 }
@@ -1054,22 +1072,35 @@ cairo_status_t
 Image::renderSVGToSurface() {
   cairo_status_t status;
 
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+
+  status = cairo_surface_status(_surface);
+  if (status != CAIRO_STATUS_SUCCESS) {
+    g_object_unref(_rsvg);
+    return status;
+  }
+
   cairo_t *cr = cairo_create(_surface);
+  cairo_scale(cr,
+    (double)width / (double)naturalWidth,
+    (double)height / (double)naturalHeight);
   status = cairo_status(cr);
   if (status != CAIRO_STATUS_SUCCESS) {
     g_object_unref(_rsvg);
     return status;
   }
 
-  gboolean render_ok = !rsvg_handle_render_cairo(_rsvg, cr);
-  if (render_ok) {
+  gboolean render_ok = rsvg_handle_render_cairo(_rsvg, cr);
+  if (!render_ok) {
     g_object_unref(_rsvg);
     cairo_destroy(cr);
     return CAIRO_STATUS_READ_ERROR; // or WRITE?
   }
 
-  g_object_unref(_rsvg);
   cairo_destroy(cr);
+
+  _svg_last_width = width;
+  _svg_last_height = height;
 
   return status;
 }
@@ -1080,6 +1111,8 @@ Image::renderSVGToSurface() {
 
 cairo_status_t
 Image::loadSVG(FILE *stream) {
+  _is_svg = true;
+
   struct stat s;
   int fd = fileno(stream);
 

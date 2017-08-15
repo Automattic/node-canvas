@@ -60,7 +60,6 @@ class Image: public Nan::ObjectWrap {
     static NAN_SETTER(SetDataMode);
     static NAN_SETTER(SetWidth);
     static NAN_SETTER(SetHeight);
-    static cairo_surface_t *surface();
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
@@ -69,6 +68,7 @@ class Image: public Nan::ObjectWrap {
     static int isSVG(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
+    cairo_surface_t *surface();
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
@@ -124,6 +124,9 @@ class Image: public Nan::ObjectWrap {
     int _data_len;
 #ifdef HAVE_RSVG
     RsvgHandle *_rsvg;
+    bool _is_svg;
+    int _svg_last_width;
+    int _svg_last_height;
 #endif
     ~Image();
 };
