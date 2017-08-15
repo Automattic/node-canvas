@@ -49,6 +49,8 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
   Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
   Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
+  Nan::SetAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth);
+  Nan::SetAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight);
   Nan::SetAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload);
   Nan::SetAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
@@ -109,6 +111,15 @@ NAN_SETTER(Image::SetDataMode) {
 #endif
 
 /*
+ * Get natural width
+ */
+
+NAN_GETTER(Image::GetNaturalWidth) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->naturalWidth));
+}
+
+/*
  * Get width.
  */
 
@@ -116,6 +127,7 @@ NAN_GETTER(Image::GetWidth) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
+
 /*
  * Set width.
  */
@@ -126,6 +138,16 @@ NAN_SETTER(Image::SetWidth) {
     img->width = value->Uint32Value();
   }
 }
+
+/*
+ * Get natural height
+ */
+
+NAN_GETTER(Image::GetNaturalHeight) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->naturalHeight));
+}
+
 /*
  * Get height.
  */
@@ -174,6 +196,7 @@ Image::clearData() {
   filename = NULL;
 
   width = height = 0;
+  naturalWidth = naturalHeight = 0;
   state = DEFAULT;
 }
 
@@ -344,6 +367,7 @@ Image::Image() {
   _data_len = 0;
   _surface = NULL;
   width = height = 0;
+  naturalWidth = naturalHeight = 0;
   state = DEFAULT;
   onload = NULL;
   onerror = NULL;
