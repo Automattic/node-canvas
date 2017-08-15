@@ -1018,39 +1018,38 @@ Image::loadJPEG(FILE *stream) {
 cairo_status_t
 Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   cairo_status_t status;
-  RsvgHandle *rsvg;
   GError *gerr = NULL;
 
-  if (NULL == (rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
+  if (NULL == (_rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
   RsvgDimensionData *dims = new RsvgDimensionData();
-  rsvg_handle_get_dimensions(rsvg, dims);
+  rsvg_handle_get_dimensions(_rsvg, dims);
 
   _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dims->width, dims->height);
 
   status = cairo_surface_status(_surface);
   if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(rsvg);
+    g_object_unref(_rsvg);
     return status;
   }
 
   cairo_t *cr = cairo_create(_surface);
   status = cairo_status(cr);
   if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(rsvg);
+    g_object_unref(_rsvg);
     return status;
   }
 
-  gboolean render_ok = !rsvg_handle_render_cairo(rsvg, cr);
+  gboolean render_ok = !rsvg_handle_render_cairo(_rsvg, cr);
   if (render_ok) {
-    g_object_unref(rsvg);
+    g_object_unref(_rsvg);
     cairo_destroy(cr);
     return CAIRO_STATUS_READ_ERROR; // or WRITE?
   }
 
-  g_object_unref(rsvg);
+  g_object_unref(_rsvg);
   cairo_destroy(cr);
 
   return CAIRO_STATUS_SUCCESS;
