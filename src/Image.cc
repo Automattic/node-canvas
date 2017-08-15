@@ -195,6 +195,12 @@ Image::clearData() {
   free(filename);
   filename = NULL;
 
+#ifdef HAVE_RSVG
+  if (_rsvg) {
+    g_object_unref(_rsvg);
+  }
+#endif
+
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
