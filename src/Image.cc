@@ -1051,6 +1051,8 @@ Image::loadJPEG(FILE *stream) {
 
 cairo_status_t
 Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  _is_svg = true;
+
   cairo_status_t status;
   GError *gerr = NULL;
 
