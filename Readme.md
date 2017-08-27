@@ -84,6 +84,7 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
  node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
 
 ```javascript
+const { Image } = require('canvas');
 fs.readFile(__dirname + '/images/squid.png', function(err, squid){
   if (err) throw err;
   img = new Image;
@@ -95,6 +96,7 @@ fs.readFile(__dirname + '/images/squid.png', function(err, squid){
  Below is an example of a canvas drawing it-self as the source several time:
 
 ```javascript
+const { Image } = require('canvas');
 var img = new Image;
 img.src = canvas.toBuffer();
 ctx.drawImage(img, 0, 0, 50, 50);
@@ -109,7 +111,8 @@ node-canvas adds `Image#dataMode` support, which can be used to opt-in to mime d
 When mime data is tracked, in PDF mode JPEGs can be embedded directly into the output, rather than being re-encoded into PNG. This can drastically reduce filesize, and speed up rendering.
 
 ```javascript
-var img = new Image;
+const { Image } = require('canvas');
+var img = new Image();
 img.dataMode = Image.MODE_IMAGE; // Only image data tracked
 img.dataMode = Image.MODE_MIME; // Only mime data tracked
 img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
@@ -214,18 +217,19 @@ canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 
-### Canvas.registerFont for bundled fonts
+### `registerFont` for bundled fonts
 
 It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts are installed.
 
-To do that, you should use `Canvas.registerFont`.
+To do that, you should use `registerFont()`.
 
 **You need to call it before the Canvas is created**
 
 ```javascript
-Canvas.registerFont('comicsans.ttf', {family: 'Comic Sans'});
+const { registerFont, createCanvas } = require('canvas');
+registerFont('comicsans.ttf', {family: 'Comic Sans'});
 
-var canvas = new Canvas(500, 500),
+var canvas = createCanvas(500, 500),
   ctx = canvas.getContext('2d');
 
 ctx.font = '12px "Comic Sans"';
@@ -297,7 +301,7 @@ ctx.antialias = 'none';
   a PDF on initialization, using the "pdf" string:
 
 ```js
-var canvas = new Canvas(200, 500, 'pdf');
+var canvas = createCanvas(200, 500, 'pdf');
 ```
 
  An additional method `.addPage()` is then available to create
@@ -323,7 +327,7 @@ ctx.addPage();
  You also need to tell node-canvas that it is working on SVG upon its initialization:
 
 ```js
-var canvas = new Canvas(200, 500, 'svg');
+var canvas = createCanvas(200, 500, 'svg');
 // Use the normal primitives.
 fs.writeFile('out.svg', canvas.toBuffer());
 ```
@@ -344,7 +348,7 @@ node-canvas has experimental support for additional pixel formats, roughly
 following the [Canvas color space proposal](https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md).
 
 ```js
-var canvas = new Canvas(200, 200);
+var canvas = createCanvas(200, 200);
 var ctx = canvas.getContext('2d', {pixelFormat: 'A8'});
 ```
 

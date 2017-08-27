@@ -1,8 +1,7 @@
 var fs = require('fs')
 var path = require('path')
-var Canvas = require('..')
+var {createCanvas, Image} = require('..')
 
-var Image = Canvas.Image
 var img = new Image()
 
 img.onerror = function (err) {
@@ -12,7 +11,7 @@ img.onerror = function (err) {
 img.onload = function () {
   var w = img.width / 2
   var h = img.height / 2
-  var canvas = new Canvas(w, h)
+  var canvas = createCanvas(w, h)
   var ctx = canvas.getContext('2d')
 
   ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h)

@@ -1,7 +1,7 @@
 var fs = require('fs')
 var Canvas = require('..')
 
-var canvas = new Canvas(500, 500, 'pdf')
+var canvas = Canvas.createCanvas(500, 500, 'pdf')
 var ctx = canvas.getContext('2d')
 
 var x, y

@@ -2,7 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var Canvas = require('..')
 
-var canvas = new Canvas(150, 150)
+var canvas = Canvas.createCanvas(150, 150)
 var ctx = canvas.getContext('2d')
 
 ctx.fillRect(0, 0, 150, 150)   // Draw a rectangle with default settings

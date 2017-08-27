@@ -3,7 +3,7 @@ var path = require(path)
 var Canvas = require('..')
 
 var Image = Canvas.Image
-var canvas = new Canvas(200, 200)
+var canvas = Canvas.createCanvas(200, 200)
 var ctx = canvas.getContext('2d')
 
 ctx.fillRect(0, 0, 150, 150)
