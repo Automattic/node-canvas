@@ -23,7 +23,7 @@ ctx.font = 'normal normal 50px Helvetica'
 ctx.fillText('Quo Vaids?', 0, 70)
 
 ctx.font = 'bold 50px pfennigFont'
-ctx.fillText('Quo Vaids?', 0, 140)
+ctx.fillText('Quo Vaids?', 0, 140, 100)
 
 ctx.font = 'italic 50px pfennigFont'
 ctx.fillText('Quo Vaids?', 0, 210)
