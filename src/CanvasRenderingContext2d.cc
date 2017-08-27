@@ -1845,6 +1845,23 @@ NAN_METHOD(Context2d::Stroke) {
 }
 
 /*
+ * Helper for fillText/strokeText
+ */
+
+double
+get_text_scale(Context2d *context, char *str, double maxWidth) {
+  PangoLayout *layout = context->layout();
+  PangoRectangle ink_rect, logical_rect;
+  pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+
+  if (logical_rect.width > maxWidth) {
+    return maxWidth / logical_rect.width;
+  } else {
+    return 1.0;
+  }
+}
+
+/*
  * Fill text at (x, y).
  */
 
@@ -1855,8 +1872,14 @@ NAN_METHOD(Context2d::FillText) {
   String::Utf8Value str(info[0]->ToString());
   double x = info[1]->NumberValue();
   double y = info[2]->NumberValue();
+  double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+
+  if (info[3]->IsNumber()) {
+    scaled_by = get_text_scale(context, *str, info[3]->NumberValue());
+    cairo_scale(context->context(), scaled_by, 1);
+  }
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1867,6 +1890,8 @@ NAN_METHOD(Context2d::FillText) {
     context->fill();
   }
   context->restorePath();
+
+  cairo_scale(context->context(), 1 / scaled_by, 1);
 }
 
 /*
@@ -1880,8 +1905,14 @@ NAN_METHOD(Context2d::StrokeText) {
   String::Utf8Value str(info[0]->ToString());
   double x = info[1]->NumberValue();
   double y = info[2]->NumberValue();
+  double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+
+  if (info[3]->IsNumber()) {
+    scaled_by = get_text_scale(context, *str, info[3]->NumberValue());
+    cairo_scale(context->context(), scaled_by, 1);
+  }
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
@@ -1892,6 +1923,8 @@ NAN_METHOD(Context2d::StrokeText) {
     context->stroke();
   }
   context->restorePath();
+
+  cairo_scale(context->context(), 1 / scaled_by, 1);
 }
 
 /*

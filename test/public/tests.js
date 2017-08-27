@@ -745,6 +745,17 @@ tests['fillText() transformations'] = function (ctx) {
   ctx.fillText('bar', 50, 100)
 }
 
+tests['fillText() maxWidth argument'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.fillText('Drawing text can be fun!', 0, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 0, 20 * 7)
+}
+
 tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
@@ -760,6 +771,17 @@ tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = 'red'
   ctx.font = 'normal 50px Arial'
   ctx.strokeText('bar', 100, 100)
+}
+
+tests['strokeText() maxWidth argument'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.strokeText('Drawing text can be fun!', 0, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.strokeText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
+  }
+
+  ctx.strokeText('Drawing text can be fun!', 0, 20 * 7)
 }
 
 tests['textAlign right'] = function (ctx) {
