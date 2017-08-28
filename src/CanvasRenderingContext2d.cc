@@ -1774,9 +1774,12 @@ Context2d::setTextPath(const char *str, double x, double y) {
 
   PangoRectangle ink_rect, logical_rect;
   PangoFontMetrics *metrics = NULL;
+  cairo_matrix_t matrix;
 
   pango_layout_set_text(_layout, str, -1);
   pango_cairo_update_layout(_context, _layout);
+
+  cairo_get_matrix(_context, &matrix);
 
   switch (state->textAlignment) {
     // center
@@ -1794,15 +1797,15 @@ Context2d::setTextPath(const char *str, double x, double y) {
   switch (state->textBaseline) {
     case TEXT_BASELINE_ALPHABETIC:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
+      y -= (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) * matrix.yy;
       break;
     case TEXT_BASELINE_MIDDLE:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= (pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE);
+      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE)) * matrix.yy;
       break;
     case TEXT_BASELINE_BOTTOM:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= (pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
+      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE) * matrix.yy;
       break;
   }
 

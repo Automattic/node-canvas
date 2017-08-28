@@ -1,3 +1,9 @@
+1.6.6 / 2017-07-31
+==================
+
+ * Use .node extension for requiring native module (#939)
+ * Make textBaseline consider current scale (#951)
+
 1.6.5 / 2017-03-18
 ==================
 
