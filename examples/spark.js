@@ -2,7 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var Canvas = require('..')
 
-var canvas = new Canvas(40, 15)
+var canvas = Canvas.createCanvas(40, 15)
 var ctx = canvas.getContext('2d')
 
 function spark (ctx, data) {

@@ -2,7 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var Canvas = require('..')
 
-var canvas = new Canvas(400, 100)
+var canvas = Canvas.createCanvas(400, 100)
 var ctx = canvas.getContext('2d')
 
 ctx.globalAlpha = 1

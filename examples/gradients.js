@@ -2,7 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var Canvas = require('..')
 
-var canvas = new Canvas(320, 320)
+var canvas = Canvas.createCanvas(320, 320)
 var ctx = canvas.getContext('2d')
 
 // Create gradients

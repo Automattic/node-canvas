@@ -5,7 +5,7 @@ var Canvas = require('..')
 
 var imagebackend = new Canvas.backends.ImageBackend(800, 600)
 
-var canvas = new Canvas(imagebackend)
+var canvas = new Canvas.Canvas(imagebackend)
 var ctx = canvas.getContext('2d')
 
 console.log('Width: ' + canvas.width + ', Height: ' + canvas.height)

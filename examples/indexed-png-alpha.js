@@ -1,7 +1,7 @@
 var Canvas = require('..')
 var fs = require('fs')
 var path = require('path')
-var canvas = new Canvas(200, 200)
+var canvas = Canvas.createCanvas(200, 200)
 var ctx = canvas.getContext('2d', {pixelFormat: 'A8'})
 
 // Matches the "fillStyle" browser test, made by using alpha fillStyle value

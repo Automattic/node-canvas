@@ -15,7 +15,7 @@ Canvas.registerFont(fontFile('PfennigBold.ttf'), {family: 'pfennigFont', weight:
 Canvas.registerFont(fontFile('PfennigItalic.ttf'), {family: 'pfennigFont', style: 'italic'})
 Canvas.registerFont(fontFile('PfennigBoldItalic.ttf'), {family: 'pfennigFont', weight: 'bold', style: 'italic'})
 
-var canvas = new Canvas(320, 320)
+var canvas = Canvas.createCanvas(320, 320)
 var ctx = canvas.getContext('2d')
 
 ctx.font = 'normal normal 50px Helvetica'

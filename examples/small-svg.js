@@ -1,7 +1,7 @@
 var fs = require('fs')
 var Canvas = require('..')
 
-var canvas = new Canvas(400, 200, 'svg')
+var canvas = Canvas.createCanvas(400, 200, 'svg')
 var ctx = canvas.getContext('2d')
 
 var y = 80

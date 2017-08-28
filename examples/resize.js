@@ -14,7 +14,7 @@ img.onerror = function (err) {
 img.onload = function () {
   var width = 100
   var height = 100
-  var canvas = new Canvas(width, height)
+  var canvas = Canvas.createCanvas(width, height)
   var ctx = canvas.getContext('2d')
   var out = fs.createWriteStream(path.join(__dirname, 'resize.png'))
 
