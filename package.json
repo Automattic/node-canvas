@@ -25,7 +25,7 @@
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
     "pretest": "node-gyp build",
-    "test": "standard examples/*.js test/server.js test/public/*.js benchmark/run.js util/has_lib.js && mocha test/*.test.js",
+    "test": "standard examples/*.js test/server.js test/public/*.js benchmark/run.js util/has_lib.js browser.js index.js && mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js"
   },
