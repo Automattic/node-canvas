@@ -41,7 +41,9 @@ function loadImage(src) {
  * specifying font information. `weight` and `style` default to `"normal"`.
  */
 function registerFont(src, fontFace){
-  return bindings._registerFont(fs.realpathSync(src), fontFace)
+  // TODO this doesn't need to be on Canvas; it should just be a static method
+  // of `bindings`.
+  return Canvas._registerFont(fs.realpathSync(src), fontFace)
 }
 
 module.exports = {
