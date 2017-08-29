@@ -9,6 +9,7 @@
 const createCanvas = require('../').createCanvas
 const loadImage = require('../').loadImage
 const parseFont = require('../').parseFont
+const registerFont = require('../').registerFont
 
 const assert = require('assert')
 const os = require('os')
@@ -81,6 +82,12 @@ describe('Canvas', function () {
 
       assert.deepEqual(actual, expected, 'Failed to parse: ' + str);
     }
+  });
+
+  it('registerFont', function () {
+    // Minimal test to make sure nothing is thrown
+    registerFont('./examples/pfennigFont/Pfennig.ttf', {family: 'Pfennig'})
+    registerFont('./examples/pfennigFont/PfennigBold.ttf', {family: 'Pfennig', weight: 'bold'})
   });
 
   it('color serialization', function () {
