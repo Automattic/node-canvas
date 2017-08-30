@@ -593,6 +593,7 @@ NAN_METHOD(Context2d::PutImageData) {
 
   uint8_t *src = imageData->data();
   uint8_t *dst = context->canvas()->data();
+  uint8_t *dstStart = context->canvas()->data();
 
   int dstStride = context->canvas()->stride();
   int Bpp = dstStride / context->canvas()->getWidth();
@@ -662,10 +663,13 @@ NAN_METHOD(Context2d::PutImageData) {
         uint8_t b = *srcRow++;
         uint8_t a = *srcRow++;
 
-        // argb
-        // performance optimization: fully transparent/opaque pixels can be
-        // processed more efficiently.
-        if (a == 0) {
+        if (dstRow < dstStart) {
+          // ISSUE #962
+          dstRow += 4;
+        } else if (a == 0) {
+          // argb
+          // performance optimization: fully transparent/opaque pixels can be
+          // processed more efficiently.
           *dstRow++ = 0;
           *dstRow++ = 0;
           *dstRow++ = 0;
@@ -701,11 +705,16 @@ NAN_METHOD(Context2d::PutImageData) {
         uint8_t b = *srcRow++;
         srcRow++;
 
-        // argb
-        *dstRow++ = b;
-        *dstRow++ = g;
-        *dstRow++ = r;
-        *dstRow++ = 255;
+        if (dstRow < dstStart) {
+          // ISSUE #962
+          dstRow += 4;
+        } else {
+          // argb
+          *dstRow++ = b;
+          *dstRow++ = g;
+          *dstRow++ = r;
+          *dstRow++ = 255;
+        }
       }
       dst += dstStride;
       src += srcStride;
@@ -717,10 +726,16 @@ NAN_METHOD(Context2d::PutImageData) {
     dst += dstStride * dy + dx;
     if (srcStride == dstStride && cols == dstStride) {
       // fast path: strides are the same and doing a full-width put
-      memcpy(dst, src, cols * rows);
+      if (dst >= dstStart) {
+        // ISSUE #962
+        memcpy(dst, src, cols * rows);
+      }
     } else {
       for (int y = 0; y < rows; ++y) {
-        memcpy(dst, src, cols);
+        if (dst >= dstStart) {
+          // ISSUE #962
+          memcpy(dst, src, cols);
+        }
         dst += dstStride;
         src += srcStride;
       }
@@ -736,7 +751,10 @@ NAN_METHOD(Context2d::PutImageData) {
     src += sy * srcStride + sx * 2;
     dst += dstStride * dy + 2 * dx;
     for (int y = 0; y < rows; ++y) {
-      memcpy(dst, src, cols * 2);
+      if (dst >= dstStart) {
+        // ISSUE #962
+        memcpy(dst, src, cols * 2);
+      }
       dst += dstStride;
       src += srcStride;
     }
