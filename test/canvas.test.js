@@ -1152,9 +1152,9 @@ describe('Canvas', function () {
     });
   });
 
-  it('Canvas#createSyncPNGStream()', function (done) {
+  it('Canvas#createPNGStream()', function (done) {
     var canvas = createCanvas(20, 20);
-    var stream = canvas.createSyncPNGStream();
+    var stream = canvas.createPNGStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
     stream.on('data', function(chunk){
@@ -1171,9 +1171,9 @@ describe('Canvas', function () {
     });
   });
 
-  it('Canvas#createSyncPDFStream()', function (done) {
+  it('Canvas#createPDFStream()', function (done) {
     var canvas = createCanvas(20, 20, 'pdf');
-    var stream = canvas.createSyncPDFStream();
+    var stream = canvas.createPDFStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
     stream.on('data', function (chunk) {
