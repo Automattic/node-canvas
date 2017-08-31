@@ -7,6 +7,7 @@
  */
 
 const createCanvas = require('../').createCanvas
+const createImageData = require('../').createImageData
 const loadImage = require('../').loadImage
 const parseFont = require('../').parseFont
 const registerFont = require('../').registerFont
@@ -1085,6 +1086,23 @@ describe('Canvas', function () {
       var ctx = canvas.getContext('2d');
       assert.throws(function () { ctx.putImageData({}, 0, 0); }, TypeError);
       assert.throws(function () { ctx.putImageData(undefined, 0, 0); }, TypeError);
+    });
+
+    it('works for negative source values', function () {
+      var canvas = createCanvas(2, 2);
+      var ctx = canvas.getContext('2d');
+      var srcImageData = createImageData(new Uint8ClampedArray([
+        1,2,3,255, 5,6,7,255,
+        0,1,2,255, 4,5,6,255
+      ]), 2);
+
+      ctx.putImageData(srcImageData, -1, -1);
+
+      var resImageData = ctx.getImageData(0, 0, 2, 2);
+      assert.deepEqual(resImageData.data, new Uint8ClampedArray([
+        4,5,6,255, 0,0,0,0,
+        0,0,0,0, 0,0,0,0
+      ]));
     });
 
     it('works, RGBA32', function () {
