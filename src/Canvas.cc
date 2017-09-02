@@ -742,6 +742,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
   // if someone registered two different fonts under the same family name.
   // https://drafts.csswg.org/css-fonts-3/#font-style-matching
   char **families = g_strsplit(pango_font_description_get_family(desc), ",", -1);
+  GHashTable *seen_families = g_hash_table_new(g_str_hash, g_str_equal);
   GString *resolved_families = g_string_new("");
 
   for (int i = 0; families[i]; ++i) {
@@ -750,8 +751,14 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
 
     for (; it != _font_face_list.end(); ++it) {
       if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
-        if (renamed_families->len) g_string_append(renamed_families, ",");
-        g_string_append(renamed_families, pango_font_description_get_family(it->sys_desc));
+        char *name = g_strdup(pango_font_description_get_family(it->sys_desc));
+
+        // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
+        // https://bugzilla.gnome.org/show_bug.cgi?id=762873
+        if (g_hash_table_add(seen_families, name)) {
+          if (renamed_families->len) g_string_append(renamed_families, ",");
+          g_string_append(renamed_families, name);
+        }
 
         if (i == 0 && (best.user_desc == NULL || pango_font_description_better_match(desc, best.user_desc, it->user_desc))) {
           best = *it;
@@ -769,6 +776,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
 
   g_strfreev(families);
   g_string_free(resolved_families, false);
+  g_hash_table_destroy(seen_families);
 
   return ret;
 }
