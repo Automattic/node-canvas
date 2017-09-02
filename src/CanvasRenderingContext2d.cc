@@ -610,10 +610,8 @@ NAN_METHOD(Context2d::PutImageData) {
   switch (info.Length()) {
     // imageData, dx, dy
     case 3:
-      // Need to wrap std::min calls using parens to prevent macro expansion on
-      // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
-      cols = (std::min)(imageData->width(), context->canvas()->getWidth() - dx);
-      rows = (std::min)(imageData->height(), context->canvas()->getHeight() - dy);
+      sw = imageData->width();
+      sh = imageData->height();
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -633,18 +631,19 @@ NAN_METHOD(Context2d::PutImageData) {
       // start destination at source offset
       dx += sx;
       dy += sy;
-      // chop off outlying source data
-      if (dx < 0) sw += dx, sx -= dx, dx = 0;
-      if (dy < 0) sh += dy, sy -= dy, dy = 0;
-      // clamp width at canvas size
-      // Need to wrap std::min calls using parens to prevent macro expansion on
-      // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
-      cols = (std::min)(sw, context->canvas()->getWidth() - dx);
-      rows = (std::min)(sh, context->canvas()->getHeight() - dy);
       break;
     default:
       return Nan::ThrowError("invalid arguments");
   }
+
+  // chop off outlying source data
+  if (dx < 0) sw += dx, sx -= dx, dx = 0;
+  if (dy < 0) sh += dy, sy -= dy, dy = 0;
+  // clamp width at canvas size
+  // Need to wrap std::min calls using parens to prevent macro expansion on
+  // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
+  cols = (std::min)(sw, context->canvas()->getWidth() - dx);
+  rows = (std::min)(sh, context->canvas()->getHeight() - dy);
 
   if (cols <= 0 || rows <= 0) return;
 
