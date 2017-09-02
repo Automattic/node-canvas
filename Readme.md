@@ -138,8 +138,6 @@ stream.on('end', function(){
 });
 ```
 
-Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
-
 To encode indexed PNGs from canvases with `pixelFormat: 'A8'` or `'A1'`, provide an options object:
 
 ```js
