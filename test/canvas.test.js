@@ -746,13 +746,37 @@ describe('Canvas', function () {
     });
   });
 
-  it('Context2d#measureText().width', function () {
-    var canvas = createCanvas(20, 20)
-      , ctx = canvas.getContext('2d');
+  describe('Context2d#measureText()', function () {
+    it('Context2d#measureText().width', function () {
+      var canvas = createCanvas(20, 20)
+        , ctx = canvas.getContext('2d');
 
-    assert.ok(ctx.measureText('foo').width);
-    assert.ok(ctx.measureText('foo').width != ctx.measureText('foobar').width);
-    assert.ok(ctx.measureText('foo').width != ctx.measureText('  foo').width);
+      assert.ok(ctx.measureText('foo').width);
+      assert.ok(ctx.measureText('foo').width != ctx.measureText('foobar').width);
+      assert.ok(ctx.measureText('foo').width != ctx.measureText('  foo').width);
+    });
+
+    it('works', function () {
+      var canvas = createCanvas(20, 20)
+      var ctx = canvas.getContext('2d')
+      ctx.font = "20px Arial"
+
+      ctx.textBaseline = "alphabetic"
+      var metrics = ctx.measureText("Alphabet")
+      // Zero if the given baseline is the alphabetic baseline
+      assert.equal(metrics.alphabeticBaseline, 0)
+      // Positive = going up from the baseline
+      assert.ok(metrics.actualBoundingBoxAscent > 0)
+      // Positive = going down from the baseline
+      assert.ok(metrics.actualBoundingBoxDescent > 0) // ~4-5
+
+      ctx.textBaseline = "bottom"
+      metrics = ctx.measureText("Alphabet")
+      assert.ok(metrics.alphabeticBaseline > 0) // ~4-5
+      assert.ok(metrics.actualBoundingBoxAscent > 0)
+      // On the baseline or slightly above
+      assert.ok(metrics.actualBoundingBoxDescent <= 0)
+    });
   });
 
   it('Context2d#createImageData(ImageData)', function () {

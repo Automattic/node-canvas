@@ -1928,13 +1928,31 @@ NAN_METHOD(Context2d::StrokeText) {
 }
 
 /*
+ * Gets the baseline adjustment in device pixels, taking into account the
+ * transformation matrix. TODO This does not handle skew (which cannot easily
+ * be extracted from the matrix separately from rotation).
+ */
+inline double getBaselineAdjustment(PangoFontMetrics* metrics, cairo_matrix_t matrix, short baseline) {
+  double yScale = sqrt(matrix.yx * matrix.yx + matrix.yy * matrix.yy);
+  switch (baseline) {
+  case TEXT_BASELINE_ALPHABETIC:
+    return (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) * yScale;
+  case TEXT_BASELINE_MIDDLE:
+    return ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / (2.0 * PANGO_SCALE)) * yScale;
+  case TEXT_BASELINE_BOTTOM:
+    return ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE) * yScale;
+  default:
+    return 0;
+  }
+}
+
+/*
  * Set text path for the given string at (x, y).
  */
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
   PangoRectangle ink_rect, logical_rect;
-  PangoFontMetrics *metrics = NULL;
   cairo_matrix_t matrix;
 
   pango_layout_set_text(_layout, str, -1);
@@ -1955,22 +1973,9 @@ Context2d::setTextPath(const char *str, double x, double y) {
       break;
   }
 
-  switch (state->textBaseline) {
-    case TEXT_BASELINE_ALPHABETIC:
-      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) * matrix.yy;
-      break;
-    case TEXT_BASELINE_MIDDLE:
-      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE)) * matrix.yy;
-      break;
-    case TEXT_BASELINE_BOTTOM:
-      metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE) * matrix.yy;
-      break;
-  }
-
-  if (metrics) pango_font_metrics_unref(metrics);
+  PangoFontMetrics *metrics = PANGO_LAYOUT_GET_METRICS(_layout);
+  y -= getBaselineAdjustment(metrics, matrix, state->textBaseline);
+  pango_font_metrics_unref(metrics);
 
   cairo_move_to(_context, x, y);
   if (state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -2091,20 +2096,9 @@ NAN_METHOD(Context2d::MeasureText) {
       x_offset = 0.0;
   }
 
-  double y_offset;
-  switch (context->state->textBaseline) {
-    case TEXT_BASELINE_ALPHABETIC:
-      y_offset = -pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
-      break;
-    case TEXT_BASELINE_MIDDLE:
-      y_offset = -(pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE);
-      break;
-    case TEXT_BASELINE_BOTTOM:
-      y_offset = -(pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
-      break;
-    default:
-      y_offset = 0.0;
-  }
+  cairo_matrix_t matrix;
+  cairo_get_matrix(ctx, &matrix);
+  double y_offset = getBaselineAdjustment(metrics, matrix, context->state->textBaseline);
 
   obj->Set(Nan::New<String>("width").ToLocalChecked(),
            Nan::New<Number>(logical_rect.width));
@@ -2113,16 +2107,15 @@ NAN_METHOD(Context2d::MeasureText) {
   obj->Set(Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
            Nan::New<Number>(x_offset + PANGO_RBEARING(logical_rect)));
   obj->Set(Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
-           Nan::New<Number>(-(y_offset+ink_rect.y)));
+           Nan::New<Number>(y_offset + PANGO_ASCENT(ink_rect)));
   obj->Set(Nan::New<String>("actualBoundingBoxDescent").ToLocalChecked(),
-           Nan::New<Number>((PANGO_DESCENT(ink_rect) + y_offset)));
+           Nan::New<Number>(PANGO_DESCENT(ink_rect) - y_offset));
   obj->Set(Nan::New<String>("emHeightAscent").ToLocalChecked(),
-           Nan::New<Number>(PANGO_ASCENT(logical_rect) - y_offset));
+           Nan::New<Number>(-(PANGO_ASCENT(logical_rect) - y_offset)));
   obj->Set(Nan::New<String>("emHeightDescent").ToLocalChecked(),
-           Nan::New<Number>(PANGO_DESCENT(logical_rect) + y_offset));
+           Nan::New<Number>(PANGO_DESCENT(logical_rect) - y_offset));
   obj->Set(Nan::New<String>("alphabeticBaseline").ToLocalChecked(),
-           Nan::New<Number>((pango_font_metrics_get_ascent(metrics) / PANGO_SCALE)
-                       + y_offset));
+           Nan::New<Number>(-(pango_font_metrics_get_ascent(metrics) / PANGO_SCALE - y_offset)));
 
   pango_font_metrics_unref(metrics);
 

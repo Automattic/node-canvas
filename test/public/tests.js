@@ -2163,3 +2163,95 @@ tests['textBaseline and scale'] = function (ctx) {
   ctx.textAlign = 'center'
   ctx.fillText('bottom', 1000, 1500)
 }
+
+tests['rotated baseline'] = function (ctx) {
+  ctx.font = '12px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50, -50)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated and scaled baseline'] = function (ctx) {
+  ctx.font = '120px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.scale(0.1, 0.2)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated and skewed baseline'] = function (ctx) {
+  ctx.font = '12px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.transform(1, 1, 0, 1, 1, 1)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50, -50)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated, scaled and skewed baseline'] = function (ctx) {
+  // Known issue: we don't have a way to decompose the cairo matrix into the
+  // skew and rotation separately.
+  ctx.font = '120px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.scale(0.1, 0.2)
+  ctx.transform(1, 1, 0, 1, 1, 1)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['measureText()'] = function (ctx) {
+  // Note: As of Sep 2017, Chrome is the only browser with advanced TextMetrics,
+  // and they're behind a flag, and a few of them are missing and others are
+  // wrong.
+  function drawWithBBox (text, x, y) {
+    ctx.fillText(text, x, y)
+    ctx.strokeStyle = 'red'
+    ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(200, y + 0.5); ctx.stroke()
+    var metrics = ctx.measureText(text)
+    ctx.strokeStyle = 'blue'
+    ctx.strokeRect(
+      x - metrics.actualBoundingBoxLeft + 0.5,
+      y - metrics.actualBoundingBoxAscent + 0.5,
+      metrics.width,
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+    )
+  }
+
+  ctx.font = '20px Arial'
+  ctx.textBaseline = 'alphabetic'
+  drawWithBBox('Alphabet alphabetic', 20, 50)
+
+  drawWithBBox('weruoasnm', 50, 175) // no ascenders/descenders
+
+  drawWithBBox(',', 100, 125) // tiny height
+
+  ctx.textBaseline = 'bottom'
+  drawWithBBox('Alphabet bottom', 20, 90)
+
+  ctx.textBaseline = 'alphabetic'
+  ctx.rotate(Math.PI / 8)
+  drawWithBBox('Alphabet', 50, 100)
+}
