@@ -17,6 +17,15 @@ const os = require('os')
 const Readable = require('stream').Readable
 
 describe('Canvas', function () {
+  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
+    const Canvas = require('../').Canvas;
+    var c = new Canvas(10, 10);
+    assert.throws(function () { Canvas.prototype.width; }, /incompatible receiver/);
+    assert(!c.hasOwnProperty('width'));
+    assert('width' in c);
+    assert(Canvas.prototype.hasOwnProperty('width'));
+  });
+
   it('.parseFont()', function () {
     var tests = [
         '20px Arial'

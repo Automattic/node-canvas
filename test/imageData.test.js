@@ -3,10 +3,15 @@
 'use strict'
 
 const createImageData = require('../').createImageData
+const ImageData = require('../').ImageData;
 
 const assert = require('assert')
 
 describe('ImageData', function () {
+  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
+    assert.throws(function () { ImageData.prototype.width; }, /incompatible receiver/);
+  });
+
   it('should throw with invalid numeric arguments', function () {
     assert.throws(() => { createImageData(0, 0) }, /width is zero/)
     assert.throws(() => { createImageData(1, 0) }, /height is zero/)
