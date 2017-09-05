@@ -752,10 +752,12 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
     for (; it != _font_face_list.end(); ++it) {
       if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
         char *name = g_strdup(pango_font_description_get_family(it->sys_desc));
+        bool unseen = g_hash_table_lookup(seen_families, name) == NULL;
 
         // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
         // https://bugzilla.gnome.org/show_bug.cgi?id=762873
-        if (g_hash_table_add(seen_families, name)) {
+        if (unseen) {
+          g_hash_table_replace(seen_families, name, name);
           if (renamed_families->len) g_string_append(renamed_families, ",");
           g_string_append(renamed_families, name);
         }
