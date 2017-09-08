@@ -99,6 +99,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
     static NAN_METHOD(GetImageData);
+    static NAN_METHOD(GetMatrix);
     static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetPatternQuality);
     static NAN_GETTER(GetGlobalCompositeOperation);
