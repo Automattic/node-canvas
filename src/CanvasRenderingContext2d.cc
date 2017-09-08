@@ -1794,18 +1794,20 @@ Context2d::setTextPath(const char *str, double x, double y) {
       break;
   }
 
+  double yScale = sqrt(matrix.yx * matrix.yx + matrix.yy * matrix.yy);
+
   switch (state->textBaseline) {
     case TEXT_BASELINE_ALPHABETIC:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) * matrix.yy;
+      y -= (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) * yScale;
       break;
     case TEXT_BASELINE_MIDDLE:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE)) * matrix.yy;
+      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics))/(2.0 * PANGO_SCALE)) * yScale;
       break;
     case TEXT_BASELINE_BOTTOM:
       metrics = PANGO_LAYOUT_GET_METRICS(_layout);
-      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE) * matrix.yy;
+      y -= ((pango_font_metrics_get_ascent(metrics) + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE) * yScale;
       break;
   }
 
