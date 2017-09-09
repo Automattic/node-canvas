@@ -126,6 +126,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "_setStrokePattern", SetStrokePattern);
   Nan::SetPrototypeMethod(ctor, "_setTextBaseline", SetTextBaseline);
   Nan::SetPrototypeMethod(ctor, "_setTextAlignment", SetTextAlignment);
+  Nan::SetPrototypeMethod(ctor, "_getMatrix", GetMatrix);
   Nan::SetAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat);
   Nan::SetAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality);
   Nan::SetAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
@@ -1789,6 +1790,22 @@ NAN_METHOD(Context2d::Transform) {
 NAN_METHOD(Context2d::ResetTransform) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_identity_matrix(context->context());
+}
+
+NAN_METHOD(Context2d::GetMatrix) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  // Accept a receiver array to avoid an alloc (this small array will be
+  // a view of a larger, shared ArrayBuffer).
+  Local<Float64Array> destTa = info[0].As<Float64Array>();
+  Nan::TypedArrayContents<double> dest(destTa);
+  cairo_matrix_t matrix;
+  cairo_get_matrix(context->context(), &matrix);
+  (*dest)[0] = matrix.xx;
+  (*dest)[1] = matrix.yx;
+  (*dest)[2] = matrix.xy;
+  (*dest)[3] = matrix.yy;
+  (*dest)[4] = matrix.x0;
+  (*dest)[5] = matrix.y0;
 }
 
 /*
