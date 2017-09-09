@@ -47,8 +47,10 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
   Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
-  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
-  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
+  Nan::SetAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth);
+  Nan::SetAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight);
   Nan::SetAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload);
   Nan::SetAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror);
 #if CAIRO_VERSION_MINOR >= 10
@@ -109,6 +111,15 @@ NAN_SETTER(Image::SetDataMode) {
 #endif
 
 /*
+ * Get natural width
+ */
+
+NAN_GETTER(Image::GetNaturalWidth) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->naturalWidth));
+}
+
+/*
  * Get width.
  */
 
@@ -116,6 +127,27 @@ NAN_GETTER(Image::GetWidth) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
+
+/*
+ * Set width.
+ */
+
+NAN_SETTER(Image::SetWidth) {
+  if (value->IsNumber()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->width = value->Uint32Value();
+  }
+}
+
+/*
+ * Get natural height
+ */
+
+NAN_GETTER(Image::GetNaturalHeight) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(img->naturalHeight));
+}
+
 /*
  * Get height.
  */
@@ -123,6 +155,16 @@ NAN_GETTER(Image::GetWidth) {
 NAN_GETTER(Image::GetHeight) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->height));
+}
+/*
+ * Set height.
+ */
+
+NAN_SETTER(Image::SetHeight) {
+  if (value->IsNumber()) {
+    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    img->height = value->Uint32Value();
+  }
 }
 
 /*
@@ -153,7 +195,15 @@ Image::clearData() {
   free(filename);
   filename = NULL;
 
+#ifdef HAVE_RSVG
+  if (_rsvg != NULL) {
+    g_object_unref(_rsvg);
+    _rsvg = NULL;
+  }
+#endif
+
   width = height = 0;
+  naturalWidth = naturalHeight = 0;
   state = DEFAULT;
 }
 
@@ -324,9 +374,15 @@ Image::Image() {
   _data_len = 0;
   _surface = NULL;
   width = height = 0;
+  naturalWidth = naturalHeight = 0;
   state = DEFAULT;
   onload = NULL;
   onerror = NULL;
+#ifdef HAVE_RSVG
+  _rsvg = NULL;
+  _is_svg = false;
+  _svg_last_width = _svg_last_height = 0;
+#endif
 }
 
 /*
@@ -369,9 +425,9 @@ Image::loaded() {
   Nan::HandleScope scope;
   state = COMPLETE;
 
-  width = cairo_image_surface_get_width(_surface);
-  height = cairo_image_surface_get_height(_surface);
-  _data_len = height * cairo_image_surface_get_stride(_surface);
+  width = naturalWidth = cairo_image_surface_get_width(_surface);
+  height = naturalHeight = cairo_image_surface_get_height(_surface);
+  _data_len = naturalHeight * cairo_image_surface_get_stride(_surface);
   Nan::AdjustExternalMemory(_data_len);
 
   if (onload != NULL) {
@@ -390,6 +446,28 @@ Image::error(Local<Value> err) {
     Local<Value> argv[1] = { err };
     onerror->Call(1, argv);
   }
+}
+
+/*
+ * Returns this image's surface.
+ */
+cairo_surface_t *Image::surface() {
+#ifdef HAVE_RSVG
+  if (_is_svg && (_svg_last_width != width || _svg_last_height != height)) {
+    if (_surface != NULL) {
+      cairo_surface_destroy(_surface);
+      _surface = NULL;
+    }
+
+    cairo_status_t status = renderSVGToSurface();
+    if (status != CAIRO_STATUS_SUCCESS) {
+      g_object_unref(_rsvg);
+      error(Canvas::Error(status));
+      return NULL;
+    }
+  }
+#endif
+  return _surface;
 }
 
 /*
@@ -548,10 +626,10 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  width = gif->SWidth;
-  height = gif->SHeight;
+  width = naturalWidth = gif->SWidth;
+  height = naturalHeight = gif->SHeight;
 
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_NO_MEMORY;
@@ -573,9 +651,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   uint32_t *dst_data = (uint32_t*) data;
 
   if (!gif->Image.Interlace) {
-    if (width == img->Width && height == img->Height) {
-      for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+    if (naturalWidth == img->Width && naturalHeight == img->Height) {
+      for (int y = 0; y < naturalHeight; ++y) {
+        for (int x = 0; x < naturalWidth; ++x) {
           *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
             | colormap->Colors[*src_data].Red << 16
             | colormap->Colors[*src_data].Green << 8
@@ -590,8 +668,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       int bottom = img->Top + img->Height;
       int right = img->Left + img->Width;
 
-      for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+      for (int y = 0; y < naturalHeight; ++y) {
+        for (int x = 0; x < naturalWidth; ++x) {
           if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
             *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[bgColor].Red << 16
@@ -620,9 +698,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     uint32_t *dst_ptr;
 
     for(int z = 0; z < 4; z++) {
-      for(int y = ioffs[z]; y < height; y += ijumps[z]) {
-        dst_ptr = dst_data + width * y;
-        for(int x = 0; x < width; ++x) {
+      for(int y = ioffs[z]; y < naturalHeight; y += ijumps[z]) {
+        dst_ptr = dst_data + naturalWidth * y;
+        for(int x = 0; x < naturalWidth; ++x) {
           *dst_ptr = ((*src_ptr == alphaColor) ? 0 : 255) << 24
             | (colormap->Colors[*src_ptr].Red) << 16
             | (colormap->Colors[*src_ptr].Green) << 8
@@ -641,9 +719,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
 
   cairo_status_t status = cairo_surface_status(_surface);
 
@@ -713,17 +791,17 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
-  int stride = width * 4;
+  int stride = naturalWidth * 4;
   cairo_status_t status;
 
-  uint8_t *data = (uint8_t *) malloc(width * height * 4);
+  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(width * args->output_components);
+  uint8_t *src = (uint8_t *) malloc(naturalWidth * args->output_components);
   if (!src) {
     free(data);
     jpeg_abort_decompress(args);
@@ -731,10 +809,10 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  for (int y = 0; y < height; ++y) {
+  for (int y = 0; y < naturalHeight; ++y) {
     jpeg_read_scanlines(args, &src, 1);
     uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < width; ++x) {
+    for (int x = 0; x < naturalWidth; ++x) {
       if (args->jpeg_color_space == 1) {
         uint32_t *pixel = row + x;
         *pixel = 255 << 24
@@ -755,9 +833,9 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_ARGB32
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
 
   jpeg_finish_decompress(args);
   jpeg_destroy_decompress(args);
@@ -796,12 +874,12 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
   jpeg_read_header(&args, 1);
   jpeg_start_decompress(&args);
-  width = args.output_width;
-  height = args.output_height;
+  width = naturalWidth = args.output_width;
+  height = naturalHeight = args.output_height;
 
   // Data alloc
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
-  int buf_size = height * cairo_format_stride_for_width(CAIRO_FORMAT_A1, width);
+  int buf_size = naturalHeight * cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth);
   uint8_t *data = (uint8_t *) malloc(buf_size);
   if (!data) return CAIRO_STATUS_NO_MEMORY;
 
@@ -809,9 +887,9 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   _surface = cairo_image_surface_create_for_data(
       data
     , CAIRO_FORMAT_A1
-    , width
-    , height
-    , cairo_format_stride_for_width(CAIRO_FORMAT_A1, width));
+    , naturalWidth
+    , naturalHeight
+    , cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth));
 
   // Cleanup
   jpeg_abort_decompress(&args);
@@ -890,8 +968,8 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
 
   jpeg_read_header(&args, 1);
   jpeg_start_decompress(&args);
-  width = args.output_width;
-  height = args.output_height;
+  width = naturalWidth = args.output_width;
+  height = naturalHeight = args.output_height;
 
   return decodeJPEGIntoSurface(&args);
 }
@@ -919,8 +997,8 @@ Image::loadJPEG(FILE *stream) {
 
     jpeg_read_header(&args, 1);
     jpeg_start_decompress(&args);
-    width = args.output_width;
-    height = args.output_height;
+    width = naturalWidth = args.output_width;
+    height = naturalHeight = args.output_height;
 
     status = decodeJPEGIntoSurface(&args);
     fclose(stream);
@@ -973,43 +1051,68 @@ Image::loadJPEG(FILE *stream) {
 
 cairo_status_t
 Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  _is_svg = true;
+
   cairo_status_t status;
-  RsvgHandle *rsvg;
   GError *gerr = NULL;
 
-  if (NULL == (rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
+  if (NULL == (_rsvg = rsvg_handle_new_from_data(buf, len, &gerr))) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
   RsvgDimensionData *dims = new RsvgDimensionData();
-  rsvg_handle_get_dimensions(rsvg, dims);
+  rsvg_handle_get_dimensions(_rsvg, dims);
 
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dims->width, dims->height);
+  width = naturalWidth = dims->width;
+  height = naturalHeight = dims->height;
+
+  status = renderSVGToSurface();
+  if (status != CAIRO_STATUS_SUCCESS) {
+    g_object_unref(_rsvg);
+    return status;
+  }
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Renders the Rsvg handle to this image's surface
+ */
+cairo_status_t
+Image::renderSVGToSurface() {
+  cairo_status_t status;
+
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
   status = cairo_surface_status(_surface);
   if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(rsvg);
+    g_object_unref(_rsvg);
     return status;
   }
 
   cairo_t *cr = cairo_create(_surface);
+  cairo_scale(cr,
+    (double)width / (double)naturalWidth,
+    (double)height / (double)naturalHeight);
   status = cairo_status(cr);
   if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(rsvg);
+    g_object_unref(_rsvg);
     return status;
   }
 
-  gboolean render_ok = !rsvg_handle_render_cairo(rsvg, cr);
-  if (render_ok) {
-    g_object_unref(rsvg);
+  gboolean render_ok = rsvg_handle_render_cairo(_rsvg, cr);
+  if (!render_ok) {
+    g_object_unref(_rsvg);
     cairo_destroy(cr);
     return CAIRO_STATUS_READ_ERROR; // or WRITE?
   }
 
-  g_object_unref(rsvg);
   cairo_destroy(cr);
 
-  return CAIRO_STATUS_SUCCESS;
+  _svg_last_width = width;
+  _svg_last_height = height;
+
+  return status;
 }
 
 /*
@@ -1018,6 +1121,8 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
 
 cairo_status_t
 Image::loadSVG(FILE *stream) {
+  _is_svg = true;
+
   struct stat s;
   int fd = fileno(stream);
 
