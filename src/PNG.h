@@ -90,6 +90,12 @@ struct canvas_png_write_closure_t {
     closure_t *closure;
 };
 
+#ifdef PNG_SETJMP_SUPPORTED
+bool setjmp_wrapper(png_structp png) {
+    return setjmp(png_jmpbuf(png));
+}
+#endif
+
 static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr write_func, canvas_png_write_closure_t *closure) {
     unsigned int i;
     cairo_status_t status = CAIRO_STATUS_SUCCESS;
@@ -148,7 +154,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     }
 
 #ifdef PNG_SETJMP_SUPPORTED
-    if (setjmp (png_jmpbuf (png))) {
+    if (setjmp_wrapper(png)) {
         png_destroy_write_struct(&png, &info);
         free(rows);
         return status;
