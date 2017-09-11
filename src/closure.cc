@@ -25,6 +25,6 @@ void
 closure_destroy(closure_t *closure) {
   if (closure->len) {
     free(closure->data);
-    Nan::AdjustExternalMemory(-((intptr_t) closure->max_len));
+    Nan::AdjustExternalMemory(-static_cast<int>(closure->max_len));
   }
 }

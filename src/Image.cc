@@ -913,8 +913,9 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  Nan::AdjustExternalMemory(-static_cast<int>(((read_closure_t *)closure)->len));
-  free(((read_closure_t *) closure)->buf);
+  Nan::AdjustExternalMemory(
+      -static_cast<int>((static_cast<read_closure_t *>(closure)->len)));
+  free(static_cast<read_closure_t *>(closure)->buf);
   free(closure);
 }
 
