@@ -8,14 +8,15 @@ ImageBackend::ImageBackend(int width, int height)
 
 ImageBackend::~ImageBackend()
 {
-	destroySurface();
-
-	Nan::AdjustExternalMemory(-1 * approxBytesPerPixel() * width * height);
+    if (surface) {
+        destroySurface();
+        Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
+    }
 }
 
 // This returns an approximate value only, suitable for Nan::AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
-uint32_t ImageBackend::approxBytesPerPixel() {
+int32_t ImageBackend::approxBytesPerPixel() {
   switch (format) {
   case CAIRO_FORMAT_ARGB32:
   case CAIRO_FORMAT_RGB24:
@@ -51,7 +52,7 @@ cairo_surface_t* ImageBackend::recreateSurface()
 		int old_width = cairo_image_surface_get_width(this->surface);
 		int old_height = cairo_image_surface_get_height(this->surface);
 		this->destroySurface();
-		Nan::AdjustExternalMemory(-1 * approxBytesPerPixel() * old_width * old_height);
+		Nan::AdjustExternalMemory(-approxBytesPerPixel() * old_width * old_height);
 	}
 
 	return createSurface();

@@ -21,7 +21,7 @@ class ImageBackend : public Backend
     cairo_format_t getFormat();
     void setFormat(cairo_format_t format);
 
-    uint32_t approxBytesPerPixel();
+    int32_t approxBytesPerPixel();
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
