@@ -7,6 +7,7 @@
  */
 
 const loadImage = require('../').loadImage
+const Image = require('../').Image;
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
@@ -16,6 +17,14 @@ const png_clock = `${__dirname}/fixtures/clock.png`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
 
 describe('Image', function () {
+  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
+    var img = new Image();
+    assert.throws(function () { Image.prototype.width; }, /incompatible receiver/);
+    assert(!img.hasOwnProperty('width'));
+    assert('width' in img);
+    assert(Image.prototype.hasOwnProperty('width'));
+  });
+
   it('loads JPEG image', function () {
     return loadImage(jpg_face).then((img) => {
       assert.strictEqual(img.onerror, null)

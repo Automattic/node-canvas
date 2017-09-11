@@ -4,6 +4,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
+#include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
 #include <stdlib.h>
@@ -45,16 +46,16 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  Nan::SetAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource);
-  Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
-  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
-  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
-  Nan::SetAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth);
-  Nan::SetAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight);
-  Nan::SetAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload);
-  Nan::SetAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror);
+  SetProtoAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource, ctor);
+  SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload, ctor);
+  SetProtoAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror, ctor);
 #if CAIRO_VERSION_MINOR >= 10
-  Nan::SetAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
+  SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
 #endif
