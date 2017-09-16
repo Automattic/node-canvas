@@ -40,14 +40,10 @@ class Image: public Nan::ObjectWrap {
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    Nan::Callback *onload;
-    Nan::Callback *onerror;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetSource);
-    static NAN_GETTER(GetOnload);
-    static NAN_GETTER(GetOnerror);
     static NAN_GETTER(GetComplete);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);
@@ -55,8 +51,6 @@ class Image: public Nan::ObjectWrap {
     static NAN_GETTER(GetNaturalHeight);
     static NAN_GETTER(GetDataMode);
     static NAN_SETTER(SetSource);
-    static NAN_SETTER(SetOnload);
-    static NAN_SETTER(SetOnerror);
     static NAN_SETTER(SetDataMode);
     static NAN_SETTER(SetWidth);
     static NAN_SETTER(SetHeight);
