@@ -52,8 +52,6 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("onload").ToLocalChecked(), GetOnload, SetOnload, ctor);
-  SetProtoAccessor(proto, Nan::New("onerror").ToLocalChecked(), GetOnerror, SetOnerror, ctor);
 #if CAIRO_VERSION_MINOR >= 10
   SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
@@ -74,6 +72,8 @@ NAN_METHOD(Image::New) {
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
   img->Wrap(info.This());
+  info.This()->Set(Nan::New("onload").ToLocalChecked(), Nan::Null());
+  info.This()->Set(Nan::New("onerror").ToLocalChecked(), Nan::Null());
   info.GetReturnValue().Set(info.This());
 }
 
@@ -233,9 +233,17 @@ NAN_SETTER(Image::SetSource) {
 
   // check status
   if (status) {
-    img->error(Canvas::Error(status));
+    Local<Value> onerrorFn = info.This()->Get(Nan::New("onerror").ToLocalChecked());
+    if (onerrorFn->IsFunction()) {
+      Local<Value> argv[1] = { Canvas::Error(status) };
+      onerrorFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 1, argv);
+    }
   } else {
     img->loaded();
+    Local<Value> onloadFn = info.This()->Get(Nan::New("onload").ToLocalChecked());
+    if (onloadFn->IsFunction()) {
+      onloadFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 0, NULL);
+    }
   }
 }
 
@@ -306,66 +314,6 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
 }
 
 /*
- * Get onload callback.
- */
-
-NAN_GETTER(Image::GetOnload) {
-  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-  if (img->onload) {
-    info.GetReturnValue().Set(img->onload->GetFunction());
-  } else {
-    info.GetReturnValue().SetNull();
-  }
-}
-
-/*
- * Set onload callback.
- */
-
-NAN_SETTER(Image::SetOnload) {
-  if (value->IsFunction()) {
-    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    img->onload = new Nan::Callback(value.As<Function>());
-  } else if (value->IsNull()) {
-    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    if (img->onload) {
-      delete img->onload;
-    }
-    img->onload = NULL;
-  }
-}
-
-/*
- * Get onerror callback.
- */
-
-NAN_GETTER(Image::GetOnerror) {
-  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-  if (img->onerror) {
-    info.GetReturnValue().Set(img->onerror->GetFunction());
-  } else {
-    info.GetReturnValue().SetNull();
-  }
-}
-
-/*
- * Set onerror callback.
- */
-
-NAN_SETTER(Image::SetOnerror) {
-  if (value->IsFunction()) {
-    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    img->onerror = new Nan::Callback(value.As<Function>());
-  } else if (value->IsNull()) {
-    Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    if (img->onerror) {
-        delete img->onerror;
-    }
-    img->onerror = NULL;
-  }
-}
-
-/*
  * Initialize a new Image.
  */
 
@@ -377,8 +325,6 @@ Image::Image() {
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
-  onload = NULL;
-  onerror = NULL;
 #ifdef HAVE_RSVG
   _rsvg = NULL;
   _is_svg = false;
@@ -392,16 +338,6 @@ Image::Image() {
 
 Image::~Image() {
   clearData();
-
-  if (onerror) {
-    delete onerror;
-    onerror = NULL;
-  }
-
-  if (onload) {
-    delete onload;
-    onload = NULL;
-  }
 }
 
 /*
@@ -418,7 +354,7 @@ Image::load() {
 }
 
 /*
- * Invoke onload (when assigned) and assign dimensions.
+ * Set state, assign dimensions.
  */
 
 void
@@ -430,23 +366,6 @@ Image::loaded() {
   height = naturalHeight = cairo_image_surface_get_height(_surface);
   _data_len = naturalHeight * cairo_image_surface_get_stride(_surface);
   Nan::AdjustExternalMemory(_data_len);
-
-  if (onload != NULL) {
-    onload->Call(0, NULL);
-  }
-}
-
-/*
- * Invoke onerror (when assigned) with the given err.
- */
-
-void
-Image::error(Local<Value> err) {
-  Nan::HandleScope scope;
-  if (onerror != NULL) {
-    Local<Value> argv[1] = { err };
-    onerror->Call(1, argv);
-  }
 }
 
 /*
