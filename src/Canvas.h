@@ -52,11 +52,14 @@ class Canvas: public Nan::ObjectWrap {
     int width;
     int height;
     canvas_type_t type;
+    cairo_format_t format;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
+    static NAN_METHOD(Flush);
     static NAN_METHOD(ToBuffer);
     static NAN_GETTER(GetType);
+    static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetStride);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);
@@ -87,7 +90,7 @@ class Canvas: public Nan::ObjectWrap {
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     inline int nBytes(){ return height * stride(); }
-    Canvas(int width, int height, canvas_type_t type);
+    Canvas(int width, int height, canvas_type_t type, unsigned char* data, cairo_format_t f);
     void resurface(Local<Object> canvas);
 
   private:
