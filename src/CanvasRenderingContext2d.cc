@@ -1850,8 +1850,8 @@ NAN_METHOD(Context2d::Stroke) {
 double
 get_text_scale(Context2d *context, char *str, double maxWidth) {
   PangoLayout *layout = context->layout();
-  PangoRectangle ink_rect, logical_rect;
-  pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+  PangoRectangle logical_rect;
+  pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
 
   if (logical_rect.width > maxWidth) {
     return maxWidth / logical_rect.width;
@@ -1951,7 +1951,7 @@ inline double getBaselineAdjustment(PangoFontMetrics* metrics, cairo_matrix_t ma
 
 void
 Context2d::setTextPath(const char *str, double x, double y) {
-  PangoRectangle ink_rect, logical_rect;
+  PangoRectangle logical_rect;
   cairo_matrix_t matrix;
 
   pango_layout_set_text(_layout, str, -1);
@@ -1962,12 +1962,12 @@ Context2d::setTextPath(const char *str, double x, double y) {
   switch (state->textAlignment) {
     // center
     case 0:
-      pango_layout_get_pixel_extents(_layout, &ink_rect, &logical_rect);
+      pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width / 2;
       break;
     // right
     case 1:
-      pango_layout_get_pixel_extents(_layout, &ink_rect, &logical_rect);
+      pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width;
       break;
   }
