@@ -7,12 +7,7 @@
 #include <exception>
 
 #include <nan.h>
-
-#if HAVE_PANGO
-  #include <pango/pangocairo.h>
-#else
-  #include <cairo/cairo.h>
-#endif
+#include <cairo.h>
 
 class Canvas;
 
