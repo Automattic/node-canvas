@@ -2073,14 +2073,31 @@ NAN_METHOD(Context2d::MeasureText) {
   String::Utf8Value str(info[0]->ToString());
   Local<Object> obj = Nan::New<Object>();
 
-  PangoRectangle ink_rect, logical_rect;
+  PangoRectangle _ink_rect, _logical_rect;
+  float_rectangle ink_rect, logical_rect;
   PangoFontMetrics *metrics;
   PangoLayout *layout = context->layout();
 
   pango_layout_set_text(layout, *str, -1);
   pango_cairo_update_layout(ctx, layout);
 
-  pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+  // Normally you could use pango_layout_get_pixel_extents and be done, or use
+  // pango_extents_to_pixels, but both of those round the pixels, so we have to
+  // divide by PANGO_SCALE manually
+  pango_layout_get_extents(layout, &_ink_rect, &_logical_rect);
+
+  float inverse_pango_scale = 1. / PANGO_SCALE;
+
+  logical_rect.x = _logical_rect.x * inverse_pango_scale;
+  logical_rect.y = _logical_rect.y * inverse_pango_scale;
+  logical_rect.width = _logical_rect.width * inverse_pango_scale;
+  logical_rect.height = _logical_rect.height * inverse_pango_scale;
+
+  ink_rect.x = _ink_rect.x * inverse_pango_scale;
+  ink_rect.y = _ink_rect.y * inverse_pango_scale;
+  ink_rect.width = _ink_rect.width * inverse_pango_scale;
+  ink_rect.height = _ink_rect.height * inverse_pango_scale;
+
   metrics = PANGO_LAYOUT_GET_METRICS(layout);
 
   double x_offset;
@@ -2114,7 +2131,7 @@ NAN_METHOD(Context2d::MeasureText) {
   obj->Set(Nan::New<String>("emHeightDescent").ToLocalChecked(),
            Nan::New<Number>(PANGO_DESCENT(logical_rect) - y_offset));
   obj->Set(Nan::New<String>("alphabeticBaseline").ToLocalChecked(),
-           Nan::New<Number>(-(pango_font_metrics_get_ascent(metrics) / PANGO_SCALE - y_offset)));
+           Nan::New<Number>(-(pango_font_metrics_get_ascent(metrics) * inverse_pango_scale - y_offset)));
 
   pango_font_metrics_unref(metrics);
 
