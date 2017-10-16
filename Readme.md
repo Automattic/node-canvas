@@ -2,9 +2,10 @@
 
 -----
 
-## This is the documentation for the unreleased version 2.0
+## This is the documentation for version 2.0.0-alpha
+Alpha versions of 2.0 can be installed using `npm install canvas@next`.
 
-**For the current version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
+**For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
 
 -----
 
