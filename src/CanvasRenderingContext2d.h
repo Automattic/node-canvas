@@ -48,6 +48,20 @@ typedef struct {
   PangoFontDescription *fontDescription;
 } canvas_state_t;
 
+/*
+ * Equivalent to a PangoRectangle but holds floats instead of ints
+ * (software pixels are stored here instead of pango units)
+ *
+ * Should be compatible with PANGO_ASCENT, PANGO_LBEARING, etc.
+ */
+
+typedef struct {
+  float x;
+  float y;
+  float width;
+  float height;
+} float_rectangle;
+
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
 
 class Context2d: public Nan::ObjectWrap {
