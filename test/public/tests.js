@@ -387,6 +387,10 @@ tests['createLinearGradient()'] = function(ctx){
 
   ctx.fillRect(10,10,130,130);
   ctx.strokeRect(50,50,50,50);
+
+  ctx.fillStyle = '#13b575';
+  ctx.fillStyle = ctx.fillStyle;
+  ctx.fillRect(65,65,20,20);
 };
 
 tests['createRadialGradient()'] = function(ctx){
