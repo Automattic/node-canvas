@@ -799,6 +799,20 @@ describe('Canvas', function () {
     });
   });
 
+  it('Context2d#currentTransform', function () {
+    var canvas = createCanvas(20, 20);
+    var ctx = canvas.getContext('2d');
+
+    ctx.scale(0.1, 0.3);
+    var actual = ctx.currentTransform;
+    assert.equal(actual.a, 0.1);
+    assert.equal(actual.b, 0);
+    assert.equal(actual.c, 0);
+    assert.equal(actual.d, 0.3);
+    assert.equal(actual.e, 0);
+    assert.equal(actual.f, 0);
+  });
+
   it('Context2d#createImageData(ImageData)', function () {
     var canvas = createCanvas(20, 20)
       , ctx = canvas.getContext('2d');

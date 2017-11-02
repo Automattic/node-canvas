@@ -1,5 +1,5 @@
 var fs = require('fs')
-var path = require(path)
+var path = require('path')
 var Canvas = require('..')
 
 var Image = Canvas.Image
