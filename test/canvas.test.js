@@ -27,59 +27,69 @@ describe('Canvas', function () {
 
   it('.parseFont()', function () {
     var tests = [
-        '20px Arial'
-      , { size: 20, unit: 'px', family: 'Arial' }
-      , '20pt Arial'
-      , { size: 26.666666666666668, unit: 'pt', family: 'Arial' }
-      , '20.5pt Arial'
-      , { size: 27.333333333333332, unit: 'pt', family: 'Arial' }
-      , '20% Arial'
-      , { size: 20, unit: '%', family: 'Arial' }
-      , '20mm Arial'
-      , { size: 75.59055118110237, unit: 'mm', family: 'Arial' }
-      , '20px serif'
-      , { size: 20, unit: 'px', family: 'serif' }
-      , '20px sans-serif'
-      , { size: 20, unit: 'px', family: 'sans-serif' }
-      , '20px monospace'
-      , { size: 20, unit: 'px', family: 'monospace' }
-      , '50px Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Arial' }
-      , 'bold italic 50px Arial, sans-serif'
-      , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial' }
-      , '50px Helvetica ,  Arial, sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica' }
-      , '50px "Helvetica Neue", sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
-      , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
-      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
-      , "50px 'Helvetica Neue'"
-      , { size: 50, unit: 'px', family: 'Helvetica Neue' }
-      , 'italic 20px Arial'
-      , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
-      , 'oblique 20px Arial'
-      , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
-      , 'normal 20px Arial'
-      , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
-      , '300 20px Arial'
-      , { size: 20, unit: 'px', weight: '300', family: 'Arial' }
-      , '800 20px Arial'
-      , { size: 20, unit: 'px', weight: '800', family: 'Arial' }
-      , 'bolder 20px Arial'
-      , { size: 20, unit: 'px', weight: 'bolder', family: 'Arial' }
-      , 'lighter 20px Arial'
-      , { size: 20, unit: 'px', weight: 'lighter', family: 'Arial' }
-    ];
+      '20px Arial'
+    , { size: 20, unit: 'px', family: 'Arial' }
+    , '20pt Arial'
+    , { size: 26.666666666666668, unit: 'pt', family: 'Arial' }
+    , '20.5pt Arial'
+    , { size: 27.333333333333332, unit: 'pt', family: 'Arial' }
+    , '20% Arial'
+    , { size: 20, unit: '%', family: 'Arial' } // TODO I think this is a bad assertion - ZB 23-Jul-2017
+    , '20mm Arial'
+    , { size: 75.59055118110237, unit: 'mm', family: 'Arial' }
+    , '20px serif'
+    , { size: 20, unit: 'px', family: 'serif' }
+    , '20px sans-serif'
+    , { size: 20, unit: 'px', family: 'sans-serif' }
+    , '20px monospace'
+    , { size: 20, unit: 'px', family: 'monospace' }
+    , '50px Arial, sans-serif'
+    , { size: 50, unit: 'px', family: 'Arial,sans-serif' }
+    , 'bold italic 50px Arial, sans-serif'
+    , { style: 'italic', weight: 'bold', size: 50, unit: 'px', family: 'Arial,sans-serif' }
+    , '50px Helvetica ,  Arial, sans-serif'
+    , { size: 50, unit: 'px', family: 'Helvetica,Arial,sans-serif' }
+    , '50px "Helvetica Neue", sans-serif'
+    , { size: 50, unit: 'px', family: 'Helvetica Neue,sans-serif' }
+    , '50px "Helvetica Neue", "foo bar baz" , sans-serif'
+    , { size: 50, unit: 'px', family: 'Helvetica Neue,foo bar baz,sans-serif' }
+    , "50px 'Helvetica Neue'"
+    , { size: 50, unit: 'px', family: 'Helvetica Neue' }
+    , 'italic 20px Arial'
+    , { size: 20, unit: 'px', style: 'italic', family: 'Arial' }
+    , 'oblique 20px Arial'
+    , { size: 20, unit: 'px', style: 'oblique', family: 'Arial' }
+    , 'normal 20px Arial'
+    , { size: 20, unit: 'px', style: 'normal', family: 'Arial' }
+    , '300 20px Arial'
+    , { size: 20, unit: 'px', weight: '300', family: 'Arial' }
+    , '800 20px Arial'
+    , { size: 20, unit: 'px', weight: '800', family: 'Arial' }
+    , 'bolder 20px Arial'
+    , { size: 20, unit: 'px', weight: 'bolder', family: 'Arial' }
+    , 'lighter 20px Arial'
+    , { size: 20, unit: 'px', weight: 'lighter', family: 'Arial' }
+    , 'normal normal normal 16px Impact'
+    , { size: 16, unit: 'px', weight: 'normal', family: 'Impact', style: 'normal', variant: 'normal' }
+    , 'italic small-caps bolder 16px cursive'
+    , { size: 16, unit: 'px', style: 'italic', variant: 'small-caps', weight: 'bolder', family: 'cursive' }
+    , '20px "new century schoolbook", serif'
+    , { size: 20, unit: 'px', family: 'new century schoolbook,serif' }
+    , '20px "Arial bold 300"' // synthetic case with weight keyword inside family
+    , { size: 20, unit: 'px', family: 'Arial bold 300', variant: 'normal' }
+  ];
 
     for (var i = 0, len = tests.length; i < len; ++i) {
       var str = tests[i++]
-        , obj = tests[i]
+        , expected = tests[i]
         , actual = parseFont(str);
 
-      if (!obj.style) obj.style = 'normal';
-      if (!obj.weight) obj.weight = 'normal';
+      if (!expected.style) expected.style = 'normal';
+      if (!expected.weight) expected.weight = 'normal';
+      if (!expected.stretch) expected.stretch = 'normal';
+      if (!expected.variant) expected.variant = 'normal';
 
-      assert.deepEqual(obj, actual);
+      assert.deepEqual(actual, expected, 'Failed to parse: ' + str);
     }
   });
 
