@@ -1289,6 +1289,26 @@ describe('Canvas', function () {
     });
   });
 
+  // based on https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
+  // end of image marker (FF D9) must exist to maintain JPEG standards
+  it('EOI at end of Canvas#jpegStream()', function (done) {
+    var canvas = createCanvas(640, 480);
+    var stream = canvas.jpegStream();
+    var chunks = []
+    stream.on('data', function(chunk){
+      chunks.push(chunk)
+    });
+    stream.on('end', function(){
+      var lastTwoBytes = chunks.pop().slice(-2)
+      assert.equal(0xFF, lastTwoBytes[0]);
+      assert.equal(0xD9, lastTwoBytes[1]);
+      done();
+    });
+    stream.on('error', function(err) {
+      done(err);
+    });
+  });
+
   it('Canvas#jpegStream() should clamp buffer size (#674)', function (done) {
     var c = createCanvas(10, 10);
     var SIZE = 10 * 1024 * 1024;
