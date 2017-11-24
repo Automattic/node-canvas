@@ -123,7 +123,7 @@ If image data is not tracked, and the Image is drawn to an image rather than a P
 
 ### Canvas#pngStream(options)
 
-  To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
+  To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, emitting _end_ when the data stream ends. If an exception occurs the _error_ event is emitted.
 
 ```javascript
 var fs = require('fs')
@@ -135,7 +135,11 @@ stream.on('data', function(chunk){
 });
 
 stream.on('end', function(){
-  console.log('saved png');
+  console.log('The PNG stream ended');
+});
+
+out.on('finish', function(){
+  console.log('The PNG file was created.');
 });
 ```
 
