@@ -5,6 +5,7 @@ var childProcess = require('child_process')
 var SYSTEM_PATHS = [
   '/lib',
   '/usr/lib',
+  '/usr/lib64',
   '/usr/local/lib',
   '/opt/local/lib',
   '/usr/lib/x86_64-linux-gnu',
