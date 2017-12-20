@@ -293,6 +293,23 @@ Context2d::restorePath() {
 }
 
 /*
+ * Create temporary surface for gradient or pattern transparency
+ */
+cairo_surface_t*
+create_surface_for_gradient(cairo_t *_context, cairo_pattern_t *source, float alpha) {
+  int width = cairo_image_surface_get_width(cairo_get_target(_context));
+  int height = cairo_image_surface_get_height(cairo_get_target(_context));
+  cairo_surface_t *mask_surface = cairo_image_surface_create(
+    CAIRO_FORMAT_ARGB32,
+    width,
+    height);
+  cairo_t *mask_context = cairo_create(mask_surface);
+  cairo_set_source(mask_context, source);
+  cairo_paint_with_alpha(mask_context, alpha);
+  return mask_surface;
+}
+
+/*
  * Fill and apply shadow.
  */
 
@@ -315,12 +332,16 @@ Context2d::fill(bool preserve) {
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
     // TODO repeat/repeat-x/repeat-y
   } else if (state->fillGradient) {
-    cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
-    cairo_set_source(_context, state->fillGradient);
+    if (state->globalAlpha > 0 && state->globalAlpha < 1) {
+      cairo_surface_t *mask_surface = create_surface_for_gradient(_context, state->fillGradient, state->globalAlpha);
+      cairo_set_source_surface(_context, mask_surface, 0, 0);
+    } else {
+      cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
+      cairo_set_source(_context, state->fillGradient);
+    }
   } else {
     setSourceRGBA(state->fill);
   }
-
   if (preserve) {
     hasShadow()
       ? shadow(cairo_fill_preserve)
