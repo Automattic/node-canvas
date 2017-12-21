@@ -2069,7 +2069,7 @@ tests['putImageData() png data 3'] = function (ctx, done) {
 
 tests['setLineDash'] = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
-  ctx.lineWidth = 17
+  ctx.lineWidth = 14
 
   var y = 5
   var line = function (lineDash, color) {
@@ -2096,6 +2096,9 @@ tests['setLineDash'] = function (ctx) {
     a.push(20)
     return a
   })(), 'orange')
+  line([0, 0], 'purple') // should be full
+  line([0, 0, 3, 0], 'orange') // should be full
+  line([0, 3, 0, 0], 'green') // should be empty
 }
 
 tests['lineDashOffset'] = function (ctx) {

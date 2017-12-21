@@ -2193,12 +2193,13 @@ NAN_METHOD(Context2d::SetLineDash) {
   if (!info[0]->IsArray()) return;
   Local<Array> dash = Local<Array>::Cast(info[0]);
   uint32_t dashes = dash->Length() & 1 ? dash->Length() * 2 : dash->Length();
-
+  uint32_t zero_dashes = 0;
   std::vector<double> a(dashes);
   for (uint32_t i=0; i<dashes; i++) {
     Local<Value> d = dash->Get(i % dash->Length());
     if (!d->IsNumber()) return;
     a[i] = d->NumberValue();
+    if (a[i] == 0) zero_dashes++;
     if (a[i] < 0 || isnan(a[i]) || isinf(a[i])) return;
   }
 
@@ -2206,7 +2207,12 @@ NAN_METHOD(Context2d::SetLineDash) {
   cairo_t *ctx = context->context();
   double offset;
   cairo_get_dash(ctx, NULL, &offset);
-  cairo_set_dash(ctx, a.data(), dashes, offset);
+  if (zero_dashes == dashes) {
+    std::vector<double> b(0);
+    cairo_set_dash(ctx, b.data(), 0, offset);
+  } else {
+    cairo_set_dash(ctx, a.data(), dashes, offset);
+  }
 }
 
 /*
