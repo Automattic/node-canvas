@@ -552,6 +552,8 @@ NAN_METHOD(Context2d::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
+  if (!info[0]->IsObject())
+    return Nan::ThrowTypeError("Canvas expected");
   Local<Object> obj = info[0]->ToObject();
   if (!Nan::New(Canvas::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("Canvas expected");
@@ -816,6 +818,10 @@ NAN_METHOD(Context2d::GetImageData) {
 NAN_METHOD(Context2d::DrawImage) {
   if (info.Length() < 3)
     return Nan::ThrowTypeError("invalid arguments");
+  if (!info[0]->IsObject()
+    || !info[1]->IsNumber()
+    || !info[2]->IsNumber())
+    return Nan::ThrowTypeError("Expected object, number and number");
 
   float sx = 0
     , sy = 0
@@ -1424,6 +1430,8 @@ NAN_METHOD(Context2d::IsPointInPath) {
  */
 
 NAN_METHOD(Context2d::SetFillPattern) {
+  if (!info[0]->IsObject())
+    return Nan::ThrowTypeError("Gradient or Pattern expected");
   Local<Object> obj = info[0]->ToObject();
   if (Nan::New(Gradient::constructor)->HasInstance(obj)){
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1443,6 +1451,8 @@ NAN_METHOD(Context2d::SetFillPattern) {
  */
 
 NAN_METHOD(Context2d::SetStrokePattern) {
+  if (!info[0]->IsObject())
+    return Nan::ThrowTypeError("Gradient or Pattern expected");
   Local<Object> obj = info[0]->ToObject();
   if (Nan::New(Gradient::constructor)->HasInstance(obj)){
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
