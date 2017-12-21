@@ -295,18 +295,37 @@ Context2d::restorePath() {
 /*
  * Create temporary surface for gradient or pattern transparency
  */
-cairo_surface_t*
-create_surface_for_gradient(cairo_t *_context, cairo_pattern_t *source, float alpha) {
-  int width = cairo_image_surface_get_width(cairo_get_target(_context));
-  int height = cairo_image_surface_get_height(cairo_get_target(_context));
-  cairo_surface_t *mask_surface = cairo_image_surface_create(
-    CAIRO_FORMAT_ARGB32,
-    width,
-    height);
-  cairo_t *mask_context = cairo_create(mask_surface);
-  cairo_set_source(mask_context, source);
-  cairo_paint_with_alpha(mask_context, alpha);
-  return mask_surface;
+cairo_pattern_t*
+create_transparent_gradient(cairo_pattern_t *source, float alpha) {
+  double x0;
+  double y0;
+  double x1;
+  double y1;
+  double r0;
+  double r1;
+  int count;
+  int i;
+  double offset;
+  double r;
+  double g;
+  double b;
+  double a;
+  cairo_pattern_t *newGradient;
+  cairo_pattern_type_t type = cairo_pattern_get_type(source);
+  cairo_pattern_get_color_stop_count(source, &count);
+  if (type == 2) {
+    cairo_pattern_get_linear_points (source, &x0, &y0, &x1, &y1);
+    newGradient = cairo_pattern_create_linear(x0, y0, x1, y1);
+  }
+  if (type == 3) {
+    cairo_pattern_get_radial_circles(source, &x0, &y0, &r0, &x1, &y1, &r1);
+    newGradient = cairo_pattern_create_radial (x0, y0, r0, x1, y1, r1);
+  }
+  for ( i = 0; i < count; i++ ) {
+    cairo_pattern_get_color_stop_rgba(source, i, &offset, &r, &g, &b, &a);
+    cairo_pattern_add_color_stop_rgba(newGradient, offset, r, g, b, a * alpha);
+  }
+  return newGradient;
 }
 
 cairo_pattern_t*
@@ -355,9 +374,11 @@ Context2d::fill(bool preserve) {
   } else if (state->fillGradient) {
     cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
     if (state->globalAlpha < 1) {
-      cairo_surface_t *mask_surface = create_surface_for_gradient(_context, state->fillGradient, state->globalAlpha);
-      cairo_set_source_surface(_context, mask_surface, 0, 0);
+      cairo_pattern_t *new_gradient = create_transparent_gradient(state->fillGradient, state->globalAlpha);
+      cairo_pattern_set_filter(new_gradient, state->patternQuality);
+      cairo_set_source(_context, new_gradient);
     } else {
+      cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
       cairo_set_source(_context, state->fillGradient);
     }
   } else {
@@ -389,11 +410,12 @@ Context2d::stroke(bool preserve) {
     }
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
   } else if (state->strokeGradient) {
-    cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
     if (state->globalAlpha < 1) {
-      cairo_surface_t *mask_surface = create_surface_for_gradient(_context, state->strokeGradient, state->globalAlpha);
-      cairo_set_source_surface(_context, mask_surface, 0, 0);
+      cairo_pattern_t *new_gradient = create_transparent_gradient(state->strokeGradient, state->globalAlpha);
+      cairo_pattern_set_filter(new_gradient, state->patternQuality);
+      cairo_set_source(_context, new_gradient);
     } else {
+      cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
       cairo_set_source(_context, state->strokeGradient);
     }
   } else {

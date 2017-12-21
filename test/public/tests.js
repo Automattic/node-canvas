@@ -465,6 +465,7 @@ tests['createLinearGradient() and transforms'] = function(ctx){
   ctx.lineTo(100, 100);
   ctx.lineTo(-100, 100);
   ctx.closePath();
+  ctx.globalAlpha = 0.5;
   ctx.rotate(1.570795);
   ctx.scale(0.6, 0.6);
   ctx.fill();
