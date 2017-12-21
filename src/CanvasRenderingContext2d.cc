@@ -309,6 +309,22 @@ create_surface_for_gradient(cairo_t *_context, cairo_pattern_t *source, float al
   return mask_surface;
 }
 
+cairo_pattern_t*
+create_transparent_pattern(cairo_pattern_t *source, float alpha) {
+  cairo_surface_t *surface;
+  cairo_pattern_get_surface(source, &surface);
+  int width = cairo_image_surface_get_width(surface);
+  int height = cairo_image_surface_get_height(surface);
+  cairo_surface_t *mask_surface = cairo_image_surface_create(
+    CAIRO_FORMAT_ARGB32,
+    width,
+    height);
+  cairo_t *mask_context = cairo_create(mask_surface);
+  cairo_set_source(mask_context, source);
+  cairo_paint_with_alpha(mask_context, alpha);
+  return cairo_pattern_create_for_surface(mask_surface);
+}
+
 /*
  * Fill and apply shadow.
  */
@@ -328,15 +344,20 @@ Context2d::setFillRule(v8::Local<v8::Value> value) {
 void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
-    cairo_set_source(_context, state->fillPattern);
+    if (state->globalAlpha < 1) {
+      cairo_pattern_t *new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
+      cairo_set_source(_context, new_pattern);
+    } else {
+      cairo_set_source(_context, state->fillPattern);
+    }
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
     // TODO repeat/repeat-x/repeat-y
   } else if (state->fillGradient) {
-    if (state->globalAlpha > 0 && state->globalAlpha < 1) {
+    cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
+    if (state->globalAlpha < 1) {
       cairo_surface_t *mask_surface = create_surface_for_gradient(_context, state->fillGradient, state->globalAlpha);
       cairo_set_source_surface(_context, mask_surface, 0, 0);
     } else {
-      cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
       cairo_set_source(_context, state->fillGradient);
     }
   } else {
@@ -360,11 +381,21 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
-    cairo_set_source(_context, state->strokePattern);
+    if (state->globalAlpha < 1) {
+      cairo_pattern_t *new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
+      cairo_set_source(_context, new_pattern);
+    } else {
+      cairo_set_source(_context, state->strokePattern);
+    }
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
   } else if (state->strokeGradient) {
     cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
-    cairo_set_source(_context, state->strokeGradient);
+    if (state->globalAlpha < 1) {
+      cairo_surface_t *mask_surface = create_surface_for_gradient(_context, state->strokeGradient, state->globalAlpha);
+      cairo_set_source_surface(_context, mask_surface, 0, 0);
+    } else {
+      cairo_set_source(_context, state->strokeGradient);
+    }
   } else {
     setSourceRGBA(state->stroke);
   }

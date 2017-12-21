@@ -375,9 +375,29 @@ tests['createPattern()'] = function(ctx, done) {
   var img = new Image;
   img.onload = function(){
     var pattern = ctx.createPattern(img, 'repeat');
-    ctx.scale(0.1, 0.1)
+    ctx.scale(0.1, 0.1);
     ctx.fillStyle = pattern;
-    ctx.fillRect(0, 0, 2000, 2000);
+    ctx.fillRect(100, 100, 800, 800);
+    ctx.strokeStyle = pattern;
+    ctx.lineWidth = 200
+    ctx.strokeRect(1100, 1100, 800, 800);
+    done();
+  };
+  img.src = 'face.jpeg';
+};
+
+tests['createPattern() with globalAlpha'] = function(ctx, done) {
+  var img = new Image;
+  img.onload = function(){
+    var pattern = ctx.createPattern(img, 'repeat');
+    ctx.scale(0.1, 0.1);
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = pattern;
+    ctx.fillRect(100, 100, 800, 800);
+    ctx.globalAlpha = 0.2;
+    ctx.strokeStyle = pattern;
+    ctx.lineWidth = 200
+    ctx.strokeRect(1100, 1100, 800, 800);
     done();
   };
   img.src = 'face.jpeg';
@@ -399,25 +419,55 @@ tests['createLinearGradient()'] = function(ctx){
 
   ctx.fillRect(10,10,130,130);
   ctx.strokeRect(50,50,50,50);
+
+  var lingrad = ctx.createLinearGradient(0,0,200,0);
+  lingrad.addColorStop(0, 'rgba(0,255,0,0.5)');
+  lingrad.addColorStop(0.33, 'rgba(255,255,0,0.5)');
+  lingrad.addColorStop(0.66, 'rgba(0,255,255,0.5)');
+  lingrad.addColorStop(1, 'rgba(255,0,255,0.5)');
+  ctx.fillStyle = lingrad;
+  ctx.fillRect(0,170,200,30);
 };
 
 tests['createLinearGradient() with opacity'] = function(ctx){
-  ctx.globalAlpha = 0.2;
-  var lingrad = ctx.createLinearGradient(0,0,0,150);
-  lingrad.addColorStop(0, '#00ABEB');
-  lingrad.addColorStop(0.5, '#fff');
-  lingrad.addColorStop(0.5, '#26C000');
-  lingrad.addColorStop(1, '#fff');
-
-  var lingrad2 = ctx.createLinearGradient(0,50,0,95);
-  lingrad2.addColorStop(0.5, '#000');
-  lingrad2.addColorStop(1, 'rgba(0,0,0,0)');
-
+  var lingrad = ctx.createLinearGradient(0,0,0,200);
+  lingrad.addColorStop(0, '#00FF00');
+  lingrad.addColorStop(0.33, '#FF0000');
+  lingrad.addColorStop(0.66, '#0000FF');
+  lingrad.addColorStop(1, '#00FFFF');
   ctx.fillStyle = lingrad;
-  ctx.strokeStyle = lingrad2;
-  ctx.globalAlpha = 0.2;
-  ctx.fillRect(10,10,130,130);
-  ctx.strokeRect(50,50,50,50);
+  ctx.strokeStyle = lingrad;
+  ctx.lineWidth = 10;
+  ctx.globalAlpha = 0.4;
+  ctx.strokeRect(5,5,190,190);
+  ctx.fillRect(0,0,50,50);
+  ctx.globalAlpha = 0.6;
+  ctx.strokeRect(35,35,130,130);
+  ctx.fillRect(50,50,50,50);
+  ctx.globalAlpha = 0.8;
+  ctx.strokeRect(65,65,70,70);
+  ctx.fillRect(100,100,50,50);
+  ctx.globalAlpha = 0.95;
+  ctx.fillRect(150,150,50,50);
+};
+
+tests['createLinearGradient() and transforms'] = function(ctx){
+  var lingrad = ctx.createLinearGradient(0,-100,0,100);
+  lingrad.addColorStop(0, '#00FF00');
+  lingrad.addColorStop(0.33, '#FF0000');
+  lingrad.addColorStop(0.66, '#0000FF');
+  lingrad.addColorStop(1, '#00FFFF');
+  ctx.fillStyle = lingrad;
+  ctx.translate(100, 100);
+  ctx.beginPath();
+  ctx.moveTo(-100, -100);
+  ctx.lineTo(100, -100);
+  ctx.lineTo(100, 100);
+  ctx.lineTo(-100, 100);
+  ctx.closePath();
+  ctx.rotate(1.570795);
+  ctx.scale(0.6, 0.6);
+  ctx.fill();
 };
 
 tests['createRadialGradient()'] = function(ctx){
