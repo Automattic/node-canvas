@@ -34,7 +34,7 @@
   "devDependencies": {
     "body-parser": "^1.13.3",
     "express": "^4.13.2",
-    "mocha": "*",
+    "mocha": "^2.5.3",
     "pug": "^2.0.0-beta3",
     "standard": "^10.0.3"
   },
