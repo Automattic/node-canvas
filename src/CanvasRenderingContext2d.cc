@@ -339,10 +339,16 @@ create_transparent_pattern(cairo_pattern_t *source, float alpha) {
     width,
     height);
   cairo_t *mask_context = cairo_create(mask_surface);
+  if (cairo_status(mask_context) != CAIRO_STATUS_SUCCESS) {
+    // context creation failed. Return the original source and destroy the surface
+    cairo_surface_destroy(mask_surface);
+    return source;
+  }
   cairo_set_source(mask_context, source);
   cairo_paint_with_alpha(mask_context, alpha);
+  // remove the context, but not the surface since is owned by the pattern
+  cairo_destroy(mask_context);
   cairo_pattern_t* newPattern = cairo_pattern_create_for_surface(mask_surface);
-  cairo_surface_destroy(mask_surface);
   return newPattern;
 }
 
@@ -396,7 +402,7 @@ Context2d::fill(bool preserve) {
       ? shadow(cairo_fill)
       : cairo_fill(_context);
   }
-  if (new_pattern != nullptr) {
+  if (new_pattern != state->fillPattern && new_pattern != nullptr) {
     cairo_pattern_destroy(new_pattern);
   }
 }
@@ -438,7 +444,7 @@ Context2d::stroke(bool preserve) {
       ? shadow(cairo_stroke)
       : cairo_stroke(_context);
   }
-  if (new_pattern != nullptr) {
+  if (new_pattern != state->strokePattern && new_pattern != nullptr) {
     cairo_pattern_destroy(new_pattern);
   }
 }
