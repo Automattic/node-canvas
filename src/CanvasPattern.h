@@ -32,8 +32,8 @@ class Pattern: public Nan::ObjectWrap {
     inline cairo_pattern_t *pattern(){ return _pattern; }
   private:
     ~Pattern();
-    // TODO REPEAT/REPEAT_X/REPEAT_Y
     cairo_pattern_t *_pattern;
+    repeat_type_t *_repeat;
 };
 
 #endif

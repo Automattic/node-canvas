@@ -63,10 +63,9 @@ NAN_METHOD(Pattern::New) {
   } else {
     return Nan::ThrowTypeError("Image or Canvas expected");
   }
-
-  repeat_type_t repeat = (repeat_type_t)info[1]->Uint32Value();
-
-  Pattern *pattern = new Pattern(surface, &repeat);
+  repeat_type_t *repeat = new repeat_type_t;
+  *repeat = (repeat_type_t)info[1]->Uint32Value();
+  Pattern *pattern = new Pattern(surface, repeat);
   pattern->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
@@ -78,7 +77,8 @@ NAN_METHOD(Pattern::New) {
 
 Pattern::Pattern(cairo_surface_t *surface, repeat_type_t *repeat) {
   _pattern = cairo_pattern_create_for_surface(surface);
-  cairo_pattern_set_user_data(_pattern, pattern_repeat_key, repeat, nullptr);
+  _repeat = repeat;
+  cairo_pattern_set_user_data(_pattern, pattern_repeat_key, repeat, NULL);
 }
 
 /*
@@ -87,4 +87,5 @@ Pattern::Pattern(cairo_surface_t *surface, repeat_type_t *repeat) {
 
 Pattern::~Pattern() {
   cairo_pattern_destroy(_pattern);
+  delete _repeat;
 }

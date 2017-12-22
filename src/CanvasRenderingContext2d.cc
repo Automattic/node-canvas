@@ -312,8 +312,8 @@ void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     cairo_set_source(_context, state->fillPattern);
-    repeat_type_t repeat = *static_cast<repeat_type_t *>(cairo_pattern_get_user_data(state->fillPattern, pattern_repeat_key));
-    if (NO_REPEAT == repeat) {
+    repeat_type_t *repeat = static_cast<repeat_type_t *>(cairo_pattern_get_user_data(state->fillPattern, pattern_repeat_key));
+    if (NO_REPEAT == *repeat) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
     } else {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
