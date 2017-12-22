@@ -313,13 +313,13 @@ create_transparent_gradient(cairo_pattern_t *source, float alpha) {
   cairo_pattern_t *newGradient;
   cairo_pattern_type_t type = cairo_pattern_get_type(source);
   cairo_pattern_get_color_stop_count(source, &count);
-  if (type == 2) {
+  if (type == CAIRO_PATTERN_TYPE_LINEAR) {
     cairo_pattern_get_linear_points (source, &x0, &y0, &x1, &y1);
     newGradient = cairo_pattern_create_linear(x0, y0, x1, y1);
   }
-  if (type == 3) {
+  if (type == CAIRO_PATTERN_TYPE_RADIAL) {
     cairo_pattern_get_radial_circles(source, &x0, &y0, &r0, &x1, &y1, &r1);
-    newGradient = cairo_pattern_create_radial (x0, y0, r0, x1, y1, r1);
+    newGradient = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
   }
   for ( i = 0; i < count; i++ ) {
     cairo_pattern_get_color_stop_rgba(source, i, &offset, &r, &g, &b, &a);
@@ -341,7 +341,9 @@ create_transparent_pattern(cairo_pattern_t *source, float alpha) {
   cairo_t *mask_context = cairo_create(mask_surface);
   cairo_set_source(mask_context, source);
   cairo_paint_with_alpha(mask_context, alpha);
-  return cairo_pattern_create_for_surface(mask_surface);
+  cairo_pattern_t* newPattern = cairo_pattern_create_for_surface(mask_surface);
+  cairo_surface_destroy(mask_surface);
+  return newPattern;
 }
 
 /*
@@ -362,9 +364,10 @@ Context2d::setFillRule(v8::Local<v8::Value> value) {
 
 void
 Context2d::fill(bool preserve) {
+  cairo_pattern_t *new_pattern = nullptr;
   if (state->fillPattern) {
     if (state->globalAlpha < 1) {
-      cairo_pattern_t *new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
+      new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
       cairo_set_source(_context, new_pattern);
     } else {
       cairo_set_source(_context, state->fillPattern);
@@ -374,9 +377,9 @@ Context2d::fill(bool preserve) {
   } else if (state->fillGradient) {
     cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
     if (state->globalAlpha < 1) {
-      cairo_pattern_t *new_gradient = create_transparent_gradient(state->fillGradient, state->globalAlpha);
-      cairo_pattern_set_filter(new_gradient, state->patternQuality);
-      cairo_set_source(_context, new_gradient);
+      new_pattern = create_transparent_gradient(state->fillGradient, state->globalAlpha);
+      cairo_pattern_set_filter(new_pattern, state->patternQuality);
+      cairo_set_source(_context, new_pattern);
     } else {
       cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
       cairo_set_source(_context, state->fillGradient);
@@ -393,6 +396,9 @@ Context2d::fill(bool preserve) {
       ? shadow(cairo_fill)
       : cairo_fill(_context);
   }
+  if (new_pattern != nullptr) {
+    cairo_pattern_destroy(new_pattern);
+  }
 }
 
 /*
@@ -401,9 +407,10 @@ Context2d::fill(bool preserve) {
 
 void
 Context2d::stroke(bool preserve) {
+  cairo_pattern_t *new_pattern = nullptr;
   if (state->strokePattern) {
     if (state->globalAlpha < 1) {
-      cairo_pattern_t *new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
+      new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
       cairo_set_source(_context, new_pattern);
     } else {
       cairo_set_source(_context, state->strokePattern);
@@ -411,9 +418,9 @@ Context2d::stroke(bool preserve) {
     cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
   } else if (state->strokeGradient) {
     if (state->globalAlpha < 1) {
-      cairo_pattern_t *new_gradient = create_transparent_gradient(state->strokeGradient, state->globalAlpha);
-      cairo_pattern_set_filter(new_gradient, state->patternQuality);
-      cairo_set_source(_context, new_gradient);
+      new_pattern = create_transparent_gradient(state->strokeGradient, state->globalAlpha);
+      cairo_pattern_set_filter(new_pattern, state->patternQuality);
+      cairo_set_source(_context, new_pattern);
     } else {
       cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
       cairo_set_source(_context, state->strokeGradient);
@@ -430,6 +437,9 @@ Context2d::stroke(bool preserve) {
     hasShadow()
       ? shadow(cairo_stroke)
       : cairo_stroke(_context);
+  }
+  if (new_pattern != nullptr) {
+    cairo_pattern_destroy(new_pattern);
   }
 }
 
