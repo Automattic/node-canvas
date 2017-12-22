@@ -420,6 +420,10 @@ tests['createLinearGradient()'] = function(ctx){
   ctx.fillRect(10,10,130,130);
   ctx.strokeRect(50,50,50,50);
 
+  ctx.fillStyle = '#13b575';
+  ctx.fillStyle = ctx.fillStyle;
+  ctx.fillRect(65,65,20,20);
+
   var lingrad = ctx.createLinearGradient(0,0,200,0);
   lingrad.addColorStop(0, 'rgba(0,255,0,0.5)');
   lingrad.addColorStop(0.33, 'rgba(255,255,0,0.5)');
@@ -2032,7 +2036,7 @@ tests['putImageData() png data 3'] = function(ctx, done){
 
 tests['setLineDash']  = function(ctx){
   ctx.setLineDash([10, 5, 25, 15]);
-  ctx.lineWidth = 17;
+  ctx.lineWidth = 14;
 
   var y=5;
   var line = function(lineDash, color){
@@ -2059,6 +2063,9 @@ tests['setLineDash']  = function(ctx){
     a.push(20);
     return a;
   })(), "orange");
+  line([0, 0], "purple"); // should be full
+  line([0, 0, 3, 0], "orange"); // should be full
+  line([0, 3, 0, 0], "green"); // should be empty
 };
 
 tests['lineDashOffset']  = function(ctx){
