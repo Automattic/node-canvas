@@ -57,13 +57,14 @@ NAN_METHOD(Pattern::New) {
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
     surface = canvas->surface();
-
   // Invalid
   } else {
     return Nan::ThrowTypeError("Image or Canvas expected");
   }
 
-  Pattern *pattern = new Pattern(surface);
+  repeat_type_t repeat = (repeat_type_t)info[1]->Uint32Value();
+
+  Pattern *pattern = new Pattern(surface, repeat);
   pattern->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
@@ -73,8 +74,9 @@ NAN_METHOD(Pattern::New) {
  * Initialize linear gradient.
  */
 
-Pattern::Pattern(cairo_surface_t *surface) {
+Pattern::Pattern(cairo_surface_t *surface, repeat_type_t repeat) {
   _pattern = cairo_pattern_create_for_surface(surface);
+  _repeat = repeat;
 }
 
 /*

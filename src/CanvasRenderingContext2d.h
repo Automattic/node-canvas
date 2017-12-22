@@ -11,6 +11,7 @@
 #include "color.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
+#include "CanvasPattern.h"
 
 #ifdef HAVE_FREETYPE
 #include <ft2build.h>
@@ -41,6 +42,7 @@ typedef struct {
   cairo_pattern_t *strokePattern;
   cairo_pattern_t *fillGradient;
   cairo_pattern_t *strokeGradient;
+  repeat_type_t patternRepeat;
   float globalAlpha;
   short textAlignment;
   short textBaseline;
