@@ -9,6 +9,8 @@
 #include "Image.h"
 #include "CanvasPattern.h"
 
+const cairo_user_data_key_t *pattern_repeat_key;
+
 Nan::Persistent<FunctionTemplate> Pattern::constructor;
 
 /*
@@ -64,7 +66,7 @@ NAN_METHOD(Pattern::New) {
 
   repeat_type_t repeat = (repeat_type_t)info[1]->Uint32Value();
 
-  Pattern *pattern = new Pattern(surface, repeat);
+  Pattern *pattern = new Pattern(surface, &repeat);
   pattern->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
@@ -74,9 +76,9 @@ NAN_METHOD(Pattern::New) {
  * Initialize linear gradient.
  */
 
-Pattern::Pattern(cairo_surface_t *surface, repeat_type_t repeat) {
+Pattern::Pattern(cairo_surface_t *surface, repeat_type_t *repeat) {
   _pattern = cairo_pattern_create_for_surface(surface);
-  _repeat = repeat;
+  cairo_pattern_set_user_data(_pattern, pattern_repeat_key, repeat, nullptr);
 }
 
 /*

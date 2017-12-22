@@ -312,7 +312,8 @@ void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     cairo_set_source(_context, state->fillPattern);
-    if (state->patternRepeat == NO_REPEAT) {
+    repeat_type_t repeat = *static_cast<repeat_type_t *>(cairo_pattern_get_user_data(state->fillPattern, pattern_repeat_key));
+    if (NO_REPEAT == repeat) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
     } else {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
@@ -344,7 +345,8 @@ void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
     cairo_set_source(_context, state->strokePattern);
-    if (state->patternRepeat == NO_REPEAT) {
+    repeat_type_t repeat = *static_cast<repeat_type_t *>(cairo_pattern_get_user_data(state->strokePattern, pattern_repeat_key));
+    if (NO_REPEAT == repeat) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
     } else {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
@@ -1449,7 +1451,6 @@ NAN_METHOD(Context2d::SetFillPattern) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
     context->state->fillPattern = pattern->pattern();
-    context->state->patternRepeat = pattern->repeat();
   } else {
     return Nan::ThrowTypeError("Gradient or Pattern expected");
   }
