@@ -370,7 +370,7 @@ Context2d::setFillRule(v8::Local<v8::Value> value) {
 
 void
 Context2d::fill(bool preserve) {
-  cairo_pattern_t *new_pattern = nullptr;
+  cairo_pattern_t *new_pattern = NULL;
   if (state->fillPattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
@@ -402,7 +402,7 @@ Context2d::fill(bool preserve) {
       ? shadow(cairo_fill)
       : cairo_fill(_context);
   }
-  if (new_pattern != state->fillPattern && new_pattern != nullptr) {
+  if (new_pattern != state->fillPattern && new_pattern != NULL) {
     cairo_pattern_destroy(new_pattern);
   }
 }
@@ -413,7 +413,7 @@ Context2d::fill(bool preserve) {
 
 void
 Context2d::stroke(bool preserve) {
-  cairo_pattern_t *new_pattern = nullptr;
+  cairo_pattern_t *new_pattern = NULL;
   if (state->strokePattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
@@ -444,7 +444,7 @@ Context2d::stroke(bool preserve) {
       ? shadow(cairo_stroke)
       : cairo_stroke(_context);
   }
-  if (new_pattern != state->strokePattern && new_pattern != nullptr) {
+  if (new_pattern != state->strokePattern && new_pattern != NULL) {
     cairo_pattern_destroy(new_pattern);
   }
 }
