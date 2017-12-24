@@ -341,12 +341,10 @@ create_transparent_pattern(cairo_pattern_t *source, float alpha) {
     height);
   cairo_t *mask_context = cairo_create(mask_surface);
   if (cairo_status(mask_context) != CAIRO_STATUS_SUCCESS) {
-    // context creation failed. Return the original source and destroy the surface
     Nan::ThrowError("Failed to initialize context");
   }
   cairo_set_source(mask_context, source);
   cairo_paint_with_alpha(mask_context, alpha);
-  // remove the context, but not the surface since is owned by the pattern
   cairo_destroy(mask_context);
   cairo_pattern_t* newPattern = cairo_pattern_create_for_surface(mask_surface);
   cairo_surface_destroy(mask_surface);
