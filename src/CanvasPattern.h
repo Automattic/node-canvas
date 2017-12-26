@@ -29,12 +29,12 @@ class Pattern: public Nan::ObjectWrap {
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static repeat_type_t get_repeat_type_for_cairo_pattern(cairo_pattern_t *pattern);
-    Pattern(cairo_surface_t *surface, repeat_type_t *repeat);
+    Pattern(cairo_surface_t *surface, repeat_type_t repeat);
     inline cairo_pattern_t *pattern(){ return _pattern; }
   private:
     ~Pattern();
     cairo_pattern_t *_pattern;
-    repeat_type_t *_repeat;
+    repeat_type_t _repeat;
 };
 
 #endif

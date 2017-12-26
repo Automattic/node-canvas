@@ -63,22 +63,27 @@ NAN_METHOD(Pattern::New) {
   } else {
     return Nan::ThrowTypeError("Image or Canvas expected");
   }
-  repeat_type_t *repeat = new repeat_type_t;
-  *repeat = (repeat_type_t)info[1]->Uint32Value();
+  repeat_type_t repeat = REPEAT;
+  if (0 == strcmp("no-repeat", *String::Utf8Value(info[1]))) {
+    repeat = NO_REPEAT;
+  } else if (0 == strcmp("repeat-x", *String::Utf8Value(info[1]))) {
+    repeat = REPEAT_X;
+  } else if (0 == strcmp("repeat-y", *String::Utf8Value(info[1]))) {
+    repeat = REPEAT_Y;
+  }
   Pattern *pattern = new Pattern(surface, repeat);
   pattern->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
 
-
 /*
  * Initialize linear gradient.
  */
 
-Pattern::Pattern(cairo_surface_t *surface, repeat_type_t *repeat) {
+Pattern::Pattern(cairo_surface_t *surface, repeat_type_t repeat) {
   _pattern = cairo_pattern_create_for_surface(surface);
   _repeat = repeat;
-  cairo_pattern_set_user_data(_pattern, pattern_repeat_key, repeat, NULL);
+  cairo_pattern_set_user_data(_pattern, pattern_repeat_key, &_repeat, NULL);
 }
 
 repeat_type_t Pattern::get_repeat_type_for_cairo_pattern(cairo_pattern_t *pattern) {
@@ -92,5 +97,4 @@ repeat_type_t Pattern::get_repeat_type_for_cairo_pattern(cairo_pattern_t *patter
 
 Pattern::~Pattern() {
   cairo_pattern_destroy(_pattern);
-  delete _repeat;
 }
