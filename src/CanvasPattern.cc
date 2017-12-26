@@ -81,6 +81,11 @@ Pattern::Pattern(cairo_surface_t *surface, repeat_type_t *repeat) {
   cairo_pattern_set_user_data(_pattern, pattern_repeat_key, repeat, NULL);
 }
 
+repeat_type_t Pattern::get_repeat_type_for_cairo_pattern(cairo_pattern_t *pattern) {
+  void *ud = cairo_pattern_get_user_data(pattern, pattern_repeat_key);
+  return *reinterpret_cast<repeat_type_t*>(ud);
+}
+
 /*
  * Destroy the pattern.
  */
