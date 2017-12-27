@@ -375,10 +375,12 @@ Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
-      cairo_set_source(_context, new_pattern);
-      if (new_pattern != state->fillPattern) {
-        cairo_pattern_destroy(new_pattern);
+      if (new_pattern == state->fillPattern) {
+        // failed to allocate; Nan::ThrowError has already been called, so return from this fn.
+        return;
       }
+      cairo_set_source(_context, new_pattern);
+      cairo_pattern_destroy(new_pattern);
     } else {
       cairo_set_source(_context, state->fillPattern);
     }
@@ -421,10 +423,12 @@ Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
-      cairo_set_source(_context, new_pattern);
-      if (new_pattern != state->strokePattern) {
-        cairo_pattern_destroy(new_pattern);
+      if (new_pattern == state->strokePattern) {
+        // failed to allocate; Nan::ThrowError has already been called, so return from this fn.
+        return;
       }
+      cairo_set_source(_context, new_pattern);
+      cairo_pattern_destroy(new_pattern);
     } else {
       cairo_set_source(_context, state->strokePattern);
     }
