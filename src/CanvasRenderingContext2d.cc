@@ -312,8 +312,13 @@ void
 Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     cairo_set_source(_context, state->fillPattern);
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
-    // TODO repeat/repeat-x/repeat-y
+    repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->fillPattern);
+    if (NO_REPEAT == repeat) {
+      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
+    } else {
+      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+    }
+    // TODO repeat-x/repeat-y
   } else if (state->fillGradient) {
     cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
     cairo_set_source(_context, state->fillGradient);
@@ -340,7 +345,12 @@ void
 Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
     cairo_set_source(_context, state->strokePattern);
-    cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+    repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->strokePattern);
+    if (NO_REPEAT == repeat) {
+      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
+    } else {
+      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+    }
   } else if (state->strokeGradient) {
     cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
     cairo_set_source(_context, state->strokeGradient);
