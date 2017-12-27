@@ -321,7 +321,7 @@ create_transparent_gradient(cairo_pattern_t *source, float alpha) {
     newGradient = cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1);
   } else {
     Nan::ThrowError("Unexpected gradient type");
-    return source;
+    return NULL;
   }
   for ( i = 0; i < count; i++ ) {
     cairo_pattern_get_color_stop_rgba(source, i, &offset, &r, &g, &b, &a);
@@ -343,7 +343,7 @@ create_transparent_pattern(cairo_pattern_t *source, float alpha) {
   cairo_t *mask_context = cairo_create(mask_surface);
   if (cairo_status(mask_context) != CAIRO_STATUS_SUCCESS) {
     Nan::ThrowError("Failed to initialize context");
-    return source;
+    return NULL;
   }
   cairo_set_source(mask_context, source);
   cairo_paint_with_alpha(mask_context, alpha);
@@ -375,7 +375,7 @@ Context2d::fill(bool preserve) {
   if (state->fillPattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
-      if (new_pattern == state->fillPattern) {
+      if (new_pattern == NULL) {
         // failed to allocate; Nan::ThrowError has already been called, so return from this fn.
         return;
       }
@@ -391,14 +391,15 @@ Context2d::fill(bool preserve) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
     }
   } else if (state->fillGradient) {
-    cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_gradient(state->fillGradient, state->globalAlpha);
+      if (new_pattern == NULL) {
+        // failed to recognize gradient; Nan::ThrowError has already been called, so return from this fn.
+        return;
+      }
       cairo_pattern_set_filter(new_pattern, state->patternQuality);
       cairo_set_source(_context, new_pattern);
-      if (new_pattern != state->fillGradient) {
-        cairo_pattern_destroy(new_pattern);
-      }
+      cairo_pattern_destroy(new_pattern);
     } else {
       cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
       cairo_set_source(_context, state->fillGradient);
@@ -427,7 +428,7 @@ Context2d::stroke(bool preserve) {
   if (state->strokePattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
-      if (new_pattern == state->strokePattern) {
+      if (new_pattern == NULL) {
         // failed to allocate; Nan::ThrowError has already been called, so return from this fn.
         return;
       }
@@ -445,11 +446,13 @@ Context2d::stroke(bool preserve) {
   } else if (state->strokeGradient) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_gradient(state->strokeGradient, state->globalAlpha);
+      if (new_pattern == NULL) {
+        // failed to recognize gradient; Nan::ThrowError has already been called, so return from this fn.
+        return;
+      }
       cairo_pattern_set_filter(new_pattern, state->patternQuality);
       cairo_set_source(_context, new_pattern);
-      if (new_pattern != state->strokeGradient) {
-        cairo_pattern_destroy(new_pattern);
-      }
+      cairo_pattern_destroy(new_pattern);
     } else {
       cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
       cairo_set_source(_context, state->strokeGradient);
