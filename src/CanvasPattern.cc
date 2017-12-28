@@ -77,7 +77,7 @@ NAN_METHOD(Pattern::New) {
 }
 
 /*
- * Initialize linear gradient.
+ * Initialize pattern.
  */
 
 Pattern::Pattern(cairo_surface_t *surface, repeat_type_t repeat) {
