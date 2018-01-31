@@ -13,7 +13,8 @@
         'with_jpeg%': '<!(./util/has_lib.sh jpeg)',
         'with_gif%': '<!(./util/has_lib.sh gif)',
         'with_pango%': '<!(./util/has_lib.sh pango)',
-        'with_freetype%': '<!(./util/has_lib.sh freetype)'
+        'with_freetype%': '<!(./util/has_lib.sh freetype)',
+        'with_rsvg%': '<!(node ./util/has_lib.js rsvg)'
       }
     }]
   ],
@@ -41,14 +42,18 @@
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
+        'src/Backend.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
         'src/CanvasRenderingContext2d.cc',
+        'src/SvgBackend.cc',
+        'src/closure.cc',
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
-        'src/init.cc'
+        'src/init.cc',
+        'src/toBuffer.cc'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -160,6 +165,25 @@
             }, {
               'libraries': [
                 '-lgif'
+              ]
+            }]
+          ]
+        }],
+        ['with_rsvg=="true"', {
+          'defines': [
+            'HAVE_RSVG'
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'libraries': [
+                '-l<(GTK_Root)/lib/librsvg-2-2.lib'
+              ]
+            }, {
+              'include_dirs': [
+                '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+              ],
+              'libraries': [
+                '<!@(pkg-config librsvg-2.0 --libs)'
               ]
             }]
           ]

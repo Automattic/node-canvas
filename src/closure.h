@@ -18,6 +18,8 @@
 
 #include <nan.h>
 
+#include "Canvas.h"
+
 /*
  * PNG stream closure.
  */
@@ -32,6 +34,9 @@ typedef struct {
   cairo_status_t status;
   uint32_t compression_level;
   uint32_t filter;
+  uint8_t *palette;
+  size_t nPaletteColors;
+  uint8_t backgroundIndex;
 } closure_t;
 
 /*
@@ -39,15 +44,7 @@ typedef struct {
  */
 
 cairo_status_t
-closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level, unsigned int filter) {
-  closure->len = 0;
-  closure->canvas = canvas;
-  closure->data = (uint8_t *) malloc(closure->max_len = PAGE_SIZE);
-  if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
-  closure->compression_level = compression_level;
-  closure->filter = filter;
-  return CAIRO_STATUS_SUCCESS;
-}
+closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level, unsigned int filter);
 
 /*
  * Free the given closure's data,
@@ -55,11 +52,6 @@ closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level,
  */
 
 void
-closure_destroy(closure_t *closure) {
-  if (closure->len) {
-    free(closure->data);
-    Nan::AdjustExternalMemory(-((intptr_t) closure->max_len));
-  }
-}
+closure_destroy(closure_t *closure);
 
 #endif /* __NODE_CLOSURE_H__ */
