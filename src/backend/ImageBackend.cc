@@ -25,7 +25,7 @@ int32_t ImageBackend::approxBytesPerPixel() {
   case CAIRO_FORMAT_RGB30:
     return 3;
 #endif
-#ifdef CAIRO_FORMAT_RGB16_565
+#if ((CAIRO_VERSION_MAJOR > 1) || CAIRO_VERSION_MAJOR == 1 && CAIRO_VERSION_MINOR >= 10)
   case CAIRO_FORMAT_RGB16_565:
     return 2;
 #endif
