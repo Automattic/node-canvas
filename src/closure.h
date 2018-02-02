@@ -9,7 +9,7 @@
 #define __NODE_CLOSURE_H__
 
 #ifdef __unix__
-  #include<sys/user.h>
+  #include <stdint.h>
 #endif
 
 #ifndef PAGE_SIZE
