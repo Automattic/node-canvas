@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "closure.h"
+#include "cairo_version_macro.h"
 
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)
 #define likely(expr) (__builtin_expect (!!(expr), 1))
@@ -63,7 +64,7 @@ static void canvas_unpremultiply_data(png_structp png, png_row_infop row_info, p
     }
 }
 
-#if ((CAIRO_VERSION_MAJOR > 1) || CAIRO_VERSION_MAJOR == 1 && CAIRO_VERSION_MINOR >= 10)
+#if CAIRO_VERSION_AT_LEAST(1, 10, 0)
 /* Converts RGB16_565 format data to RGBA32 */
 static void canvas_convert_565_to_888(png_structp png, png_row_infop row_info, png_bytep data) {
   // Loop in reverse to unpack in-place.
@@ -195,7 +196,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         png_set_packswap(png);
 #endif
         break;
-#if ((CAIRO_VERSION_MAJOR > 1) || CAIRO_VERSION_MAJOR == 1 && CAIRO_VERSION_MINOR >= 10)
+#if CAIRO_VERSION_AT_LEAST(1, 10, 0)
     case CAIRO_FORMAT_RGB16_565:
         bpc = 8; // 565 gets upconverted to 888
         png_color_type = PNG_COLOR_TYPE_RGB;
@@ -251,7 +252,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     png_write_info(png, info);
     if (png_color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
         png_set_write_user_transform_fn(png, canvas_unpremultiply_data);
-#if ((CAIRO_VERSION_MAJOR > 1) || CAIRO_VERSION_MAJOR == 1 && CAIRO_VERSION_MINOR >= 10)
+#if CAIRO_VERSION_AT_LEAST(1, 10, 0)
     } else if (format == CAIRO_FORMAT_RGB16_565) {
         png_set_write_user_transform_fn(png, canvas_convert_565_to_888);
 #endif
