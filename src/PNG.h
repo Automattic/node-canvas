@@ -193,10 +193,12 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         png_set_packswap(png);
 #endif
         break;
+#ifdef CAIRO_FORMAT_RGB16_565
     case CAIRO_FORMAT_RGB16_565:
         bpc = 8; // 565 gets upconverted to 888
         png_color_type = PNG_COLOR_TYPE_RGB;
         break;
+#endif
     case CAIRO_FORMAT_INVALID:
     default:
         status = CAIRO_STATUS_INVALID_FORMAT;
@@ -247,8 +249,10 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     png_write_info(png, info);
     if (png_color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
         png_set_write_user_transform_fn(png, canvas_unpremultiply_data);
+#ifdef CAIRO_FORMAT_RGB16_565
     } else if (format == CAIRO_FORMAT_RGB16_565) {
         png_set_write_user_transform_fn(png, canvas_convert_565_to_888);
+#endif
     } else if (png_color_type == PNG_COLOR_TYPE_RGB) {
         png_set_write_user_transform_fn(png, canvas_convert_data_to_bytes);
         png_set_filler(png, 0, PNG_FILLER_AFTER);
