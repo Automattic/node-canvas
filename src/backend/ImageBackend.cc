@@ -1,5 +1,4 @@
 #include "ImageBackend.h"
-#include "../cairo_version_macro.h"
 
 using namespace v8;
 
@@ -26,7 +25,7 @@ int32_t ImageBackend::approxBytesPerPixel() {
   case CAIRO_FORMAT_RGB30:
     return 3;
 #endif
-#if CAIRO_VERSION_AT_LEAST(1, 10, 0)
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODED(1, 10, 0)
   case CAIRO_FORMAT_RGB16_565:
     return 2;
 #endif
