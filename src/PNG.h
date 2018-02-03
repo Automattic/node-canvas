@@ -63,7 +63,7 @@ static void canvas_unpremultiply_data(png_structp png, png_row_infop row_info, p
     }
 }
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODED(1, 10, 0)
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
 /* Converts RGB16_565 format data to RGBA32 */
 static void canvas_convert_565_to_888(png_structp png, png_row_infop row_info, png_bytep data) {
   // Loop in reverse to unpack in-place.
@@ -195,7 +195,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         png_set_packswap(png);
 #endif
         break;
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODED(1, 10, 0)
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
     case CAIRO_FORMAT_RGB16_565:
         bpc = 8; // 565 gets upconverted to 888
         png_color_type = PNG_COLOR_TYPE_RGB;
@@ -251,7 +251,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     png_write_info(png, info);
     if (png_color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
         png_set_write_user_transform_fn(png, canvas_unpremultiply_data);
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODED(1, 10, 0)
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
     } else if (format == CAIRO_FORMAT_RGB16_565) {
         png_set_write_user_transform_fn(png, canvas_convert_565_to_888);
 #endif
