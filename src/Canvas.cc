@@ -565,15 +565,19 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
     return Nan::ThrowTypeError("quality setting required");
   if (!info[2]->IsBoolean())
     return Nan::ThrowTypeError("progressive setting required");
-  if (!info[3]->IsFunction())
+  if (!info[3]->IsNumber())
+    return Nan::ThrowTypeError("chromaHSampFactor required");
+  if (!info[4]->IsNumber())
+    return Nan::ThrowTypeError("chromaVSampFactor required");
+  if (!info[5]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
 
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
-  closure.fn = Local<Function>::Cast(info[3]);
+  closure.fn = Local<Function>::Cast(info[5]);
 
   Nan::TryCatch try_catch;
-  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), &closure);
+  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), info[3]->NumberValue(), info[4]->NumberValue(), &closure);
 
   if (try_catch.HasCaught()) {
     try_catch.ReThrow();
