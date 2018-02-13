@@ -39,7 +39,7 @@ class Backend : public Nan::ObjectWrap
     virtual cairo_surface_t* recreateSurface();
 
     cairo_surface_t* getSurface();
-    void             destroySurface();
+    virtual void destroySurface();
 
     string getName();
 

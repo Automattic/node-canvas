@@ -28,6 +28,7 @@
 #include "backend/ImageBackend.h"
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
+#include "backend/FramebufferBackend.h"
 
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
@@ -93,21 +94,30 @@ NAN_METHOD(Canvas::New) {
     if (info[1]->IsNumber()) height = info[1]->Uint32Value();
 
     if (info[2]->IsString()) {
-      if (0 == strcmp("pdf", *String::Utf8Value(info[2])))
+      if (0 == strcmp("pdf", *String::Utf8Value(info[2]))) {
         backend = new PdfBackend(width, height);
-      else if (0 == strcmp("svg", *String::Utf8Value(info[2])))
+      } else if (0 == strcmp("svg", *String::Utf8Value(info[2]))) {
         backend = new SvgBackend(width, height);
-      else
+      } else if (0 == strcmp("framebuffer", *String::Utf8Value(info[2]))) {
+        if (info[3]->IsString()) {
+          bool doubleBuffer = false;
+          if (info[4]->IsBoolean()) {
+            doubleBuffer = info[4]->IsTrue();
+          }
+          backend = new FramebufferBackend(*String::Utf8Value(info[3]), doubleBuffer);
+        } else {
+          Nan::ThrowError("Framebuffer device path no specified");
+        }
+      } else {
         backend = new ImageBackend(width, height);
-    }
-    else
+      }
+    } else {
       backend = new ImageBackend(width, height);
-  }
-  else if (info[0]->IsObject()) {
+    }
+  } else if (info[0]->IsObject()) {
     // TODO need to check if this is actually an instance of a Backend to avoid a fault
     backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
-  }
-  else {
+  } else {
     backend = new ImageBackend(0, 0);
   }
 
