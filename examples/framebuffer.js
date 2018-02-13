@@ -1,5 +1,5 @@
 var Canvas = require('..')
-var framebuffer = new Canvas.backends.FramebufferBackend("/dev/fb0");
+var framebuffer = new Canvas.backends.FramebufferBackend('/dev/fb0')
 
 var canvas = new Canvas.Canvas(framebuffer)
 var ctx = canvas.getContext('2d')
