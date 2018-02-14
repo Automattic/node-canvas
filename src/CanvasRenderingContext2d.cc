@@ -153,9 +153,8 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
 Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
-  _context = cairo_create(canvas->surface());
+  _context = canvas->createCairoContext();
   _layout = pango_cairo_create_layout(_context);
-  cairo_set_line_width(_context, 1);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
   state->shadowOffsetX = state->shadowOffsetY = 0;

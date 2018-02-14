@@ -71,6 +71,7 @@ class Canvas: public Nan::ObjectWrap {
 
     inline Backend* backend() { return _backend; }
     inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+    cairo_t* createCairoContext();
 
     inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     inline int stride(){ return cairo_image_surface_get_stride(surface()); }

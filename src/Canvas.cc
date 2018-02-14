@@ -799,9 +799,20 @@ Canvas::resurface(Local<Object> canvas) {
 	if (!context->IsUndefined()) {
 		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
 		cairo_t *prev = context2d->context();
-		context2d->setContext(cairo_create(surface()));
+		context2d->setContext(createCairoContext());
 		cairo_destroy(prev);
 	}
+}
+
+/**
+ * Wrapper around cairo_create()
+ * (do not call cairo_create directly, call this instead)
+ */
+cairo_t*
+Canvas::createCairoContext() {
+  cairo_t* ret = cairo_create(surface());
+  cairo_set_line_width(ret, 1); // Cairo defaults to 2
+  return ret;
 }
 
 /*
