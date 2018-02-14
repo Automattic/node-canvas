@@ -308,11 +308,13 @@ describe('Canvas', function () {
   });
 
   it('Canvas#{width,height}=', function () {
-    var canvas = createCanvas(100, 200);
+    var context, canvas = createCanvas(100, 200);
+
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
 
     canvas = createCanvas();
+    context = canvas.getContext("2d");
     assert.equal(0, canvas.width);
     assert.equal(0, canvas.height);
 
@@ -320,6 +322,7 @@ describe('Canvas', function () {
     canvas.height = 50;
     assert.equal(50, canvas.width);
     assert.equal(50, canvas.height);
+    assert.equal(1, context.lineWidth); // #1095
   });
 
   it('Canvas#stride', function() {
