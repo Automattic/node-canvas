@@ -2372,3 +2372,32 @@ tests['measureText()'] = function (ctx) {
   ctx.rotate(Math.PI / 8)
   drawWithBBox('Alphabet', 50, 100)
 }
+
+tests['image sampling (#1084)'] = function (ctx, done) {
+  let loaded1, loaded2
+  const img1 = new Image()
+  const img2 = new Image()
+
+  img1.onload = () => {
+    loaded1 = true
+    ctx.drawImage(img1, -170 - 100, -203, 352, 352)
+    if (loaded2) done()
+  }
+
+  img1.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+
+  img2.onload = () => {
+    loaded2 = true
+    ctx.drawImage(img2, 182 - 100, -203, 352, 352)
+    if (loaded1) done()
+  }
+
+  img2.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+
+  img1.src = imageSrc('halved-1.jpeg')
+  img2.src = imageSrc('halved-2.jpeg')
+}

@@ -1190,6 +1190,7 @@ NAN_METHOD(Context2d::DrawImage) {
   // Paint
   cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
+  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_REFLECT);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
