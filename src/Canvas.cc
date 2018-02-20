@@ -104,8 +104,11 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    // TODO need to check if this is actually an instance of a Backend to avoid a fault
-    backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    v8::Local<v8::Object> arg = info[0]->ToObject();
+    if(arg.IsEmpty() || arg->InternalFieldCount() == 0){
+      return Nan::ThrowTypeError("Invalid arguments");
+    }
+    backend = Nan::ObjectWrap::Unwrap<Backend>(arg);
   }
   else {
     backend = new ImageBackend(0, 0);
