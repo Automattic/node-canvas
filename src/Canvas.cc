@@ -104,11 +104,13 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    v8::Local<v8::Object> arg = info[0]->ToObject();
-    if(arg.IsEmpty() || arg->InternalFieldCount() == 0){
+    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    }else{
       return Nan::ThrowTypeError("Invalid arguments");
     }
-    backend = Nan::ObjectWrap::Unwrap<Backend>(arg);
   }
   else {
     backend = new ImageBackend(0, 0);
