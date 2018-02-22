@@ -104,8 +104,13 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    // TODO need to check if this is actually an instance of a Backend to avoid a fault
-    backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    }else{
+      return Nan::ThrowTypeError("Invalid arguments");
+    }
   }
   else {
     backend = new ImageBackend(0, 0);
