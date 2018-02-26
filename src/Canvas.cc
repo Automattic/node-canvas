@@ -115,8 +115,13 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
     }
   } else if (info[0]->IsObject()) {
-    // TODO need to check if this is actually an instance of a Backend to avoid a fault
-    backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    } else {
+      return Nan::ThrowTypeError("Invalid arguments");
+    }
   } else {
     backend = new ImageBackend(0, 0);
   }
@@ -810,9 +815,20 @@ Canvas::resurface(Local<Object> canvas) {
 	if (!context->IsUndefined()) {
 		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
 		cairo_t *prev = context2d->context();
-		context2d->setContext(cairo_create(surface()));
+		context2d->setContext(createCairoContext());
 		cairo_destroy(prev);
 	}
+}
+
+/**
+ * Wrapper around cairo_create()
+ * (do not call cairo_create directly, call this instead)
+ */
+cairo_t*
+Canvas::createCairoContext() {
+  cairo_t* ret = cairo_create(surface());
+  cairo_set_line_width(ret, 1); // Cairo defaults to 2
+  return ret;
 }
 
 /*
