@@ -212,6 +212,7 @@ get_pango_font_description(unsigned char* filepath) {
       pango_font_description_set_style(desc, get_pango_style(face->style_flags));
 
       FT_Done_Face(face);
+      FT_Done_FreeType(library);
 
       return desc;
     }
