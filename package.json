@@ -3,6 +3,7 @@
   "description": "Canvas graphics API backed by Cairo",
   "version": "2.0.0-alpha.9",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
+  "main": "index.js",
   "browser": "browser.js",
   "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net>",
@@ -27,9 +28,17 @@
     "pretest": "node-gyp build",
     "test": "standard examples/*.js test/server.js test/public/*.js benchmark/run.js util/has_lib.js browser.js index.js && mocha test/*.test.js",
     "pretest-server": "node-gyp build",
-    "test-server": "node test/server.js"
+    "test-server": "node test/server.js",
+    "install": "node-pre-gyp install"
+  },
+  "binary": {
+    "module_name": "canvas-prebuilt",
+    "module_path": "build/Release",
+    "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
+    "remote_path": "v{version}"
   },
   "dependencies": {
+    "node-pre-gyp": "^0.6.36",
     "nan": "^2.4.0"
   },
   "devDependencies": {

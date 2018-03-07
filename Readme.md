@@ -28,9 +28,13 @@ Alpha versions of 2.0 can be installed using `npm install canvas@next`.
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source`.
 
 Currently the minimum version of node required is __4.0.0__
+
+### Compiling
+
+If you don't have a supported OS or processor architecture, or you use `--build-from-source`, the module will be compiled on your system. Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
 You can quickly install the dependencies by using the command for your OS:
 
