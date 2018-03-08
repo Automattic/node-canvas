@@ -29,7 +29,7 @@
     "test": "standard examples/*.js test/server.js test/public/*.js benchmark/run.js util/has_lib.js browser.js index.js && mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
-    "install": "node-pre-gyp install"
+    "install": "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
     "module_name": "canvas-prebuilt",
