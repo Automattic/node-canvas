@@ -1,10 +1,106 @@
-Unreleased / patch
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/) and this
+project adheres to [Semantic Versioning](http://semver.org/).
+
+2.0.0 (unreleased -- encompasses all alpha versions)
 ==================
 
+### Breaking
+ * Drop support for Node.js <4.x
+ * Remove sync streams (bc53059). Note that all or most streams are still
+   synchronous to some degree; this change just removed `syncPNGStream` and
+   friends.
+ * Pango is now *required* on all platforms (7716ae4).
+
+### Fixed
+ * Prevent segfaults caused by loading invalid fonts (#1105)
+ * Fix memory leak in font loading
  * Port has_lib.sh to javascript (#872)
+ * Correctly sample the edge of images when scaling (#1084)
+ * Detect CentOS libjpeg path (b180ea5)
+ * Improve measureText accuracy (2bbfec5)
+ * Fix memory leak when image callbacks reference the image (1f4b646)
+ * Fix putImageData(data, negative, negative) (2102e25)
+ * Fix SVG recognition when loading from buffer (77749e6)
+ * Re-rasterize SVG when drawing to a context and dimensions changed (79bf232)
+
+### Added
+ * Prebuilds (#992)
  * Support canvas.getContext("2d", {alpha: boolean}) and
    canvas.getContext("2d", {pixelFormat: "..."})
  * Support indexed PNG encoding.
+ * Support `currentTransform` (d6714ee)
+ * Export `CanvasGradient` (6a4c0ab)
+ * Support #RGBA , #RRGGBBAA hex colors (10a82ec)
+ * Support maxWidth arg for fill/strokeText (175b40d)
+ * Support image.naturalWidth/Height (a5915f8)
+ * Render SVG img elements when librsvg is available (1baf00e)
+ * Support ellipse method (4d4a726)
+ * Browser-compatible API (6a29a23)
+ * Support for jpeg on Windows (42e9a74)
+ * Support for backends (1a6dffe)
+
+1.6.x (unreleased)
+==================
+### Fixed
+ * Make setLineDash able to handle full zeroed dashes (b8cf1d7)
+ * Fix reading fillStyle after setting it from gradient to color (a84b2bc)
+
+### Added
+ * Support for pattern repeat and no-repeat (#1066)
+ * Support for context globalAlpha for gradients and patterns (#1064)
+
+1.6.9 / 2017-12-20
+==================
+### Fixed
+ * Fix some instances of crashes (7c9ec58, 8b792c3)
+ * Fix node 0.x compatibility (dca33f7)
+
+1.6.8 / 2017-12-12
+==================
+### Fixed
+ * Faster, more compliant parseFont (4625efa, 37cd969)
+
+1.6.7 / 2017-09-08
+==================
+### Fixed
+ * Minimal backport of #985 (rotated text baselines) (c19edb8)
+
+1.6.6 / 2017-05-03
+==================
+### Fixed
+ * Use .node extension for requiring native module so webpack works (1b05599)
+ * Correct text baseline calculation (#1037)
+
+1.6.5 / 2017-03-18
+==================
+### Changed
+ * Parse font using parse-css-font and units-css (d316416)
+
+1.6.4 / 2017-02-26
+==================
+### Fixed
+ * Make sure Canvas#toDataURL is always async if callback is passed (8586d72)
+
+1.6.3 / 2017-02-14
+==================
+### Fixed
+ * Fix isnan() and isinf() on clang (5941e13)
+
+1.6.2 / 2016-10-30
+==================
+### Fixed
+ * Fix deprecation warnings (c264879)
+ * Bump nan (e4aea20)
+
+1.6.1 / 2016-10-23
+==================
+
+### Fixed
+ * Make has_lib.sh work on BSD OSes (1727d66)
 
 1.6.0 / 2016-10-16
 ==================
