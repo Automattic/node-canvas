@@ -48,8 +48,8 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   SetProtoAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource, ctor);
   SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
+  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
 #if CAIRO_VERSION_MINOR >= 10
