@@ -304,8 +304,8 @@ ctx.antialias = 'none';
 
 ## PDF Support
 
-  Basic PDF support was added in 0.11.0. Make sure to install cairo with `--enable-pdf=yes` for the PDF backend. node-canvas must know that it is creating
-  a PDF on initialization, using the "pdf" string:
+  Basic PDF support was added in 0.11.0. If you are building cairo from source, be sure to use `--enable-pdf=yes` for the PDF backend.
+  node-canvas must know that it is creating a PDF on initialization, using the "pdf" string:
 
 ```js
 var canvas = createCanvas(200, 500, 'pdf');
