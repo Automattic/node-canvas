@@ -5,10 +5,12 @@
 
 var Canvas = require('../')
   , Image = Canvas.Image
-  , assert = require('assert');
+  , assert = require('assert')
+  , fs = require('fs');
 
 var png_checkers = __dirname + '/fixtures/checkers.png';
 var png_clock = __dirname + '/fixtures/clock.png';
+var jpg_chrome = __dirname + '/fixtures/chrome.jpg'
 
 describe('Image', function () {
   it('should require new', function () {
@@ -206,4 +208,35 @@ describe('Image', function () {
     assert.equal(img.src, png_clock + 's3');
     assert.equal(onerrorCalled, 0);
   });
-});
+
+  it('does not crash on invalid images', function () {
+    function tryImage (src) {
+      var img = new Image()
+      img.src = src
+      // if we came this far we didn't crash!
+    }
+
+    function withIncreasedByte (source, index) {
+      var copy = source.slice(0)
+
+      copy[index] += 1
+
+      return copy
+    }
+
+    var source = fs.readFileSync(jpg_chrome)
+
+    tryImage(withIncreasedByte(source, 0))
+    tryImage(withIncreasedByte(source, 1))
+    tryImage(withIncreasedByte(source, 1060))
+    tryImage(withIncreasedByte(source, 1061))
+    tryImage(withIncreasedByte(source, 1062))
+    tryImage(withIncreasedByte(source, 1063))
+    tryImage(withIncreasedByte(source, 1064))
+    tryImage(withIncreasedByte(source, 1065))
+    tryImage(withIncreasedByte(source, 1066))
+    tryImage(withIncreasedByte(source, 1067))
+    tryImage(withIncreasedByte(source, 1068))
+    tryImage(withIncreasedByte(source, 1069))
+  })
+})
