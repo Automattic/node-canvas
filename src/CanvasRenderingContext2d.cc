@@ -1890,8 +1890,7 @@ NAN_METHOD(Context2d::Rotate) {
     return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_rotate(context->context()
-    , info[0]->IsNumber() ? info[0]->NumberValue() : 0);
+  cairo_rotate(context->context(), angle);
 }
 
 /*
