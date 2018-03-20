@@ -1498,7 +1498,7 @@ describe('Canvas', function () {
 
     // Number
     ctx.resetTransform();
-    testAngle(1.23);
+    testAngle(1.23, 1.23);
 
     // String
     ctx.resetTransform();
@@ -1513,7 +1513,11 @@ describe('Canvas', function () {
     testAngle([7.8], 7.8);
 
     // Object
-    var obj = {[Symbol.toPrimitive](){ return 0.89; }};
+    var obj = Object.create(null);
+    if (+process.version.match(/\d+/) >= 6)
+      obj[Symbol.toPrimitive] = function () { return 0.89; };
+    else
+      obj.valueOf = function () { return 0.89; };
     ctx.resetTransform();
     testAngle(obj, 0.89);
 
@@ -1527,7 +1531,7 @@ describe('Canvas', function () {
     ctx.rotate(0.94);
     testAngle(-Infinity, 0.94);
 
-    function testAngle(angle, expected = angle){
+    function testAngle(angle, expected){
       ctx.rotate(angle);
 
       var mat = ctx.currentTransform;
