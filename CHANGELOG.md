@@ -26,6 +26,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Fix putImageData(data, negative, negative) (2102e25)
  * Fix SVG recognition when loading from buffer (77749e6)
  * Re-rasterize SVG when drawing to a context and dimensions changed (79bf232)
+ * Prevent JPEG errors from crashing process (#1124)
 
 ### Added
  * Prebuilds (#992)
