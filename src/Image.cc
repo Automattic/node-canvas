@@ -4,13 +4,14 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <node_buffer.h>
+
 #include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <node_buffer.h>
 
 #ifdef HAVE_GIF
 typedef struct {
@@ -21,7 +22,7 @@ typedef struct {
 #endif
 
 #ifdef HAVE_JPEG
-#include <setjmp.h>
+#include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
   jmp_buf setjmp_buffer;

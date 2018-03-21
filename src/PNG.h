@@ -1,10 +1,12 @@
 #ifndef _CANVAS_PNG_H
 #define _CANVAS_PNG_H
+
+#include <cstdlib>
+#include <cstring>
 #include <png.h>
 #include <pngconf.h>
 #include <cairo.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include "closure.h"
 
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)

@@ -5,7 +5,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include <stdio.h>
+#include <cstdio>
 #include <pango/pango.h>
 #include <glib.h>
 
