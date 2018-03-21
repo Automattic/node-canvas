@@ -6,7 +6,7 @@
 //
 
 #include <cmath>
-#include <stdlib.h>
+#include <cstdlib>
 #include <limits>
 #include <vector>
 #include <algorithm>
