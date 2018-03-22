@@ -1492,4 +1492,57 @@ describe('Canvas', function () {
     assert.ok(ctx.isPointInPath(3, 3, 'evenodd'));
   });
 
+  it('Context2d#rotate(angle)', function () {
+    var canvas = createCanvas(4, 4);
+    var ctx = canvas.getContext('2d');
+
+    // Number
+    ctx.resetTransform();
+    testAngle(1.23, 1.23);
+
+    // String
+    ctx.resetTransform();
+    testAngle('-4.56e-1', -0.456);
+
+    // Boolean
+    ctx.resetTransform();
+    testAngle(true, 1);
+
+    // Array
+    ctx.resetTransform();
+    testAngle([7.8], 7.8);
+
+    // Object
+    var obj = Object.create(null);
+    if (+process.version.match(/\d+/) >= 6)
+      obj[Symbol.toPrimitive] = function () { return 0.89; };
+    else
+      obj.valueOf = function () { return 0.89; };
+    ctx.resetTransform();
+    testAngle(obj, 0.89);
+
+    // NaN
+    ctx.resetTransform();
+    ctx.rotate(0.91);
+    testAngle(NaN, 0.91);
+
+    // Infinite value
+    ctx.resetTransform();
+    ctx.rotate(0.94);
+    testAngle(-Infinity, 0.94);
+
+    function testAngle(angle, expected){
+      ctx.rotate(angle);
+
+      var mat = ctx.currentTransform;
+      var sin = Math.sin(expected);
+      var cos = Math.cos(expected);
+
+      assert.strictEqual(mat.m11, cos);
+      assert.strictEqual(mat.m12, sin);
+      assert.strictEqual(mat.m21, -sin);
+      assert.strictEqual(mat.m22, cos);
+    }
+  });
+
 });
