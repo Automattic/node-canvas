@@ -70,6 +70,31 @@ enum {
    pango_layout_get_font_description(LAYOUT), \
    pango_context_get_language(pango_layout_get_context(LAYOUT)))
 
+inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int argsNum, int offset = 0){
+  int argsEnd = offset + argsNum;
+  bool areArgsValid = true;
+
+  for (int i = offset; i < argsEnd; i++) {
+    double val = info[i]->NumberValue();
+
+    if (areArgsValid) {
+      if (val != val ||
+        val == std::numeric_limits<double>::infinity() ||
+        val == -std::numeric_limits<double>::infinity()) {
+        // We should continue the loop instead of returning immediately
+        // See https://html.spec.whatwg.org/multipage/canvas.html
+
+        areArgsValid = false;
+        continue;
+      }
+
+      args[i - offset] = val;
+    }
+  }
+
+  return areArgsValid;
+}
+
 /*
  * Initialize Context2d.
  */
@@ -1073,7 +1098,10 @@ NAN_METHOD(Context2d::DrawImage) {
     , sy = 0
     , sw = 0
     , sh = 0
-    , dx, dy, dw, dh;
+    , dx = 0
+    , dy = 0
+    , dw = 0
+    , dh = 0;
 
   cairo_surface_t *surface;
 
@@ -2015,7 +2043,7 @@ get_text_scale(Context2d *context, char *str, double maxWidth) {
 
 NAN_METHOD(Context2d::FillText) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
-  double args[2];
+  double args[3];
   if(!checkArgs(info, args, argsNum, 1))
     return;
 
@@ -2050,7 +2078,7 @@ NAN_METHOD(Context2d::FillText) {
 
 NAN_METHOD(Context2d::StrokeText) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
-  double args[2];
+  double args[3];
   if(!checkArgs(info, args, argsNum, 1))
     return;
 
@@ -2638,27 +2666,4 @@ NAN_METHOD(Context2d::Ellipse) {
       endAngle);
   }
   cairo_set_matrix(ctx, &save_matrix);
-}
-
-bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int argsNum, int offset){
-  int argsEnd = offset + argsNum;
-  bool areArgsValid = true;
-
-  for (int i = offset; i < argsEnd; i++) {
-    double val = info[i]->NumberValue();
-
-    if (areArgsValid) {
-      if (isnan(val) || isinf(val)) {
-        // We should continue the loop instead of returning immediately
-        // See https://html.spec.whatwg.org/multipage/canvas.html
-
-        areArgsValid = false;
-        continue;
-      }
-
-      args[i - offset] = val;
-    }
-  }
-
-  return areArgsValid;
 }

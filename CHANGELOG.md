@@ -27,6 +27,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Fix SVG recognition when loading from buffer (77749e6)
  * Re-rasterize SVG when drawing to a context and dimensions changed (79bf232)
  * Prevent JPEG errors from crashing process (#1124)
+ * Improve handling of invalid arguments (#1129)
 
 ### Added
  * Prebuilds (#992)

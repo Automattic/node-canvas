@@ -63,7 +63,6 @@ typedef struct {
 } float_rectangle;
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
-bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int argsNum, int offset = 0);
 
 class Context2d: public Nan::ObjectWrap {
   public:
