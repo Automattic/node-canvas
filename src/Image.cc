@@ -558,6 +558,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = gif->SWidth;
   height = naturalHeight = gif->SHeight;
 
+  /* Cairo limit:
+   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+   */
+  if (width > 32767 || height > 32767) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_INVALID_SIZE;
+  }
+
   uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
