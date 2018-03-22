@@ -2647,8 +2647,11 @@ bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int a
   for (int i = offset; i < argsEnd; i++) {
     double val = info[i]->NumberValue();
 
-    if (areArgsValid){
-      if (isnan(val) || isinf(val)){
+    if (areArgsValid) {
+      if (isnan(val) || isinf(val)) {
+        // We should continue the loop instead of returning immediately
+        // See https://html.spec.whatwg.org/multipage/canvas.html
+
         areArgsValid = false;
         continue;
       }
