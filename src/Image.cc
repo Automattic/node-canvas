@@ -558,6 +558,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = gif->SWidth;
   height = naturalHeight = gif->SHeight;
 
+  /* Cairo limit:
+   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+   */
+  if (width > 32767 || height > 32767) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_INVALID_SIZE;
+  }
+
   uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
@@ -570,6 +578,11 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   ColorMapObject *colormap = img->ColorMap
     ? img->ColorMap
     : gif->SColorMap;
+
+  if (colormap == nullptr) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_READ_ERROR;
+  }
 
   int bgColor = 0;
   int alphaColor = get_gif_transparent_color(gif, i);
@@ -597,22 +610,25 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       int bottom = img->Top + img->Height;
       int right = img->Left + img->Width;
 
+      uint32_t bgPixel =
+        ((bgColor == alphaColor) ? 0 : 255) << 24
+        | colormap->Colors[bgColor].Red << 16
+        | colormap->Colors[bgColor].Green << 8
+        | colormap->Colors[bgColor].Blue;
+
       for (int y = 0; y < naturalHeight; ++y) {
         for (int x = 0; x < naturalWidth; ++x) {
           if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
-            *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
-              | colormap->Colors[bgColor].Red << 16
-              | colormap->Colors[bgColor].Green << 8
-              | colormap->Colors[bgColor].Blue;
+            *dst_data = bgPixel;
+            dst_data++;
           } else {
             *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[*src_data].Red << 16
               | colormap->Colors[*src_data].Green << 8
               | colormap->Colors[*src_data].Blue;
+            dst_data++;
+            src_data++;
           }
-
-          dst_data++;
-          src_data++;
         }
       }
     }
