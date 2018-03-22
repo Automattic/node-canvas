@@ -2660,5 +2660,5 @@ bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int a
     }
   }
 
-  return true;
+  return areArgsValid;
 }
