@@ -620,15 +620,15 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
         for (int x = 0; x < naturalWidth; ++x) {
           if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
             *dst_data = bgPixel;
+            dst_data++;
           } else {
             *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[*src_data].Red << 16
               | colormap->Colors[*src_data].Green << 8
               | colormap->Colors[*src_data].Blue;
+            dst_data++;
+            src_data++;
           }
-
-          dst_data++;
-          src_data++;
         }
       }
     }
