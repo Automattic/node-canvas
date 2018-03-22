@@ -19,6 +19,14 @@ typedef struct {
 } gif_data_t;
 #endif
 
+#ifdef HAVE_JPEG
+#include <setjmp.h>
+
+struct canvas_jpeg_error_mgr: jpeg_error_mgr {
+  jmp_buf setjmp_buffer;
+};
+#endif
+
 /*
  * Read closure used by loadFromBuffer.
  */
@@ -527,6 +535,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   width = gif->SWidth;
   height = gif->SHeight;
 
+  /* Cairo limit:
+   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+   */
+  if (width > 32767 || height > 32767) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_INVALID_SIZE;
+  }
+
   uint8_t *data = (uint8_t *) malloc(width * height * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
@@ -539,6 +555,11 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   ColorMapObject *colormap = img->ColorMap
     ? img->ColorMap
     : gif->SColorMap;
+
+  if (colormap == NULL) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_READ_ERROR;
+  }
 
   int bgColor = 0;
   int alphaColor = get_gif_transparent_color(gif, i);
@@ -573,15 +594,15 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
               | colormap->Colors[bgColor].Red << 16
               | colormap->Colors[bgColor].Green << 8
               | colormap->Colors[bgColor].Blue;
+            dst_data++;
           } else {
             *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[*src_data].Red << 16
               | colormap->Colors[*src_data].Green << 8
               | colormap->Colors[*src_data].Blue;
+            dst_data++;
+            src_data++;
           }
-
-          dst_data++;
-          src_data++;
         }
       }
     }
@@ -752,6 +773,17 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   return CAIRO_STATUS_SUCCESS;
 }
 
+/*
+ * Callback to recover from jpeg errors
+ */
+
+METHODDEF(void) canvas_jpeg_error_exit (j_common_ptr cinfo) {
+  canvas_jpeg_error_mgr *cjerr = static_cast<canvas_jpeg_error_mgr*>(cinfo->err);
+
+  // Return control to the setjmp point
+  longjmp(cjerr->setjmp_buffer, 1);
+}
+
 #if CAIRO_VERSION_MINOR >= 10
 
 /*
@@ -764,8 +796,19 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
   struct jpeg_decompress_struct args;
-  struct jpeg_error_mgr err;
+  struct canvas_jpeg_error_mgr err;
+
   args.err = jpeg_std_error(&err);
+  args.err->error_exit = canvas_jpeg_error_exit;
+
+  // Establish the setjmp return context for canvas_jpeg_error_exit to use
+  if (setjmp(err.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&args);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   jpeg_create_decompress(&args);
 
   jpeg_mem_src(&args, buf, len);
@@ -858,8 +901,19 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
   struct jpeg_decompress_struct args;
-  struct jpeg_error_mgr err;
+  struct canvas_jpeg_error_mgr err;
+
   args.err = jpeg_std_error(&err);
+  args.err->error_exit = canvas_jpeg_error_exit;
+
+  // Establish the setjmp return context for canvas_jpeg_error_exit to use
+  if (setjmp(err.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&args);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   jpeg_create_decompress(&args);
 
   jpeg_mem_src(&args, buf, len);
@@ -883,8 +937,19 @@ Image::loadJPEG(FILE *stream) {
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
     // JPEG setup
     struct jpeg_decompress_struct args;
-    struct jpeg_error_mgr err;
+    struct canvas_jpeg_error_mgr err;
+
     args.err = jpeg_std_error(&err);
+    args.err->error_exit = canvas_jpeg_error_exit;
+
+    // Establish the setjmp return context for canvas_jpeg_error_exit to use
+    if (setjmp(err.setjmp_buffer)) {
+      // If we get here, the JPEG code has signaled an error.
+      // We need to clean up the JPEG object, close the input file, and return.
+      jpeg_destroy_decompress(&args);
+      return CAIRO_STATUS_READ_ERROR;
+    }
+
     jpeg_create_decompress(&args);
 
     jpeg_stdio_src(&args, stream);
