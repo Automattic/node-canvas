@@ -579,6 +579,11 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     ? img->ColorMap
     : gif->SColorMap;
 
+  if (colormap == nullptr) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   int bgColor = 0;
   int alphaColor = get_gif_transparent_color(gif, i);
   if (gif->SColorMap) bgColor = (uint8_t) gif->SBackGroundColor;
