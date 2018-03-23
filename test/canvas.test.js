@@ -1538,10 +1538,10 @@ describe('Canvas', function () {
       var sin = Math.sin(expected);
       var cos = Math.cos(expected);
 
-      assert.strictEqual(mat.m11, cos);
-      assert.strictEqual(mat.m12, sin);
-      assert.strictEqual(mat.m21, -sin);
-      assert.strictEqual(mat.m22, cos);
+      assert.ok(Math.abs(mat.m11 - cos) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m12 - sin) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m21 + sin) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m22 - cos) < Number.EPSILON);
     }
   });
 
