@@ -204,17 +204,18 @@ Canvas::ToBufferAsync(uv_work_t *req) {
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:ToBufferAsyncAfter");
   closure_t *closure = (closure_t *) req->data;
   delete req;
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(1, argv);
+    closure->pfn->Call(1, argv, &async);
   } else {
     Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
     memcpy(Buffer::Data(buf), closure->data, closure->len);
     Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->pfn->Call(2, argv);
+    closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
@@ -353,13 +354,14 @@ NAN_METHOD(Canvas::ToBuffer) {
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:StreamPNG");
   closure_t *closure = (closure_t *) c;
   Local<Object> buf = Nan::CopyBuffer((char *)data, len).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure->fn, 3, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -462,13 +464,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 1, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 3, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
   return;
 }
@@ -486,13 +488,14 @@ void stream_pdf_free(char *, void *) {}
 static cairo_status_t
 streamPDF(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:StreamPDF");
   closure_t *closure = static_cast<closure_t *>(c);
   Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), closure->fn, 3, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -547,7 +550,7 @@ NAN_METHOD(Canvas::StreamPDFSync) {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), 3, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
 }
 

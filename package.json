@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "node-pre-gyp": "^0.9.0",
-    "nan": "^2.4.0"
+    "nan": "^2.9.2"
   },
   "devDependencies": {
     "assert-rejects": "^0.1.1",
