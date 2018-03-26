@@ -40,14 +40,13 @@ Nan::Persistent<FunctionTemplate> Context2d::constructor;
  */
 
 #define RECT_ARGS \
-  if (!info[0]->IsNumber() \
-    ||!info[1]->IsNumber() \
-    ||!info[2]->IsNumber() \
-    ||!info[3]->IsNumber()) return; \
-  double x = info[0]->NumberValue(); \
-  double y = info[1]->NumberValue(); \
-  double width = info[2]->NumberValue(); \
-  double height = info[3]->NumberValue();
+  double args[4]; \
+  if(!checkArgs(info, args, 4)) \
+    return; \
+  double x = args[0]; \
+  double y = args[1]; \
+  double width = args[2]; \
+  double height = args[3];
 
 /*
  * Text baselines.
@@ -70,6 +69,31 @@ enum {
    pango_layout_get_context(LAYOUT), \
    pango_layout_get_font_description(LAYOUT), \
    pango_context_get_language(pango_layout_get_context(LAYOUT)))
+
+inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, double *args, int argsNum, int offset = 0){
+  int argsEnd = offset + argsNum;
+  bool areArgsValid = true;
+
+  for (int i = offset; i < argsEnd; i++) {
+    double val = info[i]->NumberValue();
+
+    if (areArgsValid) {
+      if (val != val ||
+        val == std::numeric_limits<double>::infinity() ||
+        val == -std::numeric_limits<double>::infinity()) {
+        // We should continue the loop instead of returning immediately
+        // See https://html.spec.whatwg.org/multipage/canvas.html
+
+        areArgsValid = false;
+        continue;
+      }
+
+      args[i - offset] = val;
+    }
+  }
+
+  return areArgsValid;
+}
 
 /*
  * Initialize Context2d.
@@ -1059,18 +1083,25 @@ NAN_METHOD(Context2d::GetImageData) {
  */
 
 NAN_METHOD(Context2d::DrawImage) {
-  if (info.Length() < 3)
-    return Nan::ThrowTypeError("invalid arguments");
-  if (!info[0]->IsObject()
-    || !info[1]->IsNumber()
-    || !info[2]->IsNumber())
-    return Nan::ThrowTypeError("Expected object, number and number");
+  int infoLen = info.Length();
+  if (infoLen != 3 && infoLen != 5 && infoLen != 9)
+    return Nan::ThrowTypeError("Invalid arguments");
+
+  if (!info[0]->IsObject())
+    return Nan::ThrowTypeError("The first argument must be an object");
+
+  double args[8];
+  if(!checkArgs(info, args, infoLen - 1, 1))
+    return;
 
   float sx = 0
     , sy = 0
     , sw = 0
     , sh = 0
-    , dx, dy, dw, dh;
+    , dx = 0
+    , dy = 0
+    , dw = 0
+    , dh = 0;
 
   cairo_surface_t *surface;
 
@@ -1102,34 +1133,32 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_t *ctx = context->context();
 
   // Arguments
-  switch (info.Length()) {
+  switch (infoLen) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = info[1]->NumberValue();
-      sy = info[2]->NumberValue();
-      sw = info[3]->NumberValue();
-      sh = info[4]->NumberValue();
-      dx = info[5]->NumberValue();
-      dy = info[6]->NumberValue();
-      dw = info[7]->NumberValue();
-      dh = info[8]->NumberValue();
+      sx = args[0];
+      sy = args[1];
+      sw = args[2];
+      sh = args[3];
+      dx = args[4];
+      dy = args[5];
+      dw = args[6];
+      dh = args[7];
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = info[1]->NumberValue();
-      dy = info[2]->NumberValue();
-      dw = info[3]->NumberValue();
-      dh = info[4]->NumberValue();
+      dx = args[0];
+      dy = args[1];
+      dw = args[2];
+      dh = args[3];
       break;
     // img, dx, dy
     case 3:
-      dx = info[1]->NumberValue();
-      dy = info[2]->NumberValue();
+      dx = args[0];
+      dy = args[1];
       dw = sw;
       dh = sh;
       break;
-    default:
-      return Nan::ThrowTypeError("invalid arguments");
   }
 
   // Start draw
@@ -1793,21 +1822,18 @@ NAN_GETTER(Context2d::GetStrokeColor) {
  */
 
 NAN_METHOD(Context2d::BezierCurveTo) {
-  if (!info[0]->IsNumber()
-    ||!info[1]->IsNumber()
-    ||!info[2]->IsNumber()
-    ||!info[3]->IsNumber()
-    ||!info[4]->IsNumber()
-    ||!info[5]->IsNumber()) return;
+  double args[6];
+  if(!checkArgs(info, args, 6))
+    return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_curve_to(context->context()
-    , info[0]->NumberValue()
-    , info[1]->NumberValue()
-    , info[2]->NumberValue()
-    , info[3]->NumberValue()
-    , info[4]->NumberValue()
-    , info[5]->NumberValue());
+    , args[0]
+    , args[1]
+    , args[2]
+    , args[3]
+    , args[4]
+    , args[5]);
 }
 
 /*
@@ -1815,19 +1841,18 @@ NAN_METHOD(Context2d::BezierCurveTo) {
  */
 
 NAN_METHOD(Context2d::QuadraticCurveTo) {
-  if (!info[0]->IsNumber()
-    ||!info[1]->IsNumber()
-    ||!info[2]->IsNumber()
-    ||!info[3]->IsNumber()) return;
+  double args[4];
+  if(!checkArgs(info, args, 4))
+    return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
   double x, y
-    , x1 = info[0]->NumberValue()
-    , y1 = info[1]->NumberValue()
-    , x2 = info[2]->NumberValue()
-    , y2 = info[3]->NumberValue();
+    , x1 = args[0]
+    , y1 = args[1]
+    , x2 = args[2]
+    , y2 = args[3];
 
   cairo_get_current_point(ctx, &x, &y);
 
@@ -1884,13 +1909,12 @@ NAN_METHOD(Context2d::ClosePath) {
  */
 
 NAN_METHOD(Context2d::Rotate) {
-  double angle = info[0]->NumberValue();
-
-  if (isnan(angle) || isinf(angle))
+  double args[1];
+  if(!checkArgs(info, args, 1))
     return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_rotate(context->context(), angle);
+  cairo_rotate(context->context(), args[0]);
 }
 
 /*
@@ -1898,14 +1922,18 @@ NAN_METHOD(Context2d::Rotate) {
  */
 
 NAN_METHOD(Context2d::Transform) {
+  double args[6];
+  if(!checkArgs(info, args, 6))
+    return;
+
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix
-    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
-    , info[1]->IsNumber() ? info[1]->NumberValue() : 0
-    , info[2]->IsNumber() ? info[2]->NumberValue() : 0
-    , info[3]->IsNumber() ? info[3]->NumberValue() : 0
-    , info[4]->IsNumber() ? info[4]->NumberValue() : 0
-    , info[5]->IsNumber() ? info[5]->NumberValue() : 0);
+    , args[0]
+    , args[1]
+    , args[2]
+    , args[3]
+    , args[4]
+    , args[5]);
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_transform(context->context(), &matrix);
@@ -1941,10 +1969,12 @@ NAN_METHOD(Context2d::GetMatrix) {
  */
 
 NAN_METHOD(Context2d::Translate) {
+  double args[2];
+  if(!checkArgs(info, args, 2))
+    return;
+
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_translate(context->context()
-    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
-    , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
+  cairo_translate(context->context(), args[0], args[1]);
 }
 
 /*
@@ -1952,10 +1982,12 @@ NAN_METHOD(Context2d::Translate) {
  */
 
 NAN_METHOD(Context2d::Scale) {
+  double args[2];
+  if(!checkArgs(info, args, 2))
+    return;
+
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_scale(context->context()
-    , info[0]->IsNumber() ? info[0]->NumberValue() : 0
-    , info[1]->IsNumber() ? info[1]->NumberValue() : 0);
+  cairo_scale(context->context(), args[0], args[1]);
 }
 
 /*
@@ -2010,18 +2042,20 @@ get_text_scale(Context2d *context, char *str, double maxWidth) {
  */
 
 NAN_METHOD(Context2d::FillText) {
-  if (!info[1]->IsNumber()
-    || !info[2]->IsNumber()) return;
+  int argsNum = info.Length() >= 4 ? 3 : 2;
+  double args[3];
+  if(!checkArgs(info, args, argsNum, 1))
+    return;
 
   String::Utf8Value str(info[0]->ToString());
-  double x = info[1]->NumberValue();
-  double y = info[2]->NumberValue();
+  double x = args[0];
+  double y = args[1];
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
-  if (info[3]->IsNumber()) {
-    scaled_by = get_text_scale(context, *str, info[3]->NumberValue());
+  if (argsNum == 3) {
+    scaled_by = get_text_scale(context, *str, args[2]);
     cairo_scale(context->context(), scaled_by, 1);
   }
 
@@ -2043,18 +2077,20 @@ NAN_METHOD(Context2d::FillText) {
  */
 
 NAN_METHOD(Context2d::StrokeText) {
-  if (!info[1]->IsNumber()
-    || !info[2]->IsNumber()) return;
+  int argsNum = info.Length() >= 4 ? 3 : 2;
+  double args[3];
+  if(!checkArgs(info, args, argsNum, 1))
+    return;
 
   String::Utf8Value str(info[0]->ToString());
-  double x = info[1]->NumberValue();
-  double y = info[2]->NumberValue();
+  double x = args[0];
+  double y = args[1];
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
-  if (info[3]->IsNumber()) {
-    scaled_by = get_text_scale(context, *str, info[3]->NumberValue());
+  if (argsNum == 3) {
+    scaled_by = get_text_scale(context, *str, args[2]);
     cairo_scale(context->context(), scaled_by, 1);
   }
 
@@ -2133,15 +2169,12 @@ Context2d::setTextPath(const char *str, double x, double y) {
  */
 
 NAN_METHOD(Context2d::LineTo) {
-  if (!info[0]->IsNumber())
-    return Nan::ThrowTypeError("lineTo() x must be a number");
-  if (!info[1]->IsNumber())
-    return Nan::ThrowTypeError("lineTo() y must be a number");
+  double args[2];
+  if(!checkArgs(info, args, 2))
+    return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_line_to(context->context()
-    , info[0]->NumberValue()
-    , info[1]->NumberValue());
+  cairo_line_to(context->context(), args[0], args[1]);
 }
 
 /*
@@ -2149,15 +2182,12 @@ NAN_METHOD(Context2d::LineTo) {
  */
 
 NAN_METHOD(Context2d::MoveTo) {
-  if (!info[0]->IsNumber())
-    return Nan::ThrowTypeError("moveTo() x must be a number");
-  if (!info[1]->IsNumber())
-    return Nan::ThrowTypeError("moveTo() y must be a number");
+  double args[2];
+  if(!checkArgs(info, args, 2))
+    return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_move_to(context->context()
-    , info[0]->NumberValue()
-    , info[1]->NumberValue());
+  cairo_move_to(context->context(), args[0], args[1]);
 }
 
 /*
@@ -2487,11 +2517,9 @@ NAN_METHOD(Context2d::Arc) {
  */
 
 NAN_METHOD(Context2d::ArcTo) {
-  if (!info[0]->IsNumber()
-    || !info[1]->IsNumber()
-    || !info[2]->IsNumber()
-    || !info[3]->IsNumber()
-    || !info[4]->IsNumber()) return;
+  double args[5];
+  if(!checkArgs(info, args, 5))
+    return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
@@ -2502,12 +2530,12 @@ NAN_METHOD(Context2d::ArcTo) {
   Point<float> p0(x, y);
 
   // Point (x0,y0)
-  Point<float> p1(info[0]->NumberValue(), info[1]->NumberValue());
+  Point<float> p1(args[0], args[1]);
 
   // Point (x1,y1)
-  Point<float> p2(info[2]->NumberValue(), info[3]->NumberValue());
+  Point<float> p2(args[2], args[3]);
 
-  float radius = info[4]->NumberValue();
+  float radius = args[4];
 
   if ((p1.x == p0.x && p1.y == p0.y)
     || (p1.x == p2.x && p1.y == p2.y)
@@ -2594,24 +2622,20 @@ NAN_METHOD(Context2d::ArcTo) {
  */
 
 NAN_METHOD(Context2d::Ellipse) {
-  if (!info[0]->IsNumber()
-    || !info[1]->IsNumber()
-    || !info[2]->IsNumber()
-    || !info[3]->IsNumber()
-    || !info[4]->IsNumber()
-    || !info[5]->IsNumber()
-    || !info[6]->IsNumber()) return;
+  double args[7];
+  if(!checkArgs(info, args, 7))
+    return;
 
-  double radiusX = info[2]->NumberValue();
-  double radiusY = info[3]->NumberValue();
+  double radiusX = args[2];
+  double radiusY = args[3];
 
   if (radiusX == 0 || radiusY == 0) return;
 
-  double x = info[0]->NumberValue();
-  double y = info[1]->NumberValue();
-  double rotation = info[4]->NumberValue();
-  double startAngle = info[5]->NumberValue();
-  double endAngle = info[6]->NumberValue();
+  double x = args[0];
+  double y = args[1];
+  double rotation = args[4];
+  double startAngle = args[5];
+  double endAngle = args[6];
   bool anticlockwise = info[7]->BooleanValue();
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2626,7 +2650,7 @@ NAN_METHOD(Context2d::Ellipse) {
   cairo_rotate(ctx, rotation);
   cairo_scale(ctx, xRatio, 1.0);
   cairo_translate(ctx, -x, -y);
-  if (anticlockwise && M_PI * 2 != info[4]->NumberValue()) {
+  if (anticlockwise && M_PI * 2 != args[4]) {
     cairo_arc_negative(ctx,
       x,
       y,
