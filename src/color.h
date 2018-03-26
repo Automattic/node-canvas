@@ -9,7 +9,7 @@
 #define __COLOR_PARSER_H__
 
 #include <cstdio>
-#include <cstdint>
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <cstring>
 #include <cstddef>
 
