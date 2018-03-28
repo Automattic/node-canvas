@@ -1560,7 +1560,7 @@ describe('Canvas', function () {
     var count = 0;
 
     for(var i = 0; i < 500 * 500; i += 4){
-      if(data[i] === 0 && data[i + 1] === 0 & data[i + 2] === 0)
+      if(data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0)
         count++;
     }
 
