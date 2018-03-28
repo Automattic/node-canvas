@@ -1210,6 +1210,25 @@ NAN_METHOD(Context2d::DrawImage) {
     }
   }
 
+  bool sameCanvas = surface == context->canvas()->surface();
+  cairo_surface_t *surfTemp;
+  cairo_t *ctxTemp;
+
+  if (sameCanvas) {
+    int width = context->canvas()->getWidth();
+    int height = context->canvas()->getWidth();
+
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    ctxTemp = cairo_create(surfTemp);
+
+    cairo_set_source_surface(ctxTemp, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
+    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
+    cairo_paint_with_alpha(ctxTemp, context->state->globalAlpha);
+
+    surface = surfTemp;
+  }
+
   context->savePath();
   cairo_rectangle(ctx, dx, dy, dw, dh);
   cairo_clip(ctx);
@@ -1222,6 +1241,11 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
+
+  if (sameCanvas) {
+    cairo_destroy(ctxTemp);
+    cairo_surface_destroy(surfTemp);
+  }
 }
 
 /*
