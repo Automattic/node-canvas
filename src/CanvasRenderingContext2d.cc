@@ -1216,7 +1216,7 @@ NAN_METHOD(Context2d::DrawImage) {
 
   if (sameCanvas) {
     int width = context->canvas()->getWidth();
-    int height = context->canvas()->getWidth();
+    int height = context->canvas()->getHeight();
 
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     ctxTemp = cairo_create(surfTemp);
