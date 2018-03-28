@@ -28,6 +28,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Re-rasterize SVG when drawing to a context and dimensions changed (79bf232)
  * Prevent JPEG errors from crashing process (#1124)
  * Improve handling of invalid arguments (#1129)
+ * Fix repeating patterns when drawing a canvas to itself (#1136)
 
 ### Added
  * Prebuilds (#992)
