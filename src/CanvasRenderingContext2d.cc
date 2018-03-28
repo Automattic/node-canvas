@@ -1224,7 +1224,7 @@ NAN_METHOD(Context2d::DrawImage) {
     cairo_set_source_surface(ctxTemp, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
-    cairo_paint_with_alpha(ctxTemp, context->state->globalAlpha);
+    cairo_paint_with_alpha(ctxTemp, 1);
 
     surface = surfTemp;
   }
