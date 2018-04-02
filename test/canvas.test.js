@@ -1545,4 +1545,26 @@ describe('Canvas', function () {
     }
   });
 
+  it('Context2d#drawImage()', function () {
+    var canvas = createCanvas(500, 500);
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, 500, 500);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(5, 5, 10, 10);
+    ctx.drawImage(ctx.canvas, 20, 20);
+
+    var imgd = ctx.getImageData(0, 0, 500, 500);
+    var data = imgd.data;
+    var count = 0;
+
+    for(var i = 0; i < 500 * 500; i += 4){
+      if(data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0)
+        count++;
+    }
+
+    assert.strictEqual(count, 10 * 10 * 2);
+  });
+
 });
