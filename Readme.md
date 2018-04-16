@@ -240,7 +240,7 @@ var canvas = createCanvas(500, 500),
   ctx = canvas.getContext('2d');
 
 ctx.font = '12px "Comic Sans"';
-ctx.fillText(250, 10, 'Everyone hates this font :(');
+ctx.fillText('Everyone hates this font :(', 250, 10);
 ```
 
 The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
