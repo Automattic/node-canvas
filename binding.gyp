@@ -135,7 +135,14 @@
             '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
             '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)',
             '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)'
-          ]
+          ],
+          'cflags!': ['-fno-exceptions'],
+          'cflags_cc!': ['-fno-exceptions']
+        }],
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+          }
         }],
         ['with_jpeg=="true"', {
           'defines': [

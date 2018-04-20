@@ -8,9 +8,11 @@
  * Canvas::ToBuffer callback.
  */
 
+// TODO try to use std::vector instead
+
 cairo_status_t
 toBuffer(void *c, const uint8_t *odata, unsigned len) {
-  closure_t *closure = (closure_t *) c;
+  Closure* closure = (Closure*)c;
 
   if (closure->len + len > closure->max_len) {
     uint8_t *data;

@@ -7,7 +7,6 @@ Backend::Backend(string name, int width, int height)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
-  , _closure(NULL)
 {}
 
 Backend::~Backend()
