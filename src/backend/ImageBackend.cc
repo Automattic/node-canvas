@@ -43,7 +43,7 @@ cairo_surface_t* ImageBackend::createSurface()
   if (!surface)
     return NULL;
 
-  if (!cairo_image_surface_get_data(surface)) {
+  if (width && height && !cairo_image_surface_get_data(surface)) {
     destroySurface();
     return NULL;
   }
