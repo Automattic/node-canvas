@@ -257,6 +257,10 @@ describe('Canvas', function () {
     assert.ok('object' == typeof ctx);
     assert.equal(canvas, ctx.canvas, 'context.canvas is not canvas');
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
+
+    assert.throws(function () {
+      createCanvas(1e9, 1e9).getContext('2d');
+    });
   });
 
   it('Canvas#getContext("2d", {pixelFormat: string})', function () {
