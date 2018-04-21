@@ -1211,8 +1211,8 @@ NAN_METHOD(Context2d::DrawImage) {
   }
 
   bool sameCanvas = surface == context->canvas()->surface();
-  cairo_surface_t *surfTemp;
-  cairo_t *ctxTemp;
+  cairo_surface_t *surfTemp = NULL;
+  cairo_t *ctxTemp = NULL;
 
   if (sameCanvas) {
     int width = context->canvas()->getWidth();
