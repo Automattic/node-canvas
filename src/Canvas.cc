@@ -819,7 +819,10 @@ Canvas::resurface(Local<Object> canvas) {
  */
 cairo_t*
 Canvas::createCairoContext() {
-  cairo_t* ret = cairo_create(surface());
+  cairo_surface_t* surf = surface();
+  if (!surf) return NULL;
+
+  cairo_t* ret = cairo_create(surf);
   cairo_set_line_width(ret, 1); // Cairo defaults to 2
   return ret;
 }

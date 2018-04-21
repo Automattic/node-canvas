@@ -180,6 +180,10 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = canvas->createCairoContext();
+
+  if (!_context)
+    throw NULL;
+
   _layout = pango_cairo_create_layout(_context);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
   state->shadowBlur = 0;
@@ -674,7 +678,15 @@ NAN_METHOD(Context2d::New) {
     static_cast<ImageBackend*>(canvas->backend())->setFormat(format);
   }
 
-  Context2d *context = new Context2d(canvas);
+  Context2d *context = NULL;
+
+  try {
+    context = new Context2d(canvas);
+  } catch (...) {
+    delete context;
+    return Nan::ThrowTypeError("Memory allocation failed");
+  }
+
   context->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
