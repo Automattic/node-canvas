@@ -101,7 +101,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 }
 
 void
-write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, closure_t *closure){
+write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, int chromaHSampFactor, int chromaVSampFactor, closure_t *closure){
   int w = cairo_image_surface_get_width(surface);
   int h = cairo_image_surface_get_height(surface);
   struct jpeg_compress_struct cinfo;
@@ -118,6 +118,9 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
   if (progressive)
      jpeg_simple_progression(&cinfo);
   jpeg_set_quality(&cinfo, quality, (quality<25)?0:1);
+  cinfo.comp_info[0].h_samp_factor = chromaHSampFactor;
+  cinfo.comp_info[0].v_samp_factor = chromaVSampFactor;
+
   jpeg_closure_dest(&cinfo, closure, bufsize);
 
   jpeg_start_compress(&cinfo, TRUE);
