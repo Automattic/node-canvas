@@ -9,7 +9,9 @@ var SYSTEM_PATHS = [
   '/usr/local/lib',
   '/opt/local/lib',
   '/usr/lib/x86_64-linux-gnu',
-  '/usr/lib/i386-linux-gnu'
+  '/usr/lib/i386-linux-gnu',
+  '/usr/lib/arm-linux-gnueabihf',
+  '/usr/lib/arm-linux-gnueabi'
 ]
 
 /**
