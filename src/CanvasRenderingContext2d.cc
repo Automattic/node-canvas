@@ -658,7 +658,9 @@ NAN_METHOD(Context2d::New) {
         if (!strcmp(*utf8PixelFormat, "RGBA32")) format = CAIRO_FORMAT_ARGB32;
         else if (!strcmp(*utf8PixelFormat, "RGB24")) format = CAIRO_FORMAT_RGB24;
         else if (!strcmp(*utf8PixelFormat, "A8")) format = CAIRO_FORMAT_A8;
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
         else if (!strcmp(*utf8PixelFormat, "RGB16_565")) format = CAIRO_FORMAT_RGB16_565;
+#endif
         else if (!strcmp(*utf8PixelFormat, "A1")) format = CAIRO_FORMAT_A1;
 #ifdef CAIRO_FORMAT_RGB30
         else if (!strcmp(utf8PixelFormat, "RGB30")) format = CAIRO_FORMAT_RGB30;
@@ -691,7 +693,9 @@ NAN_GETTER(Context2d::GetFormat) {
   case CAIRO_FORMAT_RGB24: pixelFormatString = "RGB24"; break;
   case CAIRO_FORMAT_A8: pixelFormatString = "A8"; break;
   case CAIRO_FORMAT_A1: pixelFormatString = "A1"; break;
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
   case CAIRO_FORMAT_RGB16_565: pixelFormatString = "RGB16_565"; break;
+#endif
 #ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: pixelFormatString = "RGB30"; break;
 #endif
@@ -871,6 +875,7 @@ NAN_METHOD(Context2d::PutImageData) {
     Nan::ThrowError("putImageData for CANVAS_FORMAT_A1 is not yet implemented");
     break;
   }
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
   case CAIRO_FORMAT_RGB16_565: {
     src += sy * srcStride + sx * 2;
     dst += dstStride * dy + 2 * dx;
@@ -881,6 +886,7 @@ NAN_METHOD(Context2d::PutImageData) {
     }
     break;
   }
+#endif
 #ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO
@@ -964,11 +970,15 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<ArrayBuffer> buffer = ArrayBuffer::New(Isolate::GetCurrent(), size);
   Local<TypedArray> dataArray;
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
   if (canvas->backend()->getFormat() == CAIRO_FORMAT_RGB16_565) {
     dataArray = Uint16Array::New(buffer, 0, size);
   } else {
     dataArray = Uint8ClampedArray::New(buffer, 0, size);
   }
+#else
+  dataArray = Uint8ClampedArray::New(buffer, 0, size);
+#endif
 
   Nan::TypedArrayContents<uint8_t> typedArrayContents(dataArray);
   uint8_t* dst = *typedArrayContents;
@@ -1040,6 +1050,7 @@ NAN_METHOD(Context2d::GetImageData) {
     Nan::ThrowError("getImageData for CANVAS_FORMAT_A1 is not yet implemented");
     break;
   }
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
   case CAIRO_FORMAT_RGB16_565: {
     for (int y = 0; y < sh; ++y) {
       uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
@@ -1048,6 +1059,7 @@ NAN_METHOD(Context2d::GetImageData) {
     }
     break;
   }
+#endif
 #ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO

@@ -6,6 +6,7 @@
  * Module dependencies.
  */
 
+const NodeCanvas = require('../')
 const createCanvas = require('../').createCanvas
 const createImageData = require('../').createImageData
 const loadImage = require('../').loadImage
@@ -15,6 +16,7 @@ const registerFont = require('../').registerFont
 const assert = require('assert')
 const os = require('os')
 const Readable = require('stream').Readable
+const semver = require('semver')
 
 describe('Canvas', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -283,9 +285,11 @@ describe('Canvas', function () {
     context = canvas.getContext("2d", {pixelFormat: "A1"});
     assert.equal(context.pixelFormat, "A1");
 
-    canvas = createCanvas(10, 10);
-    context = canvas.getContext("2d", {pixelFormat: "RGB16_565"});
-    assert.equal(context.pixelFormat, "RGB16_565");
+    if (semver.gte(NodeCanvas.cairoVersion, '1.10.0')) {
+      canvas = createCanvas(10, 10);
+      context = canvas.getContext("2d", {pixelFormat: "RGB16_565"});
+      assert.equal(context.pixelFormat, "RGB16_565");
+    }
 
     // Not tested: RGB30
   });
@@ -755,6 +759,10 @@ describe('Canvas', function () {
     });
 
     it("works, RGB16_565 format", function () {
+      if (semver.lt(NodeCanvas.cairoVersion, '1.10.0')) {
+        this.skip()
+      }
+
       var canvas = createCanvas(20, 20)
         , ctx = canvas.getContext('2d', {pixelFormat: "RGB16_565"});
 
@@ -891,6 +899,10 @@ describe('Canvas', function () {
     });
 
     it("works, full width, RGB16_565", function () {
+      if (semver.lt(NodeCanvas.cairoVersion, '1.10.0')) {
+        this.skip()
+      }
+
       var ctx = createTestCanvas(false, {pixelFormat: "RGB16_565"});
       var imageData = ctx.getImageData(0,0,3,6);
       assert.equal(3, imageData.width);
@@ -963,6 +975,10 @@ describe('Canvas', function () {
     });
 
     it("works, slice, RGB16_565", function () {
+      if (semver.lt(NodeCanvas.cairoVersion, '1.10.0')) {
+        this.skip()
+      }
+
       var ctx = createTestCanvas(false, {pixelFormat: "RGB16_565"});
       var imageData = ctx.getImageData(0,0,2,1);
       assert.equal(2, imageData.width);
@@ -1215,6 +1231,10 @@ describe('Canvas', function () {
     });
 
     it('works, RGB16_565', function () {
+      if (semver.lt(NodeCanvas.cairoVersion, '1.10.0')) {
+        this.skip()
+      }
+
       var canvas = createCanvas(2, 1);
       var ctx = canvas.getContext('2d', {pixelFormat: 'RGB16_565'});
 

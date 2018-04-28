@@ -25,8 +25,10 @@ int32_t ImageBackend::approxBytesPerPixel() {
   case CAIRO_FORMAT_RGB30:
     return 3;
 #endif
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
   case CAIRO_FORMAT_RGB16_565:
     return 2;
+#endif
   case CAIRO_FORMAT_A8:
   case CAIRO_FORMAT_A1:
     return 1;
