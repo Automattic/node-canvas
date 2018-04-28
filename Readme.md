@@ -28,9 +28,13 @@ Alpha versions of 2.0 can be installed using `npm install canvas@next`.
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source`.
 
 Currently the minimum version of node required is __4.0.0__
+
+### Compiling
+
+If you don't have a supported OS or processor architecture, or you use `--build-from-source`, the module will be compiled on your system. Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
 
 You can quickly install the dependencies by using the command for your OS:
 
@@ -130,13 +134,7 @@ var fs = require('fs')
   , out = fs.createWriteStream(__dirname + '/text.png')
   , stream = canvas.pngStream();
 
-stream.on('data', function(chunk){
-  out.write(chunk);
-});
-
-stream.on('end', function(){
-  console.log('The PNG stream ended');
-});
+stream.pipe(out);
 
 out.on('finish', function(){
   console.log('The PNG file was created.');
@@ -173,6 +171,7 @@ var stream = canvas.jpegStream({
     bufsize: 4096 // output buffer size in bytes, default: 4096
   , quality: 75 // JPEG quality (0-100) default: 75
   , progressive: false // true for progressive compression, default: false
+  , disableChromaSubsampling: false // true to disable 2x2 subsampling of the chroma components, default: false
 });
 ```
 
@@ -236,7 +235,7 @@ var canvas = createCanvas(500, 500),
   ctx = canvas.getContext('2d');
 
 ctx.font = '12px "Comic Sans"';
-ctx.fillText(250, 10, 'Everyone hates this font :(');
+ctx.fillText('Everyone hates this font :(', 250, 10);
 ```
 
 The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
@@ -300,8 +299,8 @@ ctx.antialias = 'none';
 
 ## PDF Support
 
-  Basic PDF support was added in 0.11.0. Make sure to install cairo with `--enable-pdf=yes` for the PDF backend. node-canvas must know that it is creating
-  a PDF on initialization, using the "pdf" string:
+  Basic PDF support was added in 0.11.0. If you are building cairo from source, be sure to use `--enable-pdf=yes` for the PDF backend.
+  node-canvas must know that it is creating a PDF on initialization, using the "pdf" string:
 
 ```js
 var canvas = createCanvas(200, 500, 'pdf');

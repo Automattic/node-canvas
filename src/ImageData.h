@@ -8,9 +8,10 @@
 #ifndef __NODE_IMAGE_DATA_H__
 #define __NODE_IMAGE_DATA_H__
 
-#include "Canvas.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <v8.h>
+
+#include "Canvas.h"
 
 class ImageData: public Nan::ObjectWrap {
   public:

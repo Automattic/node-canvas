@@ -7,13 +7,15 @@
  */
 
 const loadImage = require('../').loadImage
-const Image = require('../').Image;
+const Image = require('../').Image
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
+const fs = require('fs')
 
 const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
+const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
 
 describe('Image', function () {
@@ -186,5 +188,34 @@ describe('Image', function () {
       assert.strictEqual(onloadCalled, 0)
       assert.strictEqual(onerrorCalled, 0)
     })
+  })
+
+  it('does not crash on invalid images', function () {
+    function withIncreasedByte (source, index) {
+      const copy = source.slice(0)
+
+      copy[index] += 1
+
+      return copy
+    }
+
+    const source = fs.readFileSync(jpg_chrome)
+
+    const corruptSources = [
+      withIncreasedByte(source, 0),
+      withIncreasedByte(source, 1),
+      withIncreasedByte(source, 1060),
+      withIncreasedByte(source, 1061),
+      withIncreasedByte(source, 1062),
+      withIncreasedByte(source, 1063),
+      withIncreasedByte(source, 1064),
+      withIncreasedByte(source, 1065),
+      withIncreasedByte(source, 1066),
+      withIncreasedByte(source, 1067),
+      withIncreasedByte(source, 1068),
+      withIncreasedByte(source, 1069)
+    ]
+
+    return Promise.all(corruptSources.map(src => loadImage(src).catch(() => null)))
   })
 })

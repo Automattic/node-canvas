@@ -4,13 +4,14 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <node_buffer.h>
+
 #include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <node_buffer.h>
 
 #ifdef HAVE_GIF
 typedef struct {
@@ -18,6 +19,14 @@ typedef struct {
   unsigned len;
   unsigned pos;
 } gif_data_t;
+#endif
+
+#ifdef HAVE_JPEG
+#include <csetjmp>
+
+struct canvas_jpeg_error_mgr: jpeg_error_mgr {
+  jmp_buf setjmp_buffer;
+};
 #endif
 
 /*
@@ -48,8 +57,8 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   SetProtoAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource, ctor);
   SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
+  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
 #if CAIRO_VERSION_MINOR >= 10
@@ -549,6 +558,14 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = gif->SWidth;
   height = naturalHeight = gif->SHeight;
 
+  /* Cairo limit:
+   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+   */
+  if (width > 32767 || height > 32767) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_INVALID_SIZE;
+  }
+
   uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
@@ -561,6 +578,11 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   ColorMapObject *colormap = img->ColorMap
     ? img->ColorMap
     : gif->SColorMap;
+
+  if (colormap == nullptr) {
+    GIF_CLOSE_FILE(gif);
+    return CAIRO_STATUS_READ_ERROR;
+  }
 
   int bgColor = 0;
   int alphaColor = get_gif_transparent_color(gif, i);
@@ -588,22 +610,25 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       int bottom = img->Top + img->Height;
       int right = img->Left + img->Width;
 
+      uint32_t bgPixel =
+        ((bgColor == alphaColor) ? 0 : 255) << 24
+        | colormap->Colors[bgColor].Red << 16
+        | colormap->Colors[bgColor].Green << 8
+        | colormap->Colors[bgColor].Blue;
+
       for (int y = 0; y < naturalHeight; ++y) {
         for (int x = 0; x < naturalWidth; ++x) {
           if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
-            *dst_data = ((bgColor == alphaColor) ? 0 : 255) << 24
-              | colormap->Colors[bgColor].Red << 16
-              | colormap->Colors[bgColor].Green << 8
-              | colormap->Colors[bgColor].Blue;
+            *dst_data = bgPixel;
+            dst_data++;
           } else {
             *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
               | colormap->Colors[*src_data].Red << 16
               | colormap->Colors[*src_data].Green << 8
               | colormap->Colors[*src_data].Blue;
+            dst_data++;
+            src_data++;
           }
-
-          dst_data++;
-          src_data++;
         }
       }
     }
@@ -774,6 +799,17 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   return CAIRO_STATUS_SUCCESS;
 }
 
+/*
+ * Callback to recover from jpeg errors
+ */
+
+METHODDEF(void) canvas_jpeg_error_exit (j_common_ptr cinfo) {
+  canvas_jpeg_error_mgr *cjerr = static_cast<canvas_jpeg_error_mgr*>(cinfo->err);
+
+  // Return control to the setjmp point
+  longjmp(cjerr->setjmp_buffer, 1);
+}
+
 #if CAIRO_VERSION_MINOR >= 10
 
 /*
@@ -786,8 +822,19 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
   struct jpeg_decompress_struct args;
-  struct jpeg_error_mgr err;
+  struct canvas_jpeg_error_mgr err;
+
   args.err = jpeg_std_error(&err);
+  args.err->error_exit = canvas_jpeg_error_exit;
+
+  // Establish the setjmp return context for canvas_jpeg_error_exit to use
+  if (setjmp(err.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&args);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   jpeg_create_decompress(&args);
 
   jpeg_mem_src(&args, buf, len);
@@ -881,8 +928,19 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
   struct jpeg_decompress_struct args;
-  struct jpeg_error_mgr err;
+  struct canvas_jpeg_error_mgr err;
+
   args.err = jpeg_std_error(&err);
+  args.err->error_exit = canvas_jpeg_error_exit;
+
+  // Establish the setjmp return context for canvas_jpeg_error_exit to use
+  if (setjmp(err.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&args);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   jpeg_create_decompress(&args);
 
   jpeg_mem_src(&args, buf, len);
@@ -910,8 +968,19 @@ Image::loadJPEG(FILE *stream) {
 #endif
     // JPEG setup
     struct jpeg_decompress_struct args;
-    struct jpeg_error_mgr err;
+    struct canvas_jpeg_error_mgr err;
+
     args.err = jpeg_std_error(&err);
+    args.err->error_exit = canvas_jpeg_error_exit;
+
+    // Establish the setjmp return context for canvas_jpeg_error_exit to use
+    if (setjmp(err.setjmp_buffer)) {
+      // If we get here, the JPEG code has signaled an error.
+      // We need to clean up the JPEG object, close the input file, and return.
+      jpeg_destroy_decompress(&args);
+      return CAIRO_STATUS_READ_ERROR;
+    }
+
     jpeg_create_decompress(&args);
 
     jpeg_stdio_src(&args, stream);

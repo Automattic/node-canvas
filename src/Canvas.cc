@@ -104,8 +104,13 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    // TODO need to check if this is actually an instance of a Backend to avoid a fault
-    backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+    }else{
+      return Nan::ThrowTypeError("Invalid arguments");
+    }
   }
   else {
     backend = new ImageBackend(0, 0);
@@ -199,17 +204,18 @@ Canvas::ToBufferAsync(uv_work_t *req) {
 void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:ToBufferAsyncAfter");
   closure_t *closure = (closure_t *) req->data;
   delete req;
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(1, argv);
+    closure->pfn->Call(1, argv, &async);
   } else {
     Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
     memcpy(Buffer::Data(buf), closure->data, closure->len);
     Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->pfn->Call(2, argv);
+    closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
@@ -348,13 +354,14 @@ NAN_METHOD(Canvas::ToBuffer) {
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:StreamPNG");
   closure_t *closure = (closure_t *) c;
   Local<Object> buf = Nan::CopyBuffer((char *)data, len).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure->fn, 3, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -457,13 +464,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 1, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)closure.fn, 3, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
   return;
 }
@@ -481,13 +488,14 @@ void stream_pdf_free(char *, void *) {}
 static cairo_status_t
 streamPDF(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:StreamPDF");
   closure_t *closure = static_cast<closure_t *>(c);
   Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), closure->fn, 3, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -542,7 +550,7 @@ NAN_METHOD(Canvas::StreamPDFSync) {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), 3, argv);
+    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
 }
 
@@ -560,15 +568,19 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
     return Nan::ThrowTypeError("quality setting required");
   if (!info[2]->IsBoolean())
     return Nan::ThrowTypeError("progressive setting required");
-  if (!info[3]->IsFunction())
+  if (!info[3]->IsNumber())
+    return Nan::ThrowTypeError("chromaHSampFactor required");
+  if (!info[4]->IsNumber())
+    return Nan::ThrowTypeError("chromaVSampFactor required");
+  if (!info[5]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
 
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   closure_t closure;
-  closure.fn = Local<Function>::Cast(info[3]);
+  closure.fn = Local<Function>::Cast(info[5]);
 
   Nan::TryCatch try_catch;
-  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), &closure);
+  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), info[3]->NumberValue(), info[4]->NumberValue(), &closure);
 
   if (try_catch.HasCaught()) {
     try_catch.ReThrow();
@@ -800,9 +812,20 @@ Canvas::resurface(Local<Object> canvas) {
 	if (!context->IsUndefined()) {
 		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
 		cairo_t *prev = context2d->context();
-		context2d->setContext(cairo_create(surface()));
+		context2d->setContext(createCairoContext());
 		cairo_destroy(prev);
 	}
+}
+
+/**
+ * Wrapper around cairo_create()
+ * (do not call cairo_create directly, call this instead)
+ */
+cairo_t*
+Canvas::createCairoContext() {
+  cairo_t* ret = cairo_create(surface());
+  cairo_set_line_width(ret, 1); // Cairo defaults to 2
+  return ret;
 }
 
 /*

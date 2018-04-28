@@ -9,14 +9,16 @@ var SYSTEM_PATHS = [
   '/usr/local/lib',
   '/opt/local/lib',
   '/usr/lib/x86_64-linux-gnu',
-  '/usr/lib/i386-linux-gnu'
+  '/usr/lib/i386-linux-gnu',
+  '/usr/lib/arm-linux-gnueabihf',
+  '/usr/lib/arm-linux-gnueabi'
 ]
 
 /**
  * Checks for lib using ldconfig if present, or searching SYSTEM_PATHS
  * otherwise.
- * @param String library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
- * @return Boolean exists
+ * @param {string} lib - library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
+ * @return {boolean} exists
  */
 function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
@@ -48,7 +50,7 @@ function hasSystemLib (lib) {
 
 /**
  * Checks for ldconfig on the path and /sbin
- * @return Boolean exists
+ * @return {boolean} exists
  */
 function hasLdconfig () {
   try {
@@ -81,8 +83,8 @@ function hasFreetype () {
 
 /**
  * Checks for lib using pkg-config.
- * @param String library name
- * @return Boolean exists
+ * @param {string} lib - library name
+ * @return {boolean} exists
  */
 function hasPkgconfigLib (lib) {
   try {

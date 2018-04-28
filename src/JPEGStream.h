@@ -30,6 +30,7 @@ init_closure_destination(j_compress_ptr cinfo){
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:empty_closure_output_buffer");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
   Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
@@ -39,7 +40,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
       Nan::Null()
     , buf
   };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof argv / sizeof *argv, argv);
 
   dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
@@ -50,6 +51,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 void
 term_closure_destination(j_compress_ptr cinfo){
   Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:term_closure_destination");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
   /* emit remaining data */
@@ -60,7 +62,7 @@ term_closure_destination(j_compress_ptr cinfo){
     , buf
   };
 
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, data_argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof data_argv / sizeof *data_argv, data_argv);
 
   // emit "end"
   Local<Value> end_argv[2] = {
@@ -68,7 +70,7 @@ term_closure_destination(j_compress_ptr cinfo){
     , Nan::Null()
   };
 
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), (v8::Local<v8::Function>)dest->closure->fn, 2, end_argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof end_argv / sizeof *end_argv, end_argv);
 }
 
 void
@@ -99,7 +101,7 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
 }
 
 void
-write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, closure_t *closure){
+write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, int chromaHSampFactor, int chromaVSampFactor, closure_t *closure){
   int w = cairo_image_surface_get_width(surface);
   int h = cairo_image_surface_get_height(surface);
   struct jpeg_compress_struct cinfo;
@@ -116,6 +118,9 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
   if (progressive)
      jpeg_simple_progression(&cinfo);
   jpeg_set_quality(&cinfo, quality, (quality<25)?0:1);
+  cinfo.comp_info[0].h_samp_factor = chromaHSampFactor;
+  cinfo.comp_info[0].v_samp_factor = chromaVSampFactor;
+
   jpeg_closure_dest(&cinfo, closure, bufsize);
 
   jpeg_start_compress(&cinfo, TRUE);

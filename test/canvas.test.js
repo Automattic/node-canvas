@@ -312,11 +312,13 @@ describe('Canvas', function () {
   });
 
   it('Canvas#{width,height}=', function () {
-    var canvas = createCanvas(100, 200);
+    var context, canvas = createCanvas(100, 200);
+
     assert.equal(100, canvas.width);
     assert.equal(200, canvas.height);
 
     canvas = createCanvas();
+    context = canvas.getContext("2d");
     assert.equal(0, canvas.width);
     assert.equal(0, canvas.height);
 
@@ -324,6 +326,7 @@ describe('Canvas', function () {
     canvas.height = 50;
     assert.equal(50, canvas.width);
     assert.equal(50, canvas.height);
+    assert.equal(1, context.lineWidth); // #1095
   });
 
   it('Canvas#stride', function() {
@@ -1507,6 +1510,81 @@ describe('Canvas', function () {
     assert.ok(ctx.isPointInPath(3, 1));
     assert.ok(!ctx.isPointInPath(1, 3, 'evenodd'));
     assert.ok(ctx.isPointInPath(3, 3, 'evenodd'));
+  });
+
+  it('Context2d#rotate(angle)', function () {
+    var canvas = createCanvas(4, 4);
+    var ctx = canvas.getContext('2d');
+
+    // Number
+    ctx.resetTransform();
+    testAngle(1.23, 1.23);
+
+    // String
+    ctx.resetTransform();
+    testAngle('-4.56e-1', -0.456);
+
+    // Boolean
+    ctx.resetTransform();
+    testAngle(true, 1);
+
+    // Array
+    ctx.resetTransform();
+    testAngle([7.8], 7.8);
+
+    // Object
+    var obj = Object.create(null);
+    if (+process.version.match(/\d+/) >= 6)
+      obj[Symbol.toPrimitive] = function () { return 0.89; };
+    else
+      obj.valueOf = function () { return 0.89; };
+    ctx.resetTransform();
+    testAngle(obj, 0.89);
+
+    // NaN
+    ctx.resetTransform();
+    ctx.rotate(0.91);
+    testAngle(NaN, 0.91);
+
+    // Infinite value
+    ctx.resetTransform();
+    ctx.rotate(0.94);
+    testAngle(-Infinity, 0.94);
+
+    function testAngle(angle, expected){
+      ctx.rotate(angle);
+
+      var mat = ctx.currentTransform;
+      var sin = Math.sin(expected);
+      var cos = Math.cos(expected);
+
+      assert.ok(Math.abs(mat.m11 - cos) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m12 - sin) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m21 + sin) < Number.EPSILON);
+      assert.ok(Math.abs(mat.m22 - cos) < Number.EPSILON);
+    }
+  });
+
+  it('Context2d#drawImage()', function () {
+    var canvas = createCanvas(500, 500);
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, 500, 500);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(5, 5, 10, 10);
+    ctx.drawImage(ctx.canvas, 20, 20);
+
+    var imgd = ctx.getImageData(0, 0, 500, 500);
+    var data = imgd.data;
+    var count = 0;
+
+    for(var i = 0; i < 500 * 500; i += 4){
+      if(data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0)
+        count++;
+    }
+
+    assert.strictEqual(count, 10 * 10 * 2);
   });
 
 });
