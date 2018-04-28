@@ -268,10 +268,10 @@ describe('Canvas', function () {
       [MAX_IMAGE_SIZE, MAX_IMAGE_SIZE, null],
       [MAX_IMAGE_SIZE + 1, MAX_IMAGE_SIZE, 3],
       [MAX_IMAGE_SIZE + 1, MAX_IMAGE_SIZE + 1, 3],
-      [2 ** 30, 0, 3],
-      [2 ** 30, 1, 3],
-      [2 ** 32, 0, 1],
-      [2 ** 32, 1, 1],
+      [Math.pow(2, 30), 0, 3],
+      [Math.pow(2, 30), 1, 3],
+      [Math.pow(2, 32), 0, 1],
+      [Math.pow(2, 32), 1, 1],
     ].forEach(params => {
       var width = params[0];
       var height = params[1];
