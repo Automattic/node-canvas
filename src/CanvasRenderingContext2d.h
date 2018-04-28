@@ -169,7 +169,6 @@ class Context2d: public Nan::ObjectWrap {
     void restore();
     void setFontFromState();
     inline PangoLayout *layout(){ return _layout; }
-    inline bool isValid(){ return valid; }
 
   private:
     ~Context2d();
@@ -177,7 +176,6 @@ class Context2d: public Nan::ObjectWrap {
     cairo_t *_context;
     cairo_path_t *_path;
     PangoLayout *_layout;
-    bool valid;
 };
 
 #endif

@@ -116,6 +116,11 @@ NAN_METHOD(Canvas::New) {
     backend = new ImageBackend(0, 0);
   }
 
+  if (!backend->isSurfaceValid()) {
+    delete backend;
+    return Nan::ThrowError(backend->getError());
+  }
+
   Canvas* canvas = new Canvas(backend);
   canvas->Wrap(info.This());
 
@@ -819,10 +824,7 @@ Canvas::resurface(Local<Object> canvas) {
  */
 cairo_t*
 Canvas::createCairoContext() {
-  cairo_surface_t* surf = surface();
-  if (!surf) return NULL;
-
-  cairo_t* ret = cairo_create(surf);
+  cairo_t* ret = cairo_create(surface());
   cairo_set_line_width(ret, 1); // Cairo defaults to 2
   return ret;
 }

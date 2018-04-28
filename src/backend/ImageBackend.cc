@@ -37,20 +37,12 @@ int32_t ImageBackend::approxBytesPerPixel() {
 
 cairo_surface_t* ImageBackend::createSurface()
 {
-	assert(!surface);
-	surface = cairo_image_surface_create(format, width, height);
+  assert(!this->surface);
+  this->surface = cairo_image_surface_create(this->format, width, height);
+  assert(this->surface);
+  Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
 
-  if (!surface)
-    return NULL;
-
-  if (width && height && !cairo_image_surface_get_data(surface)) {
-    destroySurface();
-    return NULL;
-  }
-
-	Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
-
-	return this->surface;
+  return this->surface;
 }
 
 cairo_surface_t* ImageBackend::recreateSurface()
