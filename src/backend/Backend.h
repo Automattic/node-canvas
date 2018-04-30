@@ -17,6 +17,7 @@ class Backend : public Nan::ObjectWrap
 {
   private:
     const string name;
+    const char* error = NULL;
 
   protected:
     int width;
@@ -58,6 +59,9 @@ class Backend : public Nan::ObjectWrap
       return CAIRO_FORMAT_INVALID;
 #endif
     }
+
+    bool isSurfaceValid();
+    inline const char* getError(){ return error; }
 };
 
 

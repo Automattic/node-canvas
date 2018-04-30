@@ -257,6 +257,42 @@ describe('Canvas', function () {
     assert.ok('object' == typeof ctx);
     assert.equal(canvas, ctx.canvas, 'context.canvas is not canvas');
     assert.equal(ctx, canvas.context, 'canvas.context is not context');
+
+    const MAX_IMAGE_SIZE = 32767;
+
+    [
+      [0, 0, 1],
+      [1, 0, 1],
+      [MAX_IMAGE_SIZE, 0, 1],
+      [MAX_IMAGE_SIZE + 1, 0, 3],
+      [MAX_IMAGE_SIZE, MAX_IMAGE_SIZE, null],
+      [MAX_IMAGE_SIZE + 1, MAX_IMAGE_SIZE, 3],
+      [MAX_IMAGE_SIZE + 1, MAX_IMAGE_SIZE + 1, 3],
+      [Math.pow(2, 30), 0, 3],
+      [Math.pow(2, 30), 1, 3],
+      [Math.pow(2, 32), 0, 1],
+      [Math.pow(2, 32), 1, 1],
+    ].forEach(params => {
+      var width = params[0];
+      var height = params[1];
+      var errorLevel = params[2];
+
+      var level = 3;
+
+      try {
+        var canvas = createCanvas(width, height);
+        level--;
+
+        var ctx = canvas.getContext('2d');
+        level--;
+
+        ctx.getImageData(0, 0, 1, 1);
+        level--;
+      } catch (err) {}
+
+      if (errorLevel !== null)
+        assert.strictEqual(level, errorLevel);
+    });
   });
 
   it('Canvas#getContext("2d", {pixelFormat: string})', function () {

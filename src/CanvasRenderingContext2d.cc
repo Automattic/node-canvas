@@ -675,6 +675,7 @@ NAN_METHOD(Context2d::New) {
   }
 
   Context2d *context = new Context2d(canvas);
+
   context->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
@@ -825,7 +826,7 @@ NAN_METHOD(Context2d::PutImageData) {
       dst += dstStride;
       src += srcStride;
     }
-	  break;
+    break;
   }
   case CAIRO_FORMAT_RGB24: {
     src += sy * srcStride + sx * 4;
@@ -923,6 +924,14 @@ NAN_METHOD(Context2d::GetImageData) {
   if (!sh)
     return Nan::ThrowError("IndexSizeError: The source height is 0.");
 
+  int width = canvas->getWidth();
+  int height = canvas->getHeight();
+
+  if (!width)
+    return Nan::ThrowTypeError("Canvas width is 0");
+  if (!height)
+    return Nan::ThrowTypeError("Canvas height is 0");
+
   // WebKit and Firefox have this behavior:
   // Flip the coordinates so the origin is top/left-most:
   if (sw < 0) {
@@ -934,8 +943,6 @@ NAN_METHOD(Context2d::GetImageData) {
     sh = -sh;
   }
 
-  int width  = canvas->getWidth();
-  int height = canvas->getHeight();
   if (sx + sw > width) sw = width - sx;
   if (sy + sh > height) sh = height - sy;
 
@@ -955,7 +962,7 @@ NAN_METHOD(Context2d::GetImageData) {
   }
 
   int srcStride = canvas->stride();
-  int bpp = srcStride / canvas->getWidth();
+  int bpp = srcStride / width;
   int size = sw * sh * bpp;
   int dstStride = sw * bpp;
 
@@ -1211,8 +1218,8 @@ NAN_METHOD(Context2d::DrawImage) {
   }
 
   bool sameCanvas = surface == context->canvas()->surface();
-  cairo_surface_t *surfTemp;
-  cairo_t *ctxTemp;
+  cairo_surface_t *surfTemp = NULL;
+  cairo_t *ctxTemp = NULL;
 
   if (sameCanvas) {
     int width = context->canvas()->getWidth();

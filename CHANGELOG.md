@@ -29,6 +29,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Prevent JPEG errors from crashing process (#1124)
  * Improve handling of invalid arguments (#1129)
  * Fix repeating patterns when drawing a canvas to itself (#1136)
+ * Prevent segfaults caused by creating a too large canvas
 
 ### Added
  * Prebuilds (#992)

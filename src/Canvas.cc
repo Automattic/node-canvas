@@ -116,6 +116,11 @@ NAN_METHOD(Canvas::New) {
     backend = new ImageBackend(0, 0);
   }
 
+  if (!backend->isSurfaceValid()) {
+    delete backend;
+    return Nan::ThrowError(backend->getError());
+  }
+
   Canvas* canvas = new Canvas(backend);
   canvas->Wrap(info.This());
 
