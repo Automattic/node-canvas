@@ -35,7 +35,8 @@
     "module_name": "canvas-prebuilt",
     "module_path": "build/Release",
     "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
-    "remote_path": "v{version}"
+    "remote_path": "v{version}",
+    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
   "dependencies": {
     "node-pre-gyp": "^0.9.0",
