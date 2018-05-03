@@ -32,7 +32,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Prevent segfaults caused by creating a too large canvas
 
 ### Added
- * Prebuilds (#992)
+ * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
  * Support canvas.getContext("2d", {alpha: boolean}) and
    canvas.getContext("2d", {pixelFormat: "..."})
  * Support indexed PNG encoding.
