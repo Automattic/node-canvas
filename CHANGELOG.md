@@ -30,6 +30,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Improve handling of invalid arguments (#1129)
  * Fix repeating patterns when drawing a canvas to itself (#1136)
  * Prevent segfaults caused by creating a too large canvas
+ * Fix parse-font regex to allow for whitespaces.
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
