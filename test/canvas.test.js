@@ -1603,4 +1603,24 @@ describe('Canvas', function () {
     assert.strictEqual(count, 10 * 10 * 2);
   });
 
+  it('Context2d#SetFillColor()', function () {
+    var canvas = createCanvas(2, 2);
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = ['#808080'];
+    ctx.fillRect(0, 0, 2, 2);
+    var data = ctx.getImageData(0, 0, 2, 2).data;
+
+    data.forEach(function (byte, index) {
+      if (byte + 1 & 3)
+        assert.strictEqual(byte, 128);
+      else
+        assert.strictEqual(byte, 255);
+    });
+
+    assert.throws(function () {
+      ctx.fillStyle = Object.create(null);
+    });
+  });
+
 });
