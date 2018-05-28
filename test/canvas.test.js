@@ -1612,7 +1612,7 @@ describe('Canvas', function () {
     var data = ctx.getImageData(0, 0, 2, 2).data;
 
     data.forEach(function (byte, index) {
-      if (byte + 1 & 3)
+      if (index + 1 & 3)
         assert.strictEqual(byte, 128);
       else
         assert.strictEqual(byte, 255);
