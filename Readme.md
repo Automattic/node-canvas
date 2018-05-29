@@ -171,7 +171,7 @@ var stream = canvas.jpegStream({
     bufsize: 4096 // output buffer size in bytes, default: 4096
   , quality: 75 // JPEG quality (0-100) default: 75
   , progressive: false // true for progressive compression, default: false
-  , disableChromaSubsampling: false // true to disable 2x2 subsampling of the chroma components, default: false
+  , chromaSubsampling: true // false to disable 2x2 subsampling of the chroma components, default: true
 });
 ```
 
