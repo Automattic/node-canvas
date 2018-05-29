@@ -1803,16 +1803,9 @@ NAN_GETTER(Context2d::GetShadowColor) {
 NAN_METHOD(Context2d::SetFillColor) {
   short ok;
 
-  Isolate *isolate = Isolate::GetCurrent();
-  Nan::TryCatch try_catch;
-  MaybeLocal<String> color = info[0]->ToString(Context::New(isolate));
-
-  if (try_catch.HasCaught()) {
-    try_catch.ReThrow();
-    return;
-  }
-
-  String::Utf8Value str(color.ToLocalChecked());
+  if (!info[0]->IsString()) return;
+  String::Utf8Value str(info[0]);
+  
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1838,16 +1831,9 @@ NAN_GETTER(Context2d::GetFillColor) {
 NAN_METHOD(Context2d::SetStrokeColor) {
   short ok;
 
-  Isolate *isolate = Isolate::GetCurrent();
-  Nan::TryCatch try_catch;
-  MaybeLocal<String> color = info[0]->ToString(Context::New(isolate));
+  if (!info[0]->IsString()) return;
+  String::Utf8Value str(info[0]);
 
-  if (try_catch.HasCaught()) {
-    try_catch.ReThrow();
-    return;
-  }
-
-  String::Utf8Value str(color.ToLocalChecked());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
