@@ -1804,7 +1804,7 @@ NAN_METHOD(Context2d::SetFillColor) {
   short ok;
 
   Isolate *isolate = Isolate::GetCurrent();
-  v8::TryCatch try_catch(isolate);
+  Nan::TryCatch try_catch;
   MaybeLocal<String> color = info[0]->ToString(Context::New(isolate));
 
   if (try_catch.HasCaught()) {
@@ -1839,7 +1839,7 @@ NAN_METHOD(Context2d::SetStrokeColor) {
   short ok;
 
   Isolate *isolate = Isolate::GetCurrent();
-  v8::TryCatch try_catch(isolate);
+  Nan::TryCatch try_catch;
   MaybeLocal<String> color = info[0]->ToString(Context::New(isolate));
 
   if (try_catch.HasCaught()) {
