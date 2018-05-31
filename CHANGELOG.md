@@ -10,10 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 **Upgrading from 1.x**
 ```js
-// (1) The quality argument for canvas.jpegStream now goes from 0 to 1 instead
-//     of from 0 to 100:
-canvas.jpegStream({quality: 50}) // old
-canvas.jpegStream({quality: 0.5}) // new
+// (1) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
+//     goes from 0 to 1 instead of from 0 to 100:
+canvas.createJPEGStream({quality: 50}) // old
+canvas.createJPEGStream({quality: 0.5}) // new
 
 // (2) The ZLIB compression level and PNG filter options for canvas.toBuffer are
 //     now named instead of positional arguments:
@@ -29,10 +29,12 @@ canvas.pngStream({compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
 
 // (4) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
 canvas.syncPNGStream() // old
-canvas.pngStream() // new
+canvas.createSyncPNGStream() // old
+canvas.createPNGStream() // new
 
 canvas.syncJPEGStream() // old
-canvas.jpegStream() // new
+canvas.createSyncJPEGStream() // old
+canvas.createJPEGStream() // new
 ```
 
 ### Breaking

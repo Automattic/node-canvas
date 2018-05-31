@@ -201,12 +201,12 @@ const myCanvas = createCanvas(w, h, 'pdf')
 myCanvas.toBuffer() // returns a buffer containing a PDF-encoded canvas
 ```
 
-### Canvas#pngStream(options)
+### Canvas#createPNGStream(options)
 
 Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable)
 that emits PNG-encoded data.
 
-> `canvas.pngStream([config]) => ReadableStream`
+> `canvas.createPNGStream([config]) => ReadableStream`
 
 * `config` An object specifying the ZLIB compression level (between 0 and 9),
   the compression filter(s), the palette (indexed PNGs only) and/or the
@@ -219,7 +219,7 @@ that emits PNG-encoded data.
 ```javascript
 const fs = require('fs')
 const out = fs.createWriteStream(__dirname + '/test.png')
-const stream = canvas.pngStream()
+const stream = canvas.createPNGStream()
 stream.pipe(out)
 out.on('finish', () =>  console.log('The PNG file was created.'))
 ```
@@ -234,21 +234,21 @@ const palette = new Uint8ClampedArray([
   127, 127, 255, 255
   // ...
 ])
-canvas.pngStream({
+canvas.createPNGStream({
   palette: palette,
   backgroundIndex: 0 // optional, defaults to 0
 })
 ```
 
-### Canvas#jpegStream()
+### Canvas#createJPEGStream()
 
-Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable)
+Creates a [`createJPEGStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable)
 that emits JPEG-encoded data.
 
-_Note: At the moment, `jpegStream()` is synchronous under the hood. That is, it
+_Note: At the moment, `createJPEGStream()` is synchronous under the hood. That is, it
 runs in the main thread, not in the libuv threadpool._
 
-> `canvas.pngStream([config]) => ReadableStream`
+> `canvas.createJPEGStream([config]) => ReadableStream`
 
 * `config` an object specifying the quality (0 to 1), if progressive compression
   should be used and/or if chroma subsampling should be used:
@@ -260,12 +260,12 @@ runs in the main thread, not in the libuv threadpool._
 ```javascript
 const fs = require('fs')
 const out = fs.createWriteStream(__dirname + '/test.jpeg')
-const stream = canvas.jpegStream()
+const stream = canvas.createJPEGStream()
 stream.pipe(out)
 out.on('finish', () =>  console.log('The JPEG file was created.'))
 
 // Disable 2x2 chromaSubsampling for deeper colors and use a higher quality
-const stream = canvas.jpegStream({
+const stream = canvas.createJPEGStream({
   quality: 95,
   chromaSubsampling: false
 })
@@ -281,7 +281,7 @@ var dataUrl = canvas.toDataURL('image/png');
 canvas.toDataURL(function(err, png){ }); // defaults to PNG
 canvas.toDataURL('image/png', function(err, png){ });
 canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
-canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
+canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#createJPEGStream for valid options
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 

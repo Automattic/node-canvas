@@ -1352,9 +1352,9 @@ describe('Canvas', function () {
     });
   });
 
-  it('Canvas#jpegStream()', function (done) {
+  it('Canvas#createJPEGStream()', function (done) {
     var canvas = createCanvas(640, 480);
-    var stream = canvas.jpegStream();
+    var stream = canvas.createJPEGStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
     var bytes = 0;
@@ -1378,9 +1378,9 @@ describe('Canvas', function () {
 
   // based on https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
   // end of image marker (FF D9) must exist to maintain JPEG standards
-  it('EOI at end of Canvas#jpegStream()', function (done) {
+  it('EOI at end of Canvas#createJPEGStream()', function (done) {
     var canvas = createCanvas(640, 480);
-    var stream = canvas.jpegStream();
+    var stream = canvas.createJPEGStream();
     var chunks = []
     stream.on('data', function(chunk){
       chunks.push(chunk)
