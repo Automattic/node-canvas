@@ -8,6 +8,7 @@
 
 const loadImage = require('../').loadImage
 const Image = require('../').Image
+const BufferCreator = require('../lib/buffer-creator')
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
@@ -128,7 +129,7 @@ describe('Image', function () {
 
       img.onerror = () => { onerrorCalled += 1 }
 
-      img.src = new Buffer(0)
+      img.src = BufferCreator.allocUnsafe(0)
       assert.strictEqual(img.width, 0)
       assert.strictEqual(img.height, 0)
 

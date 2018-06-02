@@ -32,6 +32,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Prevent segfaults caused by creating a too large canvas
  * Fix parse-font regex to allow for whitespaces.
  * Allow assigning non-string values to fillStyle and strokeStyle
+ * Fix DEP0005 deprecation warning
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
