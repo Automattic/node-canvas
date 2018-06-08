@@ -30,10 +30,6 @@ class Backend : public Nan::ObjectWrap
   public:
     virtual ~Backend();
 
-    // TODO Used only by SVG and PDF, move there
-    void* _closure;
-    inline void* closure(){ return _closure; }
-
     void setCanvas(Canvas* canvas);
 
     virtual cairo_surface_t* createSurface() = 0;

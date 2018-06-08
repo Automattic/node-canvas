@@ -8,12 +8,45 @@ project adheres to [Semantic Versioning](http://semver.org/).
 2.0.0 (unreleased -- encompasses all alpha versions)
 ==================
 
+**Upgrading from 1.x**
+```js
+// (1) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
+//     goes from 0 to 1 instead of from 0 to 100:
+canvas.createJPEGStream({quality: 50}) // old
+canvas.createJPEGStream({quality: 0.5}) // new
+
+// (2) The ZLIB compression level and PNG filter options for canvas.toBuffer are
+//     now named instead of positional arguments:
+canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE) // old
+canvas.toBuffer(undefined, {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+// or specify the mime type explicitly:
+canvas.toBuffer("image/png", {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+
+// (3) #2 also applies for canvas.pngStream, although these arguments were not
+//     documented:
+canvas.pngStream(3, canvas.PNG_FILTER_NONE) // old
+canvas.pngStream({compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+
+// (4) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
+canvas.syncPNGStream() // old
+canvas.createSyncPNGStream() // old
+canvas.createPNGStream() // new
+
+canvas.syncJPEGStream() // old
+canvas.createSyncJPEGStream() // old
+canvas.createJPEGStream() // new
+```
+
 ### Breaking
  * Drop support for Node.js <4.x
- * Remove sync streams (bc53059). Note that all or most streams are still
-   synchronous to some degree; this change just removed `syncPNGStream` and
-   friends.
+ * Remove sync stream functions (bc53059). Note that most streams are still
+   synchronous (run in the main thread); this change just removed `syncPNGStream`
+   and `syncJPEGStream`.
  * Pango is now *required* on all platforms (7716ae4).
+ * Make the `quality` argument for JPEG output go from 0 to 1 to match HTML spec.
+ * Make the `compressionLevel` and `filters` arguments for `canvas.toBuffer()`
+   named instead of positional. Same for `canvas.pngStream()`, although these
+   arguments were not documented.
 
 ### Fixed
  * Prevent segfaults caused by loading invalid fonts (#1105)
@@ -35,8 +68,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
- * Support canvas.getContext("2d", {alpha: boolean}) and
-   canvas.getContext("2d", {pixelFormat: "..."})
+ * Support `canvas.getContext("2d", {alpha: boolean})` and
+   `canvas.getContext("2d", {pixelFormat: "..."})`
  * Support indexed PNG encoding.
  * Support `currentTransform` (d6714ee)
  * Export `CanvasGradient` (6a4c0ab)
@@ -48,6 +81,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
  * Browser-compatible API (6a29a23)
  * Support for jpeg on Windows (42e9a74)
  * Support for backends (1a6dffe)
+ * Support for `canvas.toBuffer("image/jpeg")`
+ * Unified configuration options for `canvas.toBuffer()`, `canvas.pngStream()`
+   and `canvas.jpegStream()`
 
 1.6.x (unreleased)
 ==================

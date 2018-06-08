@@ -4,6 +4,7 @@
 #include <v8.h>
 
 #include "Backend.h"
+#include "../closure.h"
 
 using namespace std;
 
@@ -14,6 +15,9 @@ class SvgBackend : public Backend
     cairo_surface_t* recreateSurface();
 
   public:
+    PdfSvgClosure* _closure = NULL;
+    inline PdfSvgClosure* closure() { return _closure; }
+
     SvgBackend(int width, int height);
     ~SvgBackend();
 

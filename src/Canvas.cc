@@ -193,13 +193,20 @@ NAN_SETTER(Canvas::SetHeight) {
  */
 
 void
-Canvas::ToBufferAsync(uv_work_t *req) {
-  closure_t *closure = (closure_t *) req->data;
+Canvas::ToPngBufferAsync(uv_work_t *req) {
+  PngClosure* closure = static_cast<PngClosure*>(req->data);
 
   closure->status = canvas_write_to_png_stream(
-      closure->canvas->surface()
-    , toBuffer
-    , closure);
+    closure->canvas->surface(),
+    toBuffer,
+    closure);
+}
+
+void
+Canvas::ToJpegBufferAsync(uv_work_t *req) {
+  JpegClosure* closure = static_cast<JpegClosure*>(req->data);
+
+  write_to_jpeg_buffer(closure->canvas->surface(), closure, &closure->data, &closure->len);
 }
 
 /*
@@ -210,7 +217,7 @@ void
 Canvas::ToBufferAsyncAfter(uv_work_t *req) {
   Nan::HandleScope scope;
   Nan::AsyncResource async("canvas:ToBufferAsyncAfter");
-  closure_t *closure = (closure_t *) req->data;
+  Closure* closure = static_cast<Closure*>(req->data);
   delete req;
 
   if (closure->status) {
@@ -218,41 +225,128 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
     closure->pfn->Call(1, argv, &async);
   } else {
     Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
-    memcpy(Buffer::Data(buf), closure->data, closure->len);
     Local<Value> argv[2] = { Nan::Null(), buf };
     closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
-  delete closure->pfn;
-  closure_destroy(closure);
-  free(closure);
+  delete closure->pfn; // TODO move to destructor
+  delete closure;
+}
+
+static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
+  if (arg->IsObject()) {
+    Local<Object> obj = arg->ToObject();
+
+    Local<Value> cLevel = obj->Get(Nan::New("compressionLevel").ToLocalChecked());
+    if (cLevel->IsUint32()) {
+      uint32_t val = cLevel->Uint32Value();
+      // See quote below from spec section 4.12.5.5.
+      if (val <= 9) pngargs.compressionLevel = val;
+    }
+
+    Local<Value> filters = obj->Get(Nan::New("filters").ToLocalChecked());
+    if (filters->IsUint32()) pngargs.filters = filters->Uint32Value();
+
+    Local<Value> palette = obj->Get(Nan::New("palette").ToLocalChecked());
+    if (palette->IsUint8ClampedArray()) {
+      Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
+      pngargs.nPaletteColors = palette_ta->Length();
+      if (pngargs.nPaletteColors % 4 != 0) {
+        throw "Palette length must be a multiple of 4.";
+      }
+      pngargs.nPaletteColors /= 4;
+      Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
+      pngargs.palette = *_paletteColors;
+      // Optional background color index:
+      Local<Value> backgroundIndexVal = obj->Get(Nan::New("backgroundIndex").ToLocalChecked());
+      if (backgroundIndexVal->IsUint32()) {
+        pngargs.backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
+      }
+    }
+  }
+}
+
+static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
+  // "If Type(quality) is not Number, or if quality is outside that range, the
+  // user agent must use its default quality value, as if the quality argument 
+  // had not been given." - 4.12.5.5
+  if (arg->IsObject()) {
+    Local<Object> obj = arg->ToObject();
+
+    Local<Value> qual = obj->Get(Nan::New("quality").ToLocalChecked());
+    if (qual->IsNumber()) {
+      double quality = qual->NumberValue();
+      if (quality >= 0.0 && quality <= 1.0) {
+        jpegargs.quality = static_cast<uint32_t>(100.0 * quality);
+      }
+    }
+
+    Local<Value> chroma = obj->Get(Nan::New("chromaSubsampling").ToLocalChecked());
+    if (chroma->IsBoolean()) {
+      bool subsample = chroma->BooleanValue();
+      jpegargs.chromaSubsampling = subsample ? 2 : 1;
+    } else if (chroma->IsNumber()) {
+      jpegargs.chromaSubsampling = chroma->Uint32Value();
+    }
+
+    Local<Value> progressive = obj->Get(Nan::New("progressive").ToLocalChecked());
+    if (!progressive->IsUndefined()) {
+      jpegargs.progressive = progressive->BooleanValue();
+    }
+  }
+}
+
+static uint32_t getSafeBufSize(Canvas* canvas) {
+  // Don't allow the buffer size to exceed the size of the canvas (#674)
+  // TODO not sure if this is really correct, but it fixed #674
+  return min(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
 }
 
 /*
- * Convert PNG data to a node::Buffer, async when a
- * callback function is passed.
+ * Converts/encodes data to a Buffer. Async when a callback function is passed.
+
+ * PDF/SVG canvases:
+    (any) => Buffer
+
+ * ARGB data:
+    ("raw") => Buffer
+
+ * PNG-encoded
+    () => Buffer
+    (undefined|"image/png", {compressionLevel?: number, filter?: number}) => Buffer
+    ((err: null|Error, buffer) => any)
+    ((err: null|Error, buffer) => any, undefined|"image/png", {compressionLevel?: number, filter?: number})
+
+ * JPEG-encoded
+    ("image/jpeg") => Buffer
+    ("image/jpeg", {quality?: number, progressive?: Boolean, chromaSubsampling?: Boolean|number}) => Buffer
+    ((err: null|Error, buffer) => any, "image/jpeg")
+    ((err: null|Error, buffer) => any, "image/jpeg", {quality?: number, progressive?: Boolean, chromaSubsampling?: Boolean|number})
  */
 
 NAN_METHOD(Canvas::ToBuffer) {
   cairo_status_t status;
-  uint32_t compression_level = 6;
-  uint32_t filter = PNG_ALL_FILTERS;
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
-  // TODO: async / move this out
+  // Vector canvases, sync only
   const string name = canvas->backend()->getName();
   if (name == "pdf" || name == "svg") {
     cairo_surface_finish(canvas->surface());
-    closure_t *closure = (closure_t *) canvas->backend()->closure();
+    PdfSvgClosure* closure;
+    if (name == "pdf") {
+      closure = static_cast<PdfBackend*>(canvas->backend())->closure();
+    } else {
+      closure = static_cast<SvgBackend*>(canvas->backend())->closure();
+    }
 
     Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
 
-  if (info.Length() >= 1 && info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
-    // Return raw ARGB data -- just a memcpy()
+  // Raw ARGB data -- just a memcpy()
+  if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
     const unsigned char *data = cairo_image_surface_get_data(surface);
@@ -261,54 +355,49 @@ NAN_METHOD(Canvas::ToBuffer) {
     return;
   }
 
-  if (info.Length() > 1 && !(info[1]->IsUndefined() && info[2]->IsUndefined())) {
-    if (!info[1]->IsUndefined()) {
-        bool good = true;
-        if (info[1]->IsNumber()) {
-          compression_level = info[1]->Uint32Value();
-        } else if (info[1]->IsString()) {
-          if (info[1]->StrictEquals(Nan::New<String>("0").ToLocalChecked())) {
-            compression_level = 0;
-          } else {
-            uint32_t tmp = info[1]->Uint32Value();
-            if (tmp == 0) {
-              good = false;
-            } else {
-              compression_level = tmp;
-            }
-          }
-       } else {
-         good = false;
-       }
-
-       if (good) {
-         if (compression_level > 9) {
-           return Nan::ThrowRangeError("Allowed compression levels lie in the range [0, 9].");
-         }
-       } else {
-        return Nan::ThrowTypeError("Compression level must be a number.");
-       }
-    }
-
-    if (!info[2]->IsUndefined()) {
-      if (info[2]->IsUint32()) {
-        filter = info[2]->Uint32Value();
-      } else {
-        return Nan::ThrowTypeError("Invalid filter value.");
+  // Sync PNG, default
+  if (info[0]->IsUndefined() || info[0]->StrictEquals(Nan::New<String>("image/png").ToLocalChecked())) {
+    try {
+      PngClosure closure(canvas);
+      parsePNGArgs(info[1], closure);
+      if (closure.nPaletteColors == 0xFFFFFFFF) {
+        Nan::ThrowError("Palette length must be a multiple of 4.");
+        return;
       }
+
+      Nan::TryCatch try_catch;
+      status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
+
+      if (try_catch.HasCaught()) {
+        try_catch.ReThrow();
+      } else if (status) {
+        throw status;
+      } else {
+        Local<Object> buf = Nan::CopyBuffer((char *)closure.data, closure.len).ToLocalChecked();
+        info.GetReturnValue().Set(buf);
+      }
+    } catch (cairo_status_t ex) {
+      Nan::ThrowError(Canvas::Error(ex));
+    } catch (const char* ex) {
+      Nan::ThrowError(ex);
     }
+    return;
   }
 
-  // Async
-  if (info[0]->IsFunction()) {
-    closure_t *closure = (closure_t *) malloc(sizeof(closure_t));
-    status = closure_init(closure, canvas, compression_level, filter);
+  // Async PNG
+  if (info[0]->IsFunction() &&
+    (info[1]->IsUndefined() || info[1]->StrictEquals(Nan::New<String>("image/png").ToLocalChecked()))) {
 
-    // ensure closure is ok
-    if (status) {
-      closure_destroy(closure);
-      free(closure);
-      return Nan::ThrowError(Canvas::Error(status));
+    PngClosure* closure;
+    try {
+      closure = new PngClosure(canvas);
+      parsePNGArgs(info[2], *closure);
+    } catch (cairo_status_t ex) {
+      Nan::ThrowError(Canvas::Error(ex));
+      return;
+    } catch (const char* ex) {
+      Nan::ThrowError(ex);
+      return;
     }
 
     // TODO: only one callback fn in closure
@@ -319,37 +408,62 @@ NAN_METHOD(Canvas::ToBuffer) {
     req->data = closure;
     // Make sure the surface exists since we won't have an isolate context in the async block:
     canvas->surface();
-    uv_queue_work(uv_default_loop(), req, ToBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
+    uv_queue_work(uv_default_loop(), req, ToPngBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
 
     return;
-  // Sync
-  } else {
-    closure_t closure;
-    status = closure_init(&closure, canvas, compression_level, filter);
-
-    // ensure closure is ok
-    if (status) {
-      closure_destroy(&closure);
-      return Nan::ThrowError(Canvas::Error(status));
-    }
-
-    Nan::TryCatch try_catch;
-    status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
-
-    if (try_catch.HasCaught()) {
-      closure_destroy(&closure);
-      try_catch.ReThrow();
-      return;
-    } else if (status) {
-      closure_destroy(&closure);
-      return Nan::ThrowError(Canvas::Error(status));
-    } else {
-      Local<Object> buf = Nan::CopyBuffer((char *)closure.data, closure.len).ToLocalChecked();
-      closure_destroy(&closure);
-      info.GetReturnValue().Set(buf);
-      return;
-    }
   }
+
+#ifdef HAVE_JPEG
+  // Sync JPEG
+  Local<Value> jpegStr = Nan::New<String>("image/jpeg").ToLocalChecked();
+  if (info[0]->StrictEquals(jpegStr)) {
+    try {
+      JpegClosure closure(canvas);
+      parseJPEGArgs(info[1], closure);
+
+      Nan::TryCatch try_catch;
+      unsigned char *outbuff = NULL;
+      uint32_t outsize = 0;
+      write_to_jpeg_buffer(canvas->surface(), &closure, &outbuff, &outsize);
+
+      if (try_catch.HasCaught()) {
+        try_catch.ReThrow();
+      } else {
+        char *signedOutBuff = reinterpret_cast<char*>(outbuff);
+        Local<Object> buf = Nan::CopyBuffer(signedOutBuff, outsize).ToLocalChecked();
+        info.GetReturnValue().Set(buf);
+      }
+    } catch (cairo_status_t ex) {
+      Nan::ThrowError(Canvas::Error(ex));
+    }
+    return;
+  }
+
+  // Async JPEG
+  if (info[0]->IsFunction() && info[1]->StrictEquals(jpegStr)) {
+    JpegClosure* closure;
+    try {
+      closure = new JpegClosure(canvas);
+    } catch (cairo_status_t ex) {
+      Nan::ThrowError(Canvas::Error(ex));
+      return;
+    }
+    
+    parseJPEGArgs(info[1], *closure);
+    
+    // TODO: only one callback fn in closure // TODO what does this comment mean?
+    canvas->Ref();
+    closure->pfn = new Nan::Callback(info[0].As<Function>());
+
+    uv_work_t* req = new uv_work_t;
+    req->data = closure;
+    // Make sure the surface exists since we won't have an isolate context in the async block:
+    canvas->surface();
+    uv_queue_work(uv_default_loop(), req, ToJpegBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
+
+    return;
+  }
+#endif
 }
 
 /*
@@ -360,7 +474,7 @@ static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
   Nan::AsyncResource async("canvas:StreamPNG");
-  closure_t *closure = (closure_t *) c;
+  PngClosure* closure = (PngClosure*) c;
   Local<Object> buf = Nan::CopyBuffer((char *)data, len).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
@@ -371,94 +485,20 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 }
 
 /*
- * Stream PNG data synchronously.
- * TODO the compression level and filter args don't seem to be documented.
- * Maybe move them to named properties in the options object?
- * StreamPngSync(this, options: {palette?: Uint8ClampedArray})
- * StreamPngSync(this, compression_level?: uint32, filter?: uint32)
+ * Stream PNG data synchronously. TODO async
+ * StreamPngSync(this, options: {palette?: Uint8ClampedArray, backgroundIndex?: uint32, compressionLevel: uint32, filters: uint32})
  */
 
 NAN_METHOD(Canvas::StreamPNGSync) {
-  uint32_t compression_level = 6;
-  uint32_t filter = PNG_ALL_FILTERS;
-  // TODO: async as well
   if (!info[0]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
-
+  
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  uint8_t* paletteColors = NULL;
-  size_t nPaletteColors = 0;
-  uint8_t backgroundIndex = 0;
 
-  if (info.Length() > 1 && !(info[1]->IsUndefined() && info[2]->IsUndefined())) {
-    if (!info[1]->IsUndefined()) {
-        bool good = true;
-        if (info[1]->IsNumber()) {
-          compression_level = info[1]->Uint32Value();
-        } else if (info[1]->IsString()) {
-          if (info[1]->StrictEquals(Nan::New<String>("0").ToLocalChecked())) {
-            compression_level = 0;
-          } else {
-            uint32_t tmp = info[1]->Uint32Value();
-            if (tmp == 0) {
-              good = false;
-            } else {
-              compression_level = tmp;
-            }
-          }
-        } else if (info[1]->IsObject()) {
-          // If canvas is A8 or A1 and options obj has Uint8ClampedArray palette,
-          // encode as indexed PNG.
-          cairo_format_t format = canvas->backend()->getFormat();
-          if (format == CAIRO_FORMAT_A8 || format == CAIRO_FORMAT_A1) {
-            Local<Object> attrs = info[1]->ToObject();
-            Local<Value> palette = attrs->Get(Nan::New("palette").ToLocalChecked());
-            if (palette->IsUint8ClampedArray()) {
-              Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
-              nPaletteColors = palette_ta->Length();
-              if (nPaletteColors % 4 != 0) {
-                Nan::ThrowError("Palette length must be a multiple of 4.");
-              }
-              nPaletteColors /= 4;
-              Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
-              paletteColors = *_paletteColors;
-              // Optional background color index:
-              Local<Value> backgroundIndexVal = attrs->Get(Nan::New("backgroundIndex").ToLocalChecked());
-              if (backgroundIndexVal->IsUint32()) {
-                backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
-              }
-            }
-          }
-        } else {
-          good = false;
-        }
+  PngClosure closure(canvas);
+  parsePNGArgs(info[1], closure);
 
-       if (good) {
-         if (compression_level > 9) {
-           return Nan::ThrowRangeError("Allowed compression levels lie in the range [0, 9].");
-         }
-       } else {
-        return Nan::ThrowTypeError("Compression level must be a number.");
-       }
-    }
-
-    if (!info[2]->IsUndefined()) {
-      if (info[2]->IsUint32()) {
-        filter = info[2]->Uint32Value();
-      } else {
-        return Nan::ThrowTypeError("Invalid filter value.");
-      }
-    }
-  }
-
-
-  closure_t closure;
   closure.fn = Local<Function>::Cast(info[0]);
-  closure.compression_level = compression_level;
-  closure.filter = filter;
-  closure.palette = paletteColors;
-  closure.nPaletteColors = nPaletteColors;
-  closure.backgroundIndex = backgroundIndex;
 
   Nan::TryCatch try_catch;
 
@@ -480,6 +520,14 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   return;
 }
 
+
+struct PdfStreamInfo {
+  Local<Function> fn;
+  uint32_t len;
+  uint8_t* data;
+};
+
+
 /*
  * Canvas::StreamPDF FreeCallback
  */
@@ -494,28 +542,27 @@ static cairo_status_t
 streamPDF(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
   Nan::AsyncResource async("canvas:StreamPDF");
-  closure_t *closure = static_cast<closure_t *>(c);
+  PdfStreamInfo* streaminfo = static_cast<PdfStreamInfo*>(c);
   Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
+  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), streaminfo->fn, sizeof argv / sizeof *argv, argv);
   return CAIRO_STATUS_SUCCESS;
 }
 
 
-cairo_status_t canvas_write_to_pdf_stream(cairo_surface_t *surface, cairo_write_func_t write_func, void *closure) {
-  closure_t *pdf_closure = static_cast<closure_t *>(closure);
-  size_t whole_chunks = pdf_closure->len / PAGE_SIZE;
-  size_t remainder = pdf_closure->len - whole_chunks * PAGE_SIZE;
+cairo_status_t canvas_write_to_pdf_stream(cairo_surface_t *surface, cairo_write_func_t write_func, PdfStreamInfo* streaminfo) {
+  size_t whole_chunks = streaminfo->len / PAGE_SIZE;
+  size_t remainder = streaminfo->len - whole_chunks * PAGE_SIZE;
 
   for (size_t i = 0; i < whole_chunks; ++i) {
-    write_func(pdf_closure, &pdf_closure->data[i * PAGE_SIZE], PAGE_SIZE);
+    write_func(streaminfo, &streaminfo->data[i * PAGE_SIZE], PAGE_SIZE);
   }
 
   if (remainder) {
-    write_func(pdf_closure, &pdf_closure->data[whole_chunks * PAGE_SIZE], remainder);
+    write_func(streaminfo, &streaminfo->data[whole_chunks * PAGE_SIZE], remainder);
   }
 
   return CAIRO_STATUS_SUCCESS;
@@ -536,26 +583,28 @@ NAN_METHOD(Canvas::StreamPDFSync) {
 
   cairo_surface_finish(canvas->surface());
 
-  closure_t closure;
-  closure.data = static_cast<closure_t*>(canvas->backend()->closure())->data;
-  closure.len = static_cast<closure_t*>(canvas->backend()->closure())->len;
-  closure.fn = info[0].As<Function>();
+  PdfSvgClosure* closure = static_cast<PdfBackend*>(canvas->backend())->closure();
+  Local<Function> fn = info[0].As<Function>();
+  PdfStreamInfo streaminfo;
+  streaminfo.fn = fn;
+  streaminfo.data = closure->data;
+  streaminfo.len = closure->len;
 
   Nan::TryCatch try_catch;
 
-  cairo_status_t status = canvas_write_to_pdf_stream(canvas->surface(), streamPDF, &closure);
+  cairo_status_t status = canvas_write_to_pdf_stream(canvas->surface(), streamPDF, &streaminfo);
 
   if (try_catch.HasCaught()) {
     try_catch.ReThrow();
   } else if (status) {
     Local<Value> error = Canvas::Error(status);
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), 1, &error);
+    Nan::Call(fn, Nan::GetCurrentContext()->Global(), 1, &error);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
 }
 
@@ -566,26 +615,17 @@ NAN_METHOD(Canvas::StreamPDFSync) {
 #ifdef HAVE_JPEG
 
 NAN_METHOD(Canvas::StreamJPEGSync) {
-  // TODO: async as well
-  if (!info[0]->IsNumber())
-    return Nan::ThrowTypeError("buffer size required");
-  if (!info[1]->IsNumber())
-    return Nan::ThrowTypeError("quality setting required");
-  if (!info[2]->IsBoolean())
-    return Nan::ThrowTypeError("progressive setting required");
-  if (!info[3]->IsNumber())
-    return Nan::ThrowTypeError("chromaHSampFactor required");
-  if (!info[4]->IsNumber())
-    return Nan::ThrowTypeError("chromaVSampFactor required");
-  if (!info[5]->IsFunction())
+  if (!info[1]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
 
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  closure_t closure;
-  closure.fn = Local<Function>::Cast(info[5]);
+  JpegClosure closure(canvas);
+  parseJPEGArgs(info[0], closure);
+  closure.fn = Local<Function>::Cast(info[1]);
 
   Nan::TryCatch try_catch;
-  write_to_jpeg_stream(canvas->surface(), info[0]->NumberValue(), info[1]->NumberValue(), info[2]->BooleanValue(), info[3]->NumberValue(), info[4]->NumberValue(), &closure);
+  uint32_t bufsize = getSafeBufSize(canvas);
+  write_to_jpeg_stream(canvas->surface(), bufsize, &closure);
 
   if (try_catch.HasCaught()) {
     try_catch.ReThrow();

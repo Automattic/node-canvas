@@ -3,6 +3,7 @@
 
 #include <v8.h>
 
+#include "../closure.h"
 #include "Backend.h"
 
 using namespace std;
@@ -14,6 +15,9 @@ class PdfBackend : public Backend
     cairo_surface_t* recreateSurface();
 
   public:
+    PdfSvgClosure* _closure = NULL;
+    inline PdfSvgClosure* closure() { return _closure; }
+
     PdfBackend(int width, int height);
     ~PdfBackend();
 
