@@ -1605,6 +1605,8 @@ describe('Canvas', function () {
 
     // Drawing zero-width image
     ctx.drawImage(canvas, 0, 0, 0, 0, 0, 0, 0, 0);
+    ctx.drawImage(canvas, 0, 0, 0, 0, 1, 1, 1, 1);
+    ctx.drawImage(canvas, 1, 1, 1, 1, 0, 0, 0, 0);
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, 500, 500);
 
