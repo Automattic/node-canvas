@@ -497,6 +497,26 @@ describe('Canvas', function () {
       var buf = createCanvas(200,200).toBuffer('image/png');
       assert.equal('PNG', buf.slice(1,4).toString());
     });
+
+    it('Canvas#toBuffer("image/png", {resolution: 96})', function () {
+      const buf = createCanvas(200, 200).toBuffer('image/png', {resolution: 96});
+      // 3780 ppm ~= 96 ppi
+      for (let i = 0; i < buf.length - 12; i++) {
+        if (buf[i] === 0x70 &&
+          buf[i + 1] === 0x48 &&
+          buf[i + 2] === 0x59 &&
+          buf[i + 3] === 0x73) { // pHYs
+          assert.equal(buf[i + 4], 0);
+          assert.equal(buf[i + 5], 0);
+          assert.equal(buf[i + 6], 0x0e);
+          assert.equal(buf[i + 7], 0xc4); // x
+          assert.equal(buf[i + 8], 0);
+          assert.equal(buf[i + 9], 0);
+          assert.equal(buf[i + 10], 0x0e);
+          assert.equal(buf[i + 11], 0xc4); // y
+        }
+      }
+    })
   
     it('Canvas#toBuffer("image/png", {compressionLevel: 5})', function () {
       var buf = createCanvas(200,200).toBuffer('image/png', {compressionLevel: 5});
