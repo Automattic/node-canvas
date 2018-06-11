@@ -65,6 +65,7 @@ canvas.createJPEGStream() // new
  * Prevent segfaults caused by creating a too large canvas
  * Fix parse-font regex to allow for whitespaces.
  * Allow assigning non-string values to fillStyle and strokeStyle
+ * Fix drawing zero-width and zero-height images.
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

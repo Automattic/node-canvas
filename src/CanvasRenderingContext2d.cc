@@ -1168,6 +1168,9 @@ NAN_METHOD(Context2d::DrawImage) {
       break;
   }
 
+  if (!(sw && sh && dw && dh))
+    return;
+
   // Start draw
   cairo_save(ctx);
 
