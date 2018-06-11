@@ -89,7 +89,7 @@ static void canvas_convert_565_to_888(png_structp png, png_row_infop row_info, p
 
 struct canvas_png_write_closure_t {
     cairo_write_func_t write_func;
-    closure_t *closure;
+    PngClosure* closure;
 };
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -164,8 +164,8 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 #endif
 
     png_set_write_fn(png, closure, write_func, canvas_png_flush);
-    png_set_compression_level(png, closure->closure->compression_level);
-    png_set_filter(png, 0, closure->closure->filter);
+    png_set_compression_level(png, closure->closure->compressionLevel);
+    png_set_filter(png, 0, closure->closure->filters);
 
     cairo_format_t format = cairo_image_surface_get_format(surface);
 
@@ -279,7 +279,7 @@ static void canvas_stream_write_func(png_structp png, png_bytep data, png_size_t
     }
 }
 
-static cairo_status_t canvas_write_to_png_stream(cairo_surface_t *surface, cairo_write_func_t write_func, closure_t *closure) {
+static cairo_status_t canvas_write_to_png_stream(cairo_surface_t *surface, cairo_write_func_t write_func, PngClosure* closure) {
     struct canvas_png_write_closure_t png_closure;
 
     if (cairo_surface_status(surface)) {

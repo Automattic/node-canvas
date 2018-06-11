@@ -5,6 +5,9 @@
 ## This is the documentation for version 2.0.0-alpha
 Alpha versions of 2.0 can be installed using `npm install canvas@next`.
 
+See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md)
+for a guide to upgrading from 1.x to 2.x.
+
 **For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
 
 -----
@@ -80,9 +83,11 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 })
 ```
 
-## Non-Standard API
+## Non-Standard APIs
 
- node-canvas extends the canvas API to provide interfacing with node, for example streaming PNG data, converting to a `Buffer` instance, etc. Among the interfacing API, in some cases the drawing API has been extended for SSJS image manipulation / creation usage, however keep in mind these additions may fail to render properly within browsers.
+node-canvas implements the [HTML Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) as closely as possible.
+(See [Compatibility Status](https://github.com/Automattic/node-canvas/wiki/Compatibility-Status)
+for the current API compliance.) All non-standard APIs are documented below.
 
 ### Image#src=Buffer
 
@@ -125,84 +130,145 @@ img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
 
 If image data is not tracked, and the Image is drawn to an image rather than a PDF canvas, the output will be junk. Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
 
-### Canvas#pngStream(options)
+### Canvas#toBuffer()
 
-  To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, emitting _end_ when the data stream ends. If an exception occurs the _error_ event is emitted.
+Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the
+image contained in the canvas.
+
+> `canvas.toBuffer((err: Error|null, result: Buffer) => void[, mimeType[, config]]) => void`
+> `canvas.toBuffer([mimeType[, config]]) => Buffer`
+
+* **callback** If provided, the buffer will be provided in the callback instead
+  of being returned by the function. Invoked with an error as the first argument
+  if encoding failed, or the resulting buffer as the second argument if it
+  succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases (there
+  is no async work to do in those cases).
+* **mimeType** A string indicating the image format. Valid options are `image/png`,
+  `image/jpeg` (if node-canvas was built with JPEG support) and `raw` (unencoded
+  ARGB32 data in native-endian byte order, top-to-bottom). Defaults to
+  `image/png`. If the canvas is a PDF or SVG canvas, this argument is ignored
+  and a PDF or SVG is returned always.
+* **config**
+  * For `image/jpeg` an object specifying the quality (0 to 1), if progressive
+    compression should be used and/or if chroma subsampling should be used:
+    `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All
+    properties are optional.
+  * For `image/png`, an object specifying the ZLIB compression level (between 0
+    and 9), the compression filter(s), the palette (indexed PNGs only) and/or
+    the background palette index (indexed PNGs only):
+    `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0}`.
+    All properties are optional.
+
+**Return value**
+
+If no callback is provided, a [`Buffer`](https://nodejs.org/api/buffer.html).
+If a callback is provided, none.
+
+#### Examples
 
 ```javascript
-var fs = require('fs')
-  , out = fs.createWriteStream(__dirname + '/text.png')
-  , stream = canvas.pngStream();
+// Default: buf contains a PNG-encoded image
+const buf = canvas.toBuffer()
 
-stream.pipe(out);
+// PNG-encoded, zlib compression level 3 for faster compression but bigger files, no filtering
+const buf2 = canvas.toBuffer('image/png', {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE})
 
-out.on('finish', function(){
-  console.log('The PNG file was created.');
-});
+// JPEG-encoded, 50% quality
+const buf3 = canvas.toBuffer('image/jpeg', {quality: 0.5})
+
+// Asynchronous PNG
+canvas.toBuffer((err, buf) => {
+  if (err) throw err; // encoding failed
+  // buf is PNG-encoded image
+})
+
+canvas.toBuffer((err, buf) => {
+  if (err) throw err; // encoding failed
+  // buf is JPEG-encoded image at 95% quality
+}, 'image/jpeg', {quality: 0.95})
+
+// ARGB32 pixel values, native-endian
+const buf4 = canvas.toBuffer('raw')
+const {stride, width} = canvas
+// In memory, this is `canvas.height * canvas.stride` bytes long.
+// The top row of pixels, in ARGB order, left-to-right, is:
+const topPixelsARGBLeftToRight = buf4.slice(0, width * 4)
+// And the third row is:
+const row3 = buf4.slice(2 * stride, 2 * stride + width * 4)
+
+// SVG and PDF canvases ignore the mimeType argument
+const myCanvas = createCanvas(w, h, 'pdf')
+myCanvas.toBuffer() // returns a buffer containing a PDF-encoded canvas
+```
+
+### Canvas#createPNGStream(options)
+
+Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable)
+that emits PNG-encoded data.
+
+> `canvas.createPNGStream([config]) => ReadableStream`
+
+* `config` An object specifying the ZLIB compression level (between 0 and 9),
+  the compression filter(s), the palette (indexed PNGs only) and/or the
+  background palette index (indexed PNGs only):
+  `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0}`.
+  All properties are optional.
+
+#### Examples
+
+```javascript
+const fs = require('fs')
+const out = fs.createWriteStream(__dirname + '/test.png')
+const stream = canvas.createPNGStream()
+stream.pipe(out)
+out.on('finish', () =>  console.log('The PNG file was created.'))
 ```
 
 To encode indexed PNGs from canvases with `pixelFormat: 'A8'` or `'A1'`, provide an options object:
 
 ```js
-var palette = new Uint8ClampedArray([
+const palette = new Uint8ClampedArray([
   //r    g    b    a
     0,  50,  50, 255, // index 1
    10,  90,  90, 255, // index 2
   127, 127, 255, 255
   // ...
-]);
-canvas.pngStream({
+])
+canvas.createPNGStream({
   palette: palette,
   backgroundIndex: 0 // optional, defaults to 0
 })
 ```
 
-### Canvas#jpegStream() and Canvas#syncJPEGStream()
+### Canvas#createJPEGStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with
-some optional parameters; functionality is otherwise identical to
-`pngStream()`. See `examples/crop.js` for an example.
+Creates a [`createJPEGStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable)
+that emits JPEG-encoded data.
 
-_Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
-are synchronous_
+_Note: At the moment, `createJPEGStream()` is synchronous under the hood. That is, it
+runs in the main thread, not in the libuv threadpool._
 
-```javascript
-var stream = canvas.jpegStream({
-    bufsize: 4096 // output buffer size in bytes, default: 4096
-  , quality: 75 // JPEG quality (0-100) default: 75
-  , progressive: false // true for progressive compression, default: false
-  , disableChromaSubsampling: false // true to disable 2x2 subsampling of the chroma components, default: false
-});
-```
+> `canvas.createJPEGStream([config]) => ReadableStream`
 
-### Canvas#toBuffer()
+* `config` an object specifying the quality (0 to 1), if progressive compression
+  should be used and/or if chroma subsampling should be used:
+  `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties
+  are optional.
 
-A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing image data.
+#### Examples
 
 ```javascript
-// PNG Buffer, default settings
-var buf = canvas.toBuffer();
+const fs = require('fs')
+const out = fs.createWriteStream(__dirname + '/test.jpeg')
+const stream = canvas.createJPEGStream()
+stream.pipe(out)
+out.on('finish', () =>  console.log('The JPEG file was created.'))
 
-// PNG Buffer, zlib compression level 3 (from 0-9), faster but bigger
-var buf2 = canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE);
-
-// ARGB32 Buffer, native-endian
-var buf3 = canvas.toBuffer('raw');
-var stride = canvas.stride;
-// In memory, this is `canvas.height * canvas.stride` bytes long.
-// The top row of pixels, in ARGB order, left-to-right, is:
-var topPixelsARGBLeftToRight = buf3.slice(0, canvas.width * 4);
-var row3 = buf3.slice(2 * canvas.stride, 2 * canvas.stride + canvas.width * 4);
-```
-
-### Canvas#toBuffer() async
-
-Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
-
-```javascript
-canvas.toBuffer(function(err, buf){
-
-});
+// Disable 2x2 chromaSubsampling for deeper colors and use a higher quality
+const stream = canvas.createJPEGStream({
+  quality: 95,
+  chromaSubsampling: false
+})
 ```
 
 ### Canvas#toDataURL() sync and async
@@ -215,7 +281,7 @@ var dataUrl = canvas.toDataURL('image/png');
 canvas.toDataURL(function(err, png){ }); // defaults to PNG
 canvas.toDataURL('image/png', function(err, png){ });
 canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
-canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
+canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#createJPEGStream for valid options
 canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
 ```
 

@@ -21,7 +21,7 @@ img.onload = function () {
   ctx.imageSmoothingEnabled = true
   ctx.drawImage(img, 0, 0, width, height)
 
-  canvas.pngStream().pipe(out)
+  canvas.createPNGStream().pipe(out)
 
   out.on('finish', function () {
     console.log('Resized and saved in %dms', new Date() - start)

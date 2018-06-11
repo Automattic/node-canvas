@@ -6,6 +6,7 @@
 #ifndef __NODE_JPEG_STREAM_H__
 #define __NODE_JPEG_STREAM_H__
 
+#include "closure.h"
 #include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
@@ -17,7 +18,7 @@
 
 typedef struct {
   struct jpeg_destination_mgr pub;
-  closure_t *closure;
+  JpegClosure* closure;
   JOCTET *buffer;
   int bufsize;
 } closure_destination_mgr;
@@ -74,7 +75,7 @@ term_closure_destination(j_compress_ptr cinfo){
 }
 
 void
-jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
+jpeg_closure_dest(j_compress_ptr cinfo, JpegClosure* closure, int bufsize){
   closure_destination_mgr * dest;
 
   /* The destination object is made permanent so that multiple JPEG images
@@ -100,34 +101,27 @@ jpeg_closure_dest(j_compress_ptr cinfo, closure_t * closure, int bufsize){
   cinfo->dest->free_in_buffer = dest->bufsize;
 }
 
-void
-write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool progressive, int chromaHSampFactor, int chromaVSampFactor, closure_t *closure){
+void encode_jpeg(jpeg_compress_struct cinfo, cairo_surface_t *surface, int quality, bool progressive, int chromaHSampFactor, int chromaVSampFactor) {
   int w = cairo_image_surface_get_width(surface);
   int h = cairo_image_surface_get_height(surface);
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
 
-  JSAMPROW slr;
-  cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_compress(&cinfo);
   cinfo.in_color_space = JCS_RGB;
   cinfo.input_components = 3;
   cinfo.image_width = w;
   cinfo.image_height = h;
   jpeg_set_defaults(&cinfo);
   if (progressive)
-     jpeg_simple_progression(&cinfo);
-  jpeg_set_quality(&cinfo, quality, (quality<25)?0:1);
+    jpeg_simple_progression(&cinfo);
+  jpeg_set_quality(&cinfo, quality, (quality < 25) ? 0 : 1);
   cinfo.comp_info[0].h_samp_factor = chromaHSampFactor;
   cinfo.comp_info[0].v_samp_factor = chromaVSampFactor;
 
-  jpeg_closure_dest(&cinfo, closure, bufsize);
-
+  JSAMPROW slr;
   jpeg_start_compress(&cinfo, TRUE);
   unsigned char *dst;
-  unsigned int *src = (unsigned int *) cairo_image_surface_get_data(surface);
+  unsigned int *src = (unsigned int *)cairo_image_surface_get_data(surface);
   int sl = 0;
-  dst = (unsigned char *) malloc(w * 3);
+  dst = (unsigned char *)malloc(w * 3);
   while (sl < h) {
     unsigned char *dp = dst;
     int x = 0;
@@ -146,6 +140,40 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, int quality, bool pr
   free(dst);
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
+}
+
+void
+write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure) {
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+  jpeg_closure_dest(&cinfo, closure, bufsize);
+  encode_jpeg(
+    cinfo,
+    surface,
+    closure->quality,
+    closure->progressive,
+    closure->chromaSubsampling,
+    closure->chromaSubsampling);
+}
+
+void
+write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure, unsigned char** outbuff, uint32_t* outsize) {
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+  unsigned long ulOutsize;
+  jpeg_mem_dest(&cinfo, outbuff, &ulOutsize);
+  encode_jpeg(
+    cinfo,
+    surface,
+    closure->quality,
+    closure->progressive,
+    closure->chromaSubsampling,
+    closure->chromaSubsampling);
+  *outsize = static_cast<uint32_t>(ulOutsize);
 }
 
 #endif

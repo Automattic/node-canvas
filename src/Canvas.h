@@ -63,7 +63,8 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
     static Local<Value> Error(cairo_status_t status);
-    static void ToBufferAsync(uv_work_t *req);
+    static void ToPngBufferAsync(uv_work_t *req);
+    static void ToJpegBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);

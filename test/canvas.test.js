@@ -487,100 +487,148 @@ describe('Canvas', function () {
     assert.equal('end', ctx.textAlign);
   });
 
-  it('Canvas#toBuffer()', function () {
-    var buf = createCanvas(200,200).toBuffer();
-    assert.equal('PNG', buf.slice(1,4).toString());
-  });
-
-  it('Canvas#toBuffer() async', function (done) {
-    createCanvas(200, 200).toBuffer(function(err, buf){
-      assert.ok(!err);
+  describe('#toBuffer', function () {
+    it('Canvas#toBuffer()', function () {
+      var buf = createCanvas(200,200).toBuffer();
       assert.equal('PNG', buf.slice(1,4).toString());
-      done();
     });
-  });
-
-  describe('#toBuffer("raw")', function() {
-    var canvas = createCanvas(11, 10)
-        , ctx = canvas.getContext('2d');
-
-    ctx.clearRect(0, 0, 11, 10);
-
-    ctx.fillStyle = 'rgba(200, 200, 200, 0.505)';
-    ctx.fillRect(0, 0, 5, 5);
-
-    ctx.fillStyle = 'red';
-    ctx.fillRect(5, 0, 5, 5);
-
-    ctx.fillStyle = '#00ff00';
-    ctx.fillRect(0, 5, 5, 5);
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(5, 5, 4, 5);
-
-    /** Output:
-     *    *****RRRRR-
-     *    *****RRRRR-
-     *    *****RRRRR-
-     *    *****RRRRR-
-     *    *****RRRRR-
-     *    GGGGGBBBB--
-     *    GGGGGBBBB--
-     *    GGGGGBBBB--
-     *    GGGGGBBBB--
-     *    GGGGGBBBB--
-     */
-
-    var buf = canvas.toBuffer('raw');
-    var stride = canvas.stride;
-
-    var endianness = os.endianness();
-
-    function assertPixel(u32, x, y, message) {
-      var expected = '0x' + u32.toString(16);
-
-      // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
-      // readUInt32BE().
-      var px = buf['readUInt32' + endianness](y * stride + x * 4);
-      var actual = '0x' + px.toString(16);
-
-      assert.equal(actual, expected, message);
-    }
-
-    it('should have the correct size', function() {
-      assert.equal(buf.length, stride * 10);
+  
+    it('Canvas#toBuffer("image/png")', function () {
+      var buf = createCanvas(200,200).toBuffer('image/png');
+      assert.equal('PNG', buf.slice(1,4).toString());
+    });
+  
+    it('Canvas#toBuffer("image/png", {compressionLevel: 5})', function () {
+      var buf = createCanvas(200,200).toBuffer('image/png', {compressionLevel: 5});
+      assert.equal('PNG', buf.slice(1,4).toString());
     });
 
-    it('does not premultiply alpha', function() {
-      assertPixel(0x80646464, 0, 0, 'first semitransparent pixel');
-      assertPixel(0x80646464, 4, 4, 'last semitransparent pixel');
+    it('Canvas#toBuffer("image/jpeg")', function () {
+      var buf = createCanvas(200,200).toBuffer('image/jpeg');
+      assert.equal(buf[0], 0xff);
+      assert.equal(buf[1], 0xd8);
+      assert.equal(buf[buf.byteLength - 2], 0xff);
+      assert.equal(buf[buf.byteLength - 1], 0xd9);
     });
 
-    it('draws red', function() {
-      assertPixel(0xffff0000, 5, 0, 'first red pixel');
-      assertPixel(0xffff0000, 9, 4, 'last red pixel');
+    it('Canvas#toBuffer("image/jpeg", {quality: 0.95})', function () {
+      var buf = createCanvas(200,200).toBuffer('image/jpeg', {quality: 0.95});
+      assert.equal(buf[0], 0xff);
+      assert.equal(buf[1], 0xd8);
+      assert.equal(buf[buf.byteLength - 2], 0xff);
+      assert.equal(buf[buf.byteLength - 1], 0xd9);
     });
 
-    it('draws green', function() {
-      assertPixel(0xff00ff00, 0, 5, 'first green pixel');
-      assertPixel(0xff00ff00, 4, 9, 'last green pixel');
+    it('Canvas#toBuffer(callback)', function (done) {
+      createCanvas(200, 200).toBuffer(function(err, buf){
+        assert.ok(!err);
+        assert.equal('PNG', buf.slice(1,4).toString());
+        done();
+      });
     });
 
-    it('draws black', function() {
-      assertPixel(0xff000000, 5, 5, 'first black pixel');
-      assertPixel(0xff000000, 8, 9, 'last black pixel');
+    it('Canvas#toBuffer(callback, "image/jpeg")', function () {
+      var buf = createCanvas(200,200).toBuffer(function (err, buff) {
+        assert.ok(!err);
+        assert.equal(buf[0], 0xff);
+        assert.equal(buf[1], 0xd8);
+        assert.equal(buf[buf.byteLength - 2], 0xff);
+        assert.equal(buf[buf.byteLength - 1], 0xd9);
+      }, 'image/jpeg');
     });
 
-    it('leaves undrawn pixels black, transparent', function() {
-      assertPixel(0x0, 9, 5, 'first undrawn pixel');
-      assertPixel(0x0, 9, 9, 'last undrawn pixel');
+    it('Canvas#toBuffer(callback, "image/jpeg", {quality: 0.95})', function () {
+      var buf = createCanvas(200,200).toBuffer(function (err, buff) {
+        assert.ok(!err);
+        assert.equal(buf[0], 0xff);
+        assert.equal(buf[1], 0xd8);
+        assert.equal(buf[buf.byteLength - 2], 0xff);
+        assert.equal(buf[buf.byteLength - 1], 0xd9);
+      }, 'image/jpeg', {quality: 0.95});
     });
 
-    it('is immutable', function() {
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, 10, 10);
-      canvas.toBuffer('raw'); // (side-effect: flushes canvas)
-      assertPixel(0xffff0000, 5, 0, 'first red pixel');
+    describe('#toBuffer("raw")', function() {
+      var canvas = createCanvas(11, 10)
+          , ctx = canvas.getContext('2d');
+  
+      ctx.clearRect(0, 0, 11, 10);
+  
+      ctx.fillStyle = 'rgba(200, 200, 200, 0.505)';
+      ctx.fillRect(0, 0, 5, 5);
+  
+      ctx.fillStyle = 'red';
+      ctx.fillRect(5, 0, 5, 5);
+  
+      ctx.fillStyle = '#00ff00';
+      ctx.fillRect(0, 5, 5, 5);
+  
+      ctx.fillStyle = 'black';
+      ctx.fillRect(5, 5, 4, 5);
+  
+      /** Output:
+       *    *****RRRRR-
+       *    *****RRRRR-
+       *    *****RRRRR-
+       *    *****RRRRR-
+       *    *****RRRRR-
+       *    GGGGGBBBB--
+       *    GGGGGBBBB--
+       *    GGGGGBBBB--
+       *    GGGGGBBBB--
+       *    GGGGGBBBB--
+       */
+  
+      var buf = canvas.toBuffer('raw');
+      var stride = canvas.stride;
+  
+      var endianness = os.endianness();
+  
+      function assertPixel(u32, x, y, message) {
+        var expected = '0x' + u32.toString(16);
+  
+        // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
+        // readUInt32BE().
+        var px = buf['readUInt32' + endianness](y * stride + x * 4);
+        var actual = '0x' + px.toString(16);
+  
+        assert.equal(actual, expected, message);
+      }
+  
+      it('should have the correct size', function() {
+        assert.equal(buf.length, stride * 10);
+      });
+  
+      it('does not premultiply alpha', function() {
+        assertPixel(0x80646464, 0, 0, 'first semitransparent pixel');
+        assertPixel(0x80646464, 4, 4, 'last semitransparent pixel');
+      });
+  
+      it('draws red', function() {
+        assertPixel(0xffff0000, 5, 0, 'first red pixel');
+        assertPixel(0xffff0000, 9, 4, 'last red pixel');
+      });
+  
+      it('draws green', function() {
+        assertPixel(0xff00ff00, 0, 5, 'first green pixel');
+        assertPixel(0xff00ff00, 4, 9, 'last green pixel');
+      });
+  
+      it('draws black', function() {
+        assertPixel(0xff000000, 5, 5, 'first black pixel');
+        assertPixel(0xff000000, 8, 9, 'last black pixel');
+      });
+  
+      it('leaves undrawn pixels black, transparent', function() {
+        assertPixel(0x0, 9, 5, 'first undrawn pixel');
+        assertPixel(0x0, 9, 9, 'last undrawn pixel');
+      });
+  
+      it('is immutable', function() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 10, 10);
+        canvas.toBuffer('raw'); // (side-effect: flushes canvas)
+        assertPixel(0xffff0000, 5, 0, 'first red pixel');
+      });
     });
   });
 
@@ -1304,9 +1352,9 @@ describe('Canvas', function () {
     });
   });
 
-  it('Canvas#jpegStream()', function (done) {
+  it('Canvas#createJPEGStream()', function (done) {
     var canvas = createCanvas(640, 480);
-    var stream = canvas.jpegStream();
+    var stream = canvas.createJPEGStream();
     assert(stream instanceof Readable);
     var firstChunk = true;
     var bytes = 0;
@@ -1330,9 +1378,9 @@ describe('Canvas', function () {
 
   // based on https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
   // end of image marker (FF D9) must exist to maintain JPEG standards
-  it('EOI at end of Canvas#jpegStream()', function (done) {
+  it('EOI at end of Canvas#createJPEGStream()', function (done) {
     var canvas = createCanvas(640, 480);
-    var stream = canvas.jpegStream();
+    var stream = canvas.createJPEGStream();
     var chunks = []
     stream.on('data', function(chunk){
       chunks.push(chunk)
@@ -1346,16 +1394,6 @@ describe('Canvas', function () {
     stream.on('error', function(err) {
       done(err);
     });
-  });
-
-  it('Canvas#jpegStream() should clamp buffer size (#674)', function (done) {
-    var c = createCanvas(10, 10);
-    var SIZE = 10 * 1024 * 1024;
-    var s = c.jpegStream({bufsize: SIZE});
-    s.on('data', function (chunk) {
-      assert(chunk.length < SIZE);
-    });
-    s.on('end', done);
   });
 
   it('Context2d#fill()', function() {
@@ -1585,22 +1623,41 @@ describe('Canvas', function () {
     var canvas = createCanvas(500, 500);
     var ctx = canvas.getContext('2d');
 
+    // Drawing canvas to itself
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, 500, 500);
     ctx.fillStyle = 'black';
     ctx.fillRect(5, 5, 10, 10);
-    ctx.drawImage(ctx.canvas, 20, 20);
+    ctx.drawImage(canvas, 20, 20);
 
     var imgd = ctx.getImageData(0, 0, 500, 500);
     var data = imgd.data;
     var count = 0;
 
-    for(var i = 0; i < 500 * 500; i += 4){
+    for(var i = 0; i < 500 * 500 * 4; i += 4){
       if(data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0)
         count++;
     }
 
     assert.strictEqual(count, 10 * 10 * 2);
+
+    // Drawing zero-width image
+    ctx.drawImage(canvas, 0, 0, 0, 0, 0, 0, 0, 0);
+    ctx.drawImage(canvas, 0, 0, 0, 0, 1, 1, 1, 1);
+    ctx.drawImage(canvas, 1, 1, 1, 1, 0, 0, 0, 0);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, 500, 500);
+
+    imgd = ctx.getImageData(0, 0, 500, 500);
+    data = imgd.data;
+    count = 0;
+
+    for(i = 0; i < 500 * 500 * 4; i += 4){
+      if(data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255)
+        count++;
+    }
+
+    assert.strictEqual(count, 500 * 500);
   });
 
   it('Context2d#SetFillColor()', function () {
