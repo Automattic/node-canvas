@@ -33,7 +33,7 @@ $ npm install canvas
 
 By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source`.
 
-Currently the minimum version of node required is __4.0.0__
+Currently the minimum version of node required is __6.0.0__
 
 ### Compiling
 

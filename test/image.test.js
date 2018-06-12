@@ -128,7 +128,7 @@ describe('Image', function () {
 
       img.onerror = () => { onerrorCalled += 1 }
 
-      img.src = new Buffer(0)
+      img.src = Buffer.allocUnsafe(0)
       assert.strictEqual(img.width, 0)
       assert.strictEqual(img.height, 0)
 

@@ -38,7 +38,7 @@ canvas.createJPEGStream() // new
 ```
 
 ### Breaking
- * Drop support for Node.js <4.x
+ * Drop support for Node.js <6.x
  * Remove sync stream functions (bc53059). Note that most streams are still
    synchronous (run in the main thread); this change just removed `syncPNGStream`
    and `syncJPEGStream`.
@@ -66,6 +66,7 @@ canvas.createJPEGStream() // new
  * Fix parse-font regex to allow for whitespaces.
  * Allow assigning non-string values to fillStyle and strokeStyle
  * Fix drawing zero-width and zero-height images.
+ * Fix DEP0005 deprecation warning
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
