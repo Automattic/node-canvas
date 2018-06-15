@@ -86,6 +86,8 @@ canvas.createJPEGStream() // new
  * Support for `canvas.toBuffer("image/jpeg")`
  * Unified configuration options for `canvas.toBuffer()`, `canvas.pngStream()`
    and `canvas.jpegStream()`
+ * Added `resolution` option for `canvas.toBuffer("image/png")` and
+   `canvas.createPNGStream()`
 
 1.6.x (unreleased)
 ==================

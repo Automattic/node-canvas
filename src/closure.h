@@ -45,6 +45,7 @@ struct PdfSvgClosure : Closure {
 struct PngClosure : Closure {
   uint32_t compressionLevel = 6;
   uint32_t filters = PNG_ALL_FILTERS;
+  uint32_t resolution = 0; // 0 = unspecified
   // Indexed PNGs:
   uint32_t nPaletteColors = 0;
   uint8_t* palette = NULL;
