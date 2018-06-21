@@ -19,7 +19,7 @@ function createImageData (array, width, height) {
   return new bindings.ImageData(array, width, height)
 }
 
-function loadImage (src) {
+function loadImage (src, opt = {}) {
   return new Promise((resolve, reject) => {
     const image = new Image()
 
@@ -30,6 +30,10 @@ function loadImage (src) {
 
     image.onload = () => { cleanup(); resolve(image) }
     image.onerror = (err) => { cleanup(); reject(err) }
+
+    if (opt.dataMode) {
+      image.dataMode = opt.dataMode
+    }
 
     image.src = src
   })
