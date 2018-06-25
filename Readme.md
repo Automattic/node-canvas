@@ -401,7 +401,7 @@ ctx.addPage();
 ```js
 var canvas = createCanvas(200, 500, 'svg');
 // Use the normal primitives.
-fs.writeFile('out.svg', canvas.toBuffer());
+fs.writeFileSync('out.svg', canvas.toBuffer());
 ```
 
 ## SVG Image Support
