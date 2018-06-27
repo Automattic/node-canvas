@@ -88,6 +88,8 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 - CMYK images are not supported ([#1183](https://github.com/Automattic/node-canvas/issues/1183), [#425](https://github.com/Automattic/node-canvas/issues/425))
 - `ctx.fillText` `maxWidth` is inconsistent ([#1088](https://github.com/Automattic/node-canvas/issues/1183), [#1088](https://github.com/Automattic/node-canvas/issues/425))
 - Async `canvas.toBuffer` for PDF is not working ([#821](https://github.com/Automattic/node-canvas/issues/821))
+- Using font family multiple times results in default font [#977](https://github.com/Automattic/node-canvas/issues/977)
+- ctx.font with multiple fonts results in default font [#1189](https://github.com/Automattic/node-canvas/issues/1189)
 
 [See all list of bugs](https://github.com/Automattic/node-canvas/issues?q=is%3Aissue+is%3Aopen+label%3ABug).
 
