@@ -547,23 +547,25 @@ describe('Canvas', function () {
       });
     });
 
-    it('Canvas#toBuffer(callback, "image/jpeg")', function () {
+    it('Canvas#toBuffer(callback, "image/jpeg")', function (done) {
       createCanvas(200,200).toBuffer(function (err, buf) {
         assert.ok(!err);
         assert.equal(buf[0], 0xff);
         assert.equal(buf[1], 0xd8);
         assert.equal(buf[buf.byteLength - 2], 0xff);
         assert.equal(buf[buf.byteLength - 1], 0xd9);
+        done();
       }, 'image/jpeg');
     });
 
-    it('Canvas#toBuffer(callback, "image/jpeg", {quality: 0.95})', function () {
+    it('Canvas#toBuffer(callback, "image/jpeg", {quality: 0.95})', function (done) {
       createCanvas(200,200).toBuffer(function (err, buf) {
         assert.ok(!err);
         assert.equal(buf[0], 0xff);
         assert.equal(buf[1], 0xd8);
         assert.equal(buf[buf.byteLength - 2], 0xff);
         assert.equal(buf[buf.byteLength - 1], 0xd9);
+        done();
       }, 'image/jpeg', {quality: 0.95});
     });
 
