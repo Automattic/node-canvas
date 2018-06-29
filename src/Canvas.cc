@@ -93,9 +93,9 @@ NAN_METHOD(Canvas::New) {
     if (info[1]->IsNumber()) height = info[1]->Uint32Value();
 
     if (info[2]->IsString()) {
-      if (0 == strcmp("pdf", *String::Utf8Value(Isolate::GetCurrent(), info[2])))
+      if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
         backend = new PdfBackend(width, height);
-      else if (0 == strcmp("svg", *String::Utf8Value(Isolate::GetCurrent(), info[2])))
+      else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);
       else
         backend = new ImageBackend(width, height);
@@ -638,7 +638,7 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
 char *
 str_value(Local<Value> val, const char *fallback, bool can_be_number) {
   if (val->IsString() || (can_be_number && val->IsNumber())) {
-    return g_strdup(*String::Utf8Value(Isolate::GetCurrent(), val));
+    return g_strdup(*Nan::Utf8String(val));
   } else if (fallback) {
     return g_strdup(fallback);
   } else {
@@ -653,7 +653,7 @@ NAN_METHOD(Canvas::RegisterFont) {
     return Nan::ThrowError(GENERIC_FACE_ERROR);
   }
 
-  String::Utf8Value filePath(Isolate::GetCurrent(), info[0]);
+  Nan::Utf8String filePath(info[0]);
   PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *) *filePath);
 
   if (!sys_desc) return Nan::ThrowError("Could not parse font file");
