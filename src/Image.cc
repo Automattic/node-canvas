@@ -25,7 +25,8 @@ typedef struct {
 #include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
-  jmp_buf setjmp_buffer;
+  private: char unused[8];
+  public: jmp_buf setjmp_buffer;
 };
 #endif
 
@@ -229,7 +230,7 @@ NAN_SETTER(Image::SetSource) {
 
   // url string
   if (value->IsString()) {
-    String::Utf8Value src(value);
+    Nan::Utf8String src(value);
     if (img->filename) free(img->filename);
     img->filename = strdup(*src);
     status = img->load();

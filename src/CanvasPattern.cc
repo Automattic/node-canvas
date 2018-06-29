@@ -64,11 +64,11 @@ NAN_METHOD(Pattern::New) {
     return Nan::ThrowTypeError("Image or Canvas expected");
   }
   repeat_type_t repeat = REPEAT;
-  if (0 == strcmp("no-repeat", *String::Utf8Value(info[1]))) {
+  if (0 == strcmp("no-repeat", *Nan::Utf8String(info[1]))) {
     repeat = NO_REPEAT;
-  } else if (0 == strcmp("repeat-x", *String::Utf8Value(info[1]))) {
+  } else if (0 == strcmp("repeat-x", *Nan::Utf8String(info[1]))) {
     repeat = REPEAT_X;
-  } else if (0 == strcmp("repeat-y", *String::Utf8Value(info[1]))) {
+  } else if (0 == strcmp("repeat-y", *Nan::Utf8String(info[1]))) {
     repeat = REPEAT_Y;
   }
   Pattern *pattern = new Pattern(surface, repeat);
