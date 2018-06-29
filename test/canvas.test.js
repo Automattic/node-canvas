@@ -548,7 +548,7 @@ describe('Canvas', function () {
     });
 
     it('Canvas#toBuffer(callback, "image/jpeg")', function () {
-      var buf = createCanvas(200,200).toBuffer(function (err, buff) {
+      createCanvas(200,200).toBuffer(function (err, buf) {
         assert.ok(!err);
         assert.equal(buf[0], 0xff);
         assert.equal(buf[1], 0xd8);
@@ -558,7 +558,7 @@ describe('Canvas', function () {
     });
 
     it('Canvas#toBuffer(callback, "image/jpeg", {quality: 0.95})', function () {
-      var buf = createCanvas(200,200).toBuffer(function (err, buff) {
+      createCanvas(200,200).toBuffer(function (err, buf) {
         assert.ok(!err);
         assert.equal(buf[0], 0xff);
         assert.equal(buf[1], 0xd8);
