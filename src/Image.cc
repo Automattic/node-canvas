@@ -25,7 +25,8 @@ typedef struct {
 #include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
-  jmp_buf setjmp_buffer;
+  private: char unused[8];
+  public: jmp_buf setjmp_buffer;
 };
 #endif
 
