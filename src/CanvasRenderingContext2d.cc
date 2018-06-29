@@ -335,7 +335,7 @@ void
 Context2d::setFillRule(v8::Local<v8::Value> value) {
   cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
   if (value->IsString()) {
-    String::Utf8Value str(value);
+    String::Utf8Value str(Isolate::GetCurrent(), value);
     if (std::strcmp(*str, "evenodd") == 0) {
       rule = CAIRO_FILL_RULE_EVEN_ODD;
     }
@@ -654,7 +654,7 @@ NAN_METHOD(Context2d::New) {
 
       Local<Value> pixelFormat = ctxAttributes->Get(Nan::New("pixelFormat").ToLocalChecked());
       if (pixelFormat->IsString()) {
-        String::Utf8Value utf8PixelFormat(pixelFormat);
+        String::Utf8Value utf8PixelFormat(Isolate::GetCurrent(), pixelFormat);
         if (!strcmp(*utf8PixelFormat, "RGBA32")) format = CAIRO_FORMAT_ARGB32;
         else if (!strcmp(*utf8PixelFormat, "RGB24")) format = CAIRO_FORMAT_RGB24;
         else if (!strcmp(*utf8PixelFormat, "A8")) format = CAIRO_FORMAT_A8;
@@ -1335,7 +1335,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 
 NAN_SETTER(Context2d::SetPatternQuality) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  String::Utf8Value quality(value->ToString());
+  String::Utf8Value quality(Isolate::GetCurrent(), value->ToString());
   if (0 == strcmp("fast", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_FAST;
   } else if (0 == strcmp("good", *quality)) {
@@ -1373,7 +1373,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  String::Utf8Value type(value->ToString());
+  String::Utf8Value type(Isolate::GetCurrent(), value->ToString());
   if (0 == strcmp("xor", *type)) {
     cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
   } else if (0 == strcmp("source-atop", *type)) {
@@ -1521,7 +1521,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
-  String::Utf8Value str(value->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), value->ToString());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   cairo_antialias_t a;
@@ -1561,7 +1561,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
-  String::Utf8Value str(value->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), value->ToString());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_PATHS;
@@ -1592,7 +1592,7 @@ NAN_GETTER(Context2d::GetFilter) {
  */
 
 NAN_SETTER(Context2d::SetFilter) {
-  String::Utf8Value str(value->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), value->ToString());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
   if (0 == strcmp("fast", *str)) {
@@ -1673,7 +1673,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
 NAN_SETTER(Context2d::SetLineJoin) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  String::Utf8Value type(value->ToString());
+  String::Utf8Value type(Isolate::GetCurrent(), value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -1705,7 +1705,7 @@ NAN_GETTER(Context2d::GetLineCap) {
 NAN_SETTER(Context2d::SetLineCap) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  String::Utf8Value type(value->ToString());
+  String::Utf8Value type(Isolate::GetCurrent(), value->ToString());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
@@ -1780,7 +1780,7 @@ NAN_METHOD(Context2d::SetStrokePattern) {
 
 NAN_SETTER(Context2d::SetShadowColor) {
   short ok;
-  String::Utf8Value str(value->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), value->ToString());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (ok) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1807,7 +1807,7 @@ NAN_METHOD(Context2d::SetFillColor) {
   short ok;
 
   if (!info[0]->IsString()) return;
-  String::Utf8Value str(info[0]);
+  String::Utf8Value str(Isolate::GetCurrent(), info[0]);
   
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
@@ -1835,7 +1835,7 @@ NAN_METHOD(Context2d::SetStrokeColor) {
   short ok;
 
   if (!info[0]->IsString()) return;
-  String::Utf8Value str(info[0]);
+  String::Utf8Value str(Isolate::GetCurrent(), info[0]);
 
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
@@ -2085,7 +2085,7 @@ NAN_METHOD(Context2d::FillText) {
   if(!checkArgs(info, args, argsNum, 1))
     return;
 
-  String::Utf8Value str(info[0]->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), info[0]->ToString());
   double x = args[0];
   double y = args[1];
   double scaled_by = 1;
@@ -2120,7 +2120,7 @@ NAN_METHOD(Context2d::StrokeText) {
   if(!checkArgs(info, args, argsNum, 1))
     return;
 
-  String::Utf8Value str(info[0]->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), info[0]->ToString());
   double x = args[0];
   double y = args[1];
   double scaled_by = 1;
@@ -2245,11 +2245,11 @@ NAN_METHOD(Context2d::SetFont) {
     || !info[3]->IsString()
     || !info[4]->IsString()) return;
 
-  String::Utf8Value weight(info[0]);
-  String::Utf8Value style(info[1]);
+  String::Utf8Value weight(Isolate::GetCurrent(), info[0]);
+  String::Utf8Value style(Isolate::GetCurrent(), info[1]);
   double size = info[2]->NumberValue();
-  String::Utf8Value unit(info[3]);
-  String::Utf8Value family(info[4]);
+  String::Utf8Value unit(Isolate::GetCurrent(), info[3]);
+  String::Utf8Value family(Isolate::GetCurrent(), info[4]);
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
@@ -2282,7 +2282,7 @@ NAN_METHOD(Context2d::MeasureText) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  String::Utf8Value str(info[0]->ToString());
+  String::Utf8Value str(Isolate::GetCurrent(), info[0]->ToString());
   Local<Object> obj = Nan::New<Object>();
 
   PangoRectangle _ink_rect, _logical_rect;

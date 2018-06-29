@@ -80,7 +80,7 @@ NAN_METHOD(Gradient::AddColorStop) {
 
   Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(info.This());
   short ok;
-  String::Utf8Value str(info[1]);
+  String::Utf8Value str(Isolate::GetCurrent(), info[1]);
   uint32_t rgba = rgba_from_string(*str, &ok);
 
   if (ok) {
