@@ -12,6 +12,8 @@ img.onload = function () {
   ctx.drawImage(img, 0, 0)
 }
 
+img.onerror = err => { throw err }
+
 img.src = path.join(__dirname, 'images', 'squid.png')
 
 var sigma = 10 // radius
