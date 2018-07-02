@@ -663,38 +663,31 @@ describe('Canvas', function () {
     ctx.fillRect(100,0,100,100);
 
     it('toDataURL() works and defaults to PNG', function () {
-      assert.ok(0 == canvas.toDataURL().indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL().startsWith('data:image/png;base64,'));
     });
 
     it('toDataURL(0.5) works and defaults to PNG', function () {
-      assert.ok(0 == canvas.toDataURL(0.5).indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL(0.5).startsWith('data:image/png;base64,'));
     });
 
     it('toDataURL(undefined) works and defaults to PNG', function () {
-      assert.ok(0 == canvas.toDataURL(undefined).indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL(undefined).startsWith('data:image/png;base64,'));
     });
 
     it('toDataURL("image/png") works', function () {
-      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL('image/png').startsWith('data:image/png;base64,'));
     });
 
     it('toDataURL("image/png", 0.5) works', function () {
-      assert.ok(0 == canvas.toDataURL('image/png').indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL('image/png').startsWith('data:image/png;base64,'));
     });
 
     it('toDataURL("iMaGe/PNg") works', function () {
-      assert.ok(0 == canvas.toDataURL('iMaGe/PNg').indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL('iMaGe/PNg').startsWith('data:image/png;base64,'));
     });
 
-    it('toDataURL("image/jpeg") throws', function () {
-      assert.throws(
-        function () {
-          canvas.toDataURL('image/jpeg');
-        },
-        function (err) {
-          return err.message === 'Missing required callback function for format "image/jpeg"';
-        }
-      );
+    it('toDataURL("image/jpeg") works', function () {
+      assert.ok(canvas.toDataURL('image/jpeg').startsWith('data:image/jpeg;base64,'));
     });
 
     it('toDataURL(function (err, str) {...}) works and defaults to PNG', function (done) {
@@ -746,18 +739,11 @@ describe('Canvas', function () {
     });
 
     it('toDataURL("image/png", {}) works', function () {
-      assert.ok(0 == canvas.toDataURL('image/png', {}).indexOf('data:image/png;base64,'));
+      assert.ok(canvas.toDataURL('image/png', {}).startsWith('data:image/png;base64,'));
     });
 
-    it('toDataURL("image/jpeg", {}) throws', function () {
-      assert.throws(
-        function () {
-          canvas.toDataURL('image/jpeg', {});
-        },
-        function (err) {
-          return err.message === 'Missing required callback function for format "image/jpeg"';
-        }
-      );
+    it('toDataURL("image/jpeg", {}) works', function () {
+      assert.ok(canvas.toDataURL('image/jpeg', {}).startsWith('data:image/jpeg;base64,'));
     });
 
     it('toDataURL("image/jpeg", function (err, str) {...}) works', function (done) {
