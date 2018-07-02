@@ -88,6 +88,7 @@ canvas.createJPEGStream() // new
    and `canvas.jpegStream()`
  * Added `resolution` option for `canvas.toBuffer("image/png")` and
    `canvas.createPNGStream()`
+ * Support for `canvas.toDataURI("image/jpeg")` (sync)
 
 1.6.x (unreleased)
 ==================
