@@ -67,6 +67,7 @@ canvas.createJPEGStream() // new
  * Allow assigning non-string values to fillStyle and strokeStyle
  * Fix drawing zero-width and zero-height images.
  * Fix DEP0005 deprecation warning
+ * Don't assume `data:` URIs assigned to `img.src` are always base64-encoded
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
@@ -89,6 +90,7 @@ canvas.createJPEGStream() // new
  * Added `resolution` option for `canvas.toBuffer("image/png")` and
    `canvas.createPNGStream()`
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
+ * Support for `img.src = <url>` to match browsers
 
 1.6.x (unreleased)
 ==================

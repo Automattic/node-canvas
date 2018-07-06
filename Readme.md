@@ -97,30 +97,41 @@ node-canvas implements the [HTML Canvas API](https://developer.mozilla.org/en-US
 (See [Compatibility Status](https://github.com/Automattic/node-canvas/wiki/Compatibility-Status)
 for the current API compliance.) All non-standard APIs are documented below.
 
-### Image#src=Buffer
+### Image#src
 
- node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
-
-```javascript
-const { Image } = require('canvas');
-fs.readFile(__dirname + '/images/squid.png', function(err, squid){
-  if (err) throw err;
-  img = new Image;
-  img.src = squid;
-  ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
-});
-```
-
- Below is an example of a canvas drawing it-self as the source several time:
+As in browsers, `img.src` can be set to a `data:` URI or a remote URL. In addition,
+node-canvas allows setting `src` to a local file path or to a `Buffer` instance.
 
 ```javascript
 const { Image } = require('canvas');
-var img = new Image;
-img.src = canvas.toBuffer();
-ctx.drawImage(img, 0, 0, 50, 50);
-ctx.drawImage(img, 50, 0, 50, 50);
-ctx.drawImage(img, 100, 0, 50, 50);
+
+// From a buffer:
+fs.readFile('images/squid.png', (err, squid) => {
+  if (err) throw err
+  const img = new Image()
+  img.onload = () => ctx.drawImage(img, 0, 0)
+  img.onerror = err => { throw err }
+  img.src = squid
+})
+
+// From a local file path:
+const img = new Image()
+img.onload = () => ctx.drawImage(img, 0, 0)
+img.onerror = err => { throw err }
+img.src = 'images/squid.png'
+
+// From a remote URL:
+img.src = 'http://picsum.photos/200/300'
+// ... as above
+
+// From a `data:` URI:
+img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
+// ... as above
 ```
+
+*Note: In some cases, `img.src=` is currently synchronous. However, you should
+always use `img.onload` and `img.onerror`, as we intend to make `img.src=` always
+asynchronous as it is in browsers. See https://github.com/Automattic/node-canvas/issues/1007.*
 
 ### Image#dataMode
 
@@ -414,12 +425,15 @@ fs.writeFileSync('out.svg', canvas.toBuffer());
 
 ## SVG Image Support
 
-If librsvg is on your system when node-canvas is installed, node-canvas can render SVG images within your canvas context. Note that this currently works by simply rasterizing the SVG image using librsvg.
+If librsvg is available when node-canvas is installed, node-canvas can render
+SVG images to your canvas context. This currently works by rasterizing the SVG
+image (i.e. drawing an SVG image to an SVG canvas will not preserve the SVG data).
 
 ```js
-var img = new Image;
-img.src = './example.svg';
-ctx.drawImage(img, 0, 0, 100, 100);
+const img = new Image()
+img.onload = () => ctx.drawImage(img, 0, 0)
+img.onerror = err => { throw err }
+img.src = './example.svg'
 ```
 
 ## Image pixel formats (experimental)
