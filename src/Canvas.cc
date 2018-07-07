@@ -202,12 +202,14 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
     closure);
 }
 
+#ifdef HAVE_JPEG
 void
 Canvas::ToJpegBufferAsync(uv_work_t *req) {
   JpegClosure* closure = static_cast<JpegClosure*>(req->data);
 
   write_to_jpeg_buffer(closure->canvas->surface(), closure, &closure->data, &closure->len);
 }
+#endif
 
 /*
  * EIO after toBuffer callback.
