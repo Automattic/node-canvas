@@ -458,16 +458,16 @@ rgba_create(uint32_t rgba) {
 void
 rgba_to_string(rgba_t rgba, char *buf, size_t len) {
   if (1 == rgba.a) {
-    snprintf(buf, len, "#%.2x%.2x%.2x"
-      , (int) (rgba.r * 255)
-      , (int) (rgba.g * 255)
-      , (int) (rgba.b * 255));
+    snprintf(buf, len, "#%.2x%.2x%.2x",
+      static_cast<int>(round(rgba.r * 255)),
+      static_cast<int>(round(rgba.g * 255)),
+      static_cast<int>(round(rgba.b * 255)));
   } else {
-    snprintf(buf, len, "rgba(%d, %d, %d, %.2f)"
-      , (int) (rgba.r * 255)
-      , (int) (rgba.g * 255)
-      , (int) (rgba.b * 255)
-      , rgba.a);
+    snprintf(buf, len, "rgba(%d, %d, %d, %.2f)",
+      static_cast<int>(round(rgba.r * 255)),
+      static_cast<int>(round(rgba.g * 255)),
+      static_cast<int>(round(rgba.b * 255)),
+      rgba.a);
   }
 }
 
