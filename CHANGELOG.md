@@ -68,6 +68,7 @@ canvas.createJPEGStream() // new
  * Fix drawing zero-width and zero-height images.
  * Fix DEP0005 deprecation warning
  * Don't assume `data:` URIs assigned to `img.src` are always base64-encoded
+ * Fix formatting of color strings (e.g. `ctx.fillStyle`) on 32-bit platforms
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
