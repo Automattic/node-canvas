@@ -69,6 +69,7 @@ canvas.createJPEGStream() // new
  * Fix DEP0005 deprecation warning
  * Don't assume `data:` URIs assigned to `img.src` are always base64-encoded
  * Fix formatting of color strings (e.g. `ctx.fillStyle`) on 32-bit platforms
+ * Explicitly export symbols for the C++ API
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
