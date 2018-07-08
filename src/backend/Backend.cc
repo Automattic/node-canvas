@@ -28,7 +28,7 @@ cairo_surface_t* Backend::recreateSurface()
   return this->createSurface();
 }
 
-cairo_surface_t* Backend::getSurface() {
+DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
   if (!surface) createSurface();
   return surface;
 }

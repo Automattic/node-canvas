@@ -9,6 +9,8 @@
 #include <nan.h>
 #include <cairo.h>
 
+#include "../dll_visibility.h"
+
 class Canvas;
 
 using namespace std;
@@ -35,15 +37,15 @@ class Backend : public Nan::ObjectWrap
     virtual cairo_surface_t* createSurface() = 0;
     virtual cairo_surface_t* recreateSurface();
 
-    cairo_surface_t* getSurface();
+    DLL_PUBLIC cairo_surface_t* getSurface();
     void             destroySurface();
 
-    string getName();
+    DLL_PUBLIC string getName();
 
-    int getWidth();
+    DLL_PUBLIC int getWidth();
     virtual void setWidth(int width);
 
-    int getHeight();
+    DLL_PUBLIC int getHeight();
     virtual void setHeight(int height);
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
