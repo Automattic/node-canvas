@@ -64,6 +64,10 @@ function done (benchmark, times, start, isAsync) {
 
 // node-canvas
 
+bm('fillStyle= name', function () {
+  ctx.fillStyle = "transparent";
+});
+
 bm('lineTo()', function () {
   ctx.lineTo(0, 50)
 })
