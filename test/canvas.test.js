@@ -238,6 +238,10 @@ describe('Canvas', function () {
 
     ctx.fillStyle = 'hsl(1.24e2, 760e-1%, 4.7e1%)';
     assert.equal('#1dd329', ctx.fillStyle);
+
+    // case-insensitive (#235)
+    ctx.fillStyle = "sILveR";
+    assert.equal(ctx.fillStyle, "#c0c0c0");
   });
 
   it('Canvas#type', function () {

@@ -8,7 +8,8 @@
 #include <cstdlib>
 #include <cmath>
 #include <limits>
-
+#include <string>
+#include <algorithm>
 #include "color.h"
 
 // Compatibility with Visual Studio versions prior to VS2015
@@ -398,7 +399,6 @@ static struct named_color {
   , { "whitesmoke", 0xF5F5F5FF }
   , { "yellow", 0xFFFF00FF }
   , { "yellowgreen", 0x9ACD32FF }
-  , { NULL, 0 }
 };
 
 /*
@@ -727,11 +727,12 @@ rgba_from_hex_string(const char *str, short *ok) {
 
 static int32_t
 rgba_from_name_string(const char *str, short *ok) {
-  int i = 0;
-  struct named_color color;
-  while ((color = named_colors[i++]).name) {
-    if (*str == *color.name && 0 == strcmp(str, color.name))
+  std::string lowered(str);
+  std::transform(lowered.begin(), lowered.end(), lowered.begin(), tolower);
+  for (auto color : named_colors) {
+    if (color.name == lowered) {
       return *ok = 1, color.val;
+    }
   }
   return *ok = 0;
 }
