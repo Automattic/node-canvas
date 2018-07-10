@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>
 #include "color.h"
+#include <map>
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -245,11 +246,7 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 /*
  * Named colors.
  */
-
-static struct named_color {
-  const char *name;
-  uint32_t val;
-} named_colors[] = {
+static const std::map<std::string, uint32_t> named_colors = {
     { "transparent", 0xFFFFFF00}
   , { "aliceblue", 0xF0F8FFFF }
   , { "antiquewhite", 0xFAEBD7FF }
@@ -729,10 +726,9 @@ static int32_t
 rgba_from_name_string(const char *str, short *ok) {
   std::string lowered(str);
   std::transform(lowered.begin(), lowered.end(), lowered.begin(), tolower);
-  for (auto color : named_colors) {
-    if (color.name == lowered) {
-      return *ok = 1, color.val;
-    }
+  auto color = named_colors.find(lowered);
+  if (color != named_colors.end()) {
+    return *ok = 1, color->second;
   }
   return *ok = 0;
 }
