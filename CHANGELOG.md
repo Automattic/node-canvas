@@ -47,6 +47,9 @@ canvas.createJPEGStream() // new
  * Make the `compressionLevel` and `filters` arguments for `canvas.toBuffer()`
    named instead of positional. Same for `canvas.pngStream()`, although these
    arguments were not documented.
+ * See also: *Correct some of the `globalCompositeOperator` types* under
+   **Fixed**. These changes were bug-fixes, but will break existing code relying
+   on the incorrect types.
 
 ### Fixed
  * Prevent segfaults caused by loading invalid fonts (#1105)
@@ -71,6 +74,15 @@ canvas.createJPEGStream() // new
  * Fix formatting of color strings (e.g. `ctx.fillStyle`) on 32-bit platforms
  * Explicitly export symbols for the C++ API
  * Named CSS colors should match case-insensitive
+ * Correct some of the `globalCompositeOperator` types to match the spec:
+     * "hsl-hue" is now "hue"
+     * "hsl-saturation" is now "saturation"
+     * "hsl-color" is now "color"
+     * "hsl-luminosity" is now "luminosity"
+     * "darker" is now "darken"
+     * "dest" is now "destination"
+     * "add" is removed (but is the same as "lighter")
+     * "source" is now "copy"
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

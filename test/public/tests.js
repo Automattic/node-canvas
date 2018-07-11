@@ -1184,207 +1184,51 @@ tests['font style variant weight size family'] = function (ctx) {
   ctx.fillText('normal normal normal 16px', 100, 100)
 }
 
-tests['globalCompositeOperation source-over'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-over'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
+// From https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
+const gco = [
+  'source-over', 'source-in', 'source-out', 'source-atop',
+  'destination-over', 'destination-in', 'destination-out', 'destination-atop',
+  'lighter', 'copy', 'xor', 'multiply', 'screen', 'overlay', 'darken',
+  'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light',
+  'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity'
+]
 
-tests['globalCompositeOperation source-in'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-in'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
+gco.forEach(op => {
+  tests['globalCompositeOperator ' + op] = function (ctx, done) {
+    var img1 = new Image()
+    var img2 = new Image()
+    img1.onload = function () {
+      img2.onload = function () {
+        ctx.drawImage(img1, 0, 0)
+        ctx.globalCompositeOperation = op
+        ctx.drawImage(img2, 0, 0)
+        done()
+      }
+      img2.src = imageSrc('newcontent.png')
+    }
+    img1.src = imageSrc('existing.png')
+  }
+})
 
-tests['globalCompositeOperation source-out'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-out'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-in'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-in'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation source-atop'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-atop'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-out'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-out'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-atop'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-atop'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation xor'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'xor'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation copy'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'copy'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation lighter'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'lighter'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation darker'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'darker'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation multiply'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'multiply'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation screen'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'screen'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation overlay'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'overlay'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hard-light'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hard-light'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-hue'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-hue'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-saturation'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-saturation'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-color'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-color'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-luminosity'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-luminosity'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
+tests['known bug #416'] = function (ctx, done) {
+  var img1 = new Image()
+  var img2 = new Image()
+  img1.onload = function () {
+    img2.onload = function () {
+      ctx.drawImage(img1, 0, 0)
+      ctx.globalCompositeOperation = 'destination-in'
+      ctx.save()
+      ctx.translate(img2.width / 2, img1.height / 2)
+      ctx.rotate(Math.PI / 4)
+      ctx.scale(0.5)
+      ctx.translate(-img2.width / 2, -img1.height / 2)
+      ctx.drawImage(img2, 0, 0)
+      ctx.restore()
+      done()
+    }
+    img2.src = imageSrc('newcontent.png')
+  }
+  img1.src = imageSrc('existing.png')
 }
 
 tests['shadowBlur'] = function (ctx) {
