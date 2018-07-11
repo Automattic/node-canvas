@@ -11,6 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <map>
 
 #include "Util.h"
 #include "Canvas.h"
@@ -1289,41 +1290,43 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 
   const char *op = "source-over";
   switch (cairo_get_operator(ctx)) {
-    case CAIRO_OPERATOR_ATOP: op = "source-atop"; break;
-    case CAIRO_OPERATOR_IN: op = "source-in"; break;
-    case CAIRO_OPERATOR_OUT: op = "source-out"; break;
-    case CAIRO_OPERATOR_XOR: op = "xor"; break;
-    case CAIRO_OPERATOR_DEST_ATOP: op = "destination-atop"; break;
-    case CAIRO_OPERATOR_DEST_IN: op = "destination-in"; break;
-    case CAIRO_OPERATOR_DEST_OUT: op = "destination-out"; break;
-    case CAIRO_OPERATOR_DEST_OVER: op = "destination-over"; break;
+    // composite modes:
     case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
-    case CAIRO_OPERATOR_SOURCE: op = "source"; break;
-    case CAIRO_OPERATOR_DEST: op = "dest"; break;
-    case CAIRO_OPERATOR_OVER: op = "over"; break;
-    case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
-    // Non-standard
-    // supported by resent versions of cairo
-#if CAIRO_VERSION_MINOR >= 10
-    case CAIRO_OPERATOR_LIGHTEN: op = "lighten"; break;
-    case CAIRO_OPERATOR_ADD: op = "add"; break;
-    case CAIRO_OPERATOR_DARKEN: op = "darker"; break;
+    case CAIRO_OPERATOR_SOURCE: op = "copy"; break;
+    case CAIRO_OPERATOR_DEST: op = "destination"; break;
+    case CAIRO_OPERATOR_OVER: op = "source-over"; break;
+    case CAIRO_OPERATOR_DEST_OVER: op = "destination-over"; break;
+    case CAIRO_OPERATOR_IN: op = "source-in"; break;
+    case CAIRO_OPERATOR_DEST_IN: op = "destination-in"; break;
+    case CAIRO_OPERATOR_OUT: op = "source-out"; break;
+    case CAIRO_OPERATOR_DEST_OUT: op = "destination-out"; break;
+    case CAIRO_OPERATOR_ATOP: op = "source-atop"; break;
+    case CAIRO_OPERATOR_DEST_ATOP: op = "destination-atop"; break;
+    case CAIRO_OPERATOR_XOR: op = "xor"; break;
+    case CAIRO_OPERATOR_ADD: op = "lighter"; break;
+    // blend modes:
+    // Note: "source-over" and "normal" are synonyms. Chrome and FF both report
+    // "source-over" after setting gCO to "normal".
+    // case CAIRO_OPERATOR_OVER: op = "normal";
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
     case CAIRO_OPERATOR_MULTIPLY: op = "multiply"; break;
     case CAIRO_OPERATOR_SCREEN: op = "screen"; break;
     case CAIRO_OPERATOR_OVERLAY: op = "overlay"; break;
-    case CAIRO_OPERATOR_HARD_LIGHT: op = "hard-light"; break;
-    case CAIRO_OPERATOR_SOFT_LIGHT: op = "soft-light"; break;
-    case CAIRO_OPERATOR_HSL_HUE: op = "hsl-hue"; break;
-    case CAIRO_OPERATOR_HSL_SATURATION: op = "hsl-saturation"; break;
-    case CAIRO_OPERATOR_HSL_COLOR: op = "hsl-color"; break;
-    case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "hsl-luminosity"; break;
+    case CAIRO_OPERATOR_DARKEN: op = "darken"; break;
+    case CAIRO_OPERATOR_LIGHTEN: op = "lighten"; break;
     case CAIRO_OPERATOR_COLOR_DODGE: op = "color-dodge"; break;
     case CAIRO_OPERATOR_COLOR_BURN: op = "color-burn"; break;
+    case CAIRO_OPERATOR_HARD_LIGHT: op = "hard-light"; break;
+    case CAIRO_OPERATOR_SOFT_LIGHT: op = "soft-light"; break;
     case CAIRO_OPERATOR_DIFFERENCE: op = "difference"; break;
     case CAIRO_OPERATOR_EXCLUSION: op = "exclusion"; break;
-#else
-    case CAIRO_OPERATOR_ADD: op = "lighter"; break;
+    case CAIRO_OPERATOR_HSL_HUE: op = "hue"; break;
+    case CAIRO_OPERATOR_HSL_SATURATION: op = "saturation"; break;
+    case CAIRO_OPERATOR_HSL_COLOR: op = "color"; break;
+    case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "luminosity"; break;
 #endif
+    // non-standard:
+    case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
   }
 
   info.GetReturnValue().Set(Nan::New(op).ToLocalChecked());
@@ -1373,74 +1376,46 @@ NAN_GETTER(Context2d::GetPatternQuality) {
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  Nan::Utf8String type(value->ToString());
-  if (0 == strcmp("xor", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_XOR);
-  } else if (0 == strcmp("source-atop", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_ATOP);
-  } else if (0 == strcmp("source-in", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_IN);
-  } else if (0 == strcmp("source-out", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_OUT);
-  } else if (0 == strcmp("destination-atop", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_ATOP);
-  } else if (0 == strcmp("destination-in", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_IN);
-  } else if (0 == strcmp("destination-out", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OUT);
-  } else if (0 == strcmp("destination-over", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST_OVER);
-  } else if (0 == strcmp("clear", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
-  } else if (0 == strcmp("source", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SOURCE);
-  } else if (0 == strcmp("dest", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DEST);
-  } else if (0 == strcmp("saturate", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SATURATE);
-  } else if (0 == strcmp("over", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
-  // Non-standard
-  // supported by resent versions of cairo
-#if CAIRO_VERSION_MINOR >= 10
-  } else if (0 == strcmp("add", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
-  } else if (0 == strcmp("lighten", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_LIGHTEN);
-  } else if (0 == strcmp("darker", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DARKEN);
-  } else if (0 == strcmp("multiply", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_MULTIPLY);
-  } else if (0 == strcmp("screen", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SCREEN);
-  } else if (0 == strcmp("overlay", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_OVERLAY);
-  } else if (0 == strcmp("hard-light", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_HARD_LIGHT);
-  } else if (0 == strcmp("soft-light", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_SOFT_LIGHT);
-  } else if (0 == strcmp("hsl-hue", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_HUE);
-  } else if (0 == strcmp("hsl-saturation", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_SATURATION);
-  } else if (0 == strcmp("hsl-color", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_COLOR);
-  } else if (0 == strcmp("hsl-luminosity", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_HSL_LUMINOSITY);
-  } else if (0 == strcmp("color-dodge", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_COLOR_DODGE);
-  } else if (0 == strcmp("color-burn", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_COLOR_BURN);
-  } else if (0 == strcmp("difference", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_DIFFERENCE);
-  } else if (0 == strcmp("exclusion", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_EXCLUSION);
+  Nan::Utf8String opStr(value->ToString()); // Unlike CSS colors, this *is* case-sensitive
+  const std::map<std::string, cairo_operator_t> blendmodes = {
+    // composite modes:
+    {"clear", CAIRO_OPERATOR_CLEAR},
+    {"copy", CAIRO_OPERATOR_SOURCE},
+    {"destination", CAIRO_OPERATOR_DEST}, // this seems to have been omitted from the spec
+    {"source-over", CAIRO_OPERATOR_OVER},
+    {"destination-over", CAIRO_OPERATOR_DEST_OVER},
+    {"source-in", CAIRO_OPERATOR_IN},
+    {"destination-in", CAIRO_OPERATOR_DEST_IN},
+    {"source-out", CAIRO_OPERATOR_OUT},
+    {"destination-out", CAIRO_OPERATOR_DEST_OUT},
+    {"source-atop", CAIRO_OPERATOR_ATOP},
+    {"destination-atop", CAIRO_OPERATOR_DEST_ATOP},
+    {"xor", CAIRO_OPERATOR_XOR},
+    {"lighter", CAIRO_OPERATOR_ADD},
+    // blend modes:
+    {"normal", CAIRO_OPERATOR_OVER},
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
+    {"multiply", CAIRO_OPERATOR_MULTIPLY},
+    {"screen", CAIRO_OPERATOR_SCREEN},
+    {"overlay", CAIRO_OPERATOR_OVERLAY},
+    {"darken", CAIRO_OPERATOR_DARKEN},
+    {"lighten", CAIRO_OPERATOR_LIGHTEN},
+    {"color-dodge", CAIRO_OPERATOR_COLOR_DODGE},
+    {"color-burn", CAIRO_OPERATOR_COLOR_BURN},
+    {"hard-light", CAIRO_OPERATOR_HARD_LIGHT},
+    {"soft-light", CAIRO_OPERATOR_SOFT_LIGHT},
+    {"difference", CAIRO_OPERATOR_DIFFERENCE},
+    {"exclusion", CAIRO_OPERATOR_EXCLUSION},
+    {"hue", CAIRO_OPERATOR_HSL_HUE},
+    {"saturation", CAIRO_OPERATOR_HSL_SATURATION},
+    {"color", CAIRO_OPERATOR_HSL_COLOR},
+    {"luminosity", CAIRO_OPERATOR_HSL_LUMINOSITY},
 #endif
-  } else if (0 == strcmp("lighter", *type)) {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_ADD);
-  } else {
-    cairo_set_operator(ctx, CAIRO_OPERATOR_OVER);
-  }
+    // non-standard:
+    {"saturate", CAIRO_OPERATOR_SATURATE}
+  };
+  auto op = blendmodes.find(*opStr);
+  if (op != blendmodes.end()) cairo_set_operator(ctx, op->second);
 }
 
 /*
