@@ -84,6 +84,9 @@ canvas.createJPEGStream() // new
      * "dest" is now "destination"
      * "add" is removed (but is the same as "lighter")
      * "source" is now "copy"
+ * Provide better, Node.js core-style coded errors for failed sys calls. (For
+   example, provide an error with code 'ENOENT' if setting `img.src` to a path
+   that does not exist.)
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

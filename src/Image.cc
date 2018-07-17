@@ -25,8 +25,8 @@ typedef struct {
 #include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
-  private: char unused[8];
-  public: jmp_buf setjmp_buffer;
+    Image* image;
+    jmp_buf setjmp_buffer;
 };
 #endif
 
@@ -227,6 +227,8 @@ NAN_SETTER(Image::SetSource) {
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
   img->clearData();
+  // Clear errno in case some unrelated previous syscall failed
+  errno = 0;
 
   // url string
   if (value->IsString()) {
@@ -241,11 +243,18 @@ NAN_SETTER(Image::SetSource) {
     status = img->loadFromBuffer(buf, len);
   }
 
-  // check status
   if (status) {
     Local<Value> onerrorFn = info.This()->Get(Nan::New("onerror").ToLocalChecked());
     if (onerrorFn->IsFunction()) {
-      Local<Value> argv[1] = { Canvas::Error(status) };
+      Local<Value> argv[1];
+      CanvasError errorInfo = img->errorInfo;
+      if (errorInfo.cerrno) {
+        argv[0] = Nan::ErrnoException(errorInfo.cerrno, errorInfo.syscall.c_str(), errorInfo.message.c_str(), errorInfo.path.c_str());
+      } else if (!errorInfo.message.empty()) {
+        argv[0] = Nan::Error(Nan::New(errorInfo.message).ToLocalChecked());
+      } else {      
+        argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
+      }
       onerrorFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 1, argv);
     }
   } else {
@@ -410,13 +419,16 @@ cairo_surface_t *Image::surface() {
 cairo_status_t
 Image::loadSurface() {
   FILE *stream = fopen(filename, "rb");
-  if (!stream) return CAIRO_STATUS_READ_ERROR;
+  if (!stream) {
+    this->errorInfo.set(NULL, "fopen", errno, filename);
+    return CAIRO_STATUS_READ_ERROR;
+  }
   uint8_t buf[5];
   if (1 != fread(&buf, 5, 1, stream)) {
     fclose(stream);
     return CAIRO_STATUS_READ_ERROR;
   }
-  fseek(stream, 0, SEEK_SET);
+  rewind(stream);
 
   // png
   if (isPNG(buf)) {
@@ -448,11 +460,13 @@ Image::loadSurface() {
     fclose(stream);
     return CAIRO_STATUS_READ_ERROR;
   }
-  fseek(stream, 0, SEEK_SET);
+  rewind(stream);
   if (isSVG(head, head_len)) return loadSVG(stream);
 #endif
 
   fclose(stream);
+
+  this->errorInfo.set("Unsupported image type");
   return CAIRO_STATUS_READ_ERROR;
 }
 
@@ -518,6 +532,7 @@ Image::loadGIF(FILE *stream) {
 
   if (!buf) {
     fclose(stream);
+    this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -570,6 +585,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     GIF_CLOSE_FILE(gif);
+    this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -744,6 +760,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
+    this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -752,6 +769,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     free(data);
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
+    this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -804,11 +822,20 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
  * Callback to recover from jpeg errors
  */
 
-METHODDEF(void) canvas_jpeg_error_exit (j_common_ptr cinfo) {
+static void canvas_jpeg_error_exit(j_common_ptr cinfo) {
   canvas_jpeg_error_mgr *cjerr = static_cast<canvas_jpeg_error_mgr*>(cinfo->err);
-
+  cjerr->output_message(cinfo);
   // Return control to the setjmp point
   longjmp(cjerr->setjmp_buffer, 1);
+}
+
+// Capture libjpeg errors instead of writing stdout
+static void canvas_jpeg_output_message(j_common_ptr cinfo) {
+  canvas_jpeg_error_mgr *cjerr = static_cast<canvas_jpeg_error_mgr*>(cinfo->err);
+  char buff[JMSG_LENGTH_MAX];
+  cjerr->format_message(cinfo, buff);
+  // (Only the last message will be returned to JS land.)
+  cjerr->image->errorInfo.set(buff);
 }
 
 #if CAIRO_VERSION_MINOR >= 10
@@ -825,8 +852,10 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   struct jpeg_decompress_struct args;
   struct canvas_jpeg_error_mgr err;
 
+  err.image = this;
   args.err = jpeg_std_error(&err);
   args.err->error_exit = canvas_jpeg_error_exit;
+  args.err->output_message = canvas_jpeg_output_message;
 
   // Establish the setjmp return context for canvas_jpeg_error_exit to use
   if (setjmp(err.setjmp_buffer)) {
@@ -849,7 +878,10 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
   int buf_size = naturalHeight * cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth);
   uint8_t *data = (uint8_t *) malloc(buf_size);
-  if (!data) return CAIRO_STATUS_NO_MEMORY;
+  if (!data) {
+    this->errorInfo.set(NULL, "malloc", errno);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
 
   // New image surface
   _surface = cairo_image_surface_create_for_data(
@@ -895,11 +927,15 @@ clearMimeData(void *closure) {
 cairo_status_t
 Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   uint8_t *mime_data = (uint8_t *) malloc(len);
-  if (!mime_data) return CAIRO_STATUS_NO_MEMORY;
+  if (!mime_data) {
+    this->errorInfo.set(NULL, "malloc", errno);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
 
   read_closure_t *mime_closure = (read_closure_t *) malloc(sizeof(read_closure_t));
   if (!mime_closure) {
     free(mime_data);
+    this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
 
@@ -931,8 +967,10 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   struct jpeg_decompress_struct args;
   struct canvas_jpeg_error_mgr err;
 
+  err.image = this;
   args.err = jpeg_std_error(&err);
   args.err->error_exit = canvas_jpeg_error_exit;
+  args.err->output_message = canvas_jpeg_output_message;
 
   // Establish the setjmp return context for canvas_jpeg_error_exit to use
   if (setjmp(err.setjmp_buffer)) {
@@ -971,8 +1009,10 @@ Image::loadJPEG(FILE *stream) {
     struct jpeg_decompress_struct args;
     struct canvas_jpeg_error_mgr err;
 
+    err.image = this;
     args.err = jpeg_std_error(&err);
     args.err->error_exit = canvas_jpeg_error_exit;
+    args.err->output_message = canvas_jpeg_output_message;
 
     // Establish the setjmp return context for canvas_jpeg_error_exit to use
     if (setjmp(err.setjmp_buffer)) {
@@ -1003,7 +1043,10 @@ Image::loadJPEG(FILE *stream) {
     fseek(stream, 0, SEEK_SET);
 
     buf = (uint8_t *) malloc(len);
-    if (!buf) return CAIRO_STATUS_NO_MEMORY;
+    if (!buf) {
+      this->errorInfo.set(NULL, "malloc", errno);
+      return CAIRO_STATUS_NO_MEMORY;
+    }
 
     if (fread(buf, len, 1, stream) != 1) {
       status = CAIRO_STATUS_READ_ERROR;
