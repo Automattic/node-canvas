@@ -9,6 +9,7 @@
 #define __NODE_IMAGE_H__
 
 #include "Canvas.h"
+#include "CanvasError.h"
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -86,6 +87,7 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
 #endif
 #endif
+    CanvasError errorInfo;
     void loaded();
     cairo_status_t load();
     Image();

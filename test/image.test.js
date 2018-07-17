@@ -83,6 +83,26 @@ describe('Image', function () {
     return assertRejects(loadImage(`${png_clock}fail`), Error)
   })
 
+  it('returns a nice, coded error for fopen failures', function (done) {
+    const img = new Image()
+    img.onerror = err => {
+      assert.equal(err.code, 'ENOENT')
+      assert.equal(err.path, 'path/to/nothing')
+      assert.equal(err.syscall, 'fopen')
+      done()
+    }
+    img.src = 'path/to/nothing'
+  })
+
+  it('captures errors from libjpeg', function (done) {
+    const img = new Image()
+    img.onerror = err => {
+      assert.equal(err.message, "JPEG datastream contains no image")
+      done()
+    }
+    img.src = `${__dirname}/fixtures/159-crash1.jpg`
+  })
+
   it('calls Image#onerror multiple times', function () {
     return loadImage(png_clock).then((img) => {
       let onloadCalled = 0
