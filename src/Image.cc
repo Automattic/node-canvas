@@ -392,7 +392,7 @@ cairo_surface_t *Image::surface() {
     cairo_status_t status = renderSVGToSurface();
     if (status != CAIRO_STATUS_SUCCESS) {
       g_object_unref(_rsvg);
-      error(Canvas::Error(status));
+      Nan::ThrowError(Canvas::Error(status));
       return NULL;
     }
   }
