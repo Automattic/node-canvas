@@ -86,7 +86,6 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
 #endif
 #endif
-    void error(Local<Value> error);
     void loaded();
     cairo_status_t load();
     Image();
