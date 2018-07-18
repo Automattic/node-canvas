@@ -52,7 +52,7 @@ canvas.createJPEGStream() // new
    on the incorrect types.
 
 ### Fixed
- * Fix build with SVG support (#1205)
+ * Fix build with SVG support enabled (#1123)
  * Prevent segfaults caused by loading invalid fonts (#1105)
  * Fix memory leak in font loading
  * Port has_lib.sh to javascript (#872)
