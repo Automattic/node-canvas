@@ -39,12 +39,42 @@ describe('Image', function () {
     })
   })
 
+  it('loads JPEG data URL', function () {
+    const base64Encoded = fs.readFileSync(jpg_face, 'base64')
+    const dataURL = `data:image/png;base64,${base64Encoded}`
+
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+
+      assert.strictEqual(img.src, dataURL)
+      assert.strictEqual(img.width, 485)
+      assert.strictEqual(img.height, 401)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
   it('loads PNG image', function () {
     return loadImage(png_clock).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
 
       assert.strictEqual(img.src, png_clock)
+      assert.strictEqual(img.width, 320)
+      assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads PNG data URL', function () {
+    const base64Encoded = fs.readFileSync(png_clock, 'base64')
+    const dataURL = `data:image/png;base64,${base64Encoded}`
+
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+
+      assert.strictEqual(img.src, dataURL)
       assert.strictEqual(img.width, 320)
       assert.strictEqual(img.height, 320)
       assert.strictEqual(img.complete, true)
