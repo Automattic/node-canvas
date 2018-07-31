@@ -110,6 +110,7 @@ canvas.createJPEGStream() // new
    `canvas.createPNGStream()`
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
  * Support for `img.src = <url>` to match browsers
+ * Support reading data URL on `img.src`
 
 1.6.x (unreleased)
 ==================
