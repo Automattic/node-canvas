@@ -12,19 +12,21 @@ if (typeof module !== 'undefined' && module.exports) {
   imageSrc = function (filename) { return filename }
 }
 
-tests['clearRect()'] = function (ctx) {
+tests['clearRect()'] = function (ctx, done) {
   ctx.fillRect(25, 25, 100, 100)
   ctx.clearRect(45, 45, 60, 60)
   ctx.fillRect(50, 50, 50, 50)
+  done()
 }
 
-tests['strokeRect()'] = function (ctx) {
+tests['strokeRect()'] = function (ctx, done) {
   ctx.fillRect(25, 25, 100, 100)
   ctx.clearRect(45, 45, 60, 60)
   ctx.strokeRect(50, 50, 50, 50)
+  done()
 }
 
-tests['fillRect()'] = function (ctx) {
+tests['fillRect()'] = function (ctx, done) {
   function render (level) {
     ctx.fillStyle = getPointColour(122, 122)
     ctx.fillRect(0, 0, 240, 240)
@@ -90,9 +92,10 @@ tests['fillRect()'] = function (ctx) {
   }
 
   render(1)
+  done()
 }
 
-tests['lineTo()'] = function (ctx) {
+tests['lineTo()'] = function (ctx, done) {
   // Filled triangle
   ctx.beginPath()
   ctx.moveTo(25.5, 25)
@@ -107,9 +110,10 @@ tests['lineTo()'] = function (ctx) {
   ctx.lineTo(45, 125)
   ctx.closePath()
   ctx.stroke()
+  done()
 }
 
-tests['arc()'] = function (ctx) {
+tests['arc()'] = function (ctx, done) {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Outer circle
   ctx.moveTo(110, 75)
@@ -119,9 +123,10 @@ tests['arc()'] = function (ctx) {
   ctx.moveTo(95, 65)
   ctx.arc(90, 65, 5, 0, Math.PI * 2, true)  // Right eye
   ctx.stroke()
+  done()
 }
 
-tests['arc() 2'] = function (ctx) {
+tests['arc() 2'] = function (ctx, done) {
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 3; j++) {
       ctx.beginPath()
@@ -141,9 +146,11 @@ tests['arc() 2'] = function (ctx) {
       }
     }
   }
+  done()
+  done()
 }
 
-tests['arcTo()'] = function (ctx) {
+tests['arcTo()'] = function (ctx, done) {
   ctx.fillStyle = '#08C8EE'
   ctx.translate(-50, -50)
   ctx.moveTo(120, 100)
@@ -160,9 +167,10 @@ tests['arcTo()'] = function (ctx) {
   ctx.font = 'bold 25px Arial'
   ctx.fillStyle = '#fff'
   ctx.fillText('node', 120, 155)
+  done()
 }
 
-tests['ellipse() 1'] = function (ctx) {
+tests['ellipse() 1'] = function (ctx, done) {
   var n = 8
   for (var i = 0; i < n; i++) {
     ctx.beginPath()
@@ -172,9 +180,10 @@ tests['ellipse() 1'] = function (ctx) {
     ctx.ellipse(x, y, 10, 15, a, 0, 2 * Math.PI)
     ctx.stroke()
   }
+  done()
 }
 
-tests['ellipse() 2'] = function (ctx) {
+tests['ellipse() 2'] = function (ctx, done) {
   var n = 8
   for (var i = 0; i < n; i++) {
     ctx.beginPath()
@@ -184,9 +193,10 @@ tests['ellipse() 2'] = function (ctx) {
     ctx.ellipse(x, y, 10, 15, a, 0, a)
     ctx.stroke()
   }
+  done()
 }
 
-tests['ellipse() 3'] = function (ctx) {
+tests['ellipse() 3'] = function (ctx, done) {
   var n = 8
   for (var i = 0; i < n; i++) {
     ctx.beginPath()
@@ -196,9 +206,10 @@ tests['ellipse() 3'] = function (ctx) {
     ctx.ellipse(x, y, 10, 15, a, 0, a, true)
     ctx.stroke()
   }
+  done()
 }
 
-tests['ellipse() 4'] = function (ctx) {
+tests['ellipse() 4'] = function (ctx, done) {
   var n = 8
   for (var i = 0; i < n; i++) {
     ctx.beginPath()
@@ -208,9 +219,10 @@ tests['ellipse() 4'] = function (ctx) {
     ctx.ellipse(x, y, 10, 15, a, a, 0, true)
     ctx.stroke()
   }
+  done()
 }
 
-tests['bezierCurveTo()'] = function (ctx) {
+tests['bezierCurveTo()'] = function (ctx, done) {
   ctx.beginPath()
   ctx.moveTo(75, 40)
   ctx.bezierCurveTo(75, 37, 70, 25, 50, 25)
@@ -220,9 +232,10 @@ tests['bezierCurveTo()'] = function (ctx) {
   ctx.bezierCurveTo(130, 62.5, 130, 25, 100, 25)
   ctx.bezierCurveTo(85, 25, 75, 37, 75, 40)
   ctx.fill()
+  done()
 }
 
-tests['quadraticCurveTo()'] = function (ctx) {
+tests['quadraticCurveTo()'] = function (ctx, done) {
   ctx.beginPath()
   ctx.moveTo(75, 25)
   ctx.quadraticCurveTo(25, 25, 25, 62.5)
@@ -232,9 +245,10 @@ tests['quadraticCurveTo()'] = function (ctx) {
   ctx.quadraticCurveTo(125, 100, 125, 62.5)
   ctx.quadraticCurveTo(125, 25, 75, 25)
   ctx.stroke()
+  done()
 }
 
-tests['transform()'] = function (ctx) {
+tests['transform()'] = function (ctx, done) {
   var sin = Math.sin(Math.PI / 6)
   var cos = Math.cos(Math.PI / 6)
   ctx.translate(100, 100)
@@ -246,16 +260,18 @@ tests['transform()'] = function (ctx) {
     ctx.fillRect(0, 0, 100, 10)
     ctx.transform(cos, sin, -sin, cos, 0, 0)
   }
+  done()
 }
 
-tests['rotate()'] = function (ctx) {
+tests['rotate()'] = function (ctx, done) {
   ctx.rotate(0.4)
   ctx.translate(30, 0)
   ctx.rect(0, 0, 50, 50)
   ctx.stroke()
+  done()
 }
 
-tests['rotate() 2'] = function (ctx) {
+tests['rotate() 2'] = function (ctx, done) {
   ctx.translate(75, 75)
 
   for (var i = 1; i < 6; i++) { // Loop through rings (from inside to out)
@@ -271,9 +287,10 @@ tests['rotate() 2'] = function (ctx) {
 
     ctx.restore()
   }
+  done()
 }
 
-tests['translate()'] = function (ctx) {
+tests['translate()'] = function (ctx, done) {
   ctx.fillRect(0, 0, 300, 300)
   for (var i = 0; i < 3; i++) {
     for (var j = 0; j < 3; j++) {
@@ -301,9 +318,10 @@ tests['translate()'] = function (ctx) {
     } while (x2 !== R - O && y2 !== 0)
     ctx.stroke()
   }
+  done()
 }
 
-tests['scale()'] = function (ctx) {
+tests['scale()'] = function (ctx, done) {
   ctx.strokeStyle = '#fc0'
   ctx.lineWidth = 1.5
   ctx.fillRect(0, 0, 300, 300)
@@ -370,24 +388,27 @@ tests['scale()'] = function (ctx) {
     } while (x2 !== R - O && y2 !== 0)
     ctx.stroke()
   }
+  done()
 }
 
-tests['rect()'] = function (ctx) {
+tests['rect()'] = function (ctx, done) {
   ctx.rect(5, 5, 50, 50)
   ctx.strokeStyle = 'yellow'
   ctx.fill()
   ctx.stroke()
+  done()
 }
 
-tests['clip()'] = function (ctx) {
+tests['clip()'] = function (ctx, done) {
   ctx.arc(50, 50, 50, 0, Math.PI * 2, false)
   ctx.stroke()
   ctx.clip()
   ctx.fillStyle = 'rgba(0,0,0,.5)'
   ctx.fillRect(0, 0, 100, 100)
+  done()
 }
 
-tests['clip() 2'] = function (ctx) {
+tests['clip() 2'] = function (ctx, done) {
   ctx.fillRect(0, 0, 150, 150)
   ctx.translate(75, 75)
 
@@ -429,6 +450,7 @@ tests['clip() 2'] = function (ctx) {
     ctx.fill()
     ctx.restore()
   }
+  done()
 }
 
 tests['createPattern()'] = function (ctx, done) {
@@ -480,7 +502,7 @@ tests['createPattern() no-repeat'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
-tests['createLinearGradient()'] = function (ctx) {
+tests['createLinearGradient()'] = function (ctx, done) {
   var lingrad = ctx.createLinearGradient(0, 0, 0, 150)
   lingrad.addColorStop(0, '#00ABEB')
   lingrad.addColorStop(0.5, '#fff')
@@ -508,9 +530,10 @@ tests['createLinearGradient()'] = function (ctx) {
   lingrad3.addColorStop(1, 'rgba(255,0,255,0.5)')
   ctx.fillStyle = lingrad3
   ctx.fillRect(0, 170, 200, 30)
+  done()
 }
 
-tests['createLinearGradient() with opacity'] = function (ctx) {
+tests['createLinearGradient() with opacity'] = function (ctx, done) {
   var lingrad = ctx.createLinearGradient(0, 0, 0, 200)
   lingrad.addColorStop(0, '#00FF00')
   lingrad.addColorStop(0.33, '#FF0000')
@@ -530,9 +553,10 @@ tests['createLinearGradient() with opacity'] = function (ctx) {
   ctx.fillRect(100, 100, 50, 50)
   ctx.globalAlpha = 0.95
   ctx.fillRect(150, 150, 50, 50)
+  done()
 }
 
-tests['createLinearGradient() and transforms'] = function (ctx) {
+tests['createLinearGradient() and transforms'] = function (ctx, done) {
   var lingrad = ctx.createLinearGradient(0, -100, 0, 100)
   lingrad.addColorStop(0, '#00FF00')
   lingrad.addColorStop(0.33, '#FF0000')
@@ -550,9 +574,10 @@ tests['createLinearGradient() and transforms'] = function (ctx) {
   ctx.rotate(1.570795)
   ctx.scale(0.6, 0.6)
   ctx.fill()
+  done()
 }
 
-tests['createRadialGradient()'] = function (ctx) {
+tests['createRadialGradient()'] = function (ctx, done) {
   // Create gradients
   var radgrad = ctx.createRadialGradient(45, 45, 10, 52, 50, 30)
   radgrad.addColorStop(0, '#A7D30C')
@@ -583,9 +608,10 @@ tests['createRadialGradient()'] = function (ctx) {
   ctx.fillRect(0, 0, 150, 150)
   ctx.fillStyle = radgrad
   ctx.fillRect(0, 0, 150, 150)
+  done()
 }
 
-tests['globalAlpha'] = function (ctx) {
+tests['globalAlpha'] = function (ctx, done) {
   ctx.globalAlpha = 0.5
   ctx.fillStyle = 'rgba(0,0,0,0.5)'
   ctx.strokeRect(0, 0, 50, 50)
@@ -596,9 +622,10 @@ tests['globalAlpha'] = function (ctx) {
   ctx.fillStyle = 'black'
   ctx.globalAlpha = 1
   ctx.fillRect(25, 25, 10, 10)
+  done()
 }
 
-tests['globalAlpha 2'] = function (ctx) {
+tests['globalAlpha 2'] = function (ctx, done) {
   ctx.fillStyle = '#FD0'
   ctx.fillRect(0, 0, 75, 75)
   ctx.fillStyle = '#6C0'
@@ -616,18 +643,20 @@ tests['globalAlpha 2'] = function (ctx) {
     ctx.arc(75, 75, 10 + 10 * i, 0, Math.PI * 2, true)
     ctx.fill()
   }
+  done()
 }
 
-tests['fillStyle'] = function (ctx) {
+tests['fillStyle'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
+  done()
 }
 
-tests['strokeStyle'] = function (ctx) {
+tests['strokeStyle'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.strokeStyle = 'rgb(0,' + Math.floor(255 - 42.5 * i) + ',' +
@@ -637,9 +666,10 @@ tests['strokeStyle'] = function (ctx) {
       ctx.stroke()
     }
   }
+  done()
 }
 
-tests['fill with stroke'] = function (ctx) {
+tests['fill with stroke'] = function (ctx, done) {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true)
   ctx.fill()
@@ -650,9 +680,10 @@ tests['fill with stroke'] = function (ctx) {
   ctx.arc(75, 75, 30, 0, Math.PI * 2, true)
   ctx.fill()
   ctx.stroke()
+  done()
 }
 
-tests['floating point coordinates'] = function (ctx) {
+tests['floating point coordinates'] = function (ctx, done) {
   ctx.lineCap = 'square'
   for (var i = 0; i < 70; i += 3.05) {
     ctx.rect(i + 3, 10.5, 0, 130)
@@ -660,9 +691,10 @@ tests['floating point coordinates'] = function (ctx) {
     ctx.lineTo(i + 77, 140.5)
   }
   ctx.stroke()
+  done()
 }
 
-tests['lineWidth'] = function (ctx) {
+tests['lineWidth'] = function (ctx, done) {
   for (var i = 0; i < 10; i++) {
     ctx.lineWidth = 1 + i
     ctx.beginPath()
@@ -670,9 +702,10 @@ tests['lineWidth'] = function (ctx) {
     ctx.lineTo(5 + i * 14, 140)
     ctx.stroke()
   }
+  done()
 }
 
-tests['line caps'] = function (ctx) {
+tests['line caps'] = function (ctx, done) {
   var lineCap = ['butt', 'round', 'square']
 
   ctx.strokeStyle = '#09f'
@@ -692,9 +725,10 @@ tests['line caps'] = function (ctx) {
     ctx.lineTo(25 + i * 50, 140)
     ctx.stroke()
   }
+  done()
 }
 
-tests['line join'] = function (ctx) {
+tests['line join'] = function (ctx, done) {
   var lineJoin = ['round', 'bevel', 'miter']
   ctx.lineWidth = 10
   for (var i = 0; i < lineJoin.length; i++) {
@@ -707,18 +741,20 @@ tests['line join'] = function (ctx) {
     ctx.lineTo(155, 5 + i * 40)
     ctx.stroke()
   }
+  done()
 }
 
-tests['lineCap default'] = function (ctx) {
+tests['lineCap default'] = function (ctx, done) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.moveTo(50, 50)
   ctx.lineTo(50, 100)
   ctx.lineTo(80, 120)
   ctx.stroke()
+  done()
 }
 
-tests['lineCap'] = function (ctx) {
+tests['lineCap'] = function (ctx, done) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineCap = 'round'
@@ -726,9 +762,10 @@ tests['lineCap'] = function (ctx) {
   ctx.lineTo(50, 100)
   ctx.lineTo(80, 120)
   ctx.stroke()
+  done()
 }
 
-tests['lineJoin'] = function (ctx) {
+tests['lineJoin'] = function (ctx, done) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineJoin = 'round'
@@ -736,9 +773,10 @@ tests['lineJoin'] = function (ctx) {
   ctx.lineTo(50, 100)
   ctx.lineTo(80, 120)
   ctx.stroke()
+  done()
 }
 
-tests['states'] = function (ctx) {
+tests['states'] = function (ctx, done) {
   ctx.save()
   ctx.rect(50, 50, 100, 100)
   ctx.stroke()
@@ -752,9 +790,10 @@ tests['states'] = function (ctx) {
   ctx.restore()
   ctx.translate(95, 95)
   ctx.fillRect(0, 0, 10, 10)
+  done()
 }
 
-tests['states with stroke/fill/globalAlpha'] = function (ctx) {
+tests['states with stroke/fill/globalAlpha'] = function (ctx, done) {
   ctx.fillRect(0, 0, 150, 150)
   ctx.save()
 
@@ -771,9 +810,10 @@ tests['states with stroke/fill/globalAlpha'] = function (ctx) {
 
   ctx.restore()
   ctx.fillRect(60, 60, 30, 30)
+  done()
 }
 
-tests['path through fillRect/strokeRect/clearRect'] = function (ctx) {
+tests['path through fillRect/strokeRect/clearRect'] = function (ctx, done) {
   // left: fillRect()
   ctx.beginPath()
   ctx.rect(0, 50, 50, 50)
@@ -798,9 +838,10 @@ tests['path through fillRect/strokeRect/clearRect'] = function (ctx) {
   ctx.fill()
   ctx.clearRect(110, 60, 30, 30)
   ctx.fill()
+  done()
 }
 
-tests['invalid stroke/fill styles'] = function (ctx) {
+tests['invalid stroke/fill styles'] = function (ctx, done) {
   ctx.fillStyle = 'red'
   ctx.strokeStyle = 'yellow'
   ctx.rect(50, 50, 50, 50)
@@ -812,9 +853,10 @@ tests['invalid stroke/fill styles'] = function (ctx) {
   ctx.rect(100, 80, 15, 15)
   ctx.fill()
   ctx.stroke()
+  done()
 }
 
-tests['fillText()'] = function (ctx) {
+tests['fillText()'] = function (ctx, done) {
   ctx.font = '30px Arial'
   ctx.rotate(0.1)
   ctx.lineTo(10, 10)
@@ -826,9 +868,10 @@ tests['fillText()'] = function (ctx) {
   ctx.lineTo(50, 102)
   ctx.lineTo(50 + te.width, 102)
   ctx.stroke()
+  done()
 }
 
-tests['fillText() transformations'] = function (ctx) {
+tests['fillText() transformations'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.font = 'bold 12px Helvetica'
 
@@ -846,9 +889,10 @@ tests['fillText() transformations'] = function (ctx) {
   ctx.fillText('foo', 150, 100)
   ctx.font = 'normal 30px Arial'
   ctx.fillText('bar', 50, 100)
+  done()
 }
 
-tests['fillText() maxWidth argument'] = function (ctx) {
+tests['fillText() maxWidth argument'] = function (ctx, done) {
   ctx.font = 'Helvetica, sans'
   ctx.fillText('Drawing text can be fun!', 0, 20)
 
@@ -857,9 +901,10 @@ tests['fillText() maxWidth argument'] = function (ctx) {
   }
 
   ctx.fillText('Drawing text can be fun!', 0, 20 * 7)
+  done()
 }
 
-tests['strokeText()'] = function (ctx) {
+tests['strokeText()'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -874,9 +919,10 @@ tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = 'red'
   ctx.font = 'normal 50px Arial'
   ctx.strokeText('bar', 100, 100)
+  done()
 }
 
-tests['strokeText() maxWidth argument'] = function (ctx) {
+tests['strokeText() maxWidth argument'] = function (ctx, done) {
   ctx.font = 'Helvetica, sans'
   ctx.strokeText('Drawing text can be fun!', 0, 20)
 
@@ -885,9 +931,10 @@ tests['strokeText() maxWidth argument'] = function (ctx) {
   }
 
   ctx.strokeText('Drawing text can be fun!', 0, 20 * 7)
+  done()
 }
 
-tests['textAlign right'] = function (ctx) {
+tests['textAlign right'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -902,9 +949,10 @@ tests['textAlign right'] = function (ctx) {
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'right'
   ctx.fillText('right', 100, 100)
+  done()
 }
 
-tests['textAlign left'] = function (ctx) {
+tests['textAlign left'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -919,9 +967,10 @@ tests['textAlign left'] = function (ctx) {
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'left'
   ctx.fillText('left', 100, 100)
+  done()
 }
 
-tests['textAlign center'] = function (ctx) {
+tests['textAlign center'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -936,9 +985,10 @@ tests['textAlign center'] = function (ctx) {
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('center', 100, 100)
+  done()
 }
 
-tests['textBaseline alphabetic'] = function (ctx) {
+tests['textBaseline alphabetic'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -949,9 +999,10 @@ tests['textBaseline alphabetic'] = function (ctx) {
   ctx.textBaseline = 'alphabetic'
   ctx.textAlign = 'center'
   ctx.fillText('alphabetic', 100, 100)
+  done()
 }
 
-tests['textBaseline top'] = function (ctx) {
+tests['textBaseline top'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -962,9 +1013,10 @@ tests['textBaseline top'] = function (ctx) {
   ctx.textBaseline = 'top'
   ctx.textAlign = 'center'
   ctx.fillText('top', 100, 100)
+  done()
 }
 
-tests['textBaseline hanging'] = function (ctx) {
+tests['textBaseline hanging'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -975,9 +1027,10 @@ tests['textBaseline hanging'] = function (ctx) {
   ctx.textBaseline = 'hanging'
   ctx.textAlign = 'center'
   ctx.fillText('hanging', 100, 100)
+  done()
 }
 
-tests['textBaseline middle'] = function (ctx) {
+tests['textBaseline middle'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -988,9 +1041,10 @@ tests['textBaseline middle'] = function (ctx) {
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
   ctx.fillText('middle', 100, 100)
+  done()
 }
 
-tests['textBaseline ideographic'] = function (ctx) {
+tests['textBaseline ideographic'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1001,9 +1055,10 @@ tests['textBaseline ideographic'] = function (ctx) {
   ctx.textBaseline = 'ideographic'
   ctx.textAlign = 'center'
   ctx.fillText('ideographic', 100, 100)
+  done()
 }
 
-tests['textBaseline bottom'] = function (ctx) {
+tests['textBaseline bottom'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1014,9 +1069,10 @@ tests['textBaseline bottom'] = function (ctx) {
   ctx.textBaseline = 'bottom'
   ctx.textAlign = 'center'
   ctx.fillText('bottom', 100, 100)
+  done()
 }
 
-tests['font size px'] = function (ctx) {
+tests['font size px'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1026,9 +1082,10 @@ tests['font size px'] = function (ctx) {
   ctx.font = 'normal 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('normal 14px Arial', 100, 100)
+  done()
 }
 
-tests['font size pt'] = function (ctx) {
+tests['font size pt'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1038,9 +1095,10 @@ tests['font size pt'] = function (ctx) {
   ctx.font = 'normal 14pt Arial'
   ctx.textAlign = 'center'
   ctx.fillText('normal 14pt Arial', 100, 100)
+  done()
 }
 
-tests['font size mm'] = function (ctx) {
+tests['font size mm'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1050,9 +1108,10 @@ tests['font size mm'] = function (ctx) {
   ctx.font = 'normal 3mm Arial'
   ctx.textAlign = 'center'
   ctx.fillText('normal 3mm Arial', 100, 100)
+  done()
 }
 
-tests['font size cm'] = function (ctx) {
+tests['font size cm'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1062,9 +1121,10 @@ tests['font size cm'] = function (ctx) {
   ctx.font = 'normal 0.6cm Arial'
   ctx.textAlign = 'center'
   ctx.fillText('normal 0.6cm Arial', 100, 100)
+  done()
 }
 
-tests['font weight bold'] = function (ctx) {
+tests['font weight bold'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1074,9 +1134,10 @@ tests['font weight bold'] = function (ctx) {
   ctx.font = 'bold 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('bold 14px Arial', 100, 100)
+  done()
 }
 
-tests['font weight lighter'] = function (ctx) {
+tests['font weight lighter'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1086,9 +1147,10 @@ tests['font weight lighter'] = function (ctx) {
   ctx.font = 'lighter 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('lighter 14px Arial', 100, 100)
+  done()
 }
 
-tests['font weight lighter italic'] = function (ctx) {
+tests['font weight lighter italic'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1098,9 +1160,10 @@ tests['font weight lighter italic'] = function (ctx) {
   ctx.font = 'lighter italic 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('lighter italic 14px Arial', 100, 100)
+  done()
 }
 
-tests['font weight 200'] = function (ctx) {
+tests['font weight 200'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1110,9 +1173,10 @@ tests['font weight 200'] = function (ctx) {
   ctx.font = '200 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('200 14px Arial', 100, 100)
+  done()
 }
 
-tests['font weight 800'] = function (ctx) {
+tests['font weight 800'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1122,9 +1186,10 @@ tests['font weight 800'] = function (ctx) {
   ctx.font = '800 14px Arial'
   ctx.textAlign = 'center'
   ctx.fillText('800 14px Arial', 100, 100)
+  done()
 }
 
-tests['font family serif'] = function (ctx) {
+tests['font family serif'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1134,9 +1199,10 @@ tests['font family serif'] = function (ctx) {
   ctx.font = '14px serif'
   ctx.textAlign = 'center'
   ctx.fillText('14px serif', 100, 100)
+  done()
 }
 
-tests['font family sans-serif'] = function (ctx) {
+tests['font family sans-serif'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1146,9 +1212,10 @@ tests['font family sans-serif'] = function (ctx) {
   ctx.font = '14px sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('14px sans-serif', 100, 100)
+  done()
 }
 
-tests['font family Impact'] = function (ctx) {
+tests['font family Impact'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1158,9 +1225,10 @@ tests['font family Impact'] = function (ctx) {
   ctx.font = '18px Impact'
   ctx.textAlign = 'center'
   ctx.fillText('18px Impact', 100, 100)
+  done()
 }
 
-tests['font family invalid'] = function (ctx) {
+tests['font family invalid'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1170,9 +1238,10 @@ tests['font family invalid'] = function (ctx) {
   ctx.font = '14px Foo, Invalid, Impact, sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('14px Invalid, Impact', 100, 100)
+  done()
 }
 
-tests['font style variant weight size family'] = function (ctx) {
+tests['font style variant weight size family'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 100)
@@ -1231,7 +1300,7 @@ tests['known bug #416'] = function (ctx, done) {
   img1.src = imageSrc('existing.png')
 }
 
-tests['shadowBlur'] = function (ctx) {
+tests['shadowBlur'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1255,9 +1324,10 @@ tests['shadowBlur'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowColor'] = function (ctx) {
+tests['shadowColor'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1281,9 +1351,10 @@ tests['shadowColor'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowOffset{X,Y}'] = function (ctx) {
+tests['shadowOffset{X,Y}'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1309,9 +1380,10 @@ tests['shadowOffset{X,Y}'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowOffset{X,Y} large'] = function (ctx) {
+tests['shadowOffset{X,Y} large'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1337,9 +1409,10 @@ tests['shadowOffset{X,Y} large'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowOffset{X,Y} negative'] = function (ctx) {
+tests['shadowOffset{X,Y} negative'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1365,9 +1438,10 @@ tests['shadowOffset{X,Y} negative'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowOffset{X,Y} transform'] = function (ctx) {
+tests['shadowOffset{X,Y} transform'] = function (ctx, done) {
   ctx.translate(100, 0)
   ctx.scale(0.75, 0.75)
   ctx.rotate(Math.PI / 4)
@@ -1397,9 +1471,10 @@ tests['shadowOffset{X,Y} transform'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadowBlur values'] = function (ctx) {
+tests['shadowBlur values'] = function (ctx, done) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1425,9 +1500,10 @@ tests['shadowBlur values'] = function (ctx) {
   ctx.stroke()
 
   ctx.fillRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadow strokeRect()'] = function (ctx) {
+tests['shadow strokeRect()'] = function (ctx, done) {
   ctx.strokeRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1453,9 +1529,10 @@ tests['shadow strokeRect()'] = function (ctx) {
   ctx.stroke()
 
   ctx.strokeRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadow fill()'] = function (ctx) {
+tests['shadow fill()'] = function (ctx, done) {
   ctx.strokeRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1482,9 +1559,10 @@ tests['shadow fill()'] = function (ctx) {
   ctx.stroke()
 
   ctx.strokeRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadow stroke()'] = function (ctx) {
+tests['shadow stroke()'] = function (ctx, done) {
   ctx.strokeRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1511,9 +1589,10 @@ tests['shadow stroke()'] = function (ctx) {
   ctx.stroke()
 
   ctx.strokeRect(150, 150, 20, 20)
+  done()
 }
 
-tests['shadow globalAlpha'] = function (ctx) {
+tests['shadow globalAlpha'] = function (ctx, done) {
   ctx.lineTo(0, 0)
   ctx.lineTo(50, 0)
   ctx.lineTo(50, 150)
@@ -1528,9 +1607,10 @@ tests['shadow globalAlpha'] = function (ctx) {
 
   ctx.lineTo(0, 150)
   ctx.stroke()
+  done()
 }
 
-tests['shadow fillText()'] = function (ctx) {
+tests['shadow fillText()'] = function (ctx, done) {
   ctx.shadowColor = '#00c'
   ctx.shadowBlur = 2
   ctx.shadowOffsetX = 8
@@ -1538,9 +1618,10 @@ tests['shadow fillText()'] = function (ctx) {
   ctx.textAlign = 'center'
   ctx.font = '35px Arial'
   ctx.fillText('Shadow', 100, 100)
+  done()
 }
 
-tests['shadow strokeText()'] = function (ctx) {
+tests['shadow strokeText()'] = function (ctx, done) {
   ctx.shadowColor = '#00c'
   ctx.shadowBlur = 2
   ctx.shadowOffsetX = 8
@@ -1548,9 +1629,10 @@ tests['shadow strokeText()'] = function (ctx) {
   ctx.textAlign = 'center'
   ctx.font = '35px Arial'
   ctx.strokeText('Shadow', 100, 100)
+  done()
 }
 
-tests['shadow transform text'] = function (ctx) {
+tests['shadow transform text'] = function (ctx, done) {
   ctx.shadowColor = '#c0c'
   ctx.shadowBlur = 4
   ctx.shadowOffsetX = 6
@@ -1561,6 +1643,7 @@ tests['shadow transform text'] = function (ctx) {
   ctx.strokeText('Sha', 33, 40)
   ctx.rotate(Math.PI / 2)
   ctx.fillText('dow', 50, -72)
+  done()
 }
 
 tests['shadow image'] = function (ctx, done) {
@@ -1595,7 +1678,7 @@ tests['scaled shadow image'] = function (ctx, done) {
   img.src = imageSrc('star.png')
 }
 
-tests['shadow integration'] = function (ctx) {
+tests['shadow integration'] = function (ctx, done) {
   ctx.shadowBlur = 5
   ctx.shadowOffsetX = 10
   ctx.shadowOffsetY = 10
@@ -1633,9 +1716,10 @@ tests['shadow integration'] = function (ctx) {
   ctx.arc(50, 151, 50, 0, Math.PI * 2, false)
   ctx.fillStyle = 'gold'
   ctx.fill()
+  done()
 }
 
-tests['font state'] = function (ctx) {
+tests['font state'] = function (ctx, done) {
   ctx.save()
   ctx.font = '20px Impact'
   ctx.fillText('Bam!', 50, 80)
@@ -1649,6 +1733,7 @@ tests['font state'] = function (ctx) {
 
   ctx.restore()
   ctx.fillText('Boom again!', 50, 140)
+  done()
 }
 
 tests['drawImage(img,0,0)'] = function (ctx, done) {
@@ -1778,7 +1863,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
-tests['putImageData()'] = function (ctx) {
+tests['putImageData()'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1787,9 +1872,10 @@ tests['putImageData()'] = function (ctx) {
   }
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 10, 10)
+  done()
 }
 
-tests['putImageData() 1'] = function (ctx) {
+tests['putImageData() 1'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1798,9 +1884,10 @@ tests['putImageData() 1'] = function (ctx) {
   }
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10)
+  done()
 }
 
-tests['putImageData() 2'] = function (ctx) {
+tests['putImageData() 2'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1809,9 +1896,10 @@ tests['putImageData() 2'] = function (ctx) {
   }
   var data = ctx.getImageData(25, 25, 50, 50)
   ctx.putImageData(data, 10, 10)
+  done()
 }
 
-tests['putImageData() 3'] = function (ctx) {
+tests['putImageData() 3'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1820,9 +1908,10 @@ tests['putImageData() 3'] = function (ctx) {
   }
   var data = ctx.getImageData(10, 25, 10, 50)
   ctx.putImageData(data, 50, 10)
+  done()
 }
 
-tests['putImageData() 4'] = function (ctx) {
+tests['putImageData() 4'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' +
@@ -1833,9 +1922,10 @@ tests['putImageData() 4'] = function (ctx) {
   ctx.strokeRect(30, 30, 30, 30)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 30, 30, 10, 10, 30, 30)
+  done()
 }
 
-tests['putImageData() 5'] = function (ctx) {
+tests['putImageData() 5'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1845,9 +1935,10 @@ tests['putImageData() 5'] = function (ctx) {
   ctx.strokeRect(60, 60, 50, 30)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 0, 0, 50, 30)
+  done()
 }
 
-tests['putImageData() 6'] = function (ctx) {
+tests['putImageData() 6'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1857,9 +1948,10 @@ tests['putImageData() 6'] = function (ctx) {
   ctx.strokeRect(60, 60, 50, 30)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 10, 0, 35, 30)
+  done()
 }
 
-tests['putImageData() 7'] = function (ctx) {
+tests['putImageData() 7'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1870,9 +1962,10 @@ tests['putImageData() 7'] = function (ctx) {
   ctx.translate(20, 20)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 10, 20, 35, -10)
+  done()
 }
 
-tests['putImageData() 8'] = function (ctx) {
+tests['putImageData() 8'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1882,9 +1975,10 @@ tests['putImageData() 8'] = function (ctx) {
   ctx.translate(20, 20)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10, 0, 20, 35, 30)
+  done()
 }
 
-tests['putImageData() 9'] = function (ctx) {
+tests['putImageData() 9'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -1894,9 +1988,10 @@ tests['putImageData() 9'] = function (ctx) {
   ctx.translate(20, 20)
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10, 0, 20, 500, 500)
+  done()
 }
 
-tests['putImageData() 10'] = function (ctx) {
+tests['putImageData() 10'] = function (ctx, done) {
   ctx.fillStyle = 'rgba(255,0,0,1)'
   ctx.fillRect(0, 0, 50, 100)
   ctx.fillStyle = 'rgba(0,255,0,1)'
@@ -1906,9 +2001,10 @@ tests['putImageData() 10'] = function (ctx) {
 
   var data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
+  done()
 }
 
-tests['putImageData() alpha'] = function (ctx) {
+tests['putImageData() alpha'] = function (ctx, done) {
   ctx.fillStyle = 'rgba(255,0,0,0.5)'
   ctx.fillRect(0, 0, 50, 100)
   ctx.fillStyle = 'rgba(0,255,0,0.5)'
@@ -1918,9 +2014,10 @@ tests['putImageData() alpha'] = function (ctx) {
 
   var data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
+  done()
 }
 
-tests['putImageData() alpha 2'] = function (ctx) {
+tests['putImageData() alpha 2'] = function (ctx, done) {
   ctx.fillStyle = 'rgba(255,0,0,0.2)'
   ctx.fillRect(0, 0, 50, 100)
   ctx.fillStyle = 'rgba(0,255,0,0.5)'
@@ -1930,9 +2027,10 @@ tests['putImageData() alpha 2'] = function (ctx) {
 
   var data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
+  done()
 }
 
-tests['putImageData() globalAlpha'] = function (ctx) {
+tests['putImageData() globalAlpha'] = function (ctx, done) {
   ctx.globalAlpha = 0.5
   ctx.fillStyle = '#f00'
   ctx.fillRect(0, 0, 50, 100)
@@ -1943,6 +2041,7 @@ tests['putImageData() globalAlpha'] = function (ctx) {
 
   var data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
+  done()
 }
 
 tests['putImageData() png data'] = function (ctx, done) {
@@ -2014,7 +2113,7 @@ tests['putImageData() png data 3'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
-tests['setLineDash'] = function (ctx) {
+tests['setLineDash'] = function (ctx, done) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 14
 
@@ -2046,9 +2145,10 @@ tests['setLineDash'] = function (ctx) {
   line([0, 0], 'purple') // should be full
   line([0, 0, 3, 0], 'orange') // should be full
   line([0, 3, 0, 0], 'green') // should be empty
+  done()
 }
 
-tests['lineDashOffset'] = function (ctx) {
+tests['lineDashOffset'] = function (ctx, done) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 4
 
@@ -2082,27 +2182,30 @@ tests['lineDashOffset'] = function (ctx) {
   for (var i = 0; i < 10; i++) {
     line(90 + i / 5, 'red')
   }
+  done()
 }
 
-tests['fillStyle=\'hsl(...)\''] = function (ctx) {
+tests['fillStyle=\'hsl(...)\''] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'hsl(' + (360 - 60 * i) + ',' + (100 - 16.66 * j) + '%,' + (50 + (i + j) * (50 / 12)) + '%)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
+  done()
 }
 
-tests['fillStyle=\'hsla(...)\''] = function (ctx) {
+tests['fillStyle=\'hsla(...)\''] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'hsla(' + (360 - 60 * i) + ',' + (100 - 16.66 * j) + '%,50%,' + (1 - 0.16 * j) + ')'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
+  done()
 }
 
-tests['textBaseline and scale'] = function (ctx) {
+tests['textBaseline and scale'] = function (ctx, done) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
   ctx.lineTo(0, 50)
@@ -2123,9 +2226,10 @@ tests['textBaseline and scale'] = function (ctx) {
   ctx.textBaseline = 'bottom'
   ctx.textAlign = 'center'
   ctx.fillText('bottom', 1000, 1500)
+  done()
 }
 
-tests['rotated baseline'] = function (ctx) {
+tests['rotated baseline'] = function (ctx, done) {
   ctx.font = '12px Arial'
   ctx.fillStyle = 'black'
   ctx.textAlign = 'center'
@@ -2136,9 +2240,10 @@ tests['rotated baseline'] = function (ctx) {
     ctx.fillText('Hello world!', -50, -50)
     ctx.rotate(-Math.PI / 8)
   }
+  done()
 }
 
-tests['rotated and scaled baseline'] = function (ctx) {
+tests['rotated and scaled baseline'] = function (ctx, done) {
   ctx.font = '120px Arial'
   ctx.fillStyle = 'black'
   ctx.textAlign = 'center'
@@ -2150,9 +2255,10 @@ tests['rotated and scaled baseline'] = function (ctx) {
     ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
     ctx.rotate(-Math.PI / 8)
   }
+  done()
 }
 
-tests['rotated and skewed baseline'] = function (ctx) {
+tests['rotated and skewed baseline'] = function (ctx, done) {
   ctx.font = '12px Arial'
   ctx.fillStyle = 'black'
   ctx.textAlign = 'center'
@@ -2164,9 +2270,10 @@ tests['rotated and skewed baseline'] = function (ctx) {
     ctx.fillText('Hello world!', -50, -50)
     ctx.rotate(-Math.PI / 8)
   }
+  done()
 }
 
-tests['rotated, scaled and skewed baseline'] = function (ctx) {
+tests['rotated, scaled and skewed baseline'] = function (ctx, done) {
   // Known issue: we don't have a way to decompose the cairo matrix into the
   // skew and rotation separately.
   ctx.font = '120px Arial'
@@ -2181,9 +2288,10 @@ tests['rotated, scaled and skewed baseline'] = function (ctx) {
     ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
     ctx.rotate(-Math.PI / 8)
   }
+  done()
 }
 
-tests['measureText()'] = function (ctx) {
+tests['measureText()'] = function (ctx, done) {
   // Note: As of Sep 2017, Chrome is the only browser with advanced TextMetrics,
   // and they're behind a flag, and a few of them are missing and others are
   // wrong.
@@ -2215,6 +2323,7 @@ tests['measureText()'] = function (ctx) {
   ctx.textBaseline = 'alphabetic'
   ctx.rotate(Math.PI / 8)
   drawWithBBox('Alphabet', 50, 100)
+  done()
 }
 
 tests['image sampling (#1084)'] = function (ctx, done) {
