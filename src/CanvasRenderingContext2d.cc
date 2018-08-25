@@ -1226,7 +1226,7 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_t *ctxTemp = NULL;
   // detect if globalCompositeOperation is different than the normal one
   // in that case, we need to use a separate surface in order to avoid clipping.
-  bool sourceOver = cairo_get_operator(ctx) === CAIRO_OPERATOR_OVER;
+  bool sourceOver = cairo_get_operator(ctx) == CAIRO_OPERATOR_OVER;
 
   if (sameCanvas || !sourceOver) {
     int width = context->canvas()->getWidth();
