@@ -31,6 +31,21 @@ function localRendering (name) {
   return canvas
 }
 
+function getDifference(canvas, image, outputCanvas) {
+  var imgCanvas = create('canvas', { width: 200, height: 200, title: name });
+  var ctx = imgCanvas.getContext('2d', {alpha: true});
+  var output = ctx.getImageData(0, 0, 200, 200);
+  ctx.drawImage(image, 0, 0, 200, 200);
+  var imageDataCanvas = ctx.getImageData(0, 0, 200, 200).data;
+  var imageDataGolden = canvas.getContext('2d', {alpha: true}).getImageData(0, 0, 200, 200).data;
+  pixelmatch(imageDataCanvas, imageDataGolden, output.data, 200, 200, {
+    includeAA: false,
+    threshold: 0.15
+  });
+  outputCanvas.getContext('2d', {alpha: true}).putImageData(output, 0, 0);
+  return outputCanvas;
+}
+
 function clearTests () {
   var table = document.getElementById('tests')
   if (table) document.body.removeChild(table)
@@ -45,12 +60,20 @@ function runTests () {
     create('thead', {}, [
       create('th', { textContent: 'node-canvas' }),
       create('th', { textContent: 'browser canvas' }),
+      create('th', { textContent: 'visual diffs' }),
       create('th', { textContent: '' })
     ]),
     create('tbody', {}, testNames.map(function (name) {
+      var canvas = localRendering(name);
+      var img = create('img', { src: '/render?name=' + encodeURIComponent(name) });
+      var canvasOuput = create('canvas', { width: 200, height: 200, title: name });
+      img.onload = function() {
+        getDifference(canvas, img, canvasOuput);
+      }
       return create('tr', {}, [
-        create('td', {}, [create('img', { src: '/render?name=' + encodeURIComponent(name) })]),
-        create('td', {}, [localRendering(name)]),
+        create('td', {}, [img]),
+        create('td', {}, [canvas]),
+        create('td', {}, [canvasOuput]),
         create('td', {}, [create('h3', { textContent: name }), pdfLink(name)])
       ])
     }))

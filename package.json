@@ -39,8 +39,8 @@
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
   "dependencies": {
-    "node-pre-gyp": "^0.9.0",
-    "nan": "^2.9.2"
+    "nan": "^2.9.2",
+    "node-pre-gyp": "^0.9.0"
   },
   "devDependencies": {
     "assert-rejects": "^0.1.1",
