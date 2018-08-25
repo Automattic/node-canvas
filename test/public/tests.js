@@ -1289,7 +1289,7 @@ tests['known bug #416'] = function (ctx, done) {
       ctx.save()
       ctx.translate(img2.width / 2, img1.height / 2)
       ctx.rotate(Math.PI / 4)
-      ctx.scale(0.5)
+      ctx.scale(0.5, 0.5)
       ctx.translate(-img2.width / 2, -img1.height / 2)
       ctx.drawImage(img2, 0, 0)
       ctx.restore()
