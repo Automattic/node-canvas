@@ -30,19 +30,19 @@ function localRendering (name, callback) {
   return canvas
 }
 
-function getDifference(canvas, image, outputCanvas) {
-  var imgCanvas = create('canvas', { width: 200, height: 200, title: name });
-  var ctx = imgCanvas.getContext('2d', {alpha: true});
-  var output = outputCanvas.getContext('2d', {alpha: true}).getImageData(0, 0, 200, 200);
-  ctx.drawImage(image, 0, 0, 200, 200);
-  var imageDataCanvas = ctx.getImageData(0, 0, 200, 200).data;
-  var imageDataGolden = canvas.getContext('2d', {alpha: true}).getImageData(0, 0, 200, 200).data;
-  pixelmatch(imageDataCanvas, imageDataGolden, output.data, 200, 200, {
+function getDifference (canvas, image, outputCanvas) {
+  var imgCanvas = create('canvas', { width: 200, height: 200 })
+  var ctx = imgCanvas.getContext('2d', {alpha: true})
+  var output = outputCanvas.getContext('2d', {alpha: true}).getImageData(0, 0, 200, 200)
+  ctx.drawImage(image, 0, 0, 200, 200)
+  var imageDataCanvas = ctx.getImageData(0, 0, 200, 200).data
+  var imageDataGolden = canvas.getContext('2d', {alpha: true}).getImageData(0, 0, 200, 200).data
+  window.pixelmatch(imageDataCanvas, imageDataGolden, output.data, 200, 200, {
     includeAA: false,
     threshold: 0.15
-  });
-  outputCanvas.getContext('2d', {alpha: true}).putImageData(output, 0, 0);
-  return outputCanvas;
+  })
+  outputCanvas.getContext('2d', {alpha: true}).putImageData(output, 0, 0)
+  return outputCanvas
 }
 
 function clearTests () {
@@ -63,14 +63,14 @@ function runTests () {
       create('th', { textContent: '' })
     ]),
     create('tbody', {}, testNames.map(function (name) {
-      var img = create('img');
-      var canvasOuput = create('canvas', { width: 200, height: 200, title: name });
-      var canvas = localRendering(name, function() {
-        img.onload = function() {
-          getDifference(canvas, img, canvasOuput);
+      var img = create('img')
+      var canvasOuput = create('canvas', { width: 200, height: 200, title: name })
+      var canvas = localRendering(name, function () {
+        img.onload = function () {
+          getDifference(canvas, img, canvasOuput)
         }
-        img.src = '/render?name=' + encodeURIComponent(name);
-      });
+        img.src = '/render?name=' + encodeURIComponent(name)
+      })
       return create('tr', {}, [
         create('td', {}, [img]),
         create('td', {}, [canvas]),
