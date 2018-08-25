@@ -147,7 +147,6 @@ tests['arc() 2'] = function (ctx, done) {
     }
   }
   done()
-  done()
 }
 
 tests['arcTo()'] = function (ctx, done) {
@@ -1251,6 +1250,7 @@ tests['font style variant weight size family'] = function (ctx, done) {
   ctx.font = 'normal normal normal 16px Impact'
   ctx.textAlign = 'center'
   ctx.fillText('normal normal normal 16px', 100, 100)
+  done()
 }
 
 // From https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
