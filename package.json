@@ -29,7 +29,8 @@
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+    "standard": "standard --fix"
   },
   "binary": {
     "module_name": "canvas-prebuilt",
