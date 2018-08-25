@@ -1227,16 +1227,19 @@ NAN_METHOD(Context2d::DrawImage) {
   // detect if globalCompositeOperation is different than the normal one
   // in that case, we need to use a separate surface in order to avoid clipping.
   bool sourceOver = cairo_get_operator(ctx) == CAIRO_OPERATOR_OVER;
-
-  if (sameCanvas || !sourceOver) {
+  bool needsExtraSurface = sameCanvas || !sourceOver;
+  if (needsExtraSurface) {
     int width = context->canvas()->getWidth();
     int height = context->canvas()->getHeight();
 
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     ctxTemp = cairo_create(surfTemp);
-
+    cairo_scale(ctxTemp, fx, fy);
+    cairo_scale(ctx, 1 / fx, 1 / fy);
+    context->savePath();
     cairo_rectangle(ctxTemp, dx, dy, dw, dh);
     cairo_clip(ctxTemp);
+    context->restorePath();
 
     cairo_set_source_surface(ctxTemp, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
@@ -1260,7 +1263,7 @@ NAN_METHOD(Context2d::DrawImage) {
 
   cairo_restore(ctx);
 
-  if (sameCanvas) {
+  if (needsExtraSurface) {
     cairo_destroy(ctxTemp);
     cairo_surface_destroy(surfTemp);
   }
