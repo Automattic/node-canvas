@@ -1224,31 +1224,38 @@ NAN_METHOD(Context2d::DrawImage) {
   bool sameCanvas = surface == context->canvas()->surface();
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
+  // detect if globalCompositeOperation is different than the normal one
+  // in that case, we need to use a separate surface in order to avoid clipping.
+  bool sourceOver = cairo_get_operator(ctx) === CAIRO_OPERATOR_OVER;
 
-  if (sameCanvas) {
+  if (sameCanvas || !sourceOver) {
     int width = context->canvas()->getWidth();
     int height = context->canvas()->getHeight();
 
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     ctxTemp = cairo_create(surfTemp);
 
+    cairo_rectangle(ctxTemp, dx, dy, dw, dh);
+    cairo_clip(ctxTemp);
+
     cairo_set_source_surface(ctxTemp, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
-    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
+    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_NONE);
     cairo_paint_with_alpha(ctxTemp, 1);
 
     surface = surfTemp;
+  } else {
+    // if we did not take care of clipping to copy just a part of the image, we do it here.
+    context->savePath();
+    cairo_rectangle(ctx, dx, dy, dw, dh);
+    cairo_clip(ctx);
+    context->restorePath();
   }
-
-  context->savePath();
-  cairo_rectangle(ctx, dx, dy, dw, dh);
-  cairo_clip(ctx);
-  context->restorePath();
 
   // Paint
   cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
-  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_REFLECT);
+  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
@@ -1783,7 +1790,7 @@ NAN_METHOD(Context2d::SetFillColor) {
 
   if (!info[0]->IsString()) return;
   Nan::Utf8String str(info[0]);
-  
+
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
