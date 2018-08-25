@@ -1783,7 +1783,7 @@ NAN_METHOD(Context2d::SetFillColor) {
 
   if (!info[0]->IsString()) return;
   Nan::Utf8String str(info[0]);
-
+  
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
