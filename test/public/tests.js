@@ -1666,7 +1666,7 @@ tests['shadow image with crop'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
-    ctx.shadowBlur = 8
+    ctx.shadowBlur = 4
     ctx.shadowOffsetX = 4
     ctx.shadowOffsetY = 4
 
@@ -1684,7 +1684,7 @@ tests['shadow image with crop and zoom'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
-    ctx.shadowBlur = 8
+    ctx.shadowBlur = 4
     ctx.shadowOffsetX = 4
     ctx.shadowOffsetY = 4
 
@@ -1899,7 +1899,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
-tests['drawImage canvas over canvas'] = function(ctx, done) {
+tests['drawImage canvas over canvas'] = function (ctx, done) {
   // Drawing canvas to itself
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, 200, 200)
