@@ -1665,13 +1665,31 @@ tests['shadow image'] = function (ctx, done) {
 tests['shadow image with crop'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 4;
-    ctx.shadowOffsetY = 4;
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
 
     // cropped
-    ctx.drawImage(img, 100, 100, 150, 150, 25, 25, 150, 150);
+    ctx.drawImage(img, 100, 100, 150, 150, 25, 25, 150, 150)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['shadow image with crop and zoom'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 40, 40, 25, 25, 150, 150)
     done(null)
   }
   img.onerror = function () {
@@ -1883,12 +1901,12 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
 
 tests['drawImage canvas over canvas'] = function(ctx, done) {
   // Drawing canvas to itself
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, 200, 200);
-  ctx.fillStyle = 'black';
-  ctx.fillRect(5, 5, 10, 10);
-  ctx.drawImage(ctx.canvas, 20, 20);
-  done();
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(5, 5, 10, 10)
+  ctx.drawImage(ctx.canvas, 20, 20)
+  done()
 }
 
 tests['putImageData()'] = function (ctx, done) {
