@@ -1863,6 +1863,16 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
+tests['drawImage canvas over canvas'] = function(ctx, done) {
+  // Drawing canvas to itself
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, 200, 200);
+  ctx.fillStyle = 'black';
+  ctx.fillRect(5, 5, 10, 10);
+  ctx.drawImage(ctx.canvas, 20, 20);
+  done();
+}
+
 tests['putImageData()'] = function (ctx, done) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {

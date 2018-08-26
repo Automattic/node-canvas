@@ -1109,7 +1109,9 @@ NAN_METHOD(Context2d::DrawImage) {
     , dx = 0
     , dy = 0
     , dw = 0
-    , dh = 0;
+    , dh = 0
+    , fw = 0
+    , fh = 0;
 
   cairo_surface_t *surface;
 
@@ -1121,15 +1123,15 @@ NAN_METHOD(Context2d::DrawImage) {
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
     }
-    sw = img->width;
-    sh = img->height;
+    fw = sw = img->width;
+    fh = sh = img->height;
     surface = img->surface();
 
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->getWidth();
-    sh = canvas->getHeight();
+    fw = sw = canvas->getWidth();
+    fh = sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid
@@ -1178,21 +1180,15 @@ NAN_METHOD(Context2d::DrawImage) {
   // Scale src
   float fx = (float) dw / sw;
   float fy = (float) dh / sh;
-
-  if (dw != sw || dh != sh) {
-    cairo_scale(ctx, fx, fy);
-    dx /= fx;
-    dy /= fy;
-    dw /= fx;
-    dh /= fy;
-  }
+  bool needScale = dw != sw || dh != sh;
+  bool needCut = sw != fw || sh != fh;
 
   // apply shadow if there is one
   if (context->hasShadow()) {
     if(context->state->shadowBlur) {
       // we need to create a new surface in order to blur
       int pad = context->state->shadowBlur * 2;
-      cairo_surface_t *shadow_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw + 2 * pad, dh + 2 * pad);
+      cairo_surface_t *shadow_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw / fx + 2 * pad, dh / fy + 2 * pad);
       cairo_t *shadow_context = cairo_create(shadow_surface);
 
       // mask and blur
@@ -1200,63 +1196,47 @@ NAN_METHOD(Context2d::DrawImage) {
       cairo_mask_surface(shadow_context, surface, pad, pad);
       context->blur(shadow_surface, context->state->shadowBlur);
 
+      cairo_save(ctx);
+      cairo_scale(ctx, fx, fy);
       // paint
       // @note: ShadowBlur looks different in each browser. This implementation matches chrome as close as possible.
       //        The 1.4 offset comes from visual tests with Chrome. I have read the spec and part of the shadowBlur
       //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
       //        in chrome is different.
       cairo_set_source_surface(ctx, shadow_surface,
-        dx - sx + (context->state->shadowOffsetX / fx) - pad + 1.4,
-        dy - sy + (context->state->shadowOffsetY / fy) - pad + 1.4);
+        dx / fx - sx + (context->state->shadowOffsetX / fx) - pad + 1.4,
+        dy / fy - sy + (context->state->shadowOffsetY / fy) - pad + 1.4);
       cairo_paint(ctx);
-
+      cairo_restore(ctx);
       // cleanup
       cairo_destroy(shadow_context);
       cairo_surface_destroy(shadow_surface);
     } else {
       context->setSourceRGBA(context->state->shadow);
       cairo_mask_surface(ctx, surface,
-        dx - sx + (context->state->shadowOffsetX / fx),
-        dy - sy + (context->state->shadowOffsetY / fy));
+        dx / fx - sx + (context->state->shadowOffsetX / fx),
+        dy / fy - sy + (context->state->shadowOffsetY / fy));
     }
   }
 
   bool sameCanvas = surface == context->canvas()->surface();
+  bool needsExtraSurface = sameCanvas || needCut || needScale;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
-  // detect if globalCompositeOperation is different than the normal one
-  // in that case, we need to use a separate surface in order to avoid clipping.
-  bool sourceOver = cairo_get_operator(ctx) == CAIRO_OPERATOR_OVER;
-  bool needsExtraSurface = sameCanvas || !sourceOver;
-  if (needsExtraSurface) {
-    int width = context->canvas()->getWidth();
-    int height = context->canvas()->getHeight();
 
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  if (needsExtraSurface) {
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
-    cairo_scale(ctx, 1 / fx, 1 / fy);
-    context->savePath();
-    cairo_rectangle(ctxTemp, dx, dy, dw, dh);
-    cairo_clip(ctxTemp);
-    context->restorePath();
-
-    cairo_set_source_surface(ctxTemp, surface, 0, 0);
+    cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_NONE);
     cairo_paint_with_alpha(ctxTemp, 1);
-
     surface = surfTemp;
-  } else {
-    // if we did not take care of clipping to copy just a part of the image, we do it here.
-    context->savePath();
-    cairo_rectangle(ctx, dx, dy, dw, dh);
-    cairo_clip(ctx);
-    context->restorePath();
   }
 
   // Paint
-  cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
+  cairo_set_source_surface(ctx, surface, dx, dy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
