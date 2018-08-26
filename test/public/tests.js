@@ -1662,6 +1662,24 @@ tests['shadow image'] = function (ctx, done) {
   img.src = imageSrc('star.png')
 }
 
+tests['shadow image with crop'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 150, 150, 25, 25, 150, 150);
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
 tests['scaled shadow image'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
