@@ -1662,27 +1662,11 @@ tests['shadow image'] = function (ctx, done) {
   img.src = imageSrc('star.png')
 }
 
-tests['shadow image 2'] = function (ctx, done) {
-  var img = new Image()
-  img.onload = function () {
-    ctx.shadowColor = 'black'
-    ctx.shadowBlur = 8
-    ctx.shadowOffsetX = 0
-    ctx.shadowOffsetY = 0
-    ctx.drawImage(img, 0, 0)
-    done(null)
-  }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
-  img.src = imageSrc('state.png')
-}
-
 tests['shadow image with crop'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
-    ctx.shadowBlur = 4
+    ctx.shadowBlur = 8
     ctx.shadowOffsetX = 4
     ctx.shadowOffsetY = 4
 
@@ -1700,7 +1684,7 @@ tests['shadow image with crop and zoom'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
-    ctx.shadowBlur = 4
+    ctx.shadowBlur = 8
     ctx.shadowOffsetX = 4
     ctx.shadowOffsetY = 4
 
