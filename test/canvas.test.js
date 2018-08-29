@@ -394,9 +394,9 @@ describe('Canvas', function () {
 
     assert.equal(true, ctx.imageSmoothingEnabled);
     ctx.imageSmoothingEnabled = false;
-    assert.equal('best', ctx.patternQuality);
+    assert.equal('good', ctx.patternQuality);
     assert.equal(false, ctx.imageSmoothingEnabled);
-    assert.equal('best', ctx.patternQuality);
+    assert.equal('good', ctx.patternQuality);
   });
 
   it('Context2d#font=', function () {
