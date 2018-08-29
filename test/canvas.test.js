@@ -388,6 +388,17 @@ describe('Canvas', function () {
     assert.equal('best', ctx.patternQuality);
   });
 
+  it('Context2d#imageSmoothingEnabled', function () {
+    var canvas = createCanvas(200, 200)
+      , ctx = canvas.getContext('2d');
+
+    assert.equal(true, ctx.imageSmoothingEnabled);
+    ctx.imageSmoothingEnabled = false;
+    assert.equal('best', ctx.patternQuality);
+    assert.equal(false, ctx.imageSmoothingEnabled);
+    assert.equal('best', ctx.patternQuality);
+  });
+
   it('Context2d#font=', function () {
     var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');
@@ -496,7 +507,7 @@ describe('Canvas', function () {
       var buf = createCanvas(200,200).toBuffer();
       assert.equal('PNG', buf.slice(1,4).toString());
     });
-  
+
     it('Canvas#toBuffer("image/png")', function () {
       var buf = createCanvas(200,200).toBuffer('image/png');
       assert.equal('PNG', buf.slice(1,4).toString());
@@ -521,7 +532,7 @@ describe('Canvas', function () {
         }
       }
     })
-  
+
     it('Canvas#toBuffer("image/png", {compressionLevel: 5})', function () {
       var buf = createCanvas(200,200).toBuffer('image/png', {compressionLevel: 5});
       assert.equal('PNG', buf.slice(1,4).toString());
@@ -576,21 +587,21 @@ describe('Canvas', function () {
     describe('#toBuffer("raw")', function() {
       var canvas = createCanvas(11, 10)
           , ctx = canvas.getContext('2d');
-  
+
       ctx.clearRect(0, 0, 11, 10);
-  
+
       ctx.fillStyle = 'rgba(200, 200, 200, 0.505)';
       ctx.fillRect(0, 0, 5, 5);
-  
+
       ctx.fillStyle = 'red';
       ctx.fillRect(5, 0, 5, 5);
-  
+
       ctx.fillStyle = '#00ff00';
       ctx.fillRect(0, 5, 5, 5);
-  
+
       ctx.fillStyle = 'black';
       ctx.fillRect(5, 5, 4, 5);
-  
+
       /** Output:
        *    *****RRRRR-
        *    *****RRRRR-
@@ -603,52 +614,52 @@ describe('Canvas', function () {
        *    GGGGGBBBB--
        *    GGGGGBBBB--
        */
-  
+
       var buf = canvas.toBuffer('raw');
       var stride = canvas.stride;
-  
+
       var endianness = os.endianness();
-  
+
       function assertPixel(u32, x, y, message) {
         var expected = '0x' + u32.toString(16);
-  
+
         // Buffer doesn't have readUInt32(): it only has readUInt32LE() and
         // readUInt32BE().
         var px = buf['readUInt32' + endianness](y * stride + x * 4);
         var actual = '0x' + px.toString(16);
-  
+
         assert.equal(actual, expected, message);
       }
-  
+
       it('should have the correct size', function() {
         assert.equal(buf.length, stride * 10);
       });
-  
+
       it('does not premultiply alpha', function() {
         assertPixel(0x80646464, 0, 0, 'first semitransparent pixel');
         assertPixel(0x80646464, 4, 4, 'last semitransparent pixel');
       });
-  
+
       it('draws red', function() {
         assertPixel(0xffff0000, 5, 0, 'first red pixel');
         assertPixel(0xffff0000, 9, 4, 'last red pixel');
       });
-  
+
       it('draws green', function() {
         assertPixel(0xff00ff00, 0, 5, 'first green pixel');
         assertPixel(0xff00ff00, 4, 9, 'last green pixel');
       });
-  
+
       it('draws black', function() {
         assertPixel(0xff000000, 5, 5, 'first black pixel');
         assertPixel(0xff000000, 8, 9, 'last black pixel');
       });
-  
+
       it('leaves undrawn pixels black, transparent', function() {
         assertPixel(0x0, 9, 5, 'first undrawn pixel');
         assertPixel(0x0, 9, 9, 'last undrawn pixel');
       });
-  
+
       it('is immutable', function() {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, 10, 10);
