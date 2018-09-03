@@ -2059,10 +2059,11 @@ NAN_METHOD(Context2d::Stroke) {
 
 double
 get_text_scale(Context2d *context, char *str, double maxWidth) {
+  PangoLayout *layout = context->layout()
   PangoRectangle logical_rect;
-  pango_layout_set_text(context->layout(), str, -1);
-  pango_cairo_update_layout(context->context(), context->layout());
-  pango_layout_get_pixel_extents(context->layout(), NULL, &logical_rect);
+  pango_layout_set_text(layout, str, -1);
+  pango_cairo_update_layout(context->context(), layout);
+  pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
 
   if (logical_rect.width > maxWidth) {
     return maxWidth / logical_rect.width;
