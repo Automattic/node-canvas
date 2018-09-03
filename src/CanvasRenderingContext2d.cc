@@ -2059,9 +2059,10 @@ NAN_METHOD(Context2d::Stroke) {
 
 double
 get_text_scale(Context2d *context, char *str, double maxWidth) {
-  PangoLayout *layout = context->layout();
   PangoRectangle logical_rect;
-  pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
+  pango_layout_set_text(context->layout(), str, -1);
+  pango_cairo_update_layout(context->context(), context->layout());
+  pango_layout_get_pixel_extents(context->layout(), NULL, &logical_rect);
 
   if (logical_rect.width > maxWidth) {
     return maxWidth / logical_rect.width;
@@ -2083,7 +2084,6 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-
   if (argsNum == 3) {
     scaled_by = get_text_scale(context, *str, args[2]);
     cairo_save(context->context());
