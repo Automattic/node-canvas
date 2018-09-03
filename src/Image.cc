@@ -277,14 +277,21 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   memcpy(data, buf, (len < 4 ? len : 4) * sizeof(uint8_t));
 
   if (isPNG(data)) return loadPNGFromBuffer(buf);
+
+  if (isGIF(data)) {
 #ifdef HAVE_GIF
-  if (isGIF(data)) return loadGIFFromBuffer(buf, len);
+    return loadGIFFromBuffer(buf, len);
+#else
+    this->errorInfo.set("node-canvas was built without GIF support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
+
+  if (isJPEG(data)) {
 #ifdef HAVE_JPEG
 #if CAIRO_VERSION_MINOR < 10
-  if (isJPEG(data)) return loadJPEGFromBuffer(buf, len);
+    return loadJPEGFromBuffer(buf, len);
 #else
-  if (isJPEG(data)) {
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
     if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
     if ((DATA_IMAGE | DATA_MIME) == data_mode) {
@@ -293,15 +300,26 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
       if (status) return status;
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
+#endif // CAIRO_VERSION_MINOR < 10
+#else // HAVE_JPEG
+    this->errorInfo.set("node-canvas was built without JPEG support");
+    return CAIRO_STATUS_READ_ERROR;
+#endif
   }
-#endif
-#endif
-#ifdef HAVE_RSVG
+
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
   unsigned head_len = (len < 1000 ? len : 1000);
-  if (isSVG(buf, head_len)) return loadSVGFromBuffer(buf, len);
+  if (isSVG(buf, head_len)) {
+#ifdef HAVE_RSVG
+    return loadSVGFromBuffer(buf, len);
+#else
+    this->errorInfo.set("node-canvas was built without SVG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
+
+  this->errorInfo.set("Unsupported image type");
   return CAIRO_STATUS_READ_ERROR;
 }
 
@@ -436,18 +454,25 @@ Image::loadSurface() {
     return loadPNG();
   }
 
-  // gif
+  
+  if (isGIF(buf)) {
 #ifdef HAVE_GIF
-  if (isGIF(buf)) return loadGIF(stream);
+    return loadGIF(stream);
+#else
+    this->errorInfo.set("node-canvas was built without GIF support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
-  // jpeg
+  if (isJPEG(buf)) {
 #ifdef HAVE_JPEG
-  if (isJPEG(buf)) return loadJPEG(stream);
+    return loadJPEG(stream);
+#else
+    this->errorInfo.set("node-canvas was built without JPEG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
-// svg
-#ifdef HAVE_RSVG
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
   uint8_t head[1000] = {0};
@@ -461,8 +486,14 @@ Image::loadSurface() {
     return CAIRO_STATUS_READ_ERROR;
   }
   rewind(stream);
-  if (isSVG(head, head_len)) return loadSVG(stream);
+  if (isSVG(head, head_len)) {
+#ifdef HAVE_RSVG
+    return loadSVG(stream);
+#else
+    this->errorInfo.set("node-canvas was built without SVG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
   fclose(stream);
 
