@@ -43,7 +43,7 @@ You can quickly install the dependencies by using the command for your OS:
 
 OS | Command
 ----- | -----
-OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib`<br/><br/>Using [MacPorts](https://www.macports.org/):<br/>`port install pkgconfig cairo pango libpng jpeg giflib`
+OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib`<br/><br/>Using [MacPorts](https://www.macports.org/):<br/>`port install pkgconfig cairo pango libpng jpeg giflib libsrvg`
 Ubuntu | `sudo apt-get install libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++`
 Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
 Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
@@ -178,7 +178,7 @@ image contained in the canvas.
     the background palette index (indexed PNGs only) and/or the resolution (ppi):
     `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`.
     All properties are optional.
-    
+
     Note that the PNG format encodes the resolution in pixels per meter, so if
     you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution
     is undefined by default to match common browser behavior.
