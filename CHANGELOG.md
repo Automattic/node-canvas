@@ -111,6 +111,7 @@ canvas.createJPEGStream() // new
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
  * Support for `img.src = <url>` to match browsers
  * Support reading data URL on `img.src`
+ * Readme: add dependencies command for OpenBSD
 
 1.6.x (unreleased)
 ==================

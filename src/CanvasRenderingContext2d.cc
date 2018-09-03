@@ -155,6 +155,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "_getMatrix", GetMatrix);
   SetProtoAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality, ctor);
+  SetProtoAccessor(proto, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled, ctor);
   SetProtoAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation, ctor);
   SetProtoAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha, ctor);
   SetProtoAccessor(proto, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor, ctor);
@@ -196,6 +197,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->stroke = transparent;
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
+  state->imageSmoothingEnabled = true;
   state->textDrawingMode = TEXT_DRAW_PATHS;
   state->fontDescription = pango_font_description_from_string("sans serif");
   pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
@@ -1193,7 +1195,7 @@ NAN_METHOD(Context2d::DrawImage) {
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
     cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
-    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
+    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
     cairo_paint_with_alpha(ctxTemp, 1);
     surface = surfTemp;
@@ -1234,7 +1236,7 @@ NAN_METHOD(Context2d::DrawImage) {
 
   // Paint
   cairo_set_source_surface(ctx, surface, dx, dy);
-  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
+  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
@@ -1354,6 +1356,24 @@ NAN_GETTER(Context2d::GetPatternQuality) {
     default: quality = "good";
   }
   info.GetReturnValue().Set(Nan::New(quality).ToLocalChecked());
+}
+
+/*
+ * Set ImageSmoothingEnabled value.
+ */
+
+NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  context->state->imageSmoothingEnabled = value->BooleanValue();
+}
+
+/*
+ * Get pattern quality.
+ */
+
+NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  info.GetReturnValue().Set(Nan::New<Boolean>(context->state->imageSmoothingEnabled));
 }
 
 /*
