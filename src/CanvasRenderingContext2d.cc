@@ -2070,11 +2070,8 @@ get_text_scale(Context2d *context, char *str, double maxWidth) {
   }
 }
 
-/*
- * Fill text at (x, y).
- */
-
-NAN_METHOD(Context2d::FillText) {
+void
+paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
   double args[3];
   if(!checkArgs(info, args, argsNum, 1))
@@ -2089,20 +2086,30 @@ NAN_METHOD(Context2d::FillText) {
 
   if (argsNum == 3) {
     scaled_by = get_text_scale(context, *str, args[2]);
+    cairo_save(context->context());
     cairo_scale(context->context(), scaled_by, 1);
   }
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    context->fill();
+    if (stroke == true) { context->stroke(); } else { context->fill(); }
     context->setTextPath(*str, x, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
     context->setTextPath(*str, x, y);
-    context->fill();
+    if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();
+  if (argsNum == 3) {
+    cairo_restore(context->context());
+  }
+}
 
-  cairo_scale(context->context(), 1 / scaled_by, 1);
+/*
+ * Fill text at (x, y).
+ */
+
+NAN_METHOD(Context2d::FillText) {
+  paintText(info, false);
 }
 
 /*
@@ -2110,34 +2117,7 @@ NAN_METHOD(Context2d::FillText) {
  */
 
 NAN_METHOD(Context2d::StrokeText) {
-  int argsNum = info.Length() >= 4 ? 3 : 2;
-  double args[3];
-  if(!checkArgs(info, args, argsNum, 1))
-    return;
-
-  Nan::Utf8String str(info[0]->ToString());
-  double x = args[0];
-  double y = args[1];
-  double scaled_by = 1;
-
-  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-
-  if (argsNum == 3) {
-    scaled_by = get_text_scale(context, *str, args[2]);
-    cairo_scale(context->context(), scaled_by, 1);
-  }
-
-  context->savePath();
-  if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    context->stroke();
-    context->setTextPath(*str, x, y);
-  } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
-    context->stroke();
-  }
-  context->restorePath();
-
-  cairo_scale(context->context(), 1 / scaled_by, 1);
+  paintText(info, true);
 }
 
 /*
