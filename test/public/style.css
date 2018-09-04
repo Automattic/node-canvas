@@ -37,3 +37,10 @@ table tr td:nth-child(3) {
 table tr td p {
   margin: 5px 0;
 }
+
+table th {
+  background: white;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
