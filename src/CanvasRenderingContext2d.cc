@@ -1111,7 +1111,9 @@ NAN_METHOD(Context2d::DrawImage) {
     , dx = 0
     , dy = 0
     , dw = 0
-    , dh = 0;
+    , dh = 0
+    , fw = 0
+    , fh = 0;
 
   cairo_surface_t *surface;
 
@@ -1123,15 +1125,15 @@ NAN_METHOD(Context2d::DrawImage) {
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
     }
-    sw = img->width;
-    sh = img->height;
+    fw = sw = img->width;
+    fh = sh = img->height;
     surface = img->surface();
 
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->getWidth();
-    sh = canvas->getHeight();
+    fw = sw = canvas->getWidth();
+    fh = sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid
@@ -1180,13 +1182,23 @@ NAN_METHOD(Context2d::DrawImage) {
   // Scale src
   float fx = (float) dw / sw;
   float fy = (float) dh / sh;
+  bool needScale = dw != sw || dh != sh;
+  bool needCut = sw != fw || sh != fh;
 
-  if (dw != sw || dh != sh) {
-    cairo_scale(ctx, fx, fy);
-    dx /= fx;
-    dy /= fy;
-    dw /= fx;
-    dh /= fy;
+  bool sameCanvas = surface == context->canvas()->surface();
+  bool needsExtraSurface = sameCanvas || needCut || needScale;
+  cairo_surface_t *surfTemp = NULL;
+  cairo_t *ctxTemp = NULL;
+
+  if (needsExtraSurface) {
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
+    ctxTemp = cairo_create(surfTemp);
+    cairo_scale(ctxTemp, fx, fy);
+    cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
+    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
+    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
+    cairo_paint_with_alpha(ctxTemp, 1);
+    surface = surfTemp;
   }
 
   // apply shadow if there is one
@@ -1208,54 +1220,29 @@ NAN_METHOD(Context2d::DrawImage) {
       //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
       //        in chrome is different.
       cairo_set_source_surface(ctx, shadow_surface,
-        dx - sx + (context->state->shadowOffsetX / fx) - pad + 1.4,
-        dy - sy + (context->state->shadowOffsetY / fy) - pad + 1.4);
+        dx + context->state->shadowOffsetX - pad + 1.4,
+        dy + context->state->shadowOffsetY - pad + 1.4);
       cairo_paint(ctx);
-
       // cleanup
       cairo_destroy(shadow_context);
       cairo_surface_destroy(shadow_surface);
     } else {
       context->setSourceRGBA(context->state->shadow);
       cairo_mask_surface(ctx, surface,
-        dx - sx + (context->state->shadowOffsetX / fx),
-        dy - sy + (context->state->shadowOffsetY / fy));
+        dx + (context->state->shadowOffsetX),
+        dy + (context->state->shadowOffsetY));
     }
   }
 
-  bool sameCanvas = surface == context->canvas()->surface();
-  cairo_surface_t *surfTemp = NULL;
-  cairo_t *ctxTemp = NULL;
-
-  if (sameCanvas) {
-    int width = context->canvas()->getWidth();
-    int height = context->canvas()->getHeight();
-
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    ctxTemp = cairo_create(surfTemp);
-
-    cairo_set_source_surface(ctxTemp, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
-    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
-    cairo_paint_with_alpha(ctxTemp, 1);
-
-    surface = surfTemp;
-  }
-
-  context->savePath();
-  cairo_rectangle(ctx, dx, dy, dw, dh);
-  cairo_clip(ctx);
-  context->restorePath();
-
   // Paint
-  cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
+  cairo_set_source_surface(ctx, surface, dx, dy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
-  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_REFLECT);
+  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
 
-  if (sameCanvas) {
+  if (needsExtraSurface) {
     cairo_destroy(ctxTemp);
     cairo_surface_destroy(surfTemp);
   }
