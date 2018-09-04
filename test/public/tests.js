@@ -1687,6 +1687,31 @@ tests['drawImage(img) svg'] = function (ctx, done) {
   img.src = imageSrc('tree.svg')
 }
 
+tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, -800, -800, 1000, 1000)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('tree.svg')
+}
+
+tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(100, 100)
+    ctx.drawImage(img, -8, -8, 10, 10)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('tree.svg')
+}
+
 tests['drawImage(img,x,y)'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
