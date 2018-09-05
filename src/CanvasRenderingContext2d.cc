@@ -933,12 +933,10 @@ NAN_METHOD(Context2d::DrawImage) {
   if (infoLen != 3 && infoLen != 5 && infoLen != 9)
     return Nan::ThrowTypeError("Invalid arguments");
 
-  if (!info[0]->IsObject())
-    return Nan::ThrowTypeError("The first argument must be an object");
-
-  double args[8];
-  if(!checkArgs(info, args, infoLen - 1, 1))
-    return;
+  if (!info[0]->IsObject()
+    || !info[1]->IsNumber()
+    || !info[2]->IsNumber())
+    return Nan::ThrowTypeError("Expected object, number and number");
 
   float sx = 0
     , sy = 0
@@ -968,8 +966,8 @@ NAN_METHOD(Context2d::DrawImage) {
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    fw = sw = canvas->getWidth();
-    fh = sh = canvas->getHeight();
+    fw = sw = canvas->width;
+    fh = sh = canvas->height;
     surface = canvas->surface();
 
   // Invalid
@@ -984,26 +982,26 @@ NAN_METHOD(Context2d::DrawImage) {
   switch (infoLen) {
     // img, sx, sy, sw, sh, dx, dy, dw, dh
     case 9:
-      sx = args[0];
-      sy = args[1];
-      sw = args[2];
-      sh = args[3];
-      dx = args[4];
-      dy = args[5];
-      dw = args[6];
-      dh = args[7];
+      sx = info[1]->NumberValue();
+      sy = info[2]->NumberValue();
+      sw = info[3]->NumberValue();
+      sh = info[4]->NumberValue();
+      dx = info[5]->NumberValue();
+      dy = info[6]->NumberValue();
+      dw = info[7]->NumberValue();
+      dh = info[8]->NumberValue();
       break;
     // img, dx, dy, dw, dh
     case 5:
-      dx = args[0];
-      dy = args[1];
-      dw = args[2];
-      dh = args[3];
+      dx = info[1]->NumberValue();
+      dy = info[2]->NumberValue();
+      dw = info[3]->NumberValue();
+      dh = info[4]->NumberValue();
       break;
     // img, dx, dy
     case 3:
-      dx = args[0];
-      dy = args[1];
+      dx = info[1]->NumberValue();
+      dy = info[2]->NumberValue();
       dw = sw;
       dh = sh;
       break;
@@ -1031,7 +1029,7 @@ NAN_METHOD(Context2d::DrawImage) {
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
     cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
-    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
+    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
     cairo_paint_with_alpha(ctxTemp, 1);
     surface = surfTemp;
@@ -1072,7 +1070,7 @@ NAN_METHOD(Context2d::DrawImage) {
 
   // Paint
   cairo_set_source_surface(ctx, surface, dx, dy);
-  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
+  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
