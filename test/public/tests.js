@@ -1279,7 +1279,7 @@ gco.forEach(op => {
   }
 })
 
-tests['known bug #416'] = function (ctx, done) {
+tests['Global composite operation with smaller source'] = function (ctx, done) {
   var img1 = new Image()
   var img2 = new Image()
   img1.onload = function () {
