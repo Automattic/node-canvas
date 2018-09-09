@@ -12,6 +12,7 @@ const Image = require('../').Image
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
 const fs = require('fs')
+const path = require('path')
 
 const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
@@ -268,4 +269,45 @@ describe('Image', function () {
 
     return Promise.all(corruptSources.map(src => loadImage(src).catch(() => null)))
   })
+
+  describe('Obscure image formats', () => {
+    var imgsDir = path.join(__dirname, '/fixtures/obscure');
+    var getNum = name => +name.match(/^\d+/)[0];
+
+    var imgNames = fs.readdirSync(imgsDir).sort((n1, n2) => {
+      n1 = getNum(n1);
+      n2 = getNum(n2);
+      return (n1 > n2) - (n1 < n2);
+    });
+
+    var test = description => {
+      var imgName = imgNames.shift();
+      var imgPath = path.join(imgsDir, imgName);
+      var num = getNum(imgName);
+
+      it(`${description} (#${num})`, done => {
+        var img = new Image();
+
+        img.onload = () => {
+          assert.strictEqual(img.width, 64);
+          assert.strictEqual(img.height, 64);
+          done();
+        };
+
+        img.onerror = err => {
+          throw err;
+        };
+
+        img.src = imgPath;
+      });
+    };
+
+    [
+      'Dubious gAMA chunk',
+      'PNG with cHRM chunk',
+      'WEBP format',
+      'BMP format',
+      'JPEG with precision set to 12',
+    ].forEach(test);
+  });
 })

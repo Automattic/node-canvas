@@ -1,4 +1,10 @@
 language: node_js
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo add-apt-repository -y ppa:mc3man/trusty-media; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -y ffmpeg; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install ffmpeg; fi
 install:
   - npm install --build-from-source
 node_js:
@@ -18,4 +24,4 @@ addons:
       - g++-4.9
 env:
   - CXX=g++-4.9
-sudo: false
+sudo: required
