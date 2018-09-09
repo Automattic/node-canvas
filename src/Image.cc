@@ -200,8 +200,8 @@ Image::clearData() {
     _surface = NULL;
   }
 
-  free(_data);
-  _data = NULL;
+  delete[] _data;
+  _data = nullptr;
 
   free(filename);
   filename = NULL;
@@ -356,7 +356,7 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
 
 Image::Image() {
   filename = NULL;
-  _data = NULL;
+  _data = nullptr;
   _data_len = 0;
   _surface = NULL;
   width = height = 0;
@@ -613,7 +613,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_INVALID_SIZE;
   }
 
-  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
+  uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
     GIF_CLOSE_FILE(gif);
     this->errorInfo.set(NULL, "malloc", errno);
@@ -719,7 +719,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   cairo_status_t status = cairo_surface_status(_surface);
 
   if (status) {
-    free(data);
+    delete[] data;
     return status;
   }
 
@@ -798,7 +798,7 @@ cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
   
-  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
+  uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
@@ -806,7 +806,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(naturalWidth * args->output_components);
+  uint8_t *src = new uint8_t[naturalWidth * args->output_components];
   if (!src) {
     free(data);
     jpeg_abort_decompress(args);
@@ -858,13 +858,12 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   jpeg_destroy_decompress(args);
   status = cairo_surface_status(_surface);
 
+  delete[] src;
+
   if (status) {
-    free(data);
-    free(src);
+    delete[] data;
     return status;
   }
-
-  free(src);
 
   _data = data;
 
@@ -930,7 +929,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // Data alloc
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
   int buf_size = naturalHeight * cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth);
-  uint8_t *data = (uint8_t *) malloc(buf_size);
+  uint8_t *data = new uint8_t[buf_size];
   if (!data) {
     this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
@@ -950,7 +949,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   cairo_status_t status = cairo_surface_status(_surface);
 
   if (status) {
-    free(data);
+    delete[] data;
     return status;
   }
 
