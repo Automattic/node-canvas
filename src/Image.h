@@ -117,7 +117,7 @@ class Image: public Nan::ObjectWrap {
 
   private:
     cairo_surface_t *_surface;
-    uint8_t *_data;
+    uint8_t *_data = nullptr;
     int _data_len;
 #ifdef HAVE_RSVG
     RsvgHandle *_rsvg;
