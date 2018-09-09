@@ -1667,6 +1667,27 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
+tests['drawImage(img) YCCK JPEG (#425)'] = function (ctx, done) {
+  // This also provides coverage for CMYK JPEGs
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('ycck.jpg')
+}
+
+tests['drawImage(img) grayscale JPEG'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('grayscale.jpg')
+}
+
 tests['drawImage(img) svg'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {

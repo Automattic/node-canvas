@@ -87,6 +87,7 @@ canvas.createJPEGStream() // new
  * Provide better, Node.js core-style coded errors for failed sys calls. (For
    example, provide an error with code 'ENOENT' if setting `img.src` to a path
    that does not exist.)
+ * Support reading CMYK, YCCK JPEGs.
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

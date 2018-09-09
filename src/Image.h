@@ -10,6 +10,7 @@
 
 #include "Canvas.h"
 #include "CanvasError.h"
+#include <functional>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -34,7 +35,7 @@
   #endif
 #endif
 
-
+using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
 class Image: public Nan::ObjectWrap {
   public:
@@ -81,6 +82,7 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
+    void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
 #if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
