@@ -1573,9 +1573,7 @@ tests['shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('star.png')
 }
 
@@ -1589,9 +1587,7 @@ tests['scaled shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 10, 10, 80, 80)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('star.png')
 }
 
@@ -1657,9 +1653,7 @@ tests['drawImage(img,0,0)'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1669,9 +1663,7 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('face.jpeg')
 }
 
@@ -1681,9 +1673,7 @@ tests['drawImage(img) svg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('tree.svg')
 }
 
@@ -1693,9 +1683,7 @@ tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
     ctx.drawImage(img, -800, -800, 1000, 1000)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('tree.svg')
 }
 
@@ -1706,9 +1694,7 @@ tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
     ctx.drawImage(img, -8, -8, 10, 10)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('tree.svg')
 }
 
@@ -1718,9 +1704,7 @@ tests['drawImage(img,x,y)'] = function (ctx, done) {
     ctx.drawImage(img, 5, 25)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1730,9 +1714,7 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
     ctx.drawImage(img, 25, 25, 10, 10)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1742,9 +1724,7 @@ tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1754,9 +1734,7 @@ tests['drawImage(img,x,y,w,h) scale vertical'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, img.width, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1766,9 +1744,7 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function (ctx, done) {
     ctx.drawImage(img, 13, 13, 45, 45, 25, 25, img.width / 2, img.height / 2)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1780,9 +1756,7 @@ tests['drawImage(img,0,0) globalAlpha'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1797,9 +1771,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1986,9 +1958,7 @@ tests['putImageData() png data'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2009,9 +1979,7 @@ tests['putImageData() png data 2'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2033,9 +2001,7 @@ tests['putImageData() png data 3'] = function (ctx, done) {
     ctx.putImageData(imageData, 50, 50)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -2253,9 +2219,7 @@ tests['image sampling (#1084)'] = function (ctx, done) {
     if (loaded2) done()
   }
 
-  img1.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img1.onerror = done
 
   img2.onload = () => {
     loaded2 = true
@@ -2263,9 +2227,7 @@ tests['image sampling (#1084)'] = function (ctx, done) {
     if (loaded1) done()
   }
 
-  img2.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img2.onerror = done
 
   img1.src = imageSrc('halved-1.jpeg')
   img2.src = imageSrc('halved-2.jpeg')
