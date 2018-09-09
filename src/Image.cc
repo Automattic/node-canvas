@@ -777,6 +777,18 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 #endif
 
+void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
+  int stride = naturalWidth * 4;
+  for (int y = 0; y < naturalHeight; ++y) {
+    jpeg_read_scanlines(args, &src, 1);
+    uint32_t *row = (uint32_t*)(data + stride * y);
+    for (int x = 0; x < naturalWidth; ++x) {
+      int bx = args->output_components * x;
+      row[x] = decode(src + bx);
+    }
+  }
+}
+
 /*
  * Takes an initialised jpeg_decompress_struct and decodes the
  * data into _surface.
@@ -784,9 +796,8 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
-  int stride = naturalWidth * 4;
-  cairo_status_t status;
-
+  cairo_status_t status = CAIRO_STATUS_SUCCESS;
+  
   uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
   if (!data) {
     jpeg_abort_decompress(args);
@@ -804,33 +815,44 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  for (int y = 0; y < naturalHeight; ++y) {
-    jpeg_read_scanlines(args, &src, 1);
-    uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < naturalWidth; ++x) {
-      if (args->jpeg_color_space == 1) {
-        uint32_t *pixel = row + x;
-        *pixel = 255 << 24
-          | src[x] << 16
-          | src[x] << 8
-          | src[x];
-      } else {
-        int bx = 3 * x;
-        uint32_t *pixel = row + x;
-        *pixel = 255 << 24
-          | src[bx + 0] << 16
-          | src[bx + 1] << 8
-          | src[bx + 2];
-      }
-    }
+  // These are the three main cases to handle. libjpeg converts YCCK to CMYK
+  // and YCbCr to RGB by default.
+  switch (args->out_color_space) {
+    case JCS_CMYK:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint16_t k = static_cast<uint16_t>(src[3]);
+        uint8_t r = k * src[0] / 255;
+        uint8_t g = k * src[1] / 255;
+        uint8_t b = k * src[2] / 255;
+        return 255 << 24 | r << 16 | g << 8 | b;
+      });
+      break;
+    case JCS_RGB:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint8_t r = src[0], g = src[1], b = src[2];
+        return 255 << 24 | r << 16 | g << 8 | b;
+      });
+      break;
+    case JCS_GRAYSCALE:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint8_t v = src[0];
+        return 255 << 24 | v << 16 | v << 8 | v;
+      });
+      break;
+    default:
+      this->errorInfo.set("Unsupported JPEG encoding");
+      status = CAIRO_STATUS_READ_ERROR;
+      break;
   }
 
-  _surface = cairo_image_surface_create_for_data(
-      data
-    , CAIRO_FORMAT_ARGB32
-    , naturalWidth
-    , naturalHeight
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
+  if (!status) {
+    _surface = cairo_image_surface_create_for_data(
+        data
+      , CAIRO_FORMAT_ARGB32
+      , naturalWidth
+      , naturalHeight
+      , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
+  }
 
   jpeg_finish_decompress(args);
   jpeg_destroy_decompress(args);
