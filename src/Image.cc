@@ -56,12 +56,14 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource, ctor);
   SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
+
+  Nan::SetMethod(proto, "getSource", GetSource);
+  Nan::SetMethod(proto, "setSource", SetSource);
 #if CAIRO_VERSION_MINOR >= 10
   SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
@@ -182,7 +184,7 @@ NAN_SETTER(Image::SetHeight) {
  * Get src path.
  */
 
-NAN_GETTER(Image::GetSource) {
+void Image::GetSource(const Nan::FunctionCallbackInfo<v8::Value> &info) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
 }
@@ -222,9 +224,11 @@ Image::clearData() {
  * Set src path.
  */
 
-NAN_SETTER(Image::SetSource) {
+void Image::SetSource(const Nan::FunctionCallbackInfo<v8::Value> &info) {
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
+
+  Local<Value> value = info[0];
 
   img->clearData();
   // Clear errno in case some unrelated previous syscall failed
