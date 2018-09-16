@@ -519,6 +519,10 @@ Notes and caveats:
 
  Examples are placed in _./examples_, be sure to check them out! most produce a png image of the same name, and others such as _live-clock.js_ launch an http server to be viewed in the browser.
 
+## Documentation
+
+This project is an implementation of the Web Canvas API. For API documentation, please visit: [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+
 ## Testing
 
 If you have not previously, init git submodules:
