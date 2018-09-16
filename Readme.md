@@ -520,8 +520,7 @@ Notes and caveats:
 
 ## Documentation
 
-This project is an implementation of the Web Canvas API. 
-For exploring the possiblities ( & features ) you can create, please visit : [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+This project is an implementation of the Web Canvas API. For API documentation, please visit: [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 
 ## Testing
 
