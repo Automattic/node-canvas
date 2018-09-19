@@ -54,8 +54,8 @@ class Image: public Nan::ObjectWrap {
     static NAN_SETTER(SetDataMode);
     static NAN_SETTER(SetWidth);
     static NAN_SETTER(SetHeight);
-    static void GetSource(const Nan::FunctionCallbackInfo<v8::Value> &info);
-    static void SetSource(const Nan::FunctionCallbackInfo<v8::Value> &info);
+    static NAN_METHOD(GetSource);
+    static NAN_METHOD(SetSource);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);

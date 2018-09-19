@@ -184,7 +184,7 @@ NAN_SETTER(Image::SetHeight) {
  * Get src path.
  */
 
-void Image::GetSource(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+NAN_METHOD(Image::GetSource){
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
 }
@@ -224,7 +224,7 @@ Image::clearData() {
  * Set src path.
  */
 
-void Image::SetSource(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+NAN_METHOD(Image::SetSource){
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 
