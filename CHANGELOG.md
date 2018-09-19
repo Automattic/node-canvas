@@ -88,6 +88,7 @@ canvas.createJPEGStream() // new
    example, provide an error with code 'ENOENT' if setting `img.src` to a path
    that does not exist.)
  * Support reading CMYK, YCCK JPEGs.
+ * Hide `Image.prototype.source`
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

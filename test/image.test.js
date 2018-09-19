@@ -268,4 +268,11 @@ describe('Image', function () {
 
     return Promise.all(corruptSources.map(src => loadImage(src).catch(() => null)))
   })
+
+  it('does not contain `source` property', function () {
+    var keys = Reflect.ownKeys(Image.prototype);
+    assert.ok(!keys.includes('source'));
+    assert.ok(!keys.includes('getSource'));
+    assert.ok(!keys.includes('setSource'));
+  });
 })
