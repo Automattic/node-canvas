@@ -2097,9 +2097,9 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     if (stroke == true) { context->stroke(); } else { context->fill(); }
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x, y);
     if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();
@@ -2148,14 +2148,14 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 }
 
 /*
- * Set text path for the given string at (x, y).
+ * Set text path for the string in the layout at (x, y).
  * This function is called by paintText and won't behave correctly
  * if is not called from there.
  * it needs pango_layout_set_text and pango_cairo_update_layout to be called before
  */
 
 void
-Context2d::setTextPath(const char *str, double x, double y) {
+Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
 
   switch (state->textAlignment) {
