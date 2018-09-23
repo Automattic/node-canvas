@@ -1199,7 +1199,7 @@ gco.forEach(op => {
     var img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
-        ctx.globalAlpha = 0.8
+        ctx.globalAlpha = 0.7
         ctx.drawImage(img1, 0, 0)
         ctx.globalCompositeOperation = op
         ctx.drawImage(img2, 0, 0)
@@ -1217,7 +1217,7 @@ gco.forEach(op => {
     var img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
-        ctx.globalAlpha = 0.8
+        ctx.globalAlpha = 0.7
         ctx.drawImage(img1, 0, 0)
         ctx.globalCompositeOperation = op
         ctx.rotate(0.1)
