@@ -1199,9 +1199,31 @@ gco.forEach(op => {
     var img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
+        ctx.globalAlpha = 0.8
         ctx.drawImage(img1, 0, 0)
         ctx.globalCompositeOperation = op
         ctx.drawImage(img2, 0, 0)
+        done()
+      }
+      img2.src = imageSrc('newcontent.png')
+    }
+    img1.src = imageSrc('existing.png')
+  }
+})
+
+gco.forEach(op => {
+  tests['9 args, transform, globalCompositeOperator ' + op] = function (ctx, done) {
+    var img1 = new Image()
+    var img2 = new Image()
+    img1.onload = function () {
+      img2.onload = function () {
+        ctx.globalAlpha = 0.8
+        ctx.drawImage(img1, 0, 0)
+        ctx.globalCompositeOperation = op
+        ctx.rotate(0.1)
+        ctx.scale(0.8, 1.2)
+        ctx.translate(5, -5)
+        ctx.drawImage(img2, -80, -50, 400, 400, 10, 10, 180, 180)
         done()
       }
       img2.src = imageSrc('newcontent.png')
