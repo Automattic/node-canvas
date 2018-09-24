@@ -1084,6 +1084,20 @@ NAN_METHOD(Context2d::GetImageData) {
 }
 
 /*
+ * Take a transform matrix and return its components
+ * 0: angle, 1: scaleX, 2: scaleY, 3: skewX, 4: translateX, 5: translateY
+ */
+void decompose_matrix(cairo_matrix_t matrix, double *destination) {
+  double denom = pow(matrix.xx, 2) + pow(matrix.yx, 2);
+  destination[0] = atan2(matrix.yx, matrix.xx);
+  destination[1] = sqrt(denom);
+  destination[2] = (matrix.xx * matrix.yy - matrix.xy * matrix.yx) / destination[1];
+  destination[3] = atan2(matrix.xx * matrix.xy + matrix.yx * matrix.yy, denom);
+  destination[4] = matrix.x0;
+  destination[5] = matrix.y0;
+}
+
+/*
  * Draw image src image to the destination (context).
  *
  *  - dx, dy
@@ -1179,9 +1193,15 @@ NAN_METHOD(Context2d::DrawImage) {
   // Start draw
   cairo_save(ctx);
 
+  cairo_matrix_t matrix;
+  double transforms[6];
+  cairo_get_matrix(context->context(), &matrix);
+  decompose_matrix(matrix, transforms);
   // Scale src
-  float fx = (float) dw / sw;
-  float fy = (float) dh / sh;
+  double current_scale_y = transforms[1];
+  double current_scale_x = transforms[2];
+  float fx = (float) dw / sw * current_scale_x; // transforms[1] is scale on X
+  float fy = (float) dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != fw || sh != fh;
 
@@ -1191,7 +1211,7 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_t *ctxTemp = NULL;
 
   if (needsExtraSurface) {
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw * current_scale_x, dh * current_scale_y);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
     cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
@@ -1234,8 +1254,9 @@ NAN_METHOD(Context2d::DrawImage) {
     }
   }
 
+  cairo_scale(ctx, 1 / current_scale_x, 1 / current_scale_y);
   // Paint
-  cairo_set_source_surface(ctx, surface, dx, dy);
+  cairo_set_source_surface(ctx, surface, dx * current_scale_x, dy * current_scale_y);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);

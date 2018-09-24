@@ -1739,6 +1739,17 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
+tests['drawImage(img,x,y,w,h) scale down in a scaled up context'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(20, 20)
+    ctx.drawImage(img, 0, 0, 10, 10)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('state.png')
+}
+
 tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
