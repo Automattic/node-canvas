@@ -2084,9 +2084,9 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     if (stroke == true) { context->stroke(); } else { context->fill(); }
-    context->setTextPath(x, y);
+    context->setTextPath(x / scaled_by, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(x, y);
+    context->setTextPath(x / scaled_by, y);
     if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();

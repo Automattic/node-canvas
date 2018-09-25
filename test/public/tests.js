@@ -875,6 +875,30 @@ tests['maxWidth bug first usage glyph'] = function (ctx, done) {
   done()
 }
 
+tests['fillText() maxWidth argument + textAlign center (#1253)'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'center'
+  ctx.fillText('Drawing text can be fun!', 100, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 100, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 100, 20 * 7)
+}
+
+tests['fillText() maxWidth argument + textAlign right'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'right'
+  ctx.fillText('Drawing text can be fun!', 200, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 200, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 200, 20 * 7)
+}
+
 tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)

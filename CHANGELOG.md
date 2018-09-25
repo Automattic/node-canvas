@@ -89,6 +89,8 @@ canvas.createJPEGStream() // new
    that does not exist.)
  * Support reading CMYK, YCCK JPEGs.
  * Hide `Image.prototype.source`
+ * Fix behavior of maxWidth (#1088)
+ * Fix behavior of textAlignment with maxWidth (#1253)
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
