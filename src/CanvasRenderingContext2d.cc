@@ -2045,8 +2045,8 @@ NAN_METHOD(Context2d::Stroke) {
  */
 
 double
-get_text_scale(Context2d *context, char *str, double maxWidth) {
-  PangoLayout *layout = context->layout();
+get_text_scale(PangoLayout *layout, double maxWidth) {
+
   PangoRectangle logical_rect;
   pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
 
@@ -2070,9 +2070,13 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  PangoLayout *layout = context->layout();
+
+  pango_layout_set_text(layout, *str, -1);
+  pango_cairo_update_layout(context->context(), layout);
 
   if (argsNum == 3) {
-    scaled_by = get_text_scale(context, *str, args[2]);
+    scaled_by = get_text_scale(layout, args[2]);
     cairo_save(context->context());
     cairo_scale(context->context(), scaled_by, 1);
   }
@@ -2080,9 +2084,9 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     if (stroke == true) { context->stroke(); } else { context->fill(); }
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x, y);
     if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();
@@ -2131,15 +2135,15 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 }
 
 /*
- * Set text path for the given string at (x, y).
+ * Set text path for the string in the layout at (x, y).
+ * This function is called by paintText and won't behave correctly
+ * if is not called from there.
+ * it needs pango_layout_set_text and pango_cairo_update_layout to be called before
  */
 
 void
-Context2d::setTextPath(const char *str, double x, double y) {
+Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
-
-  pango_layout_set_text(_layout, str, -1);
-  pango_cairo_update_layout(_context, _layout);
 
   switch (state->textAlignment) {
     // center
