@@ -61,6 +61,7 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
+  SetProtoAccessor(proto, Nan::New("rawData").ToLocalChecked(), GetRawData, NULL, ctor);
 
   Nan::SetMethod(proto, "getSource", GetSource);
   Nan::SetMethod(proto, "setSource", SetSource);
@@ -187,6 +188,25 @@ NAN_SETTER(Image::SetHeight) {
 NAN_METHOD(Image::GetSource){
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
+}
+
+/*
+ * Get raw data.
+ */
+NAN_GETTER(Image::GetRawData) {
+  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
+  if (img->_surface) {
+    // Return raw ARGB data -- just a memcpy()
+    cairo_surface_t *surface = img->_surface;
+    cairo_surface_flush(surface);
+    const unsigned char *data = cairo_image_surface_get_data(surface);
+     unsigned int nBytes = img->width * img->height * 4;
+    Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), nBytes).ToLocalChecked();
+    info.GetReturnValue().Set(buf);
+  } else {
+    info.GetReturnValue().Set(Nan::Undefined());
+  }
+  return;
 }
 
 /*
