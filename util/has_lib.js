@@ -24,7 +24,7 @@ function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
   var libNameRegex = new RegExp(libName)
 
-    // Try using ldconfig on linux systems
+  // Try using ldconfig on linux systems
   if (hasLdconfig()) {
     try {
       if (childProcess.execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
@@ -35,7 +35,7 @@ function hasSystemLib (lib) {
     }
   }
 
-    // Try checking common library locations
+  // Try checking common library locations
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
       var dirListing = fs.readdirSync(systemPath)

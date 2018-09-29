@@ -113,11 +113,11 @@ tests['arc()'] = function (ctx) {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Outer circle
   ctx.moveTo(110, 75)
-  ctx.arc(75, 75, 35, 0, Math.PI, false)   // Mouth
+  ctx.arc(75, 75, 35, 0, Math.PI, false) // Mouth
   ctx.moveTo(65, 65)
-  ctx.arc(60, 65, 5, 0, Math.PI * 2, true)  // Left eye
+  ctx.arc(60, 65, 5, 0, Math.PI * 2, true) // Left eye
   ctx.moveTo(95, 65)
-  ctx.arc(90, 65, 5, 0, Math.PI * 2, true)  // Right eye
+  ctx.arc(90, 65, 5, 0, Math.PI * 2, true) // Right eye
   ctx.stroke()
 }
 
@@ -125,10 +125,10 @@ tests['arc() 2'] = function (ctx) {
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 3; j++) {
       ctx.beginPath()
-      var x = 25 + j * 50               // x coordinate
-      var y = 25 + i * 50               // y coordinate
-      var radius = 20                    // Arc radius
-      var startAngle = 0                     // Starting point on circle
+      var x = 25 + j * 50 // x coordinate
+      var y = 25 + i * 50 // y coordinate
+      var radius = 20 // Arc radius
+      var startAngle = 0 // Starting point on circle
       var endAngle = Math.PI + (Math.PI * j) / 2 // End point on circle
       var anticlockwise = (i % 2) === 1 // clockwise or anticlockwise
 
@@ -311,7 +311,7 @@ tests['scale()'] = function (ctx) {
   // Uniform scaling
   ctx.save()
   ctx.translate(50, 50)
-  drawSpirograph(ctx, 22, 6, 5)  // no scaling
+  drawSpirograph(ctx, 22, 6, 5) // no scaling
 
   ctx.translate(100, 0)
   ctx.scale(0.75, 0.75)
@@ -408,8 +408,7 @@ tests['clip() 2'] = function (ctx) {
   for (var j = 1; j < 50; j++) {
     ctx.save()
     ctx.fillStyle = '#fff'
-    ctx.translate(75 - Math.floor(Math.random() * 150),
-                  75 - Math.floor(Math.random() * 150))
+    ctx.translate(75 - Math.floor(Math.random() * 150), 75 - Math.floor(Math.random() * 150))
     drawStar(ctx, Math.floor(Math.random() * 4) + 2)
     ctx.restore()
   }
@@ -497,8 +496,9 @@ tests['createLinearGradient()'] = function (ctx) {
   ctx.fillRect(10, 10, 130, 130)
   ctx.strokeRect(50, 50, 50, 50)
 
+  // Specifically test that setting the fillStyle to the current fillStyle works
   ctx.fillStyle = '#13b575'
-  ctx.fillStyle = ctx.fillStyle
+  ctx.fillStyle = ctx.fillStyle // eslint-disable-line no-self-assign
   ctx.fillRect(65, 65, 20, 20)
 
   var lingrad3 = ctx.createLinearGradient(0, 0, 200, 0)
