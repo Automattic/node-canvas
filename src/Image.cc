@@ -56,12 +56,14 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("source").ToLocalChecked(), GetSource, SetSource, ctor);
   SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
+
+  Nan::SetMethod(proto, "getSource", GetSource);
+  Nan::SetMethod(proto, "setSource", SetSource);
 #if CAIRO_VERSION_MINOR >= 10
   SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
@@ -182,7 +184,7 @@ NAN_SETTER(Image::SetHeight) {
  * Get src path.
  */
 
-NAN_GETTER(Image::GetSource) {
+NAN_METHOD(Image::GetSource){
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
 }
@@ -200,8 +202,8 @@ Image::clearData() {
     _surface = NULL;
   }
 
-  free(_data);
-  _data = NULL;
+  delete[] _data;
+  _data = nullptr;
 
   free(filename);
   filename = NULL;
@@ -222,9 +224,11 @@ Image::clearData() {
  * Set src path.
  */
 
-NAN_SETTER(Image::SetSource) {
+NAN_METHOD(Image::SetSource){
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
+
+  Local<Value> value = info[0];
 
   img->clearData();
   // Clear errno in case some unrelated previous syscall failed
@@ -277,14 +281,21 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   memcpy(data, buf, (len < 4 ? len : 4) * sizeof(uint8_t));
 
   if (isPNG(data)) return loadPNGFromBuffer(buf);
+
+  if (isGIF(data)) {
 #ifdef HAVE_GIF
-  if (isGIF(data)) return loadGIFFromBuffer(buf, len);
+    return loadGIFFromBuffer(buf, len);
+#else
+    this->errorInfo.set("node-canvas was built without GIF support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
+
+  if (isJPEG(data)) {
 #ifdef HAVE_JPEG
 #if CAIRO_VERSION_MINOR < 10
-  if (isJPEG(data)) return loadJPEGFromBuffer(buf, len);
+    return loadJPEGFromBuffer(buf, len);
 #else
-  if (isJPEG(data)) {
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
     if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
     if ((DATA_IMAGE | DATA_MIME) == data_mode) {
@@ -293,15 +304,26 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
       if (status) return status;
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
+#endif // CAIRO_VERSION_MINOR < 10
+#else // HAVE_JPEG
+    this->errorInfo.set("node-canvas was built without JPEG support");
+    return CAIRO_STATUS_READ_ERROR;
+#endif
   }
-#endif
-#endif
-#ifdef HAVE_RSVG
+
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
   unsigned head_len = (len < 1000 ? len : 1000);
-  if (isSVG(buf, head_len)) return loadSVGFromBuffer(buf, len);
+  if (isSVG(buf, head_len)) {
+#ifdef HAVE_RSVG
+    return loadSVGFromBuffer(buf, len);
+#else
+    this->errorInfo.set("node-canvas was built without SVG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
+
+  this->errorInfo.set("Unsupported image type");
   return CAIRO_STATUS_READ_ERROR;
 }
 
@@ -338,7 +360,7 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
 
 Image::Image() {
   filename = NULL;
-  _data = NULL;
+  _data = nullptr;
   _data_len = 0;
   _surface = NULL;
   width = height = 0;
@@ -436,18 +458,25 @@ Image::loadSurface() {
     return loadPNG();
   }
 
-  // gif
+  
+  if (isGIF(buf)) {
 #ifdef HAVE_GIF
-  if (isGIF(buf)) return loadGIF(stream);
+    return loadGIF(stream);
+#else
+    this->errorInfo.set("node-canvas was built without GIF support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
-  // jpeg
+  if (isJPEG(buf)) {
 #ifdef HAVE_JPEG
-  if (isJPEG(buf)) return loadJPEG(stream);
+    return loadJPEG(stream);
+#else
+    this->errorInfo.set("node-canvas was built without JPEG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
-// svg
-#ifdef HAVE_RSVG
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
   uint8_t head[1000] = {0};
@@ -461,8 +490,14 @@ Image::loadSurface() {
     return CAIRO_STATUS_READ_ERROR;
   }
   rewind(stream);
-  if (isSVG(head, head_len)) return loadSVG(stream);
+  if (isSVG(head, head_len)) {
+#ifdef HAVE_RSVG
+    return loadSVG(stream);
+#else
+    this->errorInfo.set("node-canvas was built without SVG support");
+    return CAIRO_STATUS_READ_ERROR;
 #endif
+  }
 
   fclose(stream);
 
@@ -582,7 +617,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_INVALID_SIZE;
   }
 
-  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
+  uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
     GIF_CLOSE_FILE(gif);
     this->errorInfo.set(NULL, "malloc", errno);
@@ -688,7 +723,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   cairo_status_t status = cairo_surface_status(_surface);
 
   if (status) {
-    free(data);
+    delete[] data;
     return status;
   }
 
@@ -746,6 +781,18 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 #endif
 
+void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
+  int stride = naturalWidth * 4;
+  for (int y = 0; y < naturalHeight; ++y) {
+    jpeg_read_scanlines(args, &src, 1);
+    uint32_t *row = (uint32_t*)(data + stride * y);
+    for (int x = 0; x < naturalWidth; ++x) {
+      int bx = args->output_components * x;
+      row[x] = decode(src + bx);
+    }
+  }
+}
+
 /*
  * Takes an initialised jpeg_decompress_struct and decodes the
  * data into _surface.
@@ -753,10 +800,9 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
-  int stride = naturalWidth * 4;
-  cairo_status_t status;
-
-  uint8_t *data = (uint8_t *) malloc(naturalWidth * naturalHeight * 4);
+  cairo_status_t status = CAIRO_STATUS_SUCCESS;
+  
+  uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
@@ -764,7 +810,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  uint8_t *src = (uint8_t *) malloc(naturalWidth * args->output_components);
+  uint8_t *src = new uint8_t[naturalWidth * args->output_components];
   if (!src) {
     free(data);
     jpeg_abort_decompress(args);
@@ -773,45 +819,55 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
     return CAIRO_STATUS_NO_MEMORY;
   }
 
-  for (int y = 0; y < naturalHeight; ++y) {
-    jpeg_read_scanlines(args, &src, 1);
-    uint32_t *row = (uint32_t *)(data + stride * y);
-    for (int x = 0; x < naturalWidth; ++x) {
-      if (args->jpeg_color_space == 1) {
-        uint32_t *pixel = row + x;
-        *pixel = 255 << 24
-          | src[x] << 16
-          | src[x] << 8
-          | src[x];
-      } else {
-        int bx = 3 * x;
-        uint32_t *pixel = row + x;
-        *pixel = 255 << 24
-          | src[bx + 0] << 16
-          | src[bx + 1] << 8
-          | src[bx + 2];
-      }
-    }
+  // These are the three main cases to handle. libjpeg converts YCCK to CMYK
+  // and YCbCr to RGB by default.
+  switch (args->out_color_space) {
+    case JCS_CMYK:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint16_t k = static_cast<uint16_t>(src[3]);
+        uint8_t r = k * src[0] / 255;
+        uint8_t g = k * src[1] / 255;
+        uint8_t b = k * src[2] / 255;
+        return 255 << 24 | r << 16 | g << 8 | b;
+      });
+      break;
+    case JCS_RGB:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint8_t r = src[0], g = src[1], b = src[2];
+        return 255 << 24 | r << 16 | g << 8 | b;
+      });
+      break;
+    case JCS_GRAYSCALE:
+      jpegToARGB(args, data, src, [](uint8_t const* src) {
+        uint8_t v = src[0];
+        return 255 << 24 | v << 16 | v << 8 | v;
+      });
+      break;
+    default:
+      this->errorInfo.set("Unsupported JPEG encoding");
+      status = CAIRO_STATUS_READ_ERROR;
+      break;
   }
 
-  _surface = cairo_image_surface_create_for_data(
-      data
-    , CAIRO_FORMAT_ARGB32
-    , naturalWidth
-    , naturalHeight
-    , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
+  if (!status) {
+    _surface = cairo_image_surface_create_for_data(
+        data
+      , CAIRO_FORMAT_ARGB32
+      , naturalWidth
+      , naturalHeight
+      , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
+  }
 
   jpeg_finish_decompress(args);
   jpeg_destroy_decompress(args);
   status = cairo_surface_status(_surface);
 
+  delete[] src;
+
   if (status) {
-    free(data);
-    free(src);
+    delete[] data;
     return status;
   }
-
-  free(src);
 
   _data = data;
 
@@ -877,7 +933,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // Data alloc
   // 8 pixels per byte using Alpha Channel format to reduce memory requirement.
   int buf_size = naturalHeight * cairo_format_stride_for_width(CAIRO_FORMAT_A1, naturalWidth);
-  uint8_t *data = (uint8_t *) malloc(buf_size);
+  uint8_t *data = new uint8_t[buf_size];
   if (!data) {
     this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
@@ -897,7 +953,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   cairo_status_t status = cairo_surface_status(_surface);
 
   if (status) {
-    free(data);
+    delete[] data;
     return status;
   }
 

@@ -117,11 +117,11 @@ tests['arc()'] = function (ctx, done) {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Outer circle
   ctx.moveTo(110, 75)
-  ctx.arc(75, 75, 35, 0, Math.PI, false)   // Mouth
+  ctx.arc(75, 75, 35, 0, Math.PI, false) // Mouth
   ctx.moveTo(65, 65)
-  ctx.arc(60, 65, 5, 0, Math.PI * 2, true)  // Left eye
+  ctx.arc(60, 65, 5, 0, Math.PI * 2, true) // Left eye
   ctx.moveTo(95, 65)
-  ctx.arc(90, 65, 5, 0, Math.PI * 2, true)  // Right eye
+  ctx.arc(90, 65, 5, 0, Math.PI * 2, true) // Right eye
   ctx.stroke()
   done()
 }
@@ -130,10 +130,10 @@ tests['arc() 2'] = function (ctx, done) {
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 3; j++) {
       ctx.beginPath()
-      var x = 25 + j * 50               // x coordinate
-      var y = 25 + i * 50               // y coordinate
-      var radius = 20                    // Arc radius
-      var startAngle = 0                     // Starting point on circle
+      var x = 25 + j * 50 // x coordinate
+      var y = 25 + i * 50 // y coordinate
+      var radius = 20 // Arc radius
+      var startAngle = 0 // Starting point on circle
       var endAngle = Math.PI + (Math.PI * j) / 2 // End point on circle
       var anticlockwise = (i % 2) === 1 // clockwise or anticlockwise
 
@@ -328,7 +328,7 @@ tests['scale()'] = function (ctx, done) {
   // Uniform scaling
   ctx.save()
   ctx.translate(50, 50)
-  drawSpirograph(ctx, 22, 6, 5)  // no scaling
+  drawSpirograph(ctx, 22, 6, 5) // no scaling
 
   ctx.translate(100, 0)
   ctx.scale(0.75, 0.75)
@@ -428,8 +428,7 @@ tests['clip() 2'] = function (ctx, done) {
   for (var j = 1; j < 50; j++) {
     ctx.save()
     ctx.fillStyle = '#fff'
-    ctx.translate(75 - Math.floor(Math.random() * 150),
-                  75 - Math.floor(Math.random() * 150))
+    ctx.translate(75 - Math.floor(Math.random() * 150), 75 - Math.floor(Math.random() * 150))
     drawStar(ctx, Math.floor(Math.random() * 4) + 2)
     ctx.restore()
   }
@@ -518,8 +517,9 @@ tests['createLinearGradient()'] = function (ctx, done) {
   ctx.fillRect(10, 10, 130, 130)
   ctx.strokeRect(50, 50, 50, 50)
 
+  // Specifically test that setting the fillStyle to the current fillStyle works
   ctx.fillStyle = '#13b575'
-  ctx.fillStyle = ctx.fillStyle
+  ctx.fillStyle = ctx.fillStyle // eslint-disable-line no-self-assign
   ctx.fillRect(65, 65, 20, 20)
 
   var lingrad3 = ctx.createLinearGradient(0, 0, 200, 0)
@@ -901,6 +901,46 @@ tests['fillText() maxWidth argument'] = function (ctx, done) {
 
   ctx.fillText('Drawing text can be fun!', 0, 20 * 7)
   done()
+}
+
+tests['maxWidth bug first usage path'] = function (ctx, done) {
+  ctx.textDrawingMode = 'path'
+  ctx.fillText('Drawing text can be fun!', 0, 20, 50)
+  ctx.fillText('Drawing text can be fun!', 0, 40, 50)
+  ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)
+  done()
+}
+
+tests['maxWidth bug first usage glyph'] = function (ctx, done) {
+  ctx.textDrawingMode = 'glyph'
+  ctx.fillText('Drawing text can be fun!', 0, 20, 50)
+  ctx.fillText('Drawing text can be fun!', 0, 40, 50)
+  ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)
+  done()
+}
+
+tests['fillText() maxWidth argument + textAlign center (#1253)'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'center'
+  ctx.fillText('Drawing text can be fun!', 100, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 100, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 100, 20 * 7)
+}
+
+tests['fillText() maxWidth argument + textAlign right'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'right'
+  ctx.fillText('Drawing text can be fun!', 200, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 200, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 200, 20 * 7)
 }
 
 tests['strokeText()'] = function (ctx, done) {
@@ -1656,9 +1696,7 @@ tests['shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('star.png')
 }
 
@@ -1718,9 +1756,7 @@ tests['scaled shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 10, 10, 80, 80)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('star.png')
 }
 
@@ -1862,9 +1898,7 @@ tests['drawImage(img,0,0)'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1874,10 +1908,29 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('face.jpeg')
+}
+
+tests['drawImage(img) YCCK JPEG (#425)'] = function (ctx, done) {
+  // This also provides coverage for CMYK JPEGs
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('ycck.jpg')
+}
+
+tests['drawImage(img) grayscale JPEG'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('grayscale.jpg')
 }
 
 tests['drawImage(img) svg'] = function (ctx, done) {
@@ -1886,9 +1939,28 @@ tests['drawImage(img) svg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
+  img.onerror = done
+  img.src = imageSrc('tree.svg')
+}
+
+tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, -800, -800, 1000, 1000)
+    done(null)
   }
+  img.onerror = done
+  img.src = imageSrc('tree.svg')
+}
+
+tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(100, 100)
+    ctx.drawImage(img, -8, -8, 10, 10)
+    done(null)
+  }
+  img.onerror = done
   img.src = imageSrc('tree.svg')
 }
 
@@ -1898,9 +1970,7 @@ tests['drawImage(img,x,y)'] = function (ctx, done) {
     ctx.drawImage(img, 5, 25)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1910,9 +1980,7 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
     ctx.drawImage(img, 25, 25, 10, 10)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1922,9 +1990,7 @@ tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1934,9 +2000,7 @@ tests['drawImage(img,x,y,w,h) scale vertical'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, img.width, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1946,9 +2010,7 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function (ctx, done) {
     ctx.drawImage(img, 13, 13, 45, 45, 25, 25, img.width / 2, img.height / 2)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1960,9 +2022,7 @@ tests['drawImage(img,0,0) globalAlpha'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1977,9 +2037,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -2180,9 +2238,7 @@ tests['putImageData() png data'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2203,9 +2259,7 @@ tests['putImageData() png data 2'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2227,9 +2281,7 @@ tests['putImageData() png data 3'] = function (ctx, done) {
     ctx.putImageData(imageData, 50, 50)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -2457,9 +2509,7 @@ tests['image sampling (#1084)'] = function (ctx, done) {
     if (loaded2) done()
   }
 
-  img1.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img1.onerror = done
 
   img2.onload = () => {
     loaded2 = true
@@ -2467,9 +2517,7 @@ tests['image sampling (#1084)'] = function (ctx, done) {
     if (loaded1) done()
   }
 
-  img2.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img2.onerror = done
 
   img1.src = imageSrc('halved-1.jpeg')
   img2.src = imageSrc('halved-2.jpeg')

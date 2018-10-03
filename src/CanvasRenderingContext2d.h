@@ -46,6 +46,7 @@ typedef struct {
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
   PangoFontDescription *fontDescription;
+  bool imageSmoothingEnabled;
 } canvas_state_t;
 
 /*
@@ -116,6 +117,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(GetMatrix);
     static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetPatternQuality);
+    static NAN_GETTER(GetImageSmoothingEnabled);
     static NAN_GETTER(GetGlobalCompositeOperation);
     static NAN_GETTER(GetGlobalAlpha);
     static NAN_GETTER(GetShadowColor);
@@ -133,6 +135,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetTextDrawingMode);
     static NAN_GETTER(GetFilter);
     static NAN_SETTER(SetPatternQuality);
+    static NAN_SETTER(SetImageSmoothingEnabled);
     static NAN_SETTER(SetGlobalCompositeOperation);
     static NAN_SETTER(SetGlobalAlpha);
     static NAN_SETTER(SetShadowColor);
@@ -153,7 +156,7 @@ class Context2d: public Nan::ObjectWrap {
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(const char *str, double x, double y);
+    void setTextPath(double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void shadowStart();

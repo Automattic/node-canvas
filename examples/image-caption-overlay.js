@@ -1,7 +1,7 @@
-import {createWriteStream} from 'fs'
+import { createWriteStream } from 'fs'
 import pify from 'pify'
 import imageSizeOf from 'image-size'
-import {createCanvas, loadImage, Image} from 'canvas'
+import { createCanvas, loadImage, Image } from 'canvas'
 
 const imageSizeOfP = pify(imageSizeOf)
 
@@ -62,7 +62,7 @@ function createCaptionOverlay ({
 (async () => {
   try {
     const source = 'images/lime-cat.jpg'
-    const {width, height} = await imageSizeOfP(source)
+    const { width, height } = await imageSizeOfP(source)
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 

@@ -43,11 +43,12 @@ You can quickly install the dependencies by using the command for your OS:
 
 OS | Command
 ----- | -----
-OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib`<br/><br/>Using [MacPorts](https://www.macports.org/):<br/>`port install pkgconfig cairo pango libpng jpeg giflib`
+OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib`<br/><br/>Using [MacPorts](https://www.macports.org/):<br/>`port install pkgconfig cairo pango libpng jpeg giflib libsrvg`
 Ubuntu | `sudo apt-get install libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++`
 Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
 Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
-Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
+OpenBSD | `doas pkg_add cairo pango png jpeg giflib`
+Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation:-Windows)
 
 **Mac OS X v10.11+:** If you have recently updated to Mac OS X v10.11+ and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
 
@@ -177,7 +178,7 @@ image contained in the canvas.
     the background palette index (indexed PNGs only) and/or the resolution (ppi):
     `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`.
     All properties are optional.
-    
+
     Note that the PNG format encodes the resolution in pixels per meter, so if
     you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution
     is undefined by default to match common browser behavior.
@@ -517,6 +518,10 @@ Notes and caveats:
 ## Examples
 
  Examples are placed in _./examples_, be sure to check them out! most produce a png image of the same name, and others such as _live-clock.js_ launch an http server to be viewed in the browser.
+
+## Documentation
+
+This project is an implementation of the Web Canvas API. For API documentation, please visit: [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 
 ## Testing
 

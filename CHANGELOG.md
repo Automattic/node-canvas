@@ -87,6 +87,10 @@ canvas.createJPEGStream() // new
  * Provide better, Node.js core-style coded errors for failed sys calls. (For
    example, provide an error with code 'ENOENT' if setting `img.src` to a path
    that does not exist.)
+ * Support reading CMYK, YCCK JPEGs.
+ * Hide `Image.prototype.source`
+ * Fix behavior of maxWidth (#1088)
+ * Fix behavior of textAlignment with maxWidth (#1253)
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
@@ -111,6 +115,10 @@ canvas.createJPEGStream() // new
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
  * Support for `img.src = <url>` to match browsers
  * Support reading data URL on `img.src`
+ * Readme: add dependencies command for OpenBSD
+ * Throw error if calling jpegStream when canvas was not built with JPEG support
+ * Emit error if trying to load GIF, SVG or JPEG image when canvas was not built
+   with support for that format
 
 1.6.x (unreleased)
 ==================

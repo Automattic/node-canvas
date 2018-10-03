@@ -10,6 +10,7 @@
 
 #include "Canvas.h"
 #include "CanvasError.h"
+#include <functional>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -34,7 +35,7 @@
   #endif
 #endif
 
-
+using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
 class Image: public Nan::ObjectWrap {
   public:
@@ -44,17 +45,17 @@ class Image: public Nan::ObjectWrap {
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
-    static NAN_GETTER(GetSource);
     static NAN_GETTER(GetComplete);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);
     static NAN_GETTER(GetNaturalWidth);
     static NAN_GETTER(GetNaturalHeight);
     static NAN_GETTER(GetDataMode);
-    static NAN_SETTER(SetSource);
     static NAN_SETTER(SetDataMode);
     static NAN_SETTER(SetWidth);
     static NAN_SETTER(SetHeight);
+    static NAN_METHOD(GetSource);
+    static NAN_METHOD(SetSource);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
@@ -81,6 +82,7 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
+    void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
 #if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
@@ -115,7 +117,7 @@ class Image: public Nan::ObjectWrap {
 
   private:
     cairo_surface_t *_surface;
-    uint8_t *_data;
+    uint8_t *_data = nullptr;
     int _data_len;
 #ifdef HAVE_RSVG
     RsvgHandle *_rsvg;

@@ -155,6 +155,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "_getMatrix", GetMatrix);
   SetProtoAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality, ctor);
+  SetProtoAccessor(proto, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled, ctor);
   SetProtoAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation, ctor);
   SetProtoAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha, ctor);
   SetProtoAccessor(proto, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor, ctor);
@@ -196,6 +197,7 @@ Context2d::Context2d(Canvas *canvas) {
   state->stroke = transparent;
   state->shadow = transparent_black;
   state->patternQuality = CAIRO_FILTER_GOOD;
+  state->imageSmoothingEnabled = true;
   state->textDrawingMode = TEXT_DRAW_PATHS;
   state->fontDescription = pango_font_description_from_string("sans serif");
   pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
@@ -1109,7 +1111,9 @@ NAN_METHOD(Context2d::DrawImage) {
     , dx = 0
     , dy = 0
     , dw = 0
-    , dh = 0;
+    , dh = 0
+    , fw = 0
+    , fh = 0;
 
   cairo_surface_t *surface;
 
@@ -1121,15 +1125,15 @@ NAN_METHOD(Context2d::DrawImage) {
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
     }
-    sw = img->width;
-    sh = img->height;
+    fw = sw = img->width;
+    fh = sh = img->height;
     surface = img->surface();
 
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    sw = canvas->getWidth();
-    sh = canvas->getHeight();
+    fw = sw = canvas->getWidth();
+    fh = sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid
@@ -1178,13 +1182,23 @@ NAN_METHOD(Context2d::DrawImage) {
   // Scale src
   float fx = (float) dw / sw;
   float fy = (float) dh / sh;
+  bool needScale = dw != sw || dh != sh;
+  bool needCut = sw != fw || sh != fh;
 
-  if (dw != sw || dh != sh) {
-    cairo_scale(ctx, fx, fy);
-    dx /= fx;
-    dy /= fy;
-    dw /= fx;
-    dh /= fy;
+  bool sameCanvas = surface == context->canvas()->surface();
+  bool needsExtraSurface = sameCanvas || needCut || needScale;
+  cairo_surface_t *surfTemp = NULL;
+  cairo_t *ctxTemp = NULL;
+
+  if (needsExtraSurface) {
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
+    ctxTemp = cairo_create(surfTemp);
+    cairo_scale(ctxTemp, fx, fy);
+    cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
+    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
+    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
+    cairo_paint_with_alpha(ctxTemp, 1);
+    surface = surfTemp;
   }
 
   // apply shadow if there is one
@@ -1206,54 +1220,29 @@ NAN_METHOD(Context2d::DrawImage) {
       //        implementation, and its not immediately clear why an offset is necessary, but without it, the result
       //        in chrome is different.
       cairo_set_source_surface(ctx, shadow_surface,
-        dx - sx + (context->state->shadowOffsetX / fx) - pad + 1.4,
-        dy - sy + (context->state->shadowOffsetY / fy) - pad + 1.4);
+        dx + context->state->shadowOffsetX - pad + 1.4,
+        dy + context->state->shadowOffsetY - pad + 1.4);
       cairo_paint(ctx);
-
       // cleanup
       cairo_destroy(shadow_context);
       cairo_surface_destroy(shadow_surface);
     } else {
       context->setSourceRGBA(context->state->shadow);
       cairo_mask_surface(ctx, surface,
-        dx - sx + (context->state->shadowOffsetX / fx),
-        dy - sy + (context->state->shadowOffsetY / fy));
+        dx + (context->state->shadowOffsetX),
+        dy + (context->state->shadowOffsetY));
     }
   }
 
-  bool sameCanvas = surface == context->canvas()->surface();
-  cairo_surface_t *surfTemp = NULL;
-  cairo_t *ctxTemp = NULL;
-
-  if (sameCanvas) {
-    int width = context->canvas()->getWidth();
-    int height = context->canvas()->getHeight();
-
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    ctxTemp = cairo_create(surfTemp);
-
-    cairo_set_source_surface(ctxTemp, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
-    cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
-    cairo_paint_with_alpha(ctxTemp, 1);
-
-    surface = surfTemp;
-  }
-
-  context->savePath();
-  cairo_rectangle(ctx, dx, dy, dw, dh);
-  cairo_clip(ctx);
-  context->restorePath();
-
   // Paint
-  cairo_set_source_surface(ctx, surface, dx - sx, dy - sy);
-  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->patternQuality);
-  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_REFLECT);
+  cairo_set_source_surface(ctx, surface, dx, dy);
+  cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
+  cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
 
   cairo_restore(ctx);
 
-  if (sameCanvas) {
+  if (needsExtraSurface) {
     cairo_destroy(ctxTemp);
     cairo_surface_destroy(surfTemp);
   }
@@ -1367,6 +1356,24 @@ NAN_GETTER(Context2d::GetPatternQuality) {
     default: quality = "good";
   }
   info.GetReturnValue().Set(Nan::New(quality).ToLocalChecked());
+}
+
+/*
+ * Set ImageSmoothingEnabled value.
+ */
+
+NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  context->state->imageSmoothingEnabled = value->BooleanValue();
+}
+
+/*
+ * Get pattern quality.
+ */
+
+NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  info.GetReturnValue().Set(Nan::New<Boolean>(context->state->imageSmoothingEnabled));
 }
 
 /*
@@ -1783,7 +1790,7 @@ NAN_METHOD(Context2d::SetFillColor) {
 
   if (!info[0]->IsString()) return;
   Nan::Utf8String str(info[0]);
-  
+
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (!ok) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2038,8 +2045,8 @@ NAN_METHOD(Context2d::Stroke) {
  */
 
 double
-get_text_scale(Context2d *context, char *str, double maxWidth) {
-  PangoLayout *layout = context->layout();
+get_text_scale(PangoLayout *layout, double maxWidth) {
+
   PangoRectangle logical_rect;
   pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
 
@@ -2050,11 +2057,8 @@ get_text_scale(Context2d *context, char *str, double maxWidth) {
   }
 }
 
-/*
- * Fill text at (x, y).
- */
-
-NAN_METHOD(Context2d::FillText) {
+void
+paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
   double args[3];
   if(!checkArgs(info, args, argsNum, 1))
@@ -2066,23 +2070,37 @@ NAN_METHOD(Context2d::FillText) {
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  PangoLayout *layout = context->layout();
+
+  pango_layout_set_text(layout, *str, -1);
+  pango_cairo_update_layout(context->context(), layout);
 
   if (argsNum == 3) {
-    scaled_by = get_text_scale(context, *str, args[2]);
+    scaled_by = get_text_scale(layout, args[2]);
+    cairo_save(context->context());
     cairo_scale(context->context(), scaled_by, 1);
   }
 
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    context->fill();
-    context->setTextPath(*str, x, y);
+    if (stroke == true) { context->stroke(); } else { context->fill(); }
+    context->setTextPath(x / scaled_by, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
-    context->fill();
+    context->setTextPath(x / scaled_by, y);
+    if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();
+  if (argsNum == 3) {
+    cairo_restore(context->context());
+  }
+}
 
-  cairo_scale(context->context(), 1 / scaled_by, 1);
+/*
+ * Fill text at (x, y).
+ */
+
+NAN_METHOD(Context2d::FillText) {
+  paintText(info, false);
 }
 
 /*
@@ -2090,34 +2108,7 @@ NAN_METHOD(Context2d::FillText) {
  */
 
 NAN_METHOD(Context2d::StrokeText) {
-  int argsNum = info.Length() >= 4 ? 3 : 2;
-  double args[3];
-  if(!checkArgs(info, args, argsNum, 1))
-    return;
-
-  Nan::Utf8String str(info[0]->ToString());
-  double x = args[0];
-  double y = args[1];
-  double scaled_by = 1;
-
-  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-
-  if (argsNum == 3) {
-    scaled_by = get_text_scale(context, *str, args[2]);
-    cairo_scale(context->context(), scaled_by, 1);
-  }
-
-  context->savePath();
-  if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    context->stroke();
-    context->setTextPath(*str, x, y);
-  } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
-    context->stroke();
-  }
-  context->restorePath();
-
-  cairo_scale(context->context(), 1 / scaled_by, 1);
+  paintText(info, true);
 }
 
 /*
@@ -2144,15 +2135,15 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 }
 
 /*
- * Set text path for the given string at (x, y).
+ * Set text path for the string in the layout at (x, y).
+ * This function is called by paintText and won't behave correctly
+ * if is not called from there.
+ * it needs pango_layout_set_text and pango_cairo_update_layout to be called before
  */
 
 void
-Context2d::setTextPath(const char *str, double x, double y) {
+Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
-
-  pango_layout_set_text(_layout, str, -1);
-  pango_cairo_update_layout(_context, _layout);
 
   switch (state->textAlignment) {
     // center
