@@ -1232,6 +1232,21 @@ gco.forEach(op => {
   }
 })
 
+tests['drawImage issue #1249'] = function (ctx, done) {
+  var img1 = new Image()
+  var img2 = new Image()
+  img1.onload = function () {
+    img2.onload = function () {
+      ctx.drawImage(img1, 0, 0, 200, 200)
+      ctx.drawImage(img2, -8, -8, 18, 18, 0, 0, 200, 200);
+      ctx.restore()
+      done()
+    }
+    img2.src = imageSrc('checkers.png')
+  }
+  img1.src = imageSrc('chrome.jpg')
+}
+
 tests['known bug #416'] = function (ctx, done) {
   var img1 = new Image()
   var img2 = new Image()
