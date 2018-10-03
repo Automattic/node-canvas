@@ -12,6 +12,22 @@ var png_checkers = __dirname + '/fixtures/checkers.png';
 var png_clock = __dirname + '/fixtures/clock.png';
 var jpg_chrome = __dirname + '/fixtures/chrome.jpg'
 
+function loadImage (src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+
+    function cleanup () {
+      image.onload = null
+      image.onerror = null
+    }
+
+    image.onload = () => { cleanup(); resolve(image) }
+    image.onerror = (err) => { cleanup(); reject(err) }
+
+    image.src = src
+  })
+}
+
 describe('Image', function () {
   it('should require new', function () {
     assert.throws(function () { Image(); }, TypeError);
@@ -71,6 +87,30 @@ describe('Image', function () {
     img.src = png_clock;
     assert.equal(onloadCalled, 1);
   });
+
+  it('loads JPEG data URL', function () {
+    const base64Encoded = fs.readFileSync(jpg_chrome, 'base64')
+    const dataURL = `data:image/jpeg;base64,${base64Encoded}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 150)
+      assert.strictEqual(img.height, 160)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads PNG data URL', function () {
+    const base64Encoded = fs.readFileSync(png_clock, 'base64')
+    const dataURL = `data:image/png;base64,${base64Encoded}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 320)
+      assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
 
   it('Image#onerror', function () {
     var img = new Image
