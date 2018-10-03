@@ -1238,7 +1238,7 @@ tests['drawImage issue #1249'] = function (ctx, done) {
   img1.onload = function () {
     img2.onload = function () {
       ctx.drawImage(img1, 0, 0, 200, 200)
-      ctx.drawImage(img2, -8, -8, 18, 18, 0, 0, 200, 200);
+      ctx.drawImage(img2, -8, -8, 18, 18, 0, 0, 200, 200)
       ctx.restore()
       done()
     }
