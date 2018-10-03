@@ -10,7 +10,8 @@ var Canvas = require('../')
 
 var png_checkers = __dirname + '/fixtures/checkers.png';
 var png_clock = __dirname + '/fixtures/clock.png';
-var jpg_chrome = __dirname + '/fixtures/chrome.jpg'
+var jpg_chrome = __dirname + '/fixtures/chrome.jpg';
+var svg_tree = __dirname + '/fixtures/tree.svg'
 
 function loadImage (src) {
   return new Promise((resolve, reject) => {
@@ -108,6 +109,18 @@ describe('Image', function () {
       assert.strictEqual(img.onload, null)
       assert.strictEqual(img.width, 320)
       assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL', function () {
+    const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
+    const dataURL = `data:image/svg+xml,${utf8Encoded}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
       assert.strictEqual(img.complete, true)
     })
   })
