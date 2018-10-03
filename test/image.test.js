@@ -17,6 +17,7 @@ const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
 const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
+const svg_tree = `${__dirname}/fixtures/tree.svg`
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -77,6 +78,30 @@ describe('Image', function () {
       assert.strictEqual(img.src, dataURL)
       assert.strictEqual(img.width, 320)
       assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL base64', function () {
+    const base64Enc = fs.readFileSync(svg_tree, 'base64')
+    const dataURL = `data:image/svg+xml;base64,${base64Enc}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL utf8', function () {
+    const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
+    const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
       assert.strictEqual(img.complete, true)
     })
   })
