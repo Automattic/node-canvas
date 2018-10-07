@@ -1183,11 +1183,11 @@ NAN_METHOD(Context2d::DrawImage) {
   float fx = (float) dw / sw;
   float fy = (float) dh / sh;
   bool needScale = dw != sw || dh != sh;
-  bool needCut = sw != source_h || sh != source_h || sx < 0 || sy < 0;
-  bool needClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
+  bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
+  bool needCairoClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
 
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale;
+  bool needsExtraSurface = sameCanvas || needCut || needScale || needCairoClip;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
@@ -1195,7 +1195,7 @@ NAN_METHOD(Context2d::DrawImage) {
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
-    if (needClip) {
+    if (needCairoClip) {
       float clip_w = (std::min)(sw, source_w);
       float clip_h = (std::min)(sh, source_h);
       if (sx > 0) {
