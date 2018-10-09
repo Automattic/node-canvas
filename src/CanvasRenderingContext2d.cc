@@ -946,8 +946,8 @@ NAN_METHOD(Context2d::DrawImage) {
     , dy = 0
     , dw = 0
     , dh = 0
-    , fw = 0
-    , fh = 0;
+    , source_w = 0
+    , source_h = 0;
 
   cairo_surface_t *surface;
 
@@ -959,15 +959,15 @@ NAN_METHOD(Context2d::DrawImage) {
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
     }
-    fw = sw = img->width;
-    fh = sh = img->height;
+    source_w = sw = img->width;
+    source_h = sh = img->height;
     surface = img->surface();
 
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    fw = sw = canvas->width;
-    fh = sh = canvas->height;
+    source_w = sw = canvas->width;
+    source_h = sh = canvas->height;
     surface = canvas->surface();
 
   // Invalid
@@ -1017,10 +1017,11 @@ NAN_METHOD(Context2d::DrawImage) {
   float fx = (float) dw / sw;
   float fy = (float) dh / sh;
   bool needScale = dw != sw || dh != sh;
-  bool needCut = sw != fw || sh != fh;
+  bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
+  bool needCairoClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
 
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale;
+  bool needsExtraSurface = sameCanvas || needCut || needScale || needCairoClip;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
@@ -1028,6 +1029,18 @@ NAN_METHOD(Context2d::DrawImage) {
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
+    if (needCairoClip) {
+      float clip_w = (std::min)(sw, source_w);
+      float clip_h = (std::min)(sh, source_h);
+      if (sx > 0) {
+        clip_w -= sx;
+      }
+      if (sy > 0) {
+        clip_h -= sy;
+      }
+      cairo_rectangle(ctxTemp, -sx , -sy , clip_w, clip_h);
+      cairo_clip(ctxTemp);
+    }
     cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->patternQuality);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
