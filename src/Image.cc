@@ -200,7 +200,7 @@ NAN_GETTER(Image::GetRawData) {
     cairo_surface_t *surface = img->_surface;
     cairo_surface_flush(surface);
     const unsigned char *data = cairo_image_surface_get_data(surface);
-     unsigned int nBytes = img->width * img->height * 4;
+    unsigned int nBytes = cairo_image_surface_get_stride(surface) * img->height
     Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), nBytes).ToLocalChecked();
     info.GetReturnValue().Set(buf);
   } else {
