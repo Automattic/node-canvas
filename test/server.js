@@ -12,7 +12,7 @@ function renderTest (canvas, name, cb) {
     throw new Error('Unknown test: ' + name)
   }
 
-  var ctx = canvas.getContext('2d', {pixelFormat: 'RGBA32'})
+  var ctx = canvas.getContext('2d', { pixelFormat: 'RGBA32' })
   var initialFillStyle = ctx.fillStyle
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, 200, 200)
