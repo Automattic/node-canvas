@@ -67,6 +67,7 @@ class Image: public Nan::ObjectWrap {
     cairo_surface_t *surface();
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadFromImageData(uint8_t *data, uint32_t width, uint32_t height);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();

@@ -119,6 +119,7 @@ canvas.createJPEGStream() // new
  * Throw error if calling jpegStream when canvas was not built with JPEG support
  * Emit error if trying to load GIF, SVG or JPEG image when canvas was not built
    with support for that format
+ * Support for WebP Image loading
 
 1.6.x (unreleased)
 ==================
