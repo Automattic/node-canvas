@@ -38,7 +38,7 @@ canvas.createJPEGStream() // new
 ```
 
 ### Breaking
- * Drop support for Node.js <6.x
+ * Drop support for Node.js <8.x
  * Remove sync stream functions (bc53059). Note that most streams are still
    synchronous (run in the main thread); this change just removed `syncPNGStream`
    and `syncJPEGStream`.
@@ -119,6 +119,7 @@ canvas.createJPEGStream() // new
  * Throw error if calling jpegStream when canvas was not built with JPEG support
  * Emit error if trying to load GIF, SVG or JPEG image when canvas was not built
    with support for that format
+ * Support for WebP Image loading
 
 1.6.x (unreleased)
 ==================

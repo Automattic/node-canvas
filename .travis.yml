@@ -4,7 +4,6 @@ install:
 node_js:
   - '10'
   - '8'
-  - '6'
 addons:
   apt:
     sources:

@@ -13,27 +13,39 @@ const assert = require('assert')
 const assertRejects = require('assert-rejects')
 const fs = require('fs')
 
-const png_checkers = `${__dirname}/fixtures/checkers.png`
-const png_clock = `${__dirname}/fixtures/clock.png`
-const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
-const jpg_face = `${__dirname}/fixtures/face.jpeg`
-const svg_tree = `${__dirname}/fixtures/tree.svg`
+const jpgChrome = `${__dirname}/fixtures/chrome.jpg`
+const jpgCrash = `${__dirname}/fixtures/159-crash1.jpg`
+const jpgFace = `${__dirname}/fixtures/face.jpeg`
+const pngCheckers = `${__dirname}/fixtures/checkers.png`
+const pngClock = `${__dirname}/fixtures/clock.png`
+const svgTree = `${__dirname}/fixtures/tree.svg`
+const webpTest = `${__dirname}/fixtures/test.webp`
+
+function waitFor (fn) {
+  return new Promise((resolve) => {
+    const id = setInterval(() => fn() && resolve(clearInterval(id)), 20)
+  })
+}
+
+function sleep (ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
-    var img = new Image();
-    assert.throws(function () { Image.prototype.width; }, /incompatible receiver/);
-    assert(!img.hasOwnProperty('width'));
-    assert('width' in img);
-    assert(Image.prototype.hasOwnProperty('width'));
-  });
+    const img = new Image()
+    assert.throws(() => Image.prototype.width, /incompatible receiver/)
+    assert(!img.hasOwnProperty('width'))
+    assert('width' in img)
+    assert(Image.prototype.hasOwnProperty('width'))
+  })
 
   it('loads JPEG image', function () {
-    return loadImage(jpg_face).then((img) => {
+    return loadImage(jpgFace).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
 
-      assert.strictEqual(img.src, jpg_face)
+      assert.strictEqual(img.src, jpgFace)
       assert.strictEqual(img.width, 485)
       assert.strictEqual(img.height, 401)
       assert.strictEqual(img.complete, true)
@@ -41,7 +53,7 @@ describe('Image', function () {
   })
 
   it('loads JPEG data URL', function () {
-    const base64Encoded = fs.readFileSync(jpg_face, 'base64')
+    const base64Encoded = fs.readFileSync(jpgFace, 'base64')
     const dataURL = `data:image/png;base64,${base64Encoded}`
 
     return loadImage(dataURL).then((img) => {
@@ -56,11 +68,11 @@ describe('Image', function () {
   })
 
   it('loads PNG image', function () {
-    return loadImage(png_clock).then((img) => {
+    return loadImage(pngClock).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
 
-      assert.strictEqual(img.src, png_clock)
+      assert.strictEqual(img.src, pngClock)
       assert.strictEqual(img.width, 320)
       assert.strictEqual(img.height, 320)
       assert.strictEqual(img.complete, true)
@@ -68,7 +80,7 @@ describe('Image', function () {
   })
 
   it('loads PNG data URL', function () {
-    const base64Encoded = fs.readFileSync(png_clock, 'base64')
+    const base64Encoded = fs.readFileSync(pngClock, 'base64')
     const dataURL = `data:image/png;base64,${base64Encoded}`
 
     return loadImage(dataURL).then((img) => {
@@ -83,9 +95,9 @@ describe('Image', function () {
   })
 
   it('loads SVG data URL base64', function () {
-    const base64Enc = fs.readFileSync(svg_tree, 'base64')
+    const base64Enc = fs.readFileSync(svgTree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
-      return loadImage(dataURL).then((img) => {
+    return loadImage(dataURL).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
       assert.strictEqual(img.width, 200)
@@ -95,9 +107,9 @@ describe('Image', function () {
   })
 
   it('loads SVG data URL utf8', function () {
-    const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
+    const utf8Encoded = fs.readFileSync(svgTree, 'utf8')
     const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
-      return loadImage(dataURL).then((img) => {
+    return loadImage(dataURL).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
       assert.strictEqual(img.width, 200)
@@ -106,163 +118,207 @@ describe('Image', function () {
     })
   })
 
-  it('calls Image#onload multiple times', function () {
-    return loadImage(png_clock).then((img) => {
-      let onloadCalled = 0
+  it('loads WebP image', function () {
+    return loadImage(webpTest).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
 
-      img.onload = () => { onloadCalled += 1 }
-
-      img.src = png_checkers
-      assert.strictEqual(img.src, png_checkers)
+      assert.strictEqual(img.src, webpTest)
+      assert.strictEqual(img.width, 128)
+      assert.strictEqual(img.height, 128)
       assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 2)
-      assert.strictEqual(img.height, 2)
+    })
+  })
 
-      img.src = png_clock
-      assert.strictEqual(img.src, png_clock)
-      assert.strictEqual(true, img.complete)
-      assert.strictEqual(320, img.width)
-      assert.strictEqual(320, img.height)
-
-      assert.strictEqual(onloadCalled, 2)
-
-      onloadCalled = 0
-      img.onload = () => { onloadCalled += 1 }
-
-      img.src = png_clock
-      assert.strictEqual(onloadCalled, 1)
+  it('calls Image#onload multiple times', function () {
+    return loadImage(pngClock).then((img) => {
+      return Promise.resolve()
+        .then(() => {
+          return new Promise((resolve, reject) => {
+            img.onerror = reject
+            img.onload = resolve
+            img.src = pngCheckers
+          })
+        })
+        .then(() => {
+          assert.strictEqual(img.src, pngCheckers)
+          assert.strictEqual(img.complete, true)
+          assert.strictEqual(img.width, 2)
+          assert.strictEqual(img.height, 2)
+        }).then(() => {
+          return new Promise((resolve, reject) => {
+            img.onerror = reject
+            img.onload = resolve
+            img.src = pngClock
+          })
+        })
+        .then(() => {
+          assert.strictEqual(img.src, pngClock)
+          assert.strictEqual(img.complete, true)
+          assert.strictEqual(img.width, 320)
+          assert.strictEqual(img.height, 320)
+        }).then(() => {
+          return new Promise((resolve, reject) => {
+            img.onerror = reject
+            img.onload = resolve
+            img.src = pngClock
+          })
+        })
     })
   })
 
   it('handles errors', function () {
-    return assertRejects(loadImage(`${png_clock}fail`), Error)
+    return assertRejects(loadImage(`${pngClock}fail`), Error)
   })
 
-  it('returns a nice, coded error for fopen failures', function (done) {
+  it('returns a nice, coded error for fopen failures', async () => {
+    await assertRejects(loadImage('path/to/nothing'), (err) => {
+      assert.strictEqual(err.code, 'ENOENT')
+      assert.strictEqual(err.path, 'path/to/nothing')
+      assert.strictEqual(err.syscall, 'open')
+      return true
+    })
+  })
+
+  it('captures errors from libjpeg', async () => {
+    await assertRejects(loadImage(jpgCrash), (err) => {
+      assert.strictEqual(err.message, 'JPEG datastream contains no image')
+      return true
+    })
+  })
+
+  it('calls Image#onerror multiple times', async () => {
+    const img = await loadImage(pngClock)
+
+    await new Promise((resolve, reject) => {
+      img.onload = () => reject(new Error('onload unexpectedly called'))
+      img.onerror = () => resolve()
+      img.src = `${pngClock}s1`
+      assert.strictEqual(img.src, `${pngClock}s1`)
+    })
+
+    await new Promise((resolve, reject) => {
+      img.onload = () => reject(new Error('onload unexpectedly called'))
+      img.onerror = () => resolve()
+      img.src = `${pngClock}s2`
+      assert.strictEqual(img.src, `${pngClock}s2`)
+    })
+
+    await new Promise((resolve, reject) => {
+      img.onload = () => reject(new Error('onload unexpectedly called'))
+      img.onerror = () => resolve()
+      img.src = `${pngClock}s3`
+      assert.strictEqual(img.src, `${pngClock}s3`)
+    })
+  })
+
+  it('Image#{width,height}', async () => {
+    const img = await loadImage(pngClock)
+
+    img.src = ''
+    assert.strictEqual(img.width, 0)
+    assert.strictEqual(img.height, 0)
+
+    img.src = pngClock
+    assert.strictEqual(img.width, 0)
+    assert.strictEqual(img.height, 0)
+
+    await new Promise((resolve) => { img.onload = resolve })
+
+    assert.strictEqual(img.width, 320)
+    assert.strictEqual(img.height, 320)
+  })
+
+  it('Image#src set empty buffer', async () => {
     const img = new Image()
-    img.onerror = err => {
-      assert.equal(err.code, 'ENOENT')
-      assert.equal(err.path, 'path/to/nothing')
-      assert.equal(err.syscall, 'fopen')
-      done()
-    }
-    img.src = 'path/to/nothing'
+
+    img.src = Buffer.alloc(0)
+
+    assert.strictEqual(img.width, 0)
+    assert.strictEqual(img.height, 0)
+
+    await new Promise((resolve, reject) => {
+      img.onerror = () => resolve()
+      img.onload = () => reject(new Error('onload unexpectedly called'))
+    })
   })
 
-  it('captures errors from libjpeg', function (done) {
+  it('should unbind Image#onload', async () => {
     const img = new Image()
-    img.onerror = err => {
-      assert.equal(err.message, "JPEG datastream contains no image")
-      done()
-    }
-    img.src = `${__dirname}/fixtures/159-crash1.jpg`
+
+    let onloadCalled = 0
+    img.onload = () => { onloadCalled += 1 }
+
+    img.src = pngCheckers
+    assert.strictEqual(img.src, pngCheckers)
+    assert.strictEqual(img.complete, false)
+    assert.strictEqual(img.width, 0)
+    assert.strictEqual(img.height, 0)
+
+    await waitFor(() => onloadCalled === 1)
+
+    assert.strictEqual(onloadCalled, 1)
+    assert.strictEqual(img.complete, true)
+    assert.strictEqual(img.width, 2)
+    assert.strictEqual(img.height, 2)
+
+    onloadCalled = 0
+    img.onload = null
+
+    img.src = pngClock
+    assert.strictEqual(img.src, pngClock)
+    assert.strictEqual(img.complete, false)
+    assert.strictEqual(img.width, 0)
+    assert.strictEqual(img.height, 0)
+
+    await sleep(20)
+
+    assert.strictEqual(onloadCalled, 0)
+    assert.strictEqual(img.complete, true)
+    assert.strictEqual(img.width, 320)
+    assert.strictEqual(img.height, 320)
   })
 
-  it('calls Image#onerror multiple times', function () {
-    return loadImage(png_clock).then((img) => {
-      let onloadCalled = 0
-      let onerrorCalled = 0
+  it('should unbind Image#onerror', async () => {
+    const img = new Image()
 
-      img.onload = () => { onloadCalled += 1 }
-      img.onerror = () => { onerrorCalled += 1 }
+    let onloadCalled = 0
+    let onerrorCalled = 0
 
-      img.src = `${png_clock}s1`
-      assert.strictEqual(img.src, `${png_clock}s1`)
+    img.onload = () => { onloadCalled += 1 }
+    img.onerror = () => { onerrorCalled += 1 }
 
-      img.src = `${png_clock}s2`
-      assert.strictEqual(img.src, `${png_clock}s2`)
+    img.src = `${pngClock}s1`
+    assert.strictEqual(img.src, `${pngClock}s1`)
 
-      assert.strictEqual(onerrorCalled, 2)
+    await waitFor(() => onerrorCalled === 1)
 
-      onerrorCalled = 0
-      img.onerror = () => { onerrorCalled += 1 }
+    img.src = `${pngClock}s2`
+    assert.strictEqual(img.src, `${pngClock}s2`)
 
-      img.src = `${png_clock}s3`
-      assert.strictEqual(img.src, `${png_clock}s3`)
+    await waitFor(() => onerrorCalled === 2)
 
-      assert.strictEqual(onerrorCalled, 1)
-      assert.strictEqual(onloadCalled, 0)
-    })
-  })
+    onerrorCalled = 0
+    img.onerror = null
 
-  it('Image#{width,height}', function () {
-    return loadImage(png_clock).then((img) => {
-      img.src = ''
-      assert.strictEqual(img.width, 0)
-      assert.strictEqual(img.height, 0)
+    let globalErrorEmitted = false
 
-      img.src = png_clock
-      assert.strictEqual(img.width, 320)
-      assert.strictEqual(img.height, 320)
-    })
-  })
+    const originalEmit = process.emit
+    process.emit = () => (globalErrorEmitted = true)
 
-  it('Image#src set empty buffer', function () {
-    return loadImage(png_clock).then((img) => {
-      let onerrorCalled = 0
+    try {
+      img.src = `${pngClock}s3`
+      assert.strictEqual(img.src, `${pngClock}s3`)
 
-      img.onerror = () => { onerrorCalled += 1 }
-
-      img.src = Buffer.alloc(0)
-      assert.strictEqual(img.width, 0)
-      assert.strictEqual(img.height, 0)
-
-      assert.strictEqual(onerrorCalled, 1)
-    })
-  })
-
-  it('should unbind Image#onload', function() {
-    return loadImage(png_clock).then((img) => {
-      let onloadCalled = 0
-
-      img.onload = () => { onloadCalled += 1 }
-
-      img.src = png_checkers
-      assert.strictEqual(img.src, png_checkers)
-      assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 2)
-      assert.strictEqual(img.height, 2)
-
-      assert.strictEqual(onloadCalled, 1)
-
-      onloadCalled = 0
-      img.onload = null
-
-      img.src = png_clock
-      assert.strictEqual(img.src, png_clock)
-      assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 320)
-      assert.strictEqual(img.height, 320)
-
-      assert.strictEqual(onloadCalled, 0)
-    })
-  })
-
-  it('should unbind Image#onerror', function() {
-    return loadImage(png_clock).then((img) => {
-      let onloadCalled = 0
-      let onerrorCalled = 0
-
-      img.onload = () => { onloadCalled += 1 }
-      img.onerror = () => { onerrorCalled += 1 }
-
-      img.src = `${png_clock}s1`
-      assert.strictEqual(img.src, `${png_clock}s1`)
-
-      img.src = `${png_clock}s2`
-      assert.strictEqual(img.src, `${png_clock}s2`)
-
-      assert.strictEqual(onerrorCalled, 2)
-
-      onerrorCalled = 0
-      img.onerror = null
-
-      img.src = `${png_clock}s3`
-      assert.strictEqual(img.src, `${png_clock}s3`)
+      await sleep(20)
 
       assert.strictEqual(onloadCalled, 0)
       assert.strictEqual(onerrorCalled, 0)
-    })
+    } finally {
+      process.emit = originalEmit
+    }
+
+    assert.strictEqual(globalErrorEmitted, true)
   })
 
   it('does not crash on invalid images', function () {
@@ -274,7 +330,7 @@ describe('Image', function () {
       return copy
     }
 
-    const source = fs.readFileSync(jpg_chrome)
+    const source = fs.readFileSync(jpgChrome)
 
     const corruptSources = [
       withIncreasedByte(source, 0),
@@ -295,9 +351,22 @@ describe('Image', function () {
   })
 
   it('does not contain `source` property', function () {
-    var keys = Reflect.ownKeys(Image.prototype);
-    assert.ok(!keys.includes('source'));
-    assert.ok(!keys.includes('getSource'));
-    assert.ok(!keys.includes('setSource'));
-  });
+    const keys = Reflect.ownKeys(Image.prototype)
+    assert.ok(!keys.includes('source'))
+    assert.ok(!keys.includes('getSource'))
+    assert.ok(!keys.includes('setSource'))
+  })
+
+  it('aborts in-progress loads', async () => {
+    const img = new Image()
+
+    let onloadCalled = 0
+    img.onload = () => onloadCalled++
+
+    img.src = pngCheckers
+    img.src = jpgChrome
+    img.src = pngClock
+
+    await waitFor(() => onloadCalled === 1)
+  })
 })

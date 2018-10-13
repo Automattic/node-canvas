@@ -234,6 +234,11 @@ NAN_METHOD(Image::SetSource){
   // Clear errno in case some unrelated previous syscall failed
   errno = 0;
 
+  // Just clear the data
+  if (value->IsNull()) {
+    return;
+  }
+
   // url string
   if (value->IsString()) {
     Nan::Utf8String src(value);
@@ -245,6 +250,16 @@ NAN_METHOD(Image::SetSource){
     uint8_t *buf = (uint8_t *) Buffer::Data(value->ToObject());
     unsigned len = Buffer::Length(value->ToObject());
     status = img->loadFromBuffer(buf, len);
+  // ImageData
+  } else if (value->IsObject()) {
+    auto imageData = value->ToObject();
+    auto width = imageData->Get(Nan::New("width").ToLocalChecked())->Int32Value();
+    auto height = imageData->Get(Nan::New("height").ToLocalChecked())->Int32Value();
+    Nan::TypedArrayContents<uint8_t> data(imageData->Get(Nan::New("data").ToLocalChecked()));
+
+    assert((width * height * 4) == data.length());
+
+    status = img->loadFromImageData(*data, width, height);
   }
 
   if (status) {
@@ -268,6 +283,37 @@ NAN_METHOD(Image::SetSource){
       onloadFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 0, NULL);
     }
   }
+}
+
+cairo_status_t
+Image::loadFromImageData(uint8_t *data, uint32_t width, uint32_t height) {
+  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  auto status = cairo_surface_status(_surface);
+
+  if (status != CAIRO_STATUS_SUCCESS) return status;
+
+  auto stride = cairo_image_surface_get_stride(_surface);
+  auto target = cairo_image_surface_get_data(_surface);
+
+  for (auto y = 0; y < height; ++y) {
+    auto pixel = (target + (stride * y));
+
+    for (auto x = 0; x < width; ++x) {
+      uint8_t r = *(data++);
+      uint8_t g = *(data++);
+      uint8_t b = *(data++);
+      uint8_t a = *(data++);
+
+      *(pixel++) = b;
+      *(pixel++) = g;
+      *(pixel++) = r;
+      *(pixel++) = a;
+    }
+  }
+
+  cairo_surface_mark_dirty(_surface);
+
+  return CAIRO_STATUS_SUCCESS;
 }
 
 /*
