@@ -38,7 +38,7 @@ canvas.createJPEGStream() // new
 ```
 
 ### Breaking
- * Drop support for Node.js <6.x
+ * Drop support for Node.js <8.x
  * Remove sync stream functions (bc53059). Note that most streams are still
    synchronous (run in the main thread); this change just removed `syncPNGStream`
    and `syncJPEGStream`.
