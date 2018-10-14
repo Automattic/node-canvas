@@ -1308,6 +1308,7 @@ gco.forEach(op => {
     var img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
+        ctx.globalAlpha = 0.7
         ctx.drawImage(img1, 0, 0)
         ctx.globalCompositeOperation = op
         ctx.drawImage(img2, 0, 0)
@@ -1318,6 +1319,42 @@ gco.forEach(op => {
     img1.src = imageSrc('existing.png')
   }
 })
+
+gco.forEach(op => {
+  tests['9 args, transform, globalCompositeOperator ' + op] = function (ctx, done) {
+    var img1 = new Image()
+    var img2 = new Image()
+    img1.onload = function () {
+      img2.onload = function () {
+        ctx.globalAlpha = 0.7
+        ctx.drawImage(img1, 0, 0)
+        ctx.globalCompositeOperation = op
+        ctx.rotate(0.1)
+        ctx.scale(0.8, 1.2)
+        ctx.translate(5, -5)
+        ctx.drawImage(img2, -80, -50, 400, 400, 10, 10, 180, 180)
+        done()
+      }
+      img2.src = imageSrc('newcontent.png')
+    }
+    img1.src = imageSrc('existing.png')
+  }
+})
+
+tests['drawImage issue #1249'] = function (ctx, done) {
+  var img1 = new Image()
+  var img2 = new Image()
+  img1.onload = function () {
+    img2.onload = function () {
+      ctx.drawImage(img1, 0, 0, 200, 200)
+      ctx.drawImage(img2, -8, -8, 18, 18, 0, 0, 200, 200)
+      ctx.restore()
+      done()
+    }
+    img2.src = imageSrc('checkers.png')
+  }
+  img1.src = imageSrc('chrome.jpg')
+}
 
 tests['Global composite operation with smaller source'] = function (ctx, done) {
   var img1 = new Image()
