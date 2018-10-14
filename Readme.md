@@ -1,14 +1,5 @@
 # node-canvas
 
-## This is the documentation for version 2.0.0-alpha
-Alpha versions of 2.0 can be installed using `npm install canvas@next`.
-
-See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
-
-**For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
-
------
-
 [![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
 [![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
 
@@ -69,6 +60,12 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
   console.log('<img src="' + canvas.toDataURL() + '" />')
 })
 ```
+
+## Upgrading from 2.x
+
+See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
+
+For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x).
 
 ## Documentation
 
