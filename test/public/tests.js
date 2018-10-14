@@ -1786,7 +1786,6 @@ tests['smoothing and gradients (gradients are not influenced by patternQuality)'
   ctx.fill()
 }
 
-
 tests['shadow integration'] = function (ctx) {
   ctx.shadowBlur = 5
   ctx.shadowOffsetX = 10
