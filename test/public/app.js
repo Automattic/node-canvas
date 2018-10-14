@@ -20,13 +20,18 @@ function pdfLink (name) {
 
 function localRendering (name, callback) {
   var canvas = create('canvas', { width: 200, height: 200, title: name })
-
+  var tests = window.tests;
   var ctx = canvas.getContext('2d', { alpha: true })
   var initialFillStyle = ctx.fillStyle
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, 200, 200)
   ctx.fillStyle = initialFillStyle
-  window.tests[name](ctx, callback)
+  if (tests[name].length === 2) {
+    tests[name](ctx, callback)
+  } else {
+    tests[name](ctx)
+    callback(null)
+  }
   return canvas
 }
 
