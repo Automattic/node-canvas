@@ -88,7 +88,7 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [Canvas#createPDFStream()](#canvascreatepdfstream)
 * [Canvas#toDataURL()](#canvastodataurl)
 * [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
-* [CanvasRenderingContext2D#filter](#canvasrenderingcontext2dfilter)
+* [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
 * [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
 * [CanvasRenderingContext2D#globalCompositeOperator = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperator--saturate)
 * [CanvasRenderingContext2D#antialias](#canvasrenderingcontext2dantialias)
@@ -381,10 +381,10 @@ canvas.toDataURL('image/jpeg', quality, (err, jpeg) => { }) // spec-following; q
 
 Defaults to `'good'`. Affects pattern (gradient, image, etc.) rendering quality.
 
-### CanvasRenderingContext2D#filter
+### CanvasRenderingContext2D#quality
 
 > ```ts
-> context.filter: 'fast'|'good'|'best'|'nearest'|'bilinear'
+> context.quality: 'fast'|'good'|'best'|'nearest'|'bilinear'
 > ```
 
 Defaults to `'good'`. Like `patternQuality`, but applies to transformations affecting more than just patterns.

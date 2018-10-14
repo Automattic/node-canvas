@@ -171,7 +171,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("shadowBlur").ToLocalChecked(), GetShadowBlur, SetShadowBlur, ctor);
   SetProtoAccessor(proto, Nan::New("antialias").ToLocalChecked(), GetAntiAlias, SetAntiAlias, ctor);
   SetProtoAccessor(proto, Nan::New("textDrawingMode").ToLocalChecked(), GetTextDrawingMode, SetTextDrawingMode, ctor);
-  SetProtoAccessor(proto, Nan::New("filter").ToLocalChecked(), GetFilter, SetFilter, ctor);
+  SetProtoAccessor(proto, Nan::New("quality").ToLocalChecked(), GetQuality, SetQuality, ctor);
   Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction());
 }
 
@@ -1569,7 +1569,7 @@ NAN_SETTER(Context2d::SetTextDrawingMode) {
  * Get filter.
  */
 
-NAN_GETTER(Context2d::GetFilter) {
+NAN_GETTER(Context2d::GetQuality) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *filter;
   switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
@@ -1586,7 +1586,7 @@ NAN_GETTER(Context2d::GetFilter) {
  * Set filter.
  */
 
-NAN_SETTER(Context2d::SetFilter) {
+NAN_SETTER(Context2d::SetQuality) {
   Nan::Utf8String str(value->ToString());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
