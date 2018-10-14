@@ -5,29 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](http://semver.org/).
 
-2.0.0 (unreleased -- encompasses all alpha versions)
+(Unreleased)
+==================
+### Changed
+### Added
+### Fixed
+
+2.0.0
 ==================
 
 **Upgrading from 1.x**
 ```js
-// (1) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
-//     goes from 0 to 1 instead of from 0 to 100:
-canvas.createJPEGStream({quality: 50}) // old
-canvas.createJPEGStream({quality: 0.5}) // new
+// (1) The Canvas constructor is no longer the default export from the module.
+/* old: */
+const Canvas = require('canvas')
+const mycanvas = new Canvas(width, height)
+/* new: */
+const { createCanvas, Canvas } = require('canvas')
+const mycanvas = createCanvas(width, height)
+mycanvas instanceof Canvas // true
 
-// (2) The ZLIB compression level and PNG filter options for canvas.toBuffer are
+/* old: */
+const Canvas = require('canvas')
+const myimg = new Canvas.Image()
+/* new: */
+const { Image } = require('canvas')
+const myimg = new Image()
+
+// (2) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
+//     goes from 0 to 1 instead of from 0 to 100:
+canvas.createJPEGStream({ quality: 50 }) // old
+canvas.createJPEGStream({ quality: 0.5 }) // new
+
+// (3) The ZLIB compression level and PNG filter options for canvas.toBuffer are
 //     now named instead of positional arguments:
 canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE) // old
-canvas.toBuffer(undefined, {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.toBuffer(undefined, { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 // or specify the mime type explicitly:
-canvas.toBuffer("image/png", {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.toBuffer('image/png', { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 
-// (3) #2 also applies for canvas.pngStream, although these arguments were not
+// (4) #2 also applies for canvas.pngStream, although these arguments were not
 //     documented:
 canvas.pngStream(3, canvas.PNG_FILTER_NONE) // old
-canvas.pngStream({compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.pngStream({ compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 
-// (4) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
+// (5) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
 canvas.syncPNGStream() // old
 canvas.createSyncPNGStream() // old
 canvas.createPNGStream() // new
@@ -89,6 +111,8 @@ canvas.createJPEGStream() // new
    that does not exist.)
  * Support reading CMYK, YCCK JPEGs.
  * Hide `Image.prototype.source`
+ * Fix behavior of maxWidth (#1088)
+ * Fix behavior of textAlignment with maxWidth (#1253)
 
 ### Added
  * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)

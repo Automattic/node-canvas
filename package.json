@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "2.0.0-alpha.14",
+  "version": "2.0.0",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -39,14 +39,14 @@
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
   "dependencies": {
-    "node-pre-gyp": "^0.9.0",
-    "nan": "^2.9.2"
+    "nan": "^2.11.1",
+    "node-pre-gyp": "^0.11.0"
   },
   "devDependencies": {
-    "assert-rejects": "^0.1.1",
-    "express": "^4.14.0",
-    "mocha": "^3.1.2",
-    "standard": "^8.5.0"
+    "assert-rejects": "^1.0.0",
+    "express": "^4.16.3",
+    "mocha": "^5.2.0",
+    "standard": "^12.0.1"
   },
   "engines": {
     "node": ">=6"

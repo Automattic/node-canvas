@@ -1126,8 +1126,8 @@ NAN_METHOD(Context2d::DrawImage) {
     , dy = 0
     , dw = 0
     , dh = 0
-    , fw = 0
-    , fh = 0;
+    , source_w = 0
+    , source_h = 0;
 
   cairo_surface_t *surface;
 
@@ -1139,15 +1139,15 @@ NAN_METHOD(Context2d::DrawImage) {
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
     }
-    fw = sw = img->width;
-    fh = sh = img->height;
+    source_w = sw = img->width;
+    source_h = sh = img->height;
     surface = img->surface();
 
   // Canvas
   } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
-    fw = sw = canvas->getWidth();
-    fh = sh = canvas->getHeight();
+    source_w = sw = canvas->getWidth();
+    source_h = sh = canvas->getHeight();
     surface = canvas->surface();
 
   // Invalid
@@ -1203,10 +1203,11 @@ NAN_METHOD(Context2d::DrawImage) {
   float fx = (float) dw / sw * current_scale_x; // transforms[1] is scale on X
   float fy = (float) dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
-  bool needCut = sw != fw || sh != fh;
+  bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
+  bool needCairoClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
 
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale;
+  bool needsExtraSurface = sameCanvas || needCut || needScale || needCairoClip;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
@@ -1214,6 +1215,18 @@ NAN_METHOD(Context2d::DrawImage) {
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw * current_scale_x, dh * current_scale_y);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
+    if (needCairoClip) {
+      float clip_w = (std::min)(sw, source_w);
+      float clip_h = (std::min)(sh, source_h);
+      if (sx > 0) {
+        clip_w -= sx;
+      }
+      if (sy > 0) {
+        clip_h -= sy;
+      }
+      cairo_rectangle(ctxTemp, -sx , -sy , clip_w, clip_h);
+      cairo_clip(ctxTemp);
+    }
     cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
@@ -2066,8 +2079,8 @@ NAN_METHOD(Context2d::Stroke) {
  */
 
 double
-get_text_scale(Context2d *context, char *str, double maxWidth) {
-  PangoLayout *layout = context->layout();
+get_text_scale(PangoLayout *layout, double maxWidth) {
+
   PangoRectangle logical_rect;
   pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
 
@@ -2091,9 +2104,13 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   double scaled_by = 1;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  PangoLayout *layout = context->layout();
+
+  pango_layout_set_text(layout, *str, -1);
+  pango_cairo_update_layout(context->context(), layout);
 
   if (argsNum == 3) {
-    scaled_by = get_text_scale(context, *str, args[2]);
+    scaled_by = get_text_scale(layout, args[2]);
     cairo_save(context->context());
     cairo_scale(context->context(), scaled_by, 1);
   }
@@ -2101,9 +2118,9 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     if (stroke == true) { context->stroke(); } else { context->fill(); }
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x / scaled_by, y);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
+    context->setTextPath(x / scaled_by, y);
     if (stroke == true) { context->stroke(); } else { context->fill(); }
   }
   context->restorePath();
@@ -2152,15 +2169,15 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 }
 
 /*
- * Set text path for the given string at (x, y).
+ * Set text path for the string in the layout at (x, y).
+ * This function is called by paintText and won't behave correctly
+ * if is not called from there.
+ * it needs pango_layout_set_text and pango_cairo_update_layout to be called before
  */
 
 void
-Context2d::setTextPath(const char *str, double x, double y) {
+Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
-
-  pango_layout_set_text(_layout, str, -1);
-  pango_cairo_update_layout(_context, _layout);
 
   switch (state->textAlignment) {
     // center
