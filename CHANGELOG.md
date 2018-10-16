@@ -57,6 +57,11 @@ canvas.createPNGStream() // new
 canvas.syncJPEGStream() // old
 canvas.createSyncJPEGStream() // old
 canvas.createJPEGStream() // new
+
+// (6) Context2d.filter has been renamed to context2d.quality to avoid a
+//     conflict with the new standard 'filter' property.
+context.filter = 'best' // old
+context.quality = 'best' // new
 ```
 
 ### Breaking
@@ -72,6 +77,9 @@ canvas.createJPEGStream() // new
  * See also: *Correct some of the `globalCompositeOperator` types* under
    **Fixed**. These changes were bug-fixes, but will break existing code relying
    on the incorrect types.
+ * Rename `context2d.filter` to `context2d.quality` to avoid a conflict with the
+   new standard 'filter' property. Note that the standard 'filter' property is
+   not yet implemented.
 
 ### Fixed
  * Fix build with SVG support enabled (#1123)
