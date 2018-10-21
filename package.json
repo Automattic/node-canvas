@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -46,6 +46,7 @@
     "assert-rejects": "^1.0.0",
     "express": "^4.16.3",
     "mocha": "^5.2.0",
+    "pixelmatch": "^4.0.2",
     "standard": "^12.0.1"
   },
   "engines": {

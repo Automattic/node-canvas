@@ -133,7 +133,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetShadowBlur);
     static NAN_GETTER(GetAntiAlias);
     static NAN_GETTER(GetTextDrawingMode);
-    static NAN_GETTER(GetFilter);
+    static NAN_GETTER(GetQuality);
     static NAN_SETTER(SetPatternQuality);
     static NAN_SETTER(SetImageSmoothingEnabled);
     static NAN_SETTER(SetGlobalCompositeOperation);
@@ -149,7 +149,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_SETTER(SetShadowBlur);
     static NAN_SETTER(SetAntiAlias);
     static NAN_SETTER(SetTextDrawingMode);
-    static NAN_SETTER(SetFilter);
+    static NAN_SETTER(SetQuality);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
