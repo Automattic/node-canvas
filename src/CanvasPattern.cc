@@ -45,7 +45,7 @@ NAN_METHOD(Pattern::New) {
 
   cairo_surface_t *surface;
 
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
 
   // Image
   if (Nan::New(Image::constructor)->HasInstance(obj)) {

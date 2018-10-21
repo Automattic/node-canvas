@@ -17,6 +17,7 @@ class ImageBackend : public Backend
   public:
     ImageBackend(int width, int height);
     ~ImageBackend();
+    static Backend *construct(int width, int height);
 
     cairo_format_t getFormat();
     void setFormat(cairo_format_t format);

@@ -76,7 +76,7 @@ inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, doubl
   bool areArgsValid = true;
 
   for (int i = offset; i < argsEnd; i++) {
-    double val = info[i]->NumberValue();
+    double val = Nan::To<double>(info[i]).FromMaybe(0);
 
     if (areArgsValid) {
       if (val != val ||
@@ -644,7 +644,7 @@ NAN_METHOD(Context2d::New) {
 
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("Canvas expected");
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
   if (!Nan::New(Canvas::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("Canvas expected");
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
@@ -653,7 +653,7 @@ NAN_METHOD(Context2d::New) {
   if (isImageBackend) {
     cairo_format_t format = ImageBackend::DEFAULT_FORMAT;
     if (info[1]->IsObject()) {
-      Local<Object> ctxAttributes = info[1]->ToObject();
+      Local<Object> ctxAttributes = Nan::To<Object>(info[1]).ToLocalChecked();
 
       Local<Value> pixelFormat = ctxAttributes->Get(Nan::New("pixelFormat").ToLocalChecked());
       if (pixelFormat->IsString()) {
@@ -670,7 +670,7 @@ NAN_METHOD(Context2d::New) {
 
       // alpha: false forces use of RGB24
       Local<Value> alpha = ctxAttributes->Get(Nan::New("alpha").ToLocalChecked());
-      if (alpha->IsBoolean() && !alpha->BooleanValue()) {
+      if (alpha->IsBoolean() && !Nan::To<bool>(alpha).FromMaybe(0)) {
         format = CAIRO_FORMAT_RGB24;
       }
     }
@@ -728,7 +728,7 @@ NAN_METHOD(Context2d::AddPage) {
 NAN_METHOD(Context2d::PutImageData) {
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("ImageData expected");
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
   if (!Nan::New(ImageData::constructor)->HasInstance(obj))
     return Nan::ThrowTypeError("ImageData expected");
 
@@ -746,8 +746,8 @@ NAN_METHOD(Context2d::PutImageData) {
     , sy = 0
     , sw = 0
     , sh = 0
-    , dx = info[1]->Int32Value()
-    , dy = info[2]->Int32Value()
+    , dx = Nan::To<int32_t>(info[1]).FromMaybe(0)
+    , dy = Nan::To<int32_t>(info[2]).FromMaybe(0)
     , rows
     , cols;
 
@@ -759,10 +759,10 @@ NAN_METHOD(Context2d::PutImageData) {
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
-      sx = info[3]->Int32Value();
-      sy = info[4]->Int32Value();
-      sw = info[5]->Int32Value();
-      sh = info[6]->Int32Value();
+      sx = Nan::To<int32_t>(info[3]).FromMaybe(0);
+      sy = Nan::To<int32_t>(info[4]).FromMaybe(0);
+      sw = Nan::To<int32_t>(info[5]).FromMaybe(0);
+      sh = Nan::To<int32_t>(info[6]).FromMaybe(0);
       // fix up negative height, width
       if (sw < 0) sx += sw, sw = -sw;
       if (sh < 0) sy += sh, sh = -sh;
@@ -917,10 +917,10 @@ NAN_METHOD(Context2d::GetImageData) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Canvas *canvas = context->canvas();
 
-  int sx = info[0]->Int32Value();
-  int sy = info[1]->Int32Value();
-  int sw = info[2]->Int32Value();
-  int sh = info[3]->Int32Value();
+  int sx = Nan::To<int32_t>(info[0]).FromMaybe(0);
+  int sy = Nan::To<int32_t>(info[1]).FromMaybe(0);
+  int sw = Nan::To<int32_t>(info[2]).FromMaybe(0);
+  int sh = Nan::To<int32_t>(info[3]).FromMaybe(0);
 
   if (!sw)
     return Nan::ThrowError("IndexSizeError: The source width is 0.");
@@ -1117,7 +1117,7 @@ NAN_METHOD(Context2d::DrawImage) {
 
   cairo_surface_t *surface;
 
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
 
   // Image
   if (Nan::New(Image::constructor)->HasInstance(obj)) {
@@ -1275,7 +1275,7 @@ NAN_GETTER(Context2d::GetGlobalAlpha) {
  */
 
 NAN_SETTER(Context2d::SetGlobalAlpha) {
-  double n = value->NumberValue();
+  double n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0 && n <= 1) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->globalAlpha = n;
@@ -1340,7 +1340,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
 
 NAN_SETTER(Context2d::SetPatternQuality) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Nan::Utf8String quality(value->ToString());
+  Nan::Utf8String quality(Nan::To<String>(value).ToLocalChecked());
   if (0 == strcmp("fast", *quality)) {
     context->state->patternQuality = CAIRO_FILTER_FAST;
   } else if (0 == strcmp("good", *quality)) {
@@ -1377,7 +1377,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
 
 NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->imageSmoothingEnabled = value->BooleanValue();
+  context->state->imageSmoothingEnabled = Nan::To<bool>(value).FromMaybe(0);
 }
 
 /*
@@ -1396,7 +1396,7 @@ NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  Nan::Utf8String opStr(value->ToString()); // Unlike CSS colors, this *is* case-sensitive
+  Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked()); // Unlike CSS colors, this *is* case-sensitive
   const std::map<std::string, cairo_operator_t> blendmodes = {
     // composite modes:
     {"clear", CAIRO_OPERATOR_CLEAR},
@@ -1453,7 +1453,7 @@ NAN_GETTER(Context2d::GetShadowOffsetX) {
 
 NAN_SETTER(Context2d::SetShadowOffsetX) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->shadowOffsetX = value->NumberValue();
+  context->state->shadowOffsetX = Nan::To<double>(value).FromMaybe(0);
 }
 
 /*
@@ -1471,7 +1471,7 @@ NAN_GETTER(Context2d::GetShadowOffsetY) {
 
 NAN_SETTER(Context2d::SetShadowOffsetY) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->shadowOffsetY = value->NumberValue();
+  context->state->shadowOffsetY = Nan::To<double>(value).FromMaybe(0);
 }
 
 /*
@@ -1488,7 +1488,7 @@ NAN_GETTER(Context2d::GetShadowBlur) {
  */
 
 NAN_SETTER(Context2d::SetShadowBlur) {
-  int n = value->NumberValue();
+  int n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     context->state->shadowBlur = n;
@@ -1516,7 +1516,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
-  Nan::Utf8String str(value->ToString());
+  Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   cairo_antialias_t a;
@@ -1556,7 +1556,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
-  Nan::Utf8String str(value->ToString());
+  Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
     context->state->textDrawingMode = TEXT_DRAW_PATHS;
@@ -1587,7 +1587,7 @@ NAN_GETTER(Context2d::GetQuality) {
  */
 
 NAN_SETTER(Context2d::SetQuality) {
-  Nan::Utf8String str(value->ToString());
+  Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
   if (0 == strcmp("fast", *str)) {
@@ -1618,7 +1618,7 @@ NAN_GETTER(Context2d::GetMiterLimit) {
  */
 
 NAN_SETTER(Context2d::SetMiterLimit) {
-  double n = value->NumberValue();
+  double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     cairo_set_miter_limit(context->context(), n);
@@ -1639,7 +1639,7 @@ NAN_GETTER(Context2d::GetLineWidth) {
  */
 
 NAN_SETTER(Context2d::SetLineWidth) {
-  double n = value->NumberValue();
+  double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0 && n != std::numeric_limits<double>::infinity()) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     cairo_set_line_width(context->context(), n);
@@ -1668,7 +1668,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
 NAN_SETTER(Context2d::SetLineJoin) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  Nan::Utf8String type(value->ToString());
+  Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_join(ctx, CAIRO_LINE_JOIN_ROUND);
   } else if (0 == strcmp("bevel", *type)) {
@@ -1700,7 +1700,7 @@ NAN_GETTER(Context2d::GetLineCap) {
 NAN_SETTER(Context2d::SetLineCap) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
-  Nan::Utf8String type(value->ToString());
+  Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
   if (0 == strcmp("round", *type)) {
     cairo_set_line_cap(ctx, CAIRO_LINE_CAP_ROUND);
   } else if (0 == strcmp("square", *type)) {
@@ -1718,8 +1718,8 @@ NAN_METHOD(Context2d::IsPointInPath) {
   if (info[0]->IsNumber() && info[1]->IsNumber()) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     cairo_t *ctx = context->context();
-    double x = info[0]->NumberValue()
-         , y = info[1]->NumberValue();
+    double x = Nan::To<double>(info[0]).FromMaybe(0)
+         , y = Nan::To<double>(info[1]).FromMaybe(0);
     context->setFillRule(info[2]);
     info.GetReturnValue().Set(Nan::New<Boolean>(cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y)));
     return;
@@ -1734,7 +1734,7 @@ NAN_METHOD(Context2d::IsPointInPath) {
 NAN_METHOD(Context2d::SetFillPattern) {
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("Gradient or Pattern expected");
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
   if (Nan::New(Gradient::constructor)->HasInstance(obj)){
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
@@ -1755,7 +1755,7 @@ NAN_METHOD(Context2d::SetFillPattern) {
 NAN_METHOD(Context2d::SetStrokePattern) {
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("Gradient or Pattern expected");
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
   if (Nan::New(Gradient::constructor)->HasInstance(obj)){
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
     Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
@@ -1775,7 +1775,7 @@ NAN_METHOD(Context2d::SetStrokePattern) {
 
 NAN_SETTER(Context2d::SetShadowColor) {
   short ok;
-  Nan::Utf8String str(value->ToString());
+  Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   uint32_t rgba = rgba_from_string(*str, &ok);
   if (ok) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2077,7 +2077,7 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   if(!checkArgs(info, args, argsNum, 1))
     return;
 
-  Nan::Utf8String str(info[0]->ToString());
+  Nan::Utf8String str(Nan::To<String>(info[0]).ToLocalChecked());
   double x = args[0];
   double y = args[1];
   double scaled_by = 1;
@@ -2226,7 +2226,7 @@ NAN_METHOD(Context2d::SetFont) {
 
   Nan::Utf8String weight(info[0]);
   Nan::Utf8String style(info[1]);
-  double size = info[2]->NumberValue();
+  double size = Nan::To<double>(info[2]).FromMaybe(0);
   Nan::Utf8String unit(info[3]);
   Nan::Utf8String family(info[4]);
 
@@ -2261,7 +2261,7 @@ NAN_METHOD(Context2d::MeasureText) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  Nan::Utf8String str(info[0]->ToString());
+  Nan::Utf8String str(Nan::To<String>(info[0]).ToLocalChecked());
   Local<Object> obj = Nan::New<Object>();
 
   PangoRectangle _ink_rect, _logical_rect;
@@ -2336,7 +2336,7 @@ NAN_METHOD(Context2d::MeasureText) {
 NAN_METHOD(Context2d::SetTextBaseline) {
   if (!info[0]->IsInt32()) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->textBaseline = info[0]->Int32Value();
+  context->state->textBaseline = Nan::To<int32_t>(info[0]).FromMaybe(0);
 }
 
 /*
@@ -2346,7 +2346,7 @@ NAN_METHOD(Context2d::SetTextBaseline) {
 NAN_METHOD(Context2d::SetTextAlignment) {
   if (!info[0]->IsInt32()) return;
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  context->state->textAlignment = info[0]->Int32Value();
+  context->state->textAlignment = Nan::To<int32_t>(info[0]).FromMaybe(0);
 }
 
 /*
@@ -2362,7 +2362,7 @@ NAN_METHOD(Context2d::SetLineDash) {
   for (uint32_t i=0; i<dashes; i++) {
     Local<Value> d = dash->Get(i % dash->Length());
     if (!d->IsNumber()) return;
-    a[i] = d->NumberValue();
+    a[i] = Nan::To<double>(d).FromMaybe(0);
     if (a[i] == 0) zero_dashes++;
     if (a[i] < 0 || isnan(a[i]) || isinf(a[i])) return;
   }
@@ -2402,7 +2402,7 @@ NAN_METHOD(Context2d::GetLineDash) {
  * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
  */
 NAN_SETTER(Context2d::SetLineDashOffset) {
-  double offset = value->NumberValue();
+  double offset = Nan::To<double>(value).FromMaybe(0);
   if (isnan(offset) || isinf(offset)) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2505,25 +2505,25 @@ NAN_METHOD(Context2d::Arc) {
     || !info[3]->IsNumber()
     || !info[4]->IsNumber()) return;
 
-  bool anticlockwise = info[5]->BooleanValue();
+  bool anticlockwise = Nan::To<bool>(info[5]).FromMaybe(0);
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  if (anticlockwise && M_PI * 2 != info[4]->NumberValue()) {
+  if (anticlockwise && M_PI * 2 != Nan::To<double>(info[4]).FromMaybe(0)) {
     cairo_arc_negative(ctx
-      , info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue()
-      , info[4]->NumberValue());
+      , Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0)
+      , Nan::To<double>(info[4]).FromMaybe(0));
   } else {
     cairo_arc(ctx
-      , info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue()
-      , info[4]->NumberValue());
+      , Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0)
+      , Nan::To<double>(info[4]).FromMaybe(0));
   }
 }
 
@@ -2653,7 +2653,7 @@ NAN_METHOD(Context2d::Ellipse) {
   double rotation = args[4];
   double startAngle = args[5];
   double endAngle = args[6];
-  bool anticlockwise = info[7]->BooleanValue();
+  bool anticlockwise = Nan::To<bool>(info[7]).FromMaybe(0);
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();

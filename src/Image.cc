@@ -116,7 +116,7 @@ NAN_GETTER(Image::GetDataMode) {
 NAN_SETTER(Image::SetDataMode) {
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    int mode = value->Uint32Value();
+    int mode = Nan::To<uint32_t>(value).FromMaybe(0);
     img->data_mode = (data_mode_t) mode;
   }
 }
@@ -148,7 +148,7 @@ NAN_GETTER(Image::GetWidth) {
 NAN_SETTER(Image::SetWidth) {
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    img->width = value->Uint32Value();
+    img->width = Nan::To<uint32_t>(value).FromMaybe(0);
   }
 }
 
@@ -176,7 +176,7 @@ NAN_GETTER(Image::GetHeight) {
 NAN_SETTER(Image::SetHeight) {
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    img->height = value->Uint32Value();
+    img->height = Nan::To<uint32_t>(value).FromMaybe(0);
   }
 }
 
@@ -242,8 +242,8 @@ NAN_METHOD(Image::SetSource){
     status = img->load();
   // Buffer
   } else if (Buffer::HasInstance(value)) {
-    uint8_t *buf = (uint8_t *) Buffer::Data(value->ToObject());
-    unsigned len = Buffer::Length(value->ToObject());
+    uint8_t *buf = (uint8_t *) Buffer::Data(Nan::To<Object>(value).ToLocalChecked());
+    unsigned len = Buffer::Length(Nan::To<Object>(value).ToLocalChecked());
     status = img->loadFromBuffer(buf, len);
   }
 
