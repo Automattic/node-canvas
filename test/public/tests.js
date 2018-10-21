@@ -1287,6 +1287,34 @@ tests['drawImage issue #1249'] = function (ctx, done) {
   img1.src = imageSrc('chrome.jpg')
 }
 
+tests['drawImage uncommon arguments minus top-left'] = function (ctx, done) {
+  ctx.imageSmoothingEnabled = false;
+  var img = new Image()
+  img.onload = function () {
+    // we use 60.000 because is over the max canvas allowed
+    ctx.drawImage(img, -100, -100, 180, 180, 10, 10, 80, 80)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['drawImage uncommon arguments extreme minus top-left'] = function (ctx, done) {
+  ctx.imageSmoothingEnabled = false;
+  var img = new Image()
+  img.onload = function () {
+    // we use 60.000 because is over the max canvas allowed
+    ctx.drawImage(img, -90000, -90000, 90080, 90080, -180000, -180000, 180160, 180160)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
 tests['known bug #416'] = function (ctx, done) {
   var img1 = new Image()
   var img2 = new Image()

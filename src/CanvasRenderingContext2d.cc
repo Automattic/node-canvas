@@ -1200,40 +1200,60 @@ NAN_METHOD(Context2d::DrawImage) {
   // Scale src
   double current_scale_y = transforms[1];
   double current_scale_x = transforms[2];
+  float extra_dx = 0;
+  float extra_dy = 0;
   float fx = (float) dw / sw * current_scale_x; // transforms[1] is scale on X
   float fy = (float) dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
-  bool needCairoClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
-
+  bool needAdditionalCut = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale || needCairoClip;
+  bool needsExtraSurface = sameCanvas || needCut || needScale || needAdditionalCut;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
   if (needsExtraSurface) {
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw * current_scale_x, dh * current_scale_y);
+    // we want to create the extra surface as small as possible.
+    // fx and fy are the total scaling we need to apply to sw, sh.
+    // from sw and sh we want to remove the part that is outside the source_w and soruce_h
+    double real_w = sw;
+    double real_h = sh;
+    float translate_x = 0;
+    float translate_y = 0;
+    if (sx < 0) {
+      extra_dx = -sx * fx;
+      real_w = sw - sx;
+    } else if (sx + sw > source_w) {
+      real_w = sw - (sx + sw - source_w);
+    }
+    if (sy < 0) {
+      extra_dy = -sy * fy;
+      real_h = sh - sy;
+    } else if (sy + sh > source_h) {
+      real_h = sh - (sy + sh - source_h);
+    }
+    if (real_w > source_w) {
+      real_w = source_w;
+    }
+    if (real_h > source_h) {
+      real_h = source_h;
+    }
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, real_w * fx, real_h * fy);
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
-    if (needCairoClip) {
-      float clip_w = (std::min)(sw, source_w);
-      float clip_h = (std::min)(sh, source_h);
-      if (sx > 0) {
-        clip_w -= sx;
-      }
-      if (sy > 0) {
-        clip_h -= sy;
-      }
-      cairo_rectangle(ctxTemp, -sx , -sy , clip_w, clip_h);
-      cairo_clip(ctxTemp);
+    if (sx > 0) {
+      translate_x = sx * current_scale_x;
     }
-    cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
+    if (sy > 0) {
+      translate_y = sy * current_scale_y;
+    }
+    // cairo_translate(ctxTemp, -translate_x, -translate_y);
+    cairo_set_source_surface(ctxTemp, surface, -translate_x, -translate_y);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
     cairo_paint_with_alpha(ctxTemp, 1);
     surface = surfTemp;
   }
-
   // apply shadow if there is one
   if (context->hasShadow()) {
     if(context->state->shadowBlur) {
@@ -1267,9 +1287,18 @@ NAN_METHOD(Context2d::DrawImage) {
     }
   }
 
-  cairo_scale(ctx, 1 / current_scale_x, 1 / current_scale_y);
+  float scaled_dx = dx;
+  float scaled_dy = dy;
+
+  if (needsExtraSurface && (current_scale_x != 1 || current_scale_y != 1)) {
+    // in this case our surface contains already current_scale_x, we need to scale back
+    cairo_scale(ctx, 1 / current_scale_x, 1 / current_scale_y);
+    scaled_dx *= current_scale_x;
+    scaled_dy *= current_scale_y;
+  }
+  // cairo_translate(ctx, extra_dx, extra_dy);
   // Paint
-  cairo_set_source_surface(ctx, surface, dx * current_scale_x, dy * current_scale_y);
+  cairo_set_source_surface(ctx, surface, scaled_dx + extra_dx, scaled_dy + extra_dy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
