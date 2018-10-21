@@ -32,6 +32,7 @@ Windows | See the [wiki](https://github.com/Automattic/node-canvas/wiki/Installa
 Others | See the [wiki](https://github.com/Automattic/node-canvas/wiki)
 
 **Mac OS X v10.11+:** If you have recently updated to Mac OS X v10.11+ and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
+If you have xcode 10.0 or higher installed, in order to build from source you need NPM 6.4.1 or higher.
 
 ## Quick Example
 
