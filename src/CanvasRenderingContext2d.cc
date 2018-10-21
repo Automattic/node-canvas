@@ -1222,13 +1222,13 @@ NAN_METHOD(Context2d::DrawImage) {
     float translate_y = 0;
     if (sx < 0) {
       extra_dx = -sx * fx;
-      real_w = sw - sx;
+      real_w = sw + sx;
     } else if (sx + sw > source_w) {
       real_w = sw - (sx + sw - source_w);
     }
     if (sy < 0) {
       extra_dy = -sy * fy;
-      real_h = sh - sy;
+      real_h = sh + sy;
     } else if (sy + sh > source_h) {
       real_h = sh - (sy + sh - source_h);
     }
@@ -1238,7 +1238,7 @@ NAN_METHOD(Context2d::DrawImage) {
     if (real_h > source_h) {
       real_h = source_h;
     }
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, real_w * fx, real_h * fy);
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, round(real_w * fx), round(real_h * fy));
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
     if (sx > 0) {

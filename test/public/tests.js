@@ -1287,26 +1287,15 @@ tests['drawImage issue #1249'] = function (ctx, done) {
   img1.src = imageSrc('chrome.jpg')
 }
 
-tests['drawImage uncommon arguments minus top-left'] = function (ctx, done) {
+tests['drawImage 9 arguments big numbers'] = function (ctx, done) {
   ctx.imageSmoothingEnabled = false;
   var img = new Image()
   img.onload = function () {
-    // we use 60.000 because is over the max canvas allowed
-    ctx.drawImage(img, -100, -100, 180, 180, 10, 10, 80, 80)
-    done(null)
-  }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
-  img.src = imageSrc('face.jpeg')
-}
-
-tests['drawImage uncommon arguments extreme minus top-left'] = function (ctx, done) {
-  ctx.imageSmoothingEnabled = false;
-  var img = new Image()
-  img.onload = function () {
-    // we use 60.000 because is over the max canvas allowed
-    ctx.drawImage(img, -90000, -90000, 90080, 90080, -180000, -180000, 180160, 180160)
+    // we use big numbers because is over the max canvas allowed
+    ctx.drawImage(img, -90000, -90000, 90080, 90080, -180000, -18000, 180160, 18016)
+    ctx.drawImage(img, -90000, -90000, 90040, 90040, -179930, -179930, 180060, 180060)
+    ctx.drawImage(img, -90000, -90000, 90080, 90080, -18000, -180000, 18016, 180160)
+    ctx.drawImage(img, 475, 380, 90000, 90000, 20, 20, 180000, 720000)
     done(null)
   }
   img.onerror = function () {
