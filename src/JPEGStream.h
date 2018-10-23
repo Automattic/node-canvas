@@ -11,6 +11,11 @@
 #include <jpeglib.h>
 #include <jerror.h>
 
+#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
+// jpeg_mem_dest:
+#error("libjpeg-turbo v1.3 or later, or libjpeg v8 or later is required")
+#endif
+
 /*
  * Expanded data destination object for closure output,
  * inspired by IJG's jdatadst.c
