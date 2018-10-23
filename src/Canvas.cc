@@ -39,12 +39,14 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
+  Nan::SetPrototypeMethod(ctor, "flush", Flush);
   Nan::SetPrototypeMethod(ctor, "streamPNGSync", StreamPNGSync);
   Nan::SetPrototypeMethod(ctor, "streamPDFSync", StreamPDFSync);
 #ifdef HAVE_JPEG
   Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
   Nan::SetAccessor(proto, Nan::New("type").ToLocalChecked(), GetType);
+  Nan::SetAccessor(proto, Nan::New("format").ToLocalChecked(), GetFormat);
   Nan::SetAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride);
   Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
   Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
@@ -56,6 +58,16 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetTemplate(proto, "PNG_FILTER_AVG", Nan::New<Uint32>(PNG_FILTER_AVG));
   Nan::SetTemplate(proto, "PNG_FILTER_PAETH", Nan::New<Uint32>(PNG_FILTER_PAETH));
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
+
+  ctor->Set(Nan::New("CAIRO_FORMAT_INVALID").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_INVALID));
+  ctor->Set(Nan::New("CAIRO_FORMAT_ARGB32").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_ARGB32));
+  ctor->Set(Nan::New("CAIRO_FORMAT_RGB24").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_RGB24));
+  ctor->Set(Nan::New("CAIRO_FORMAT_A8").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_A8));
+  ctor->Set(Nan::New("CAIRO_FORMAT_A1").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_A1));
+  ctor->Set(Nan::New("CAIRO_FORMAT_RGB16_565").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_RGB16_565));
+#ifdef CAIRO_FORMAT_RGB30
+  ctor->Set(Nan::New("CAIRO_FORMAT_RGB30").ToLocalChecked(), Nan::New<Uint32>(CAIRO_FORMAT_RGB30));
+#endif
 
   Nan::Set(target, Nan::New("Canvas").ToLocalChecked(), ctor->GetFunction());
 }
@@ -70,15 +82,25 @@ NAN_METHOD(Canvas::New) {
   }
 
   int width = 0, height = 0;
+  unsigned char* data = nullptr;
+  cairo_format_t format = CAIRO_FORMAT_ARGB32;
   canvas_type_t type = CANVAS_TYPE_IMAGE;
   if (info[0]->IsNumber()) width = info[0]->Uint32Value();
   if (info[1]->IsNumber()) height = info[1]->Uint32Value();
-  if (info[2]->IsString()) type = !strcmp("pdf", *String::Utf8Value(info[2]))
-    ? CANVAS_TYPE_PDF
-    : !strcmp("svg", *String::Utf8Value(info[2]))
-      ? CANVAS_TYPE_SVG
-      : CANVAS_TYPE_IMAGE;
-  Canvas *canvas = new Canvas(width, height, type);
+  if (info[2]->IsString()) {
+    type = !strcmp("pdf", *String::Utf8Value(info[2]))
+      ? CANVAS_TYPE_PDF
+      : !strcmp("svg", *String::Utf8Value(info[2]))
+        ? CANVAS_TYPE_SVG
+        : CANVAS_TYPE_IMAGE;
+  } else if (node::Buffer::HasInstance(info[2])) {
+    type = CANVAS_TYPE_IMAGE;
+    data = reinterpret_cast<unsigned char*>(node::Buffer::Data(info[2]));
+  }
+  if (info[3]->IsNumber()) {
+    format = static_cast<cairo_format_t>(info[3]->Uint32Value());
+  }
+  Canvas *canvas = new Canvas(width, height, type, data, format);
   canvas->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
@@ -90,6 +112,15 @@ NAN_METHOD(Canvas::New) {
 NAN_GETTER(Canvas::GetType) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : "image").ToLocalChecked());
+}
+
+/*
+ * Get format string.
+ */
+
+NAN_GETTER(Canvas::GetFormat) {
+  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(canvas->format));
 }
 
 /*
@@ -234,6 +265,19 @@ Canvas::EIO_AfterToBuffer(eio_req *req) {
 #if !NODE_VERSION_AT_LEAST(0, 6, 0)
   return 0;
 #endif
+}
+
+/*
+ * Non-standard.
+ * Flushes the context contents to the backing store.
+ * Useful when an explicit Buffer backing store was passed
+ * in, and you want the Buffer contents to be up-to-date
+ */
+
+NAN_METHOD(Canvas::Flush) {
+  Nan::HandleScope scope;
+  Canvas *canvas = ObjectWrap::Unwrap<Canvas>(info.This());
+  cairo_surface_flush(canvas->surface());
 }
 
 /*
@@ -568,10 +612,11 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
  * Initialize cairo surface.
  */
 
-Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
+Canvas::Canvas(int w, int h, canvas_type_t t, unsigned char* data, cairo_format_t f): Nan::ObjectWrap() {
   type = t;
   width = w;
   height = h;
+  format = f;
   _surface = NULL;
   _closure = NULL;
 
@@ -587,6 +632,10 @@ Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
     cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
     assert(status == CAIRO_STATUS_SUCCESS);
     _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
+  } else if (data) {
+    _surface = cairo_image_surface_create_for_data(data, format, w, h,
+      cairo_format_stride_for_width(format, w));
+    assert(_surface);
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
