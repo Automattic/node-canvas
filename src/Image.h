@@ -84,10 +84,8 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t loadJPEG(FILE *stream);
     void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
-#if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
-#endif
 #endif
     CanvasError errorInfo;
     void loaded();

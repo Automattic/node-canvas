@@ -64,11 +64,9 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   Nan::SetMethod(proto, "getSource", GetSource);
   Nan::SetMethod(proto, "setSource", SetSource);
-#if CAIRO_VERSION_MINOR >= 10
   SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
-#endif
   Nan::Set(target, Nan::New("Image").ToLocalChecked(), ctor->GetFunction());
 }
 
@@ -98,8 +96,6 @@ NAN_GETTER(Image::GetComplete) {
   info.GetReturnValue().Set(Nan::New<Boolean>(Image::COMPLETE == img->state));
 }
 
-#if CAIRO_VERSION_MINOR >= 10
-
 /*
  * Get dataMode.
  */
@@ -120,8 +116,6 @@ NAN_SETTER(Image::SetDataMode) {
     img->data_mode = (data_mode_t) mode;
   }
 }
-
-#endif
 
 /*
  * Get natural width
@@ -293,9 +287,6 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 
   if (isJPEG(data)) {
 #ifdef HAVE_JPEG
-#if CAIRO_VERSION_MINOR < 10
-    return loadJPEGFromBuffer(buf, len);
-#else
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
     if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
     if ((DATA_IMAGE | DATA_MIME) == data_mode) {
@@ -304,7 +295,6 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
       if (status) return status;
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
-#endif // CAIRO_VERSION_MINOR < 10
 #else // HAVE_JPEG
     this->errorInfo.set("node-canvas was built without JPEG support");
     return CAIRO_STATUS_READ_ERROR;
@@ -894,8 +884,6 @@ static void canvas_jpeg_output_message(j_common_ptr cinfo) {
   cjerr->image->errorInfo.set(buff);
 }
 
-#if CAIRO_VERSION_MINOR >= 10
-
 /*
  * Takes a jpeg data buffer and assigns it as mime data to a
  * dummy surface
@@ -1010,8 +998,6 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
     , mime_closure);
 }
 
-#endif
-
 /*
  * Load jpeg from buffer.
  */
@@ -1090,7 +1076,6 @@ Image::loadJPEG(FILE *stream) {
     status = decodeJPEGIntoSurface(&args);
     fclose(stream);
   } else { // We'll need the actual source jpeg data, so read fully.
-#if CAIRO_VERSION_MINOR >= 10
     uint8_t *buf;
     unsigned len;
 
@@ -1123,9 +1108,6 @@ Image::loadJPEG(FILE *stream) {
 
     fclose(stream);
     free(buf);
-#else
-    status = CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   return status;

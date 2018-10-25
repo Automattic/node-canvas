@@ -1310,7 +1310,6 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     // Note: "source-over" and "normal" are synonyms. Chrome and FF both report
     // "source-over" after setting gCO to "normal".
     // case CAIRO_OPERATOR_OVER: op = "normal";
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
     case CAIRO_OPERATOR_MULTIPLY: op = "multiply"; break;
     case CAIRO_OPERATOR_SCREEN: op = "screen"; break;
     case CAIRO_OPERATOR_OVERLAY: op = "overlay"; break;
@@ -1326,7 +1325,6 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     case CAIRO_OPERATOR_HSL_SATURATION: op = "saturation"; break;
     case CAIRO_OPERATOR_HSL_COLOR: op = "color"; break;
     case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "luminosity"; break;
-#endif
     // non-standard:
     case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
   }
@@ -1414,7 +1412,6 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
     {"lighter", CAIRO_OPERATOR_ADD},
     // blend modes:
     {"normal", CAIRO_OPERATOR_OVER},
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
     {"multiply", CAIRO_OPERATOR_MULTIPLY},
     {"screen", CAIRO_OPERATOR_SCREEN},
     {"overlay", CAIRO_OPERATOR_OVERLAY},
@@ -1430,7 +1427,6 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
     {"saturation", CAIRO_OPERATOR_HSL_SATURATION},
     {"color", CAIRO_OPERATOR_HSL_COLOR},
     {"luminosity", CAIRO_OPERATOR_HSL_LUMINOSITY},
-#endif
     // non-standard:
     {"saturate", CAIRO_OPERATOR_SATURATE}
   };
