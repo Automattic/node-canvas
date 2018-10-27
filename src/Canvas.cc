@@ -860,6 +860,7 @@ Canvas::resurface(Local<Object> canvas) {
 		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(Nan::To<Object>(context).ToLocalChecked());
 		cairo_t *prev = context2d->context();
 		context2d->setContext(createCairoContext());
+		context2d->resetState();
 		cairo_destroy(prev);
 	}
 }
