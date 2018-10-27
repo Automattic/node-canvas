@@ -6,6 +6,7 @@
 #include <sstream>
 #include <exception>
 
+#include <v8.h>
 #include <nan.h>
 #include <cairo.h>
 
@@ -28,6 +29,8 @@ class Backend : public Nan::ObjectWrap
     Canvas* canvas;
 
     Backend(string name, int width, int height);
+    static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
+    static Backend *construct(int width, int height){ return nullptr; }
 
   public:
     virtual ~Backend();
