@@ -9,6 +9,17 @@
 #include <pango/pango.h>
 #include <glib.h>
 
+#include <cairo.h>
+#if CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 10, 0)
+// CAIRO_FORMAT_RGB16_565: undeprecated in v1.10.0
+// CAIRO_STATUS_INVALID_SIZE: v1.10.0
+// CAIRO_FORMAT_INVALID: v1.10.0
+// Lots of the compositing operators: v1.10.0
+// JPEG MIME tracking: v1.10.0
+// Note: CAIRO_FORMAT_RGB30 is v1.12.0 and still optional
+#error("cairo v1.10.0 or later is required")
+#endif
+
 #include "Backends.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
