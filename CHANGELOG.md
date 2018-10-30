@@ -1,10 +1,215 @@
-Unreleased / patch
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/) and this
+project adheres to [Semantic Versioning](http://semver.org/).
+
+(Unreleased)
+==================
+### Changed
+### Added
+* Warn when building with old, unsupported versions of cairo or libjpeg.
+
+### Fixed
+
+2.0.0
 ==================
 
+**Upgrading from 1.x**
+```js
+// (1) The Canvas constructor is no longer the default export from the module.
+/* old: */
+const Canvas = require('canvas')
+const mycanvas = new Canvas(width, height)
+/* new: */
+const { createCanvas, Canvas } = require('canvas')
+const mycanvas = createCanvas(width, height)
+mycanvas instanceof Canvas // true
+
+/* old: */
+const Canvas = require('canvas')
+const myimg = new Canvas.Image()
+/* new: */
+const { Image } = require('canvas')
+const myimg = new Image()
+
+// (2) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
+//     goes from 0 to 1 instead of from 0 to 100:
+canvas.createJPEGStream({ quality: 50 }) // old
+canvas.createJPEGStream({ quality: 0.5 }) // new
+
+// (3) The ZLIB compression level and PNG filter options for canvas.toBuffer are
+//     now named instead of positional arguments:
+canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE) // old
+canvas.toBuffer(undefined, { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
+// or specify the mime type explicitly:
+canvas.toBuffer('image/png', { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
+
+// (4) #2 also applies for canvas.pngStream, although these arguments were not
+//     documented:
+canvas.pngStream(3, canvas.PNG_FILTER_NONE) // old
+canvas.pngStream({ compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
+
+// (5) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
+canvas.syncPNGStream() // old
+canvas.createSyncPNGStream() // old
+canvas.createPNGStream() // new
+
+canvas.syncJPEGStream() // old
+canvas.createSyncJPEGStream() // old
+canvas.createJPEGStream() // new
+
+// (6) Context2d.filter has been renamed to context2d.quality to avoid a
+//     conflict with the new standard 'filter' property.
+context.filter = 'best' // old
+context.quality = 'best' // new
+```
+
+### Breaking
+ * Drop support for Node.js <6.x
+ * Remove sync stream functions (bc53059). Note that most streams are still
+   synchronous (run in the main thread); this change just removed `syncPNGStream`
+   and `syncJPEGStream`.
+ * Pango is now *required* on all platforms (7716ae4).
+ * Make the `quality` argument for JPEG output go from 0 to 1 to match HTML spec.
+ * Make the `compressionLevel` and `filters` arguments for `canvas.toBuffer()`
+   named instead of positional. Same for `canvas.pngStream()`, although these
+   arguments were not documented.
+ * See also: *Correct some of the `globalCompositeOperator` types* under
+   **Fixed**. These changes were bug-fixes, but will break existing code relying
+   on the incorrect types.
+ * Rename `context2d.filter` to `context2d.quality` to avoid a conflict with the
+   new standard 'filter' property. Note that the standard 'filter' property is
+   not yet implemented.
+
+### Fixed
+ * Fix build with SVG support enabled (#1123)
+ * Prevent segfaults caused by loading invalid fonts (#1105)
+ * Fix memory leak in font loading
  * Port has_lib.sh to javascript (#872)
- * Support canvas.getContext("2d", {alpha: boolean}) and
-   canvas.getContext("2d", {pixelFormat: "..."})
+ * Correctly sample the edge of images when scaling (#1084)
+ * Detect CentOS libjpeg path (b180ea5)
+ * Improve measureText accuracy (2bbfec5)
+ * Fix memory leak when image callbacks reference the image (1f4b646)
+ * Fix putImageData(data, negative, negative) (2102e25)
+ * Fix SVG recognition when loading from buffer (77749e6)
+ * Re-rasterize SVG when drawing to a context and dimensions changed (79bf232)
+ * Prevent JPEG errors from crashing process (#1124)
+ * Improve handling of invalid arguments (#1129)
+ * Fix repeating patterns when drawing a canvas to itself (#1136)
+ * Prevent segfaults caused by creating a too large canvas
+ * Fix parse-font regex to allow for whitespaces.
+ * Allow assigning non-string values to fillStyle and strokeStyle
+ * Fix drawing zero-width and zero-height images.
+ * Fix DEP0005 deprecation warning
+ * Don't assume `data:` URIs assigned to `img.src` are always base64-encoded
+ * Fix formatting of color strings (e.g. `ctx.fillStyle`) on 32-bit platforms
+ * Explicitly export symbols for the C++ API
+ * Named CSS colors should match case-insensitive
+ * Correct some of the `globalCompositeOperator` types to match the spec:
+     * "hsl-hue" is now "hue"
+     * "hsl-saturation" is now "saturation"
+     * "hsl-color" is now "color"
+     * "hsl-luminosity" is now "luminosity"
+     * "darker" is now "darken"
+     * "dest" is now "destination"
+     * "add" is removed (but is the same as "lighter")
+     * "source" is now "copy"
+ * Provide better, Node.js core-style coded errors for failed sys calls. (For
+   example, provide an error with code 'ENOENT' if setting `img.src` to a path
+   that does not exist.)
+ * Support reading CMYK, YCCK JPEGs.
+ * Hide `Image.prototype.source`
+ * Fix behavior of maxWidth (#1088)
+ * Fix behavior of textAlignment with maxWidth (#1253)
+
+### Added
+ * Prebuilds (#992) with different libc versions to the prebuilt binary (#1140)
+ * Support `canvas.getContext("2d", {alpha: boolean})` and
+   `canvas.getContext("2d", {pixelFormat: "..."})`
  * Support indexed PNG encoding.
+ * Support `currentTransform` (d6714ee)
+ * Export `CanvasGradient` (6a4c0ab)
+ * Support #RGBA , #RRGGBBAA hex colors (10a82ec)
+ * Support maxWidth arg for fill/strokeText (175b40d)
+ * Support image.naturalWidth/Height (a5915f8)
+ * Render SVG img elements when librsvg is available (1baf00e)
+ * Support ellipse method (4d4a726)
+ * Browser-compatible API (6a29a23)
+ * Support for jpeg on Windows (42e9a74)
+ * Support for backends (1a6dffe)
+ * Support for `canvas.toBuffer("image/jpeg")`
+ * Unified configuration options for `canvas.toBuffer()`, `canvas.pngStream()`
+   and `canvas.jpegStream()`
+ * Added `resolution` option for `canvas.toBuffer("image/png")` and
+   `canvas.createPNGStream()`
+ * Support for `canvas.toDataURI("image/jpeg")` (sync)
+ * Support for `img.src = <url>` to match browsers
+ * Support reading data URL on `img.src`
+ * Readme: add dependencies command for OpenBSD
+ * Throw error if calling jpegStream when canvas was not built with JPEG support
+ * Emit error if trying to load GIF, SVG or JPEG image when canvas was not built
+   with support for that format
+
+1.6.x (unreleased)
+==================
+### Fixed
+ * Make setLineDash able to handle full zeroed dashes (b8cf1d7)
+ * Fix reading fillStyle after setting it from gradient to color (a84b2bc)
+
+### Added
+ * Support for pattern repeat and no-repeat (#1066)
+ * Support for context globalAlpha for gradients and patterns (#1064)
+
+1.6.9 / 2017-12-20
+==================
+### Fixed
+ * Fix some instances of crashes (7c9ec58, 8b792c3)
+ * Fix node 0.x compatibility (dca33f7)
+
+1.6.8 / 2017-12-12
+==================
+### Fixed
+ * Faster, more compliant parseFont (4625efa, 37cd969)
+
+1.6.7 / 2017-09-08
+==================
+### Fixed
+ * Minimal backport of #985 (rotated text baselines) (c19edb8)
+
+1.6.6 / 2017-05-03
+==================
+### Fixed
+ * Use .node extension for requiring native module so webpack works (1b05599)
+ * Correct text baseline calculation (#1037)
+
+1.6.5 / 2017-03-18
+==================
+### Changed
+ * Parse font using parse-css-font and units-css (d316416)
+
+1.6.4 / 2017-02-26
+==================
+### Fixed
+ * Make sure Canvas#toDataURL is always async if callback is passed (8586d72)
+
+1.6.3 / 2017-02-14
+==================
+### Fixed
+ * Fix isnan() and isinf() on clang (5941e13)
+
+1.6.2 / 2016-10-30
+==================
+### Fixed
+ * Fix deprecation warnings (c264879)
+ * Bump nan (e4aea20)
+
+1.6.1 / 2016-10-23
+==================
+
+### Fixed
+ * Make has_lib.sh work on BSD OSes (1727d66)
 
 1.6.0 / 2016-10-16
 ==================

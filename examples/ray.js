@@ -82,4 +82,4 @@ render(1)
 
 console.log('Rendered in %s seconds', (new Date() - start) / 1000)
 
-canvas.pngStream().pipe(fs.createWriteStream(path.join(__dirname, 'ray.png')))
+canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'ray.png')))

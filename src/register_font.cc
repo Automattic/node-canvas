@@ -206,12 +206,21 @@ get_pango_font_description(unsigned char* filepath) {
     if (table) {
       char *family = get_family_name(face);
 
-      if (family) pango_font_description_set_family_static(desc, family);
+      if (!family) {
+        pango_font_description_free(desc);
+        FT_Done_Face(face);
+        FT_Done_FreeType(library);
+
+        return NULL;
+      }
+
+      pango_font_description_set_family_static(desc, family);
       pango_font_description_set_weight(desc, get_pango_weight(table->usWeightClass));
       pango_font_description_set_stretch(desc, get_pango_stretch(table->usWidthClass));
       pango_font_description_set_style(desc, get_pango_style(face->style_flags));
 
       FT_Done_Face(face);
+      FT_Done_FreeType(library);
 
       return desc;
     }

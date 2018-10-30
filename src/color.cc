@@ -5,10 +5,13 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 //
 
-#include "color.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <cmath>
 #include <limits>
+#include <string>
+#include <algorithm>
+#include "color.h"
+#include <map>
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -60,7 +63,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
    const char*& str = *pStr;
    const char* startStr = str;
    if (!str || !*str)
-       return false; 
+       return false;
    parsed_t integerPart = 0;
    parsed_t fractionPart = 0;
    int divisorForFraction = 1;
@@ -68,7 +71,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
    int exponent = 0;
    int digits = 0;
    bool inFraction = false;
-  
+
    if (*str == '-') {
        ++str;
        sign = -1;
@@ -83,7 +86,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
           }
           else {
             ++digits;
-          
+
             if (inFraction) {
                 fractionPart = fractionPart*10 + (*str - '0');
                 divisorForFraction *= 10;
@@ -137,7 +140,7 @@ clip(T value, T minValue, T maxValue) {
 /*
  * Wrap value to the range [0, limit]
  */
- 
+
 template <typename T>
 static T
 wrap_float(T value, T limit) {
@@ -186,7 +189,7 @@ parse_degrees(const char** pStr, float *pDegrees) {
  */
 
 static bool
-parse_clipped_percentage(const char** pStr, float *pFraction) { 
+parse_clipped_percentage(const char** pStr, float *pFraction) {
   float percentage;
   bool result = parse_css_number(pStr,&percentage);
   const char*& str = *pStr;
@@ -243,11 +246,7 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 /*
  * Named colors.
  */
-
-static struct named_color {
-  const char *name;
-  uint32_t val;
-} named_colors[] = {
+static const std::map<std::string, uint32_t> named_colors = {
     { "transparent", 0xFFFFFF00}
   , { "aliceblue", 0xF0F8FFFF }
   , { "antiquewhite", 0xFAEBD7FF }
@@ -397,7 +396,6 @@ static struct named_color {
   , { "whitesmoke", 0xF5F5F5FF }
   , { "yellow", 0xFFFF00FF }
   , { "yellowgreen", 0x9ACD32FF }
-  , { NULL, 0 }
 };
 
 /*
@@ -457,16 +455,16 @@ rgba_create(uint32_t rgba) {
 void
 rgba_to_string(rgba_t rgba, char *buf, size_t len) {
   if (1 == rgba.a) {
-    snprintf(buf, len, "#%.2x%.2x%.2x"
-      , (int) (rgba.r * 255)
-      , (int) (rgba.g * 255)
-      , (int) (rgba.b * 255));
+    snprintf(buf, len, "#%.2x%.2x%.2x",
+      static_cast<int>(round(rgba.r * 255)),
+      static_cast<int>(round(rgba.g * 255)),
+      static_cast<int>(round(rgba.b * 255)));
   } else {
-    snprintf(buf, len, "rgba(%d, %d, %d, %.2f)"
-      , (int) (rgba.r * 255)
-      , (int) (rgba.g * 255)
-      , (int) (rgba.b * 255)
-      , rgba.a);
+    snprintf(buf, len, "rgba(%d, %d, %d, %.2f)",
+      static_cast<int>(round(rgba.r * 255)),
+      static_cast<int>(round(rgba.g * 255)),
+      static_cast<int>(round(rgba.b * 255)),
+      rgba.a);
   }
 }
 
@@ -699,7 +697,7 @@ rgba_from_hsl_string(const char *str, short *ok) {
 
 /*
  * Return rgb from:
- *  
+ *
  *  - "#RGB"
  *  - "#RGBA"
  *  - "#RRGGBB"
@@ -726,18 +724,18 @@ rgba_from_hex_string(const char *str, short *ok) {
 
 static int32_t
 rgba_from_name_string(const char *str, short *ok) {
-  int i = 0;
-  struct named_color color;
-  while ((color = named_colors[i++]).name) {
-    if (*str == *color.name && 0 == strcmp(str, color.name))
-      return *ok = 1, color.val;
+  std::string lowered(str);
+  std::transform(lowered.begin(), lowered.end(), lowered.begin(), tolower);
+  auto color = named_colors.find(lowered);
+  if (color != named_colors.end()) {
+    return *ok = 1, color->second;
   }
   return *ok = 0;
 }
 
 /*
  * Return rgb from:
- *  
+ *
  *  - #RGB
  *  - #RGBA
  *  - #RRGGBB
@@ -752,7 +750,7 @@ rgba_from_name_string(const char *str, short *ok) {
 
 int32_t
 rgba_from_string(const char *str, short *ok) {
-  if ('#' == str[0]) 
+  if ('#' == str[0])
     return rgba_from_hex_string(++str, ok);
   if (str == strstr(str, "rgba"))
     return rgba_from_rgba_string(str, ok);

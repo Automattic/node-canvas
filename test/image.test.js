@@ -7,14 +7,17 @@
  */
 
 const loadImage = require('../').loadImage
-const Image = require('../').Image;
+const Image = require('../').Image
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
+const fs = require('fs')
 
 const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
+const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
+const svg_tree = `${__dirname}/fixtures/tree.svg`
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -37,6 +40,21 @@ describe('Image', function () {
     })
   })
 
+  it('loads JPEG data URL', function () {
+    const base64Encoded = fs.readFileSync(jpg_face, 'base64')
+    const dataURL = `data:image/png;base64,${base64Encoded}`
+
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+
+      assert.strictEqual(img.src, dataURL)
+      assert.strictEqual(img.width, 485)
+      assert.strictEqual(img.height, 401)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
   it('loads PNG image', function () {
     return loadImage(png_clock).then((img) => {
       assert.strictEqual(img.onerror, null)
@@ -45,6 +63,45 @@ describe('Image', function () {
       assert.strictEqual(img.src, png_clock)
       assert.strictEqual(img.width, 320)
       assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads PNG data URL', function () {
+    const base64Encoded = fs.readFileSync(png_clock, 'base64')
+    const dataURL = `data:image/png;base64,${base64Encoded}`
+
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+
+      assert.strictEqual(img.src, dataURL)
+      assert.strictEqual(img.width, 320)
+      assert.strictEqual(img.height, 320)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL base64', function () {
+    const base64Enc = fs.readFileSync(svg_tree, 'base64')
+    const dataURL = `data:image/svg+xml;base64,${base64Enc}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL utf8', function () {
+    const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
+    const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
+      return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
       assert.strictEqual(img.complete, true)
     })
   })
@@ -79,6 +136,26 @@ describe('Image', function () {
 
   it('handles errors', function () {
     return assertRejects(loadImage(`${png_clock}fail`), Error)
+  })
+
+  it('returns a nice, coded error for fopen failures', function (done) {
+    const img = new Image()
+    img.onerror = err => {
+      assert.equal(err.code, 'ENOENT')
+      assert.equal(err.path, 'path/to/nothing')
+      assert.equal(err.syscall, 'fopen')
+      done()
+    }
+    img.src = 'path/to/nothing'
+  })
+
+  it('captures errors from libjpeg', function (done) {
+    const img = new Image()
+    img.onerror = err => {
+      assert.equal(err.message, "JPEG datastream contains no image")
+      done()
+    }
+    img.src = `${__dirname}/fixtures/159-crash1.jpg`
   })
 
   it('calls Image#onerror multiple times', function () {
@@ -126,7 +203,7 @@ describe('Image', function () {
 
       img.onerror = () => { onerrorCalled += 1 }
 
-      img.src = new Buffer(0)
+      img.src = Buffer.alloc(0)
       assert.strictEqual(img.width, 0)
       assert.strictEqual(img.height, 0)
 
@@ -187,4 +264,40 @@ describe('Image', function () {
       assert.strictEqual(onerrorCalled, 0)
     })
   })
+
+  it('does not crash on invalid images', function () {
+    function withIncreasedByte (source, index) {
+      const copy = source.slice(0)
+
+      copy[index] += 1
+
+      return copy
+    }
+
+    const source = fs.readFileSync(jpg_chrome)
+
+    const corruptSources = [
+      withIncreasedByte(source, 0),
+      withIncreasedByte(source, 1),
+      withIncreasedByte(source, 1060),
+      withIncreasedByte(source, 1061),
+      withIncreasedByte(source, 1062),
+      withIncreasedByte(source, 1063),
+      withIncreasedByte(source, 1064),
+      withIncreasedByte(source, 1065),
+      withIncreasedByte(source, 1066),
+      withIncreasedByte(source, 1067),
+      withIncreasedByte(source, 1068),
+      withIncreasedByte(source, 1069)
+    ]
+
+    return Promise.all(corruptSources.map(src => loadImage(src).catch(() => null)))
+  })
+
+  it('does not contain `source` property', function () {
+    var keys = Reflect.ownKeys(Image.prototype);
+    assert.ok(!keys.includes('source'));
+    assert.ok(!keys.includes('getSource'));
+    assert.ok(!keys.includes('setSource'));
+  });
 })

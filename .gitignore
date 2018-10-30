@@ -10,6 +10,7 @@ out.pdf
 out.svg
 .pomo
 node_modules
+package-lock.json
 
 # Vim cruft
 *.swp

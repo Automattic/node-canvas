@@ -17,6 +17,7 @@
 #include <cairo.h>
 #include <nan.h>
 
+#include "dll_visibility.h"
 #include "backend/Backend.h"
 
 
@@ -63,22 +64,23 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
     static Local<Value> Error(cairo_status_t status);
-    static void ToBufferAsync(uv_work_t *req);
+    static void ToPngBufferAsync(uv_work_t *req);
+    static void ToJpegBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
-    inline Backend* backend() { return _backend; }
-    inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+    DLL_PUBLIC inline Backend* backend() { return _backend; }
+    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->getSurface(); }
     cairo_t* createCairoContext();
 
-    inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
-    inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    inline int nBytes(){ return getHeight() * stride(); }
+    DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
+    DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
+    DLL_PUBLIC inline int nBytes(){ return getHeight() * stride(); }
 
-    inline int getWidth() { return backend()->getWidth(); }
-    inline int getHeight() { return backend()->getHeight(); }
+    DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
+    DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
 
     Canvas(Backend* backend);
     void resurface(Local<Object> canvas);
