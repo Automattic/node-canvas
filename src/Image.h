@@ -62,6 +62,7 @@ class Image: public Nan::ObjectWrap {
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
     static int isSVG(uint8_t *data, unsigned len);
+    static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
     cairo_surface_t *surface();
@@ -87,6 +88,8 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
 #endif
+    cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadBMP(FILE *stream);
     CanvasError errorInfo;
     void loaded();
     cairo_status_t load();

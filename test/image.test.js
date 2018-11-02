@@ -6,7 +6,7 @@
  * Module dependencies.
  */
 
-const loadImage = require('../').loadImage
+const {createCanvas, loadImage} = require('../');
 const Image = require('../').Image
 
 const assert = require('assert')
@@ -18,6 +18,9 @@ const png_clock = `${__dirname}/fixtures/clock.png`
 const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
 const svg_tree = `${__dirname}/fixtures/tree.svg`
+const bmp_1bit = `${__dirname}/fixtures/bmp/1-bit.bmp`;
+const bmp_24bit = `${__dirname}/fixtures/bmp/24-bit.bmp`;
+const bmp_32bit = `${__dirname}/fixtures/bmp/32-bit.bmp`;
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -299,5 +302,89 @@ describe('Image', function () {
     assert.ok(!keys.includes('source'));
     assert.ok(!keys.includes('getSource'));
     assert.ok(!keys.includes('setSource'));
+  });
+
+  describe('supports BMP', function () {
+    it('parses 1-bit', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 111);
+        assert.strictEqual(img.height, 72);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = bmp_1bit;
+    });
+
+    it('parses 24-bit', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 2);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          0, 0, 255, 255,
+          0, 255, 0, 255,
+          255, 0, 0, 255,
+          255, 255, 255, 255,
+        ]);
+
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = bmp_24bit;
+    });
+
+    it('parses 32-bit', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 4);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          0, 0, 255, 255,
+          0, 255, 0, 255,
+          255, 0, 0, 255,
+          255, 255, 255, 255,
+          0, 0, 255, 127,
+          0, 255, 0, 127,
+          255, 0, 0, 127,
+          255, 255, 255, 127,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = fs.readFileSync(bmp_32bit); // Also tests loading from buffer
+    });
+
+    it('catches BMP errors', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        throw new Error('Invalid image should not be loaded properly');
+      };
+
+      img.onerror = err => {
+        let msg = 'Error while processing file header - unexpected end of file';
+        assert.strictEqual(err.message, msg);
+        done();
+      };
+
+      img.src = Buffer.from('BM');
+    });
+
+    function testImgd(img, data){
+      let ctx = createCanvas(img.width, img.height).getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var actualData = ctx.getImageData(0, 0, img.width, img.height).data;
+      assert.strictEqual(String(actualData), String(data));
+    }
   });
 })

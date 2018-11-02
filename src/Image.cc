@@ -12,6 +12,7 @@
 #include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
+#include "bmp/BMPParser.h"
 
 #ifdef HAVE_GIF
 typedef struct {
@@ -313,6 +314,9 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 #endif
   }
 
+  if (isBMP(buf, len))
+    return loadBMPFromBuffer(buf, len);
+
   this->errorInfo.set("Unsupported image type");
   return CAIRO_STATUS_READ_ERROR;
 }
@@ -488,6 +492,9 @@ Image::loadSurface() {
     return CAIRO_STATUS_READ_ERROR;
 #endif
   }
+
+  if (isBMP(buf, 2))
+    return loadBMP(stream);
 
   fclose(stream);
 
@@ -1224,6 +1231,77 @@ Image::loadSVG(FILE *stream) {
 #endif /* HAVE_RSVG */
 
 /*
+ * Load BMP from buffer.
+ */
+
+cairo_status_t Image::loadBMPFromBuffer(uint8_t *buf, unsigned len){
+  BMPParser::Parser parser;
+
+  // Reversed ARGB32 with pre-multiplied alpha
+  uint8_t pixFmt[5] = {2, 1, 0, 3, 1};
+  parser.parse(buf, len, pixFmt);
+
+  if (parser.getStatus() != BMPParser::Status::OK) {
+    errorInfo.reset();
+    errorInfo.message = parser.getErrMsg();
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  width = naturalWidth = parser.getWidth();
+  height = naturalHeight = parser.getHeight();
+  uint8_t *data = parser.getImgd();
+
+  _surface = cairo_image_surface_create_for_data(
+    data,
+    CAIRO_FORMAT_ARGB32,
+    width,
+    height,
+    cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width)
+  );
+
+  // No need to delete the data
+  cairo_status_t status = cairo_surface_status(_surface);
+  if (status) return status;
+
+  _data = data;
+  parser.clearImgd();
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+/*
+ * Load BMP.
+ */
+
+cairo_status_t Image::loadBMP(FILE *stream){
+  struct stat s;
+  int fd = fileno(stream);
+
+  // Stat
+  if (fstat(fd, &s) < 0) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  uint8_t *buf = new uint8_t[s.st_size];
+
+  if (!buf) {
+    fclose(stream);
+    errorInfo.set(NULL, "malloc", errno);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t read = fread(buf, s.st_size, 1, stream);
+  fclose(stream);
+
+  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
+  if (read == 1) result = loadBMPFromBuffer(buf, s.st_size);
+  delete[] buf;
+
+  return result;
+}
+
+/*
  * Return UNKNOWN, SVG, GIF, JPEG, or PNG based on the filename.
  */
 
@@ -1285,4 +1363,19 @@ Image::isSVG(uint8_t *data, unsigned len) {
     }
   }
   return false;
+}
+
+/*
+ * Check for valid BMP signatures
+ */
+
+int Image::isBMP(uint8_t *data, unsigned len) {
+  if(len < 2) return false;
+  string sig = string(1, (char)data[0]) + (char)data[1];
+  return sig == "BM" ||
+         sig == "BA" ||
+         sig == "CI" ||
+         sig == "CP" ||
+         sig == "IC" ||
+         sig == "PT";
 }
