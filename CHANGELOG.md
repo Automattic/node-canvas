@@ -9,9 +9,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
-* Warn when building with old, unsupported versions of cairo or libjpeg.
-
 ### Fixed
+
+2.1.0
+==================
+### Added
+* Warn when building with old, unsupported versions of cairo or libjpeg.
 
 2.0.0
 ==================
