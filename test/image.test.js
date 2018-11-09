@@ -21,6 +21,7 @@ const svg_tree = `${__dirname}/fixtures/tree.svg`
 const bmp_1bit = `${__dirname}/fixtures/bmp/1-bit.bmp`;
 const bmp_24bit = `${__dirname}/fixtures/bmp/24-bit.bmp`;
 const bmp_32bit = `${__dirname}/fixtures/bmp/32-bit.bmp`;
+const bmp_min = `${__dirname}/fixtures/bmp/min.bmp`;
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -305,7 +306,7 @@ describe('Image', function () {
   });
 
   describe('supports BMP', function () {
-    it('parses 1-bit', function (done) {
+    it('parses 1-bit image', function (done) {
       let img = new Image();
 
       img.onload = () => {
@@ -318,7 +319,7 @@ describe('Image', function () {
       img.src = bmp_1bit;
     });
 
-    it('parses 24-bit', function (done) {
+    it('parses 24-bit image', function (done) {
       let img = new Image();
 
       img.onload = () => {
@@ -339,7 +340,7 @@ describe('Image', function () {
       img.src = bmp_24bit;
     });
 
-    it('parses 32-bit', function (done) {
+    it('parses 32-bit image', function (done) {
       let img = new Image();
 
       img.onload = () => {
@@ -362,6 +363,24 @@ describe('Image', function () {
 
       img.onerror = err => { throw err; };
       img.src = fs.readFileSync(bmp_32bit); // Also tests loading from buffer
+    });
+
+    it('parses minimal BMP', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 1);
+        assert.strictEqual(img.height, 1);
+
+        testImgd(img, [
+          255, 0, 0, 255,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = fs.readFileSync(bmp_min);
     });
 
     it('catches BMP errors', function (done) {

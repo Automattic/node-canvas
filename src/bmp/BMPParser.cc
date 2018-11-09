@@ -85,30 +85,33 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   // Start parsing DIB header
   setOp("DIB header");
 
+  // Prepare some variables in case they are needed
+  uint32_t compr = 0;
+  uint32_t redMask = 0, greenMask = 0, blueMask = 0, alphaMask = 0;
+
   /**
    * Type of the DIB (device-independent bitmap) header
    * is determined by its size. Most BMP files use BITMAPINFOHEADER.
    */
   auto dibSize = U4();
   temp = "DIB header";
-  EU(dibSize == 12, temp + " \"BITMAPCOREHEADER\"");
   EU(dibSize == 64, temp + " \"OS22XBITMAPHEADER\"");
   EU(dibSize == 16, temp + " \"OS22XBITMAPHEADER\"");
   EU(dibSize == 52, temp + " \"BITMAPV2INFOHEADER\"");
   EU(dibSize == 56, temp + " \"BITMAPV3INFOHEADER\"");
   EU(dibSize == 124, temp + " \"BITMAPV5HEADER\"");
 
-  // BITMAPINFOHEADER and BITMAPV4HEADER
-  auto isDibValid = dibSize == 40 || dibSize == 108;
+  // BITMAPCOREHEADER, BITMAPINFOHEADER, BITMAPV4HEADER
+  auto isDibValid = dibSize == 12 || dibSize == 40 || dibSize == 108;
   EX(!isDibValid, temp);
 
   // Image width (specification allows non-positive values)
-  w = I4();
+  w = dibSize == 12 ? U2() : I4();
   EU(w <= 0, "non-positive image width");
   E(w > MAX_IMG_SIZE, "too large image width");
 
   // Image height (specification allows non-positive values)
-  h = I4();
+  h = dibSize == 12 ? U2() : I4();
   EU(h <= 0, "non-positive image height");
   E(h > MAX_IMG_SIZE, "too large image height");
 
@@ -120,73 +123,72 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   auto isBppValid = bpp == 1  || bpp == 24 || bpp == 32;
   EU(!isBppValid, "color depth");
 
-  // Compression type
-  auto compr = U4();
-  temp = "compression type";
-  EU(compr == 1, temp + " \"BI_RLE8\"");
-  EU(compr == 2, temp + " \"BI_RLE4\"");
-  EU(compr == 4, temp + " \"BI_JPEG\"");
-  EU(compr == 5, temp + " \"BI_PNG\"");
-  EU(compr == 6, temp + " \"BI_ALPHABITFIELDS\"");
-  EU(compr == 11, temp + " \"BI_CMYK\"");
-  EU(compr == 12, temp + " \"BI_CMYKRLE8\"");
-  EU(compr == 13, temp + " \"BI_CMYKRLE4\"");
-
-  // BI_RGB and BI_BITFIELDS
-  auto isComprValid = compr == 0 || compr == 3;
-  EX(!isComprValid, temp);
-  
-  // Also ensure that BI_BITFIELDS appears only with BITMAPV4HEADER and 32-bit colors
-  if(compr == 3){
-    E(dibSize != 108, "compression BI_BITFIELDS can be used only with BITMAPV4HEADER");
-    E(bpp != 32, "compression BI_BITFIELDS can be used only with 32-bit color depth");
-  }
-
   // Calculate image data size and padding
   uint32_t expectedImgdSize = (((w * bpp + 31) >> 5) << 2) * h;
   uint32_t rowPadding = (-w * bpp & 31) >> 3;
 
-  // Size of the image data
-  auto imgdSize = U4();
-  if(!imgdSize)
-    // Value 0 is allowed for BI_RGB compression type
-    imgdSize = expectedImgdSize;
-  else
-    E(imgdSize != expectedImgdSize, "inconsistent image data size");
+  if(dibSize == 40 || dibSize == 108){
+    // Compression type
+    compr = U4();
+    temp = "compression type";
+    EU(compr == 1, temp + " \"BI_RLE8\"");
+    EU(compr == 2, temp + " \"BI_RLE4\"");
+    EU(compr == 4, temp + " \"BI_JPEG\"");
+    EU(compr == 5, temp + " \"BI_PNG\"");
+    EU(compr == 6, temp + " \"BI_ALPHABITFIELDS\"");
+    EU(compr == 11, temp + " \"BI_CMYK\"");
+    EU(compr == 12, temp + " \"BI_CMYKRLE8\"");
+    EU(compr == 13, temp + " \"BI_CMYKRLE4\"");
 
-  // Horizontal and vertical resolution (ignored)
-  skip(8);
-
-  // Number of colors in the palette or 0 if no palette is present
-  auto palColNum = U4();
-  EU(palColNum, "non-empty color palette");
-
-  // Number of important colors used or 0 if all colors are important
-  auto impCols = U4();
-  EU(impCols, "non-zero important colors");
-
-  // Prepare masks in case they are needed
-  uint32_t redMask = 0, greenMask = 0, blueMask = 0, alphaMask = 0;
-
-  // BITMAPV4HEADER has additional properties
-  if(dibSize == 108){
-    // If BI_BITFIELDS are used, calculate masks, otherwise ignore them
+    // BI_RGB and BI_BITFIELDS
+    auto isComprValid = compr == 0 || compr == 3;
+    EX(!isComprValid, temp);
+    
+    // Also ensure that BI_BITFIELDS appears only with BITMAPV4HEADER and 32-bit colors
     if(compr == 3){
-      // Convert each mask to bit offset for faster shifting
-      CALC_MASK(red);
-      CALC_MASK(green);
-      CALC_MASK(blue);
-      CALC_MASK(alpha);
-    }else{
-      skip(16);
+      E(dibSize != 108, "compression BI_BITFIELDS can be used only with BITMAPV4HEADER");
+      E(bpp != 32, "compression BI_BITFIELDS can be used only with 32-bit color depth");
     }
 
-    // Encure that the color space is LCS_WINDOWS_COLOR_SPACE
-    string colSpace = getStr(4, 1);
-    EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+    // Size of the image data
+    auto imgdSize = U4();
+    if(!imgdSize)
+      // Value 0 is allowed for BI_RGB compression type
+      imgdSize = expectedImgdSize;
+    else
+      E(imgdSize != expectedImgdSize, "inconsistent image data size");
 
-    // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
-    skip(48);
+    // Horizontal and vertical resolution (ignored)
+    skip(8);
+
+    // Number of colors in the palette or 0 if no palette is present
+    auto palColNum = U4();
+    EU(palColNum, "non-empty color palette");
+
+    // Number of important colors used or 0 if all colors are important
+    auto impCols = U4();
+    EU(impCols, "non-zero important colors");
+
+    // BITMAPV4HEADER has additional properties
+    if(dibSize == 108){
+      // If BI_BITFIELDS are used, calculate masks, otherwise ignore them
+      if(compr == 3){
+        // Convert each mask to bit offset for faster shifting
+        CALC_MASK(red);
+        CALC_MASK(green);
+        CALC_MASK(blue);
+        CALC_MASK(alpha);
+      }else{
+        skip(16);
+      }
+
+      // Encure that the color space is LCS_WINDOWS_COLOR_SPACE
+      string colSpace = getStr(4, 1);
+      EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+
+      // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
+      skip(48);
+    }
   }
 
   /**
