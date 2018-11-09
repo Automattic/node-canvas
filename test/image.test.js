@@ -12,16 +12,14 @@ const Image = require('../').Image
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
 const fs = require('fs')
+const path = require('path')
 
 const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
 const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
 const svg_tree = `${__dirname}/fixtures/tree.svg`
-const bmp_1bit = `${__dirname}/fixtures/bmp/1-bit.bmp`;
-const bmp_24bit = `${__dirname}/fixtures/bmp/24-bit.bmp`;
-const bmp_32bit = `${__dirname}/fixtures/bmp/32-bit.bmp`;
-const bmp_min = `${__dirname}/fixtures/bmp/min.bmp`;
+const bmp_dir = `${__dirname}/fixtures/bmp`
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -316,7 +314,7 @@ describe('Image', function () {
       };
 
       img.onerror = err => { throw err; };
-      img.src = bmp_1bit;
+      img.src = path.join(bmp_dir, '1-bit.bmp');
     });
 
     it('parses 24-bit image', function (done) {
@@ -337,7 +335,7 @@ describe('Image', function () {
       };
 
       img.onerror = err => { throw err; };
-      img.src = bmp_24bit;
+      img.src = path.join(bmp_dir, '24-bit.bmp');
     });
 
     it('parses 32-bit image', function (done) {
@@ -362,7 +360,7 @@ describe('Image', function () {
       };
 
       img.onerror = err => { throw err; };
-      img.src = fs.readFileSync(bmp_32bit); // Also tests loading from buffer
+      img.src = fs.readFileSync(path.join(bmp_dir, '32-bit.bmp')); // Also tests loading from buffer
     });
 
     it('parses minimal BMP', function (done) {
@@ -380,7 +378,26 @@ describe('Image', function () {
       };
 
       img.onerror = err => { throw err; };
-      img.src = fs.readFileSync(bmp_min);
+      img.src = path.join(bmp_dir, 'min.bmp');
+    });
+
+    it('properly handles negative height', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 1);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          255, 0, 0, 255,
+          0, 255, 0, 255,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'negative-height.bmp');
     });
 
     it('catches BMP errors', function (done) {
@@ -397,6 +414,20 @@ describe('Image', function () {
       };
 
       img.src = Buffer.from('BM');
+    });
+
+    it('BMP bomb', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        throw new Error('Invalid image should not be loaded properly');
+      };
+
+      img.onerror = err => {
+        done();
+      };
+
+      img.src = path.join(bmp_dir, 'bomb.bmp');
     });
 
     function testImgd(img, data){

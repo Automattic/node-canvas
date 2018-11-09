@@ -10,10 +10,9 @@
 #include <string>
 #include <cassert>
 
-using namespace std;
-
 namespace BMPParser{
   typedef uint8_t byte;
+  typedef std::string string;
 
   enum Status{
     EMPTY,
@@ -48,6 +47,7 @@ namespace BMPParser{
     string op;
 
     template <typename T> T get();
+    template <typename T> T getc();
     string getStr(int len, bool reverse=false);
     void skip(int len);
 

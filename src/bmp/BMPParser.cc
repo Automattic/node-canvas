@@ -9,12 +9,14 @@ using namespace BMPParser;
 #define EU(cond, msg) if(cond) return setErrUnsupported(msg)
 #define EX(cond, msg) if(cond) return setErrUnknown(msg)
 
-#define I1() get<char>()
-#define U1() get<byte>()
-#define I2() get<int16_t>()
-#define U2() get<uint16_t>()
-#define I4() get<int32_t>()
-#define U4() get<uint32_t>()
+#define GET_METHOD get
+
+#define I1() GET_METHOD<char>()
+#define U1() GET_METHOD<byte>()
+#define I2() GET_METHOD<int16_t>()
+#define U2() GET_METHOD<uint16_t>()
+#define I4() GET_METHOD<int32_t>()
+#define U4() GET_METHOD<uint32_t>()
 
 #define CALC_MASK(col) \
   col##Mask = U4(); \
@@ -24,7 +26,7 @@ using namespace BMPParser;
   else if(col##Mask == 0xff000000u) col##Mask = 24; \
   else EU(1, #col " mask");
 
-#define CHECK_OVERFLOW(size, type) \
+#define CHECK_OVERRUN(size, type) \
   if(ptr + (size) - data > len){ \
     setErr("unexpected end of file"); \
     return type(); \
@@ -105,15 +107,19 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   auto isDibValid = dibSize == 12 || dibSize == 40 || dibSize == 108;
   EX(!isDibValid, temp);
 
-  // Image width (specification allows non-positive values)
+  // Image width
   w = dibSize == 12 ? U2() : I4();
-  EU(w <= 0, "non-positive image width");
+  E(!w, "image width is 0");
+  E(w < 0, "negative image width");
   E(w > MAX_IMG_SIZE, "too large image width");
 
-  // Image height (specification allows non-positive values)
+  // Image height (specification allows negative values)
   h = dibSize == 12 ? U2() : I4();
-  EU(h <= 0, "non-positive image height");
+  E(!h, "image height is 0");
   E(h > MAX_IMG_SIZE, "too large image height");
+
+  bool isHeightNegative = h < 0;
+  if(isHeightNegative) h = -h;
 
   // Number of color planes (must be 1)
   E(U2() != 1, "number of color planes must be 1");
@@ -126,6 +132,7 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   // Calculate image data size and padding
   uint32_t expectedImgdSize = (((w * bpp + 31) >> 5) << 2) * h;
   uint32_t rowPadding = (-w * bpp & 31) >> 3;
+  uint32_t imgdSize = 0;
 
   if(dibSize == 40 || dibSize == 108){
     // Compression type
@@ -151,12 +158,7 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
     }
 
     // Size of the image data
-    auto imgdSize = U4();
-    if(!imgdSize)
-      // Value 0 is allowed for BI_RGB compression type
-      imgdSize = expectedImgdSize;
-    else
-      E(imgdSize != expectedImgdSize, "inconsistent image data size");
+    imgdSize = U4();
 
     // Horizontal and vertical resolution (ignored)
     skip(8);
@@ -195,14 +197,38 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
    * Skip to the image data. There may be other chunks between,
    * but they are optional.
    */
+  E(ptr - data > imgdOffset, "image data overlaps with another structure");
   ptr = data + imgdOffset;
 
   // Start parsing image data
   setOp("image data");
 
-  // Allocate RGBA image data array
+  if(!imgdSize){
+    // Value 0 is allowed only for BI_RGB compression type
+    E(compr != 0, "missing image data size");
+    imgdSize = expectedImgdSize;
+  }else{
+    E(imgdSize != expectedImgdSize, "inconsistent image data size");
+  }
+
+  // Ensure that all image data is present
+  E(ptr - data + imgdSize > len, "no enough image data");
+
+  // Direction of reading rows
+  int yStart = h - 1;
+  int yEnd = -1;
+  int dy = isHeightNegative ? 1 : -1;
+
+  // In case of negative height, read rows backward
+  if(isHeightNegative){
+    yStart = 0;
+    yEnd = h;
+  }
+
+  // Allocate output image data array
   int buffLen = w * h << 2;
-  imgd = new byte[buffLen];
+  imgd = new (nothrow) byte[buffLen];
+  E(!imgd, "unable to allocate memory");
 
   // Prepare color valus
   byte color[4] = {0};
@@ -214,14 +240,18 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   // Check if pre-multiplied alpha is used
   bool premul = format ? format[4] : 0;
 
-  // Bitmap data starts at the lower left corner
-  for(int y = h - 1; y != -1; y--){
+  // Don't perform overrun checks in the loop
+  #undef GET_METHOD
+  #define GET_METHOD getc
+
+  // Main loop
+  for(int y = yStart; y != yEnd; y += dy){
     // Use in-byte offset for bpp < 8
     byte colOffset = 0;
     byte cval = 0;
 
     for(int x = 0; x != w; x++){
-      // Index in the RGBA image data
+      // Index in the output image data
       int i = (x + y * w) << 2;
 
       switch(compr){
@@ -294,6 +324,13 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
     skip(rowPadding);
   }
 
+  // Enable checks again in case some method needs them in the future
+  #undef GET_METHOD
+  #define GET_METHOD get
+
+  if(status == Status::ERROR)
+    return;
+
   E(ptr - data != len, "extra data found at the end of file");
   status = Status::OK;
 };
@@ -309,14 +346,20 @@ string Parser::getErrMsg() const{
 }
 
 template <typename T> T Parser::get(){
-  CHECK_OVERFLOW(sizeof(T), T);
+  CHECK_OVERRUN(sizeof(T), T);
+  T val = *(T*)ptr;
+  ptr += sizeof(T);
+  return val;
+}
+
+template <typename T> T Parser::getc(){
   T val = *(T*)ptr;
   ptr += sizeof(T);
   return val;
 }
 
 string Parser::getStr(int size, bool reverse){
-  CHECK_OVERFLOW(size, string);
+  CHECK_OVERRUN(size, string);
   string val = "";
 
   while(size--){
@@ -328,7 +371,7 @@ string Parser::getStr(int size, bool reverse){
 }
 
 void Parser::skip(int size){
-  CHECK_OVERFLOW(size, void);
+  CHECK_OVERRUN(size, void);
   ptr += size;
 }
 
