@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "BMPParser.h"
 
 using namespace std;
@@ -9,14 +11,19 @@ using namespace BMPParser;
 #define EU(cond, msg) if(cond) return setErrUnsupported(msg)
 #define EX(cond, msg) if(cond) return setErrUnknown(msg)
 
-#define GET_METHOD get
+#define I1() get<char>()
+#define U1() get<uint8_t>()
+#define I2() get<int16_t>()
+#define U2() get<uint16_t>()
+#define I4() get<int32_t>()
+#define U4() get<uint32_t>()
 
-#define I1() GET_METHOD<char>()
-#define U1() GET_METHOD<byte>()
-#define I2() GET_METHOD<int16_t>()
-#define U2() GET_METHOD<uint16_t>()
-#define I4() GET_METHOD<int32_t>()
-#define U4() GET_METHOD<uint32_t>()
+#define I1UC() get<char, false>()
+#define U1UC() get<uint8_t, false>()
+#define I2UC() get<int16_t, false>()
+#define U2UC() get<uint16_t, false>()
+#define I4UC() get<int32_t, false>()
+#define U4UC() get<uint32_t, false>()
 
 #define CALC_MASK(col) \
   col##Mask = U4(); \
@@ -32,20 +39,6 @@ using namespace BMPParser;
     return type(); \
   }
 
-Parser::Parser(){
-  status = Status::EMPTY;
-
-  w = 0;
-  h = 0;
-
-  data = nullptr;
-  ptr = nullptr;
-  imgd = nullptr;
-
-  op = "";
-  err = "";
-}
-
 Parser::~Parser(){
   data = nullptr;
   ptr = nullptr;
@@ -56,7 +49,7 @@ Parser::~Parser(){
   }
 }
 
-void Parser::parse(byte *buf, int bufSize, byte *format){
+void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   assert(status == Status::EMPTY);
 
   data = ptr = buf;
@@ -76,7 +69,7 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   EX(fhSig != "BM", temp); // BM
 
   // Length of the file should be equal to `len`
-  E(U4() != (uint32_t)len, "inconsistent file size");
+  E(U4() != static_cast<uint32_t>(len), "inconsistent file size");
 
   // Skip unused values
   skip(4);
@@ -212,7 +205,7 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
   }
 
   // Ensure that all image data is present
-  E(ptr - data + imgdSize > len, "no enough image data");
+  E(ptr - data + imgdSize > len, "not enough image data");
 
   // Direction of reading rows
   int yStart = h - 1;
@@ -227,28 +220,24 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
 
   // Allocate output image data array
   int buffLen = w * h << 2;
-  imgd = new (nothrow) byte[buffLen];
+  imgd = new (nothrow) uint8_t[buffLen];
   E(!imgd, "unable to allocate memory");
 
   // Prepare color valus
-  byte color[4] = {0};
-  byte &red = color[0];
-  byte &green = color[1];
-  byte &blue = color[2];
-  byte &alpha = color[3];
+  uint8_t color[4] = {0};
+  uint8_t &red = color[0];
+  uint8_t &green = color[1];
+  uint8_t &blue = color[2];
+  uint8_t &alpha = color[3];
 
   // Check if pre-multiplied alpha is used
   bool premul = format ? format[4] : 0;
 
-  // Don't perform overrun checks in the loop
-  #undef GET_METHOD
-  #define GET_METHOD getc
-
   // Main loop
   for(int y = yStart; y != yEnd; y += dy){
     // Use in-byte offset for bpp < 8
-    byte colOffset = 0;
-    byte cval = 0;
+    uint8_t colOffset = 0;
+    uint8_t cval = 0;
 
     for(int x = 0; x != w; x++){
       // Index in the output image data
@@ -259,30 +248,30 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
           switch(bpp){
             case 1:
               if(colOffset) ptr--;
-              cval = (U1() >> (7 - colOffset)) & 1;
+              cval = (U1UC() >> (7 - colOffset)) & 1;
               red = green = blue = cval ? 255 : 0;
               alpha = 255;
               colOffset = (colOffset + 1) & 7;
               break;
 
             case 24:
-              blue = U1();
-              green = U1();
-              red = U1();
+              blue = U1UC();
+              green = U1UC();
+              red = U1UC();
               alpha = 255;
               break;
 
             case 32:
-              blue = U1();
-              green = U1();
-              red = U1();
-              alpha = U1();
+              blue = U1UC();
+              green = U1UC();
+              red = U1UC();
+              alpha = U1UC();
               break;
           }
           break;
 
         case 3: // BI_BITFIELDS
-          auto col = U4();
+          auto col = U4UC();
           red = col >> redMask;
           green = col >> greenMask;
           blue = col >> blueMask;
@@ -302,9 +291,9 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
 
       if(premul && alpha != 255){
         double a = alpha / 255.;
-        red = (byte)(red * a + .5);
-        green = (byte)(green * a + .5);
-        blue = (byte)(blue * a + .5);
+        red = static_cast<uint8_t>(red * a + .5);
+        green = static_cast<uint8_t>(green * a + .5);
+        blue = static_cast<uint8_t>(blue * a + .5);
       }
 
       if(format){
@@ -324,10 +313,6 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
     skip(rowPadding);
   }
 
-  // Enable checks again in case some method needs them in the future
-  #undef GET_METHOD
-  #define GET_METHOD get
-
   if(status == Status::ERROR)
     return;
 
@@ -338,21 +323,16 @@ void Parser::parse(byte *buf, int bufSize, byte *format){
 void Parser::clearImgd(){ imgd = nullptr; }
 int32_t Parser::getWidth() const{ return w; }
 int32_t Parser::getHeight() const{ return h; }
-byte *Parser::getImgd() const{ return imgd; }
+uint8_t *Parser::getImgd() const{ return imgd; }
 Status Parser::getStatus() const{ return status; }
 
 string Parser::getErrMsg() const{
   return "Error while processing " + getOp() + " - " + err;
 }
 
-template <typename T> T Parser::get(){
-  CHECK_OVERRUN(sizeof(T), T);
-  T val = *(T*)ptr;
-  ptr += sizeof(T);
-  return val;
-}
-
-template <typename T> T Parser::getc(){
+template <typename T, bool check> T Parser::get(){
+  if(check)
+    CHECK_OVERRUN(sizeof(T), T);
   T val = *(T*)ptr;
   ptr += sizeof(T);
   return val;
@@ -363,8 +343,8 @@ string Parser::getStr(int size, bool reverse){
   string val = "";
 
   while(size--){
-    if(reverse) val = string(1, (char)*ptr++) + val;
-    else val += (char)*ptr++;
+    if(reverse) val = string(1, static_cast<char>(*ptr++)) + val;
+    else val += static_cast<char>(*ptr++);
   }
 
   return val;

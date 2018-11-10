@@ -6,14 +6,9 @@
 #undef ERROR
 #endif
 
-#include <iostream>
 #include <string>
-#include <cassert>
 
 namespace BMPParser{
-  typedef uint8_t byte;
-  typedef std::string string;
-
   enum Status{
     EMPTY,
     OK,
@@ -22,42 +17,38 @@ namespace BMPParser{
 
   class Parser{
   public:
-    Parser();
+    Parser()=default;
     ~Parser();
-    void parse(byte *buf, int bufSize, byte *format=nullptr);
+    void parse(uint8_t *buf, int bufSize, uint8_t *format=nullptr);
     void clearImgd();
     int32_t getWidth() const;
     int32_t getHeight() const;
-    byte *getImgd() const;
+    uint8_t *getImgd() const;
     Status getStatus() const;
-    string getErrMsg() const;
+    std::string getErrMsg() const;
 
   private:
-    Status status;
+    Status status = Status::EMPTY;
+    uint8_t *data = nullptr;
+    uint8_t *ptr = nullptr;
+    int len = 0;
+    int32_t w = 0;
+    int32_t h = 0;
+    uint8_t *imgd = nullptr;
+    std::string err = "";
+    std::string op = "";
 
-    byte *data;
-    byte *ptr;
-    int len;
-
-    int32_t w;
-    int32_t h;
-    byte *imgd;
-
-    string err;
-    string op;
-
-    template <typename T> T get();
-    template <typename T> T getc();
-    string getStr(int len, bool reverse=false);
+    template <typename T, bool check=true> T get();
+    std::string getStr(int len, bool reverse=false);
     void skip(int len);
 
-    void setOp(string val);
-    string getOp() const;
+    void setOp(std::string val);
+    std::string getOp() const;
 
-    void setErrUnsupported(string msg);
-    void setErrUnknown(string msg);
-    void setErr(string msg);
-    string getErr() const;
+    void setErrUnsupported(std::string msg);
+    void setErrUnknown(std::string msg);
+    void setErr(std::string msg);
+    std::string getErr() const;
   };
 }
 
