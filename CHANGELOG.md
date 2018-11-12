@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Added
 * Warn when building with old, unsupported versions of cairo or libjpeg.
+* BMP support
 
 2.0.0
 ==================

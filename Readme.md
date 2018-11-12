@@ -524,6 +524,8 @@ Examples line in the `examples` directory. Most produce a png image of the same 
 
 ## License
 
+### node-canvas
+
 (The MIT License)
 
 Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
@@ -546,3 +548,7 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### BMP parser
+
+See [license](src/bmp/LICENSE.md)
