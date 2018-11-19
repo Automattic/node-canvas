@@ -105,7 +105,8 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+    if (Nan::New(FBDevBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
@@ -272,7 +273,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
 
 static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
-  // user agent must use its default quality value, as if the quality argument 
+  // user agent must use its default quality value, as if the quality argument
   // had not been given." - 4.12.5.5
   if (arg->IsObject()) {
     Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
@@ -451,9 +452,9 @@ NAN_METHOD(Canvas::ToBuffer) {
       Nan::ThrowError(Canvas::Error(ex));
       return;
     }
-    
+
     parseJPEGArgs(info[1], *closure);
-    
+
     // TODO: only one callback fn in closure // TODO what does this comment mean?
     canvas->Ref();
     closure->pfn = new Nan::Callback(info[0].As<Function>());
@@ -495,7 +496,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 NAN_METHOD(Canvas::StreamPNGSync) {
   if (!info[0]->IsFunction())
     return Nan::ThrowTypeError("callback function required");
-  
+
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   PngClosure closure(canvas);

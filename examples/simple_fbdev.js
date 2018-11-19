@@ -7,13 +7,13 @@
 const fs = require('fs')
 const { join } = require('path')
 
-var Canvas = require('..')
+const { backends: { FBDevBackend }, Canvas } = require('..')
 
 const squareSize = 100
 
 var device = process.argv[2] || '/dev/fb0'
 
-var backend = new Canvas.backends.FBDevBackend(device)
+var backend = new FBDevBackend(device)
 var canvas = new Canvas(backend)
 var ctx = canvas.getContext('2d')
 
