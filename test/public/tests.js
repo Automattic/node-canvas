@@ -113,11 +113,11 @@ tests['arc()'] = function (ctx) {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Outer circle
   ctx.moveTo(110, 75)
-  ctx.arc(75, 75, 35, 0, Math.PI, false)   // Mouth
+  ctx.arc(75, 75, 35, 0, Math.PI, false) // Mouth
   ctx.moveTo(65, 65)
-  ctx.arc(60, 65, 5, 0, Math.PI * 2, true)  // Left eye
+  ctx.arc(60, 65, 5, 0, Math.PI * 2, true) // Left eye
   ctx.moveTo(95, 65)
-  ctx.arc(90, 65, 5, 0, Math.PI * 2, true)  // Right eye
+  ctx.arc(90, 65, 5, 0, Math.PI * 2, true) // Right eye
   ctx.stroke()
 }
 
@@ -125,10 +125,10 @@ tests['arc() 2'] = function (ctx) {
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 3; j++) {
       ctx.beginPath()
-      var x = 25 + j * 50               // x coordinate
-      var y = 25 + i * 50               // y coordinate
-      var radius = 20                    // Arc radius
-      var startAngle = 0                     // Starting point on circle
+      var x = 25 + j * 50 // x coordinate
+      var y = 25 + i * 50 // y coordinate
+      var radius = 20 // Arc radius
+      var startAngle = 0 // Starting point on circle
       var endAngle = Math.PI + (Math.PI * j) / 2 // End point on circle
       var anticlockwise = (i % 2) === 1 // clockwise or anticlockwise
 
@@ -311,7 +311,7 @@ tests['scale()'] = function (ctx) {
   // Uniform scaling
   ctx.save()
   ctx.translate(50, 50)
-  drawSpirograph(ctx, 22, 6, 5)  // no scaling
+  drawSpirograph(ctx, 22, 6, 5) // no scaling
 
   ctx.translate(100, 0)
   ctx.scale(0.75, 0.75)
@@ -408,8 +408,7 @@ tests['clip() 2'] = function (ctx) {
   for (var j = 1; j < 50; j++) {
     ctx.save()
     ctx.fillStyle = '#fff'
-    ctx.translate(75 - Math.floor(Math.random() * 150),
-                  75 - Math.floor(Math.random() * 150))
+    ctx.translate(75 - Math.floor(Math.random() * 150), 75 - Math.floor(Math.random() * 150))
     drawStar(ctx, Math.floor(Math.random() * 4) + 2)
     ctx.restore()
   }
@@ -431,6 +430,55 @@ tests['clip() 2'] = function (ctx) {
   }
 }
 
+tests['createPattern()'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(0.1, 0.1)
+    ctx.fillStyle = pattern
+    ctx.fillRect(100, 100, 800, 800)
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 200
+    ctx.strokeRect(1100, 1100, 800, 800)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() with globalAlpha'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(0.1, 0.1)
+    ctx.globalAlpha = 0.6
+    ctx.fillStyle = pattern
+    ctx.fillRect(100, 100, 800, 800)
+    ctx.globalAlpha = 0.2
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 200
+    ctx.strokeRect(1100, 1100, 800, 800)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() no-repeat'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(0.1, 0.1)
+    ctx.lineStyle = 'black'
+    ctx.lineWidth = 10
+    ctx.fillStyle = ctx.createPattern(img, 'no-repeat')
+    ctx.fillRect(0, 0, 900, 900)
+    ctx.strokeRect(0, 0, 900, 900)
+    ctx.fillStyle = ctx.createPattern(img, 'repeat')
+    ctx.fillRect(1000, 1000, 900, 900)
+    ctx.strokeRect(1000, 1000, 900, 900)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
 tests['createLinearGradient()'] = function (ctx) {
   var lingrad = ctx.createLinearGradient(0, 0, 0, 150)
   lingrad.addColorStop(0, '#00ABEB')
@@ -447,6 +495,61 @@ tests['createLinearGradient()'] = function (ctx) {
 
   ctx.fillRect(10, 10, 130, 130)
   ctx.strokeRect(50, 50, 50, 50)
+
+  // Specifically test that setting the fillStyle to the current fillStyle works
+  ctx.fillStyle = '#13b575'
+  ctx.fillStyle = ctx.fillStyle // eslint-disable-line no-self-assign
+  ctx.fillRect(65, 65, 20, 20)
+
+  var lingrad3 = ctx.createLinearGradient(0, 0, 200, 0)
+  lingrad3.addColorStop(0, 'rgba(0,255,0,0.5)')
+  lingrad3.addColorStop(0.33, 'rgba(255,255,0,0.5)')
+  lingrad3.addColorStop(0.66, 'rgba(0,255,255,0.5)')
+  lingrad3.addColorStop(1, 'rgba(255,0,255,0.5)')
+  ctx.fillStyle = lingrad3
+  ctx.fillRect(0, 170, 200, 30)
+}
+
+tests['createLinearGradient() with opacity'] = function (ctx) {
+  var lingrad = ctx.createLinearGradient(0, 0, 0, 200)
+  lingrad.addColorStop(0, '#00FF00')
+  lingrad.addColorStop(0.33, '#FF0000')
+  lingrad.addColorStop(0.66, '#0000FF')
+  lingrad.addColorStop(1, '#00FFFF')
+  ctx.fillStyle = lingrad
+  ctx.strokeStyle = lingrad
+  ctx.lineWidth = 10
+  ctx.globalAlpha = 0.4
+  ctx.strokeRect(5, 5, 190, 190)
+  ctx.fillRect(0, 0, 50, 50)
+  ctx.globalAlpha = 0.6
+  ctx.strokeRect(35, 35, 130, 130)
+  ctx.fillRect(50, 50, 50, 50)
+  ctx.globalAlpha = 0.8
+  ctx.strokeRect(65, 65, 70, 70)
+  ctx.fillRect(100, 100, 50, 50)
+  ctx.globalAlpha = 0.95
+  ctx.fillRect(150, 150, 50, 50)
+}
+
+tests['createLinearGradient() and transforms'] = function (ctx) {
+  var lingrad = ctx.createLinearGradient(0, -100, 0, 100)
+  lingrad.addColorStop(0, '#00FF00')
+  lingrad.addColorStop(0.33, '#FF0000')
+  lingrad.addColorStop(0.66, '#0000FF')
+  lingrad.addColorStop(1, '#00FFFF')
+  ctx.fillStyle = lingrad
+  ctx.translate(100, 100)
+  ctx.beginPath()
+  ctx.moveTo(-100, -100)
+  ctx.lineTo(100, -100)
+  ctx.lineTo(100, 100)
+  ctx.lineTo(-100, 100)
+  ctx.closePath()
+  ctx.globalAlpha = 0.5
+  ctx.rotate(1.570795)
+  ctx.scale(0.6, 0.6)
+  ctx.fill()
 }
 
 tests['createRadialGradient()'] = function (ctx) {
@@ -745,6 +848,57 @@ tests['fillText() transformations'] = function (ctx) {
   ctx.fillText('bar', 50, 100)
 }
 
+tests['fillText() maxWidth argument'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.fillText('Drawing text can be fun!', 0, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 0, 20 * 7)
+}
+
+tests['maxWidth bug first usage path'] = function (ctx, done) {
+  ctx.textDrawingMode = 'path'
+  ctx.fillText('Drawing text can be fun!', 0, 20, 50)
+  ctx.fillText('Drawing text can be fun!', 0, 40, 50)
+  ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)
+  done()
+}
+
+tests['maxWidth bug first usage glyph'] = function (ctx, done) {
+  ctx.textDrawingMode = 'glyph'
+  ctx.fillText('Drawing text can be fun!', 0, 20, 50)
+  ctx.fillText('Drawing text can be fun!', 0, 40, 50)
+  ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)
+  done()
+}
+
+tests['fillText() maxWidth argument + textAlign center (#1253)'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'center'
+  ctx.fillText('Drawing text can be fun!', 100, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 100, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 100, 20 * 7)
+}
+
+tests['fillText() maxWidth argument + textAlign right'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.textAlign = 'right'
+  ctx.fillText('Drawing text can be fun!', 200, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.fillText('Drawing text can be fun!', 200, 20 * (7 - i), i * 20)
+  }
+
+  ctx.fillText('Drawing text can be fun!', 200, 20 * 7)
+}
+
 tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
@@ -760,6 +914,17 @@ tests['strokeText()'] = function (ctx) {
   ctx.strokeStyle = 'red'
   ctx.font = 'normal 50px Arial'
   ctx.strokeText('bar', 100, 100)
+}
+
+tests['strokeText() maxWidth argument'] = function (ctx) {
+  ctx.font = 'Helvetica, sans'
+  ctx.strokeText('Drawing text can be fun!', 0, 20)
+
+  for (var i = 1; i < 6; i++) {
+    ctx.strokeText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
+  }
+
+  ctx.strokeText('Drawing text can be fun!', 0, 20 * 7)
 }
 
 tests['textAlign right'] = function (ctx) {
@@ -1059,207 +1224,88 @@ tests['font style variant weight size family'] = function (ctx) {
   ctx.fillText('normal normal normal 16px', 100, 100)
 }
 
-tests['globalCompositeOperation source-over'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-over'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
+// From https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
+const gco = [
+  'source-over', 'source-in', 'source-out', 'source-atop',
+  'destination-over', 'destination-in', 'destination-out', 'destination-atop',
+  'lighter', 'copy', 'xor', 'multiply', 'screen', 'overlay', 'darken',
+  'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light',
+  'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity'
+]
+
+gco.forEach(op => {
+  tests['globalCompositeOperator ' + op] = function (ctx, done) {
+    var img1 = new Image()
+    var img2 = new Image()
+    img1.onload = function () {
+      img2.onload = function () {
+        ctx.globalAlpha = 0.7
+        ctx.drawImage(img1, 0, 0)
+        ctx.globalCompositeOperation = op
+        ctx.drawImage(img2, 0, 0)
+        done()
+      }
+      img2.src = imageSrc('newcontent.png')
+    }
+    img1.src = imageSrc('existing.png')
+  }
+})
+
+gco.forEach(op => {
+  tests['9 args, transform, globalCompositeOperator ' + op] = function (ctx, done) {
+    var img1 = new Image()
+    var img2 = new Image()
+    img1.onload = function () {
+      img2.onload = function () {
+        ctx.globalAlpha = 0.7
+        ctx.drawImage(img1, 0, 0)
+        ctx.globalCompositeOperation = op
+        ctx.rotate(0.1)
+        ctx.scale(0.8, 1.2)
+        ctx.translate(5, -5)
+        ctx.drawImage(img2, -80, -50, 400, 400, 10, 10, 180, 180)
+        done()
+      }
+      img2.src = imageSrc('newcontent.png')
+    }
+    img1.src = imageSrc('existing.png')
+  }
+})
+
+tests['drawImage issue #1249'] = function (ctx, done) {
+  var img1 = new Image()
+  var img2 = new Image()
+  img1.onload = function () {
+    img2.onload = function () {
+      ctx.drawImage(img1, 0, 0, 200, 200)
+      ctx.drawImage(img2, -8, -8, 18, 18, 0, 0, 200, 200)
+      ctx.restore()
+      done()
+    }
+    img2.src = imageSrc('checkers.png')
+  }
+  img1.src = imageSrc('chrome.jpg')
 }
 
-tests['globalCompositeOperation source-in'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-in'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation source-out'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-out'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-in'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-in'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation source-atop'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'source-atop'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-out'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-out'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation destination-atop'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'destination-atop'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation xor'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'xor'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation copy'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'copy'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation lighter'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'lighter'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation darker'] = function (ctx) {
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'darker'
-  ctx.fillStyle = 'red'
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation multiply'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'multiply'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation screen'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'screen'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation overlay'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'overlay'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hard-light'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hard-light'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-hue'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-hue'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-saturation'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-saturation'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-color'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-color'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
-}
-
-tests['globalCompositeOperation hsl-luminosity'] = function (ctx) {
-  ctx.fillStyle = 'rgba(0,0,255,0.6)'
-  ctx.fillRect(0, 0, 100, 100)
-  ctx.globalCompositeOperation = 'hsl-luminosity'
-  var grad = ctx.createRadialGradient(80, 80, 5, 60, 60, 60)
-  grad.addColorStop(0, 'yellow')
-  grad.addColorStop(0.2, 'red')
-  grad.addColorStop(1, 'black')
-  ctx.fillStyle = grad
-  ctx.arc(80, 80, 50, 0, Math.PI * 2, false)
-  ctx.fill()
+tests['known bug #416'] = function (ctx, done) {
+  var img1 = new Image()
+  var img2 = new Image()
+  img1.onload = function () {
+    img2.onload = function () {
+      ctx.drawImage(img1, 0, 0)
+      ctx.globalCompositeOperation = 'destination-in'
+      ctx.save()
+      ctx.translate(img2.width / 2, img1.height / 2)
+      ctx.rotate(Math.PI / 4)
+      ctx.scale(0.5, 0.5)
+      ctx.translate(-img2.width / 2, -img1.height / 2)
+      ctx.drawImage(img2, 0, 0)
+      ctx.restore()
+      done()
+    }
+    img2.src = imageSrc('newcontent.png')
+  }
+  img1.src = imageSrc('existing.png')
 }
 
 tests['shadowBlur'] = function (ctx) {
@@ -1604,10 +1650,53 @@ tests['shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
+  img.onerror = done
+  img.src = imageSrc('star.png')
+}
+
+tests['shadow image with crop'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 150, 150, 25, 25, 150, 150)
+    done(null)
+  }
   img.onerror = function () {
     done(new Error('Failed to load image'))
   }
-  img.src = imageSrc('star.png')
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['shadow image with crop and zoom'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 40, 40, 25, 25, 150, 150)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['drawImage canvas over canvas'] = function (ctx) {
+  // Drawing canvas to itself
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(5, 5, 10, 10)
+  ctx.drawImage(ctx.canvas, 20, 20)
 }
 
 tests['scaled shadow image'] = function (ctx, done) {
@@ -1620,10 +1709,81 @@ tests['scaled shadow image'] = function (ctx, done) {
     ctx.drawImage(img, 10, 10, 80, 80)
     done(null)
   }
+  img.onerror = done
+  img.src = imageSrc('star.png')
+}
+
+tests['smoothing disabled image'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    // cropped
+    ctx.drawImage(img, 0, 0, 10, 10, 0, 0, 200, 200)
+    done(null)
+  }
   img.onerror = function () {
     done(new Error('Failed to load image'))
   }
-  img.src = imageSrc('star.png')
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() with globalAlpha and smoothing off scaling down'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(0.1, 0.1)
+    ctx.globalAlpha = 0.95
+    ctx.fillStyle = pattern
+    ctx.fillRect(100, 100, 800, 800)
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 800
+    ctx.strokeRect(1400, 1100, 1, 800)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() with globalAlpha and smoothing off scaling up'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(20, 20)
+    ctx.globalAlpha = 0.95
+    ctx.fillStyle = pattern
+    ctx.fillRect(1, 1, 8, 3)
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 2
+    ctx.strokeRect(2, 6, 6, 1)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['smoothing and gradients (gradients are not influenced by patternQuality)'] = function (ctx) {
+  var grad1 = ctx.createLinearGradient(0, 0, 10, 10)
+  grad1.addColorStop(0, 'yellow')
+  grad1.addColorStop(0.25, 'red')
+  grad1.addColorStop(0.75, 'blue')
+  grad1.addColorStop(1, 'limegreen')
+  ctx.imageSmoothingEnabled = false
+  ctx.patternQuality = 'nearest'
+  ctx.globalAlpha = 0.9
+  // linear grad box
+  ctx.fillStyle = grad1
+  ctx.moveTo(0, 0)
+  ctx.lineTo(200, 0)
+  ctx.lineTo(200, 200)
+  ctx.lineTo(0, 200)
+  ctx.lineTo(0, 0)
+  ctx.scale(20, 20)
+  ctx.fill()
 }
 
 tests['shadow integration'] = function (ctx) {
@@ -1688,9 +1848,7 @@ tests['drawImage(img,0,0)'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1700,10 +1858,29 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('face.jpeg')
+}
+
+tests['drawImage(img) YCCK JPEG (#425)'] = function (ctx, done) {
+  // This also provides coverage for CMYK JPEGs
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('ycck.jpg')
+}
+
+tests['drawImage(img) grayscale JPEG'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0, 100, 100)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('grayscale.jpg')
 }
 
 tests['drawImage(img) svg'] = function (ctx, done) {
@@ -1712,9 +1889,28 @@ tests['drawImage(img) svg'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
+  img.onerror = done
+  img.src = imageSrc('tree.svg')
+}
+
+tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, -800, -800, 1000, 1000)
+    done(null)
   }
+  img.onerror = done
+  img.src = imageSrc('tree.svg')
+}
+
+tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(100, 100)
+    ctx.drawImage(img, -8, -8, 10, 10)
+    done(null)
+  }
+  img.onerror = done
   img.src = imageSrc('tree.svg')
 }
 
@@ -1724,9 +1920,7 @@ tests['drawImage(img,x,y)'] = function (ctx, done) {
     ctx.drawImage(img, 5, 25)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1736,9 +1930,7 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
     ctx.drawImage(img, 25, 25, 10, 10)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1748,9 +1940,7 @@ tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, 200, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1760,9 +1950,7 @@ tests['drawImage(img,x,y,w,h) scale vertical'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0, img.width, 200)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1772,9 +1960,7 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function (ctx, done) {
     ctx.drawImage(img, 13, 13, 45, 45, 25, 25, img.width / 2, img.height / 2)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1786,9 +1972,7 @@ tests['drawImage(img,0,0) globalAlpha'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1803,9 +1987,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
     ctx.drawImage(img, 0, 0)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
@@ -1818,6 +2000,17 @@ tests['putImageData()'] = function (ctx) {
   }
   var data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 10, 10)
+}
+
+tests['putImageData() 1'] = function (ctx) {
+  for (var i = 0; i < 6; i++) {
+    for (var j = 0; j < 6; j++) {
+      ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
+      ctx.fillRect(j * 25, i * 25, 25, 25)
+    }
+  }
+  var data = ctx.getImageData(0, 0, 50, 50)
+  ctx.putImageData(data, -10, -10)
 }
 
 tests['putImageData() 2'] = function (ctx) {
@@ -1981,9 +2174,7 @@ tests['putImageData() png data'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2004,9 +2195,7 @@ tests['putImageData() png data 2'] = function (ctx, done) {
     done(null)
   }
 
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
 
   img.src = imageSrc('state.png')
 }
@@ -2028,15 +2217,13 @@ tests['putImageData() png data 3'] = function (ctx, done) {
     ctx.putImageData(imageData, 50, 50)
     done(null)
   }
-  img.onerror = function () {
-    done(new Error('Failed to load image'))
-  }
+  img.onerror = done
   img.src = imageSrc('state.png')
 }
 
 tests['setLineDash'] = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
-  ctx.lineWidth = 17
+  ctx.lineWidth = 14
 
   var y = 5
   var line = function (lineDash, color) {
@@ -2063,6 +2250,9 @@ tests['setLineDash'] = function (ctx) {
     a.push(20)
     return a
   })(), 'orange')
+  line([0, 0], 'purple') // should be full
+  line([0, 0, 3, 0], 'orange') // should be full
+  line([0, 3, 0, 0], 'green') // should be empty
 }
 
 tests['lineDashOffset'] = function (ctx) {
@@ -2140,4 +2330,121 @@ tests['textBaseline and scale'] = function (ctx) {
   ctx.textBaseline = 'bottom'
   ctx.textAlign = 'center'
   ctx.fillText('bottom', 1000, 1500)
+}
+
+tests['rotated baseline'] = function (ctx) {
+  ctx.font = '12px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50, -50)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated and scaled baseline'] = function (ctx) {
+  ctx.font = '120px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.scale(0.1, 0.2)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated and skewed baseline'] = function (ctx) {
+  ctx.font = '12px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.transform(1, 1, 0, 1, 1, 1)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50, -50)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['rotated, scaled and skewed baseline'] = function (ctx) {
+  // Known issue: we don't have a way to decompose the cairo matrix into the
+  // skew and rotation separately.
+  ctx.font = '120px Arial'
+  ctx.fillStyle = 'black'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.translate(100, 100)
+  ctx.scale(0.1, 0.2)
+  ctx.transform(1, 1, 0, 1, 1, 1)
+
+  for (var i = 0; i < 16; i++) {
+    ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
+    ctx.rotate(-Math.PI / 8)
+  }
+}
+
+tests['measureText()'] = function (ctx) {
+  // Note: As of Sep 2017, Chrome is the only browser with advanced TextMetrics,
+  // and they're behind a flag, and a few of them are missing and others are
+  // wrong.
+  function drawWithBBox (text, x, y) {
+    ctx.fillText(text, x, y)
+    ctx.strokeStyle = 'red'
+    ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(200, y + 0.5); ctx.stroke()
+    var metrics = ctx.measureText(text)
+    ctx.strokeStyle = 'blue'
+    ctx.strokeRect(
+      x - metrics.actualBoundingBoxLeft + 0.5,
+      y - metrics.actualBoundingBoxAscent + 0.5,
+      metrics.width,
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+    )
+  }
+
+  ctx.font = '20px Arial'
+  ctx.textBaseline = 'alphabetic'
+  drawWithBBox('Alphabet alphabetic', 20, 50)
+
+  drawWithBBox('weruoasnm', 50, 175) // no ascenders/descenders
+
+  drawWithBBox(',', 100, 125) // tiny height
+
+  ctx.textBaseline = 'bottom'
+  drawWithBBox('Alphabet bottom', 20, 90)
+
+  ctx.textBaseline = 'alphabetic'
+  ctx.rotate(Math.PI / 8)
+  drawWithBBox('Alphabet', 50, 100)
+}
+
+tests['image sampling (#1084)'] = function (ctx, done) {
+  let loaded1, loaded2
+  const img1 = new Image()
+  const img2 = new Image()
+
+  img1.onload = () => {
+    loaded1 = true
+    ctx.drawImage(img1, -170 - 100, -203, 352, 352)
+    if (loaded2) done()
+  }
+
+  img1.onerror = done
+
+  img2.onload = () => {
+    loaded2 = true
+    ctx.drawImage(img2, 182 - 100, -203, 352, 352)
+    if (loaded1) done()
+  }
+
+  img2.onerror = done
+
+  img1.src = imageSrc('halved-1.jpeg')
+  img2.src = imageSrc('halved-2.jpeg')
 }

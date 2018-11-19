@@ -14,14 +14,14 @@ img.onerror = function (err) {
 img.onload = function () {
   var width = 100
   var height = 100
-  var canvas = new Canvas(width, height)
+  var canvas = Canvas.createCanvas(width, height)
   var ctx = canvas.getContext('2d')
   var out = fs.createWriteStream(path.join(__dirname, 'resize.png'))
 
   ctx.imageSmoothingEnabled = true
   ctx.drawImage(img, 0, 0, width, height)
 
-  canvas.pngStream().pipe(out)
+  canvas.createPNGStream().pipe(out)
 
   out.on('finish', function () {
     console.log('Resized and saved in %dms', new Date() - start)

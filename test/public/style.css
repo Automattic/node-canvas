@@ -26,14 +26,22 @@ p.msg {
 }
 
 table tr td:nth-child(1),
-table tr td:nth-child(2) {
+table tr td:nth-child(2),
+table tr td:nth-child(3) {
   width: 200px;
 }
 
-table tr td:nth-child(3) {
+table tr td:nth-child(4) {
   padding: 0 45px;
 }
 
 table tr td p {
   margin: 5px 0;
+}
+
+table th {
+  background: white;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
 }

@@ -1,8 +1,10 @@
 language: node_js
+install:
+  - npm install --build-from-source
 node_js:
-  - '7'
+  - '10'
+  - '8'
   - '6'
-  - '4'
 addons:
   apt:
     sources:
@@ -12,6 +14,7 @@ addons:
       - libjpeg8-dev
       - libpango1.0-dev
       - libgif-dev
+      - librsvg2-dev
       - g++-4.9
 env:
   - CXX=g++-4.9

@@ -3,7 +3,7 @@ var Canvas = require('..')
 
 var clock = require('./clock')
 
-var canvas = new Canvas(320, 320)
+var canvas = Canvas.createCanvas(320, 320)
 var ctx = canvas.getContext('2d')
 
 http.createServer(function (req, res) {

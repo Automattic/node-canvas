@@ -12,6 +12,7 @@ out.svg
 node_modules
 deps/
 npm-debug.log
+package-lock.json
 
 # Vim cruft
 *.swp

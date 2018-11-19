@@ -9,6 +9,8 @@
 #define __NODE_IMAGE_H__
 
 #include "Canvas.h"
+#include "CanvasError.h"
+#include <functional>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -33,37 +35,37 @@
   #endif
 #endif
 
-
+using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
 class Image: public Nan::ObjectWrap {
   public:
     char *filename;
     int width, height;
-    Nan::Callback *onload;
-    Nan::Callback *onerror;
+    int naturalWidth, naturalHeight;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
-    static NAN_GETTER(GetSource);
-    static NAN_GETTER(GetOnload);
-    static NAN_GETTER(GetOnerror);
     static NAN_GETTER(GetComplete);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);
+    static NAN_GETTER(GetNaturalWidth);
+    static NAN_GETTER(GetNaturalHeight);
     static NAN_GETTER(GetDataMode);
-    static NAN_SETTER(SetSource);
-    static NAN_SETTER(SetOnload);
-    static NAN_SETTER(SetOnerror);
     static NAN_SETTER(SetDataMode);
-    inline cairo_surface_t *surface(){ return _surface; }
+    static NAN_SETTER(SetWidth);
+    static NAN_SETTER(SetHeight);
+    static NAN_METHOD(GetSource);
+    static NAN_METHOD(SetSource);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
     static int isSVG(uint8_t *data, unsigned len);
+    static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
+    cairo_surface_t *surface();
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
@@ -72,6 +74,7 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_RSVG
     cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadSVG(FILE *stream);
+    cairo_status_t renderSVGToSurface();
 #endif
 #ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
@@ -80,13 +83,14 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_JPEG
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
+    void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
-#if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
 #endif
-#endif
-    void error(Local<Value> error);
+    cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadBMP(FILE *stream);
+    CanvasError errorInfo;
     void loaded();
     cairo_status_t load();
     Image();
@@ -114,8 +118,14 @@ class Image: public Nan::ObjectWrap {
 
   private:
     cairo_surface_t *_surface;
-    uint8_t *_data;
+    uint8_t *_data = nullptr;
     int _data_len;
+#ifdef HAVE_RSVG
+    RsvgHandle *_rsvg;
+    bool _is_svg;
+    int _svg_last_width;
+    int _svg_last_height;
+#endif
     ~Image();
 };
 

@@ -104,7 +104,7 @@ function clock (ctx) {
 module.exports = clock
 
 if (require.main === module) {
-  var canvas = new Canvas(320, 320)
+  var canvas = Canvas.createCanvas(320, 320)
   var ctx = canvas.getContext('2d')
 
   clock(ctx)

@@ -4,10 +4,13 @@ var fs = require('fs')
 var SYSTEM_PATHS = [
   '/lib',
   '/usr/lib',
+  '/usr/lib64',
   '/usr/local/lib',
   '/opt/local/lib',
   '/usr/lib/x86_64-linux-gnu',
-  '/usr/lib/i386-linux-gnu'
+  '/usr/lib/i386-linux-gnu',
+  '/usr/lib/arm-linux-gnueabihf',
+  '/usr/lib/arm-linux-gnueabi'
 ]
 
 function _hasQuery (query) {
@@ -23,8 +26,8 @@ function _hasQuery (query) {
 /**
  * Checks for lib using ldconfig if present, or searching SYSTEM_PATHS
  * otherwise.
- * @param String library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
- * @return Boolean exists
+ * @param {string} lib - library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
+ * @return {boolean} exists
  */
 function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
@@ -60,8 +63,8 @@ function hasFreetype () {
 
 /**
  * Checks for lib using pkg-config.
- * @param String library name
- * @return Boolean exists
+ * @param {string} lib - library name
+ * @return {boolean} exists
  */
 function hasPkgconfigLib (lib) {
   return _hasQuery('pkg-config --exists "' + lib + '" 2>/dev/null')

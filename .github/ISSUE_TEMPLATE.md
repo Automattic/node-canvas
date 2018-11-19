@@ -15,7 +15,7 @@ Still having problems, found a bug or want a feature? Fill out the form below.
 <!--- For bugs, provide a short, complete code example to reproduce the issue. -->
 ```js
 var Canvas = require('canvas');
-var canvas = new Canvas(200, 200);
+var canvas = Canvas.createCanvas(200, 200);
 var ctx = canvas.getContext('2d');
 // etc.
 ```

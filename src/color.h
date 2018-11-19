@@ -8,10 +8,10 @@
 #ifndef __COLOR_PARSER_H__
 #define __COLOR_PARSER_H__
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stddef.h>
+#include <cstdio>
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
+#include <cstring>
+#include <cstddef>
 
 /*
  * RGBA struct.

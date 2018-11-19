@@ -1,25 +1,9 @@
 # node-canvas
 
------
-
-## This is the documentation for the unreleased version 2.0
-
-**For the current version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x)**
-
------
-
-### Canvas graphics API backed by Cairo
 [![Build Status](https://travis-ci.org/Automattic/node-canvas.svg?branch=master)](https://travis-ci.org/Automattic/node-canvas)
 [![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
 
-  node-canvas is a [Cairo](http://cairographics.org/) backed Canvas implementation for [NodeJS](http://nodejs.org).
-
-## Authors
-
-  - TJ Holowaychuk ([tj](http://github.com/tj))
-  - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
-  - Rod Vagg ([rvagg](http://github.com/rvagg))
-  - Juriy Zaytsev ([kangax](http://github.com/kangax))
+node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation for [Node.js](http://nodejs.org).
 
 ## Installation
 
@@ -27,27 +11,30 @@
 $ npm install canvas
 ```
 
-Unless previously installed you'll _need_ __Cairo__ and __Pango__. For system-specific installation view the [Wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
+By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
 
-Currently the minimum version of node required is __4.0.0__
+The minimum version of Node.js required is **6.0.0**.
 
-You can quickly install the dependencies by using the command for your OS:
+### Compiling
+
+If you don't have a supported OS or processor architecture, or you use `--build-from-source`, the module will be compiled on your system. This requires several dependencies, including Cairo and Pango.
+
+For detailed installation information, see the [wiki](https://github.com/Automattic/node-canvas/wiki/_pages). One-line installation instructions for common OSes are below. Note that libgif/giflib, librsvg and libjpeg are optional and only required if you need GIF, SVG and JPEG support, respectively. Cairo v1.10.0 or later is required.
 
 OS | Command
 ----- | -----
-OS X | `brew install pkg-config cairo pango libpng jpeg giflib`
-Ubuntu | `sudo apt-get install libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev build-essential g++`
-Fedora | `sudo yum install cairo cairo-devel cairomm-devel libjpeg-turbo-devel pango pango-devel pangomm pangomm-devel giflib-devel`
+OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg`
+Ubuntu | `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
+Fedora | `sudo yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel`
 Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
-Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/wiki/Installation---Windows)
+OpenBSD | `doas pkg_add cairo pango png jpeg giflib`
+Windows | See the [wiki](https://github.com/Automattic/node-canvas/wiki/Installation:-Windows)
+Others | See the [wiki](https://github.com/Automattic/node-canvas/wiki)
 
-**El Capitan users:** If you have recently updated to El Capitan and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
+**Mac OS X v10.11+:** If you have recently updated to Mac OS X v10.11+ and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
+If you have xcode 10.0 or higher installed, in order to build from source you need NPM 6.4.1 or higher.
 
-## Screencasts
-
-  - [Introduction](http://screenr.com/CTk)
-
-## Example
+## Quick Example
 
 ```javascript
 const { createCanvas, loadImage } = require('canvas')
@@ -75,374 +62,469 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 })
 ```
 
-## Non-Standard API
+## Upgrading from 2.x
 
- node-canvas extends the canvas API to provide interfacing with node, for example streaming PNG data, converting to a `Buffer` instance, etc. Among the interfacing API, in some cases the drawing API has been extended for SSJS image manipulation / creation usage, however keep in mind these additions may fail to render properly within browsers.
+See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
 
-### Image#src=Buffer
+For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x).
 
- node-canvas adds `Image#src=Buffer` support, allowing you to read images from disc, redis, etc and apply them via `ctx.drawImage()`. Below we draw scaled down squid png by reading it from the disk with node's I/O.
+## Documentation
 
-```javascript
-fs.readFile(__dirname + '/images/squid.png', function(err, squid){
-  if (err) throw err;
-  img = new Image;
-  img.src = squid;
-  ctx.drawImage(img, 0, 0, img.width / 4, img.height / 4);
-});
+This project is an implementation of the Web Canvas API and implements that API as closely as possible. For API documentation, please visit [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API). (See [Compatibility Status](https://github.com/Automattic/node-canvas/wiki/Compatibility-Status) for the current API compliance.) All utility methods and non-standard APIs are documented below.
+
+### Utility methods
+
+* [createCanvas()](#createcanvas)
+* [createImageData()](#createimagedata)
+* [loadImage()](#loadimage)
+* [registerFont()](#registerfont)
+
+### Non-standard APIs
+
+* [Image#src](#imagesrc)
+* [Image#dataMode](#imagedatamode)
+* [Canvas#toBuffer()](#canvastobuffer)
+* [Canvas#createPNGStream()](#canvascreatepngstream)
+* [Canvas#createJPEGStream()](#canvascreatejpegstream)
+* [Canvas#createPDFStream()](#canvascreatepdfstream)
+* [Canvas#toDataURL()](#canvastodataurl)
+* [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
+* [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
+* [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
+* [CanvasRenderingContext2D#globalCompositeOperator = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperator--saturate)
+* [CanvasRenderingContext2D#antialias](#canvasrenderingcontext2dantialias)
+
+### createCanvas()
+
+> ```ts
+> createCanvas(width: number, height: number, type?: 'PDF'|'SVG') => Canvas
+> ```
+
+Creates a Canvas instance. This method works in both Node.js and Web browsers, where there is no Canvas constructor. (See `browser.js` for the implementation that runs in browsers.)
+
+```js
+const { createCanvas } = require('canvas')
+const mycanvas = createCanvas(200, 200)
+const myPDFcanvas = createCanvas(600, 800, 'pdf') // see "PDF Support" section
 ```
 
- Below is an example of a canvas drawing it-self as the source several time:
+### createImageData()
+
+> ```ts
+> createImageData(width: number, height: number) => ImageData
+> createImageData(data: Uint8ClampedArray, width: number, height?: number) => ImageData
+> // for alternative pixel formats:
+> createImageData(data: Uint16Array, width: number, height?: number) => ImageData
+> ```
+
+Creates an ImageData instance. This method works in both Node.js and Web browsers.
+
+```js
+const { createImageData } = require('canvas')
+const width = 20, height = 20
+const arraySize = width * height * 4
+const mydata = createImageData(new Uint8ClampedArray(arraySize), width)
+```
+
+### loadImage()
+
+> ```ts
+> loadImage() => Promise<Image>
+> ```
+
+Convenience method for loading images. This method works in both Node.js and Web browsers.
+
+```js
+const { loadImage } = require('canvas')
+const myimg = loadImage('http://server.com/image.png')
+
+myimg.then(() => {
+  // do something with image
+}).catch(err => {
+  console.log('oh no!', err)
+})
+
+// or with async/await:
+const myimg = await loadImage('http://server.com/image.png')
+// do something with image
+```
+
+### registerFont()
+
+> ```ts
+> registerFont(path: string, { family: string, weight?: string, style?: string }) => void
+> ```
+
+To use a font file that is not installed as a system font, use `registerFont()` to register the font with Canvas. *This must be done before the Canvas is created.*
+
+```js
+const { registerFont, createCanvas } = require('canvas')
+registerFont('comicsans.ttf', { family: 'Comic Sans' })
+
+const canvas = createCanvas(500, 500)
+const ctx = canvas.getContext('2d')
+
+ctx.font = '12px "Comic Sans"'
+ctx.fillText('Everyone hates this font :(', 250, 10)
+```
+
+The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional and default to `'normal'`.
+
+### Image#src
+
+> ```ts
+> img.src: string|Buffer
+> ```
+
+As in browsers, `img.src` can be set to a `data:` URI or a remote URL. In addition, node-canvas allows setting `src` to a local file path or `Buffer` instance.
 
 ```javascript
-var img = new Image;
-img.src = canvas.toBuffer();
-ctx.drawImage(img, 0, 0, 50, 50);
-ctx.drawImage(img, 50, 0, 50, 50);
-ctx.drawImage(img, 100, 0, 50, 50);
+const { Image } = require('canvas')
+
+// From a buffer:
+fs.readFile('images/squid.png', (err, squid) => {
+  if (err) throw err
+  const img = new Image()
+  img.onload = () => ctx.drawImage(img, 0, 0)
+  img.onerror = err => { throw err }
+  img.src = squid
+})
+
+// From a local file path:
+const img = new Image()
+img.onload = () => ctx.drawImage(img, 0, 0)
+img.onerror = err => { throw err }
+img.src = 'images/squid.png'
+
+// From a remote URL:
+img.src = 'http://picsum.photos/200/300'
+// ... as above
+
+// From a `data:` URI:
+img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
+// ... as above
 ```
+
+*Note: In some cases, `img.src=` is currently synchronous. However, you should always use `img.onload` and `img.onerror`, as we intend to make `img.src=` always asynchronous as it is in browsers. See https://github.com/Automattic/node-canvas/issues/1007.*
 
 ### Image#dataMode
 
-node-canvas adds `Image#dataMode` support, which can be used to opt-in to mime data tracking of images (currently only JPEGs).
+> ```ts
+> img.dataMode: number
+> ```
 
-When mime data is tracked, in PDF mode JPEGs can be embedded directly into the output, rather than being re-encoded into PNG. This can drastically reduce filesize, and speed up rendering.
+Applies to JPEG images drawn to PDF canvases only.
 
-```javascript
-var img = new Image;
-img.dataMode = Image.MODE_IMAGE; // Only image data tracked
-img.dataMode = Image.MODE_MIME; // Only mime data tracked
-img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE; // Both are tracked
-```
-
-If image data is not tracked, and the Image is drawn to an image rather than a PDF canvas, the output will be junk. Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
-
-### Canvas#pngStream(options)
-
-  To create a `PNGStream` simply call `canvas.pngStream()`, and the stream will start to emit _data_ events, finally emitting _end_ when finished. If an exception occurs the _error_ event is emitted.
+Setting `img.dataMode = Image.MODE_MIME` or `Image.MODE_MIME|Image.MODE_IMAGE` enables MIME data tracking of images. When MIME data is tracked, PDF canvases can embed JPEGs directly into the output, rather than re-encoding into PNG. This can drastically reduce filesize and speed up rendering.
 
 ```javascript
-var fs = require('fs')
-  , out = fs.createWriteStream(__dirname + '/text.png')
-  , stream = canvas.pngStream();
-
-stream.on('data', function(chunk){
-  out.write(chunk);
-});
-
-stream.on('end', function(){
-  console.log('saved png');
-});
+const { Image, createCanvas } = require('canvas')
+const canvas = createCanvas(w, h, 'pdf')
+const img = new Image()
+img.dataMode = Image.MODE_IMAGE // Only image data tracked
+img.dataMode = Image.MODE_MIME // Only mime data tracked
+img.dataMode = Image.MODE_MIME | Image.MODE_IMAGE // Both are tracked
 ```
 
-Currently _only_ sync streaming is supported, however we plan on supporting async streaming as well (of course :) ). Until then the `Canvas#toBuffer(callback)` alternative is async utilizing `eio_custom()`.
+If working with a non-PDF canvas, image data *must* be tracked; otherwise the output will be junk.
+
+Enabling mime data tracking has no benefits (only a slow down) unless you are generating a PDF.
+
+### Canvas#toBuffer()
+
+> ```ts
+> canvas.toBuffer((err: Error|null, result: Buffer) => void, mimeType?: string, config?: any) => void
+> canvas.toBuffer(mimeType?: string, config?: any) => Buffer
+> ```
+
+Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the image contained in the canvas.
+
+* **callback** If provided, the buffer will be provided in the callback instead of being returned by the function. Invoked with an error as the first argument if encoding failed, or the resulting buffer as the second argument if it succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases.
+* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support) and `raw` (unencoded ARGB32 data in native-endian byte order, top-to-bottom). Defaults to `image/png`. If the canvas is a PDF or SVG canvas, this argument is ignored and a PDF or SVG is returned always.
+* **config**
+  * For `image/jpeg` an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
+  * For `image/png`, an object specifying the ZLIB compression level (between 0 and 9), the compression filter(s), the palette (indexed PNGs only), the the background palette index (indexed PNGs only) and/or the resolution (ppi): `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`. All properties are optional.
+
+    Note that the PNG format encodes the resolution in pixels per meter, so if you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution is undefined by default to match common browser behavior.
+
+**Return value**
+
+If no callback is provided, a [`Buffer`](https://nodejs.org/api/buffer.html). If a callback is provided, none.
+
+#### Examples
+
+```js
+// Default: buf contains a PNG-encoded image
+const buf = canvas.toBuffer()
+
+// PNG-encoded, zlib compression level 3 for faster compression but bigger files, no filtering
+const buf2 = canvas.toBuffer('image/png', { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE })
+
+// JPEG-encoded, 50% quality
+const buf3 = canvas.toBuffer('image/jpeg', { quality: 0.5 })
+
+// Asynchronous PNG
+canvas.toBuffer((err, buf) => {
+  if (err) throw err // encoding failed
+  // buf is PNG-encoded image
+})
+
+canvas.toBuffer((err, buf) => {
+  if (err) throw err // encoding failed
+  // buf is JPEG-encoded image at 95% quality
+}, 'image/jpeg', { quality: 0.95 })
+
+// ARGB32 pixel values, native-endian
+const buf4 = canvas.toBuffer('raw')
+const { stride, width } = canvas
+// In memory, this is `canvas.height * canvas.stride` bytes long.
+// The top row of pixels, in ARGB order, left-to-right, is:
+const topPixelsARGBLeftToRight = buf4.slice(0, width * 4)
+// And the third row is:
+const row3 = buf4.slice(2 * stride, 2 * stride + width * 4)
+
+// SVG and PDF canvases ignore the mimeType argument
+const myCanvas = createCanvas(w, h, 'pdf')
+myCanvas.toBuffer() // returns a buffer containing a PDF-encoded canvas
+```
+
+### Canvas#createPNGStream()
+
+> ```ts
+> canvas.createPNGStream(config?: any) => ReadableStream
+> ```
+
+Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits PNG-encoded data.
+
+* `config` An object specifying the ZLIB compression level (between 0 and 9), the compression filter(s), the palette (indexed PNGs only) and/or the background palette index (indexed PNGs only): `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`. All properties are optional.
+
+#### Examples
+
+```javascript
+const fs = require('fs')
+const out = fs.createWriteStream(__dirname + '/test.png')
+const stream = canvas.createPNGStream()
+stream.pipe(out)
+out.on('finish', () =>  console.log('The PNG file was created.'))
+```
 
 To encode indexed PNGs from canvases with `pixelFormat: 'A8'` or `'A1'`, provide an options object:
 
 ```js
-var palette = new Uint8ClampedArray([
+const palette = new Uint8ClampedArray([
   //r    g    b    a
     0,  50,  50, 255, // index 1
    10,  90,  90, 255, // index 2
   127, 127, 255, 255
   // ...
-]);
-canvas.pngStream({
+])
+canvas.createPNGStream({
   palette: palette,
   backgroundIndex: 0 // optional, defaults to 0
 })
 ```
 
-### Canvas#jpegStream() and Canvas#syncJPEGStream()
+### Canvas#createJPEGStream()
 
-You can likewise create a `JPEGStream` by calling `canvas.jpegStream()` with
-some optional parameters; functionality is otherwise identical to
-`pngStream()`. See `examples/crop.js` for an example.
+> ```ts
+> canvas.createJPEGStream(config?: any) => ReadableStream
+> ```
 
-_Note: At the moment, `jpegStream()` is the same as `syncJPEGStream()`, both
-are synchronous_
+Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits JPEG-encoded data.
 
-```javascript
-var stream = canvas.jpegStream({
-    bufsize: 4096 // output buffer size in bytes, default: 4096
-  , quality: 75 // JPEG quality (0-100) default: 75
-  , progressive: false // true for progressive compression, default: false
-});
-```
+*Note: At the moment, `createJPEGStream()` is synchronous under the hood. That is, it runs in the main thread, not in the libuv threadpool.*
 
-### Canvas#toBuffer()
+* `config` an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
 
-A call to `Canvas#toBuffer()` will return a node `Buffer` instance containing image data.
+#### Examples
 
 ```javascript
-// PNG Buffer, default settings
-var buf = canvas.toBuffer();
+const fs = require('fs')
+const out = fs.createWriteStream(__dirname + '/test.jpeg')
+const stream = canvas.createJPEGStream()
+stream.pipe(out)
+out.on('finish', () =>  console.log('The JPEG file was created.'))
 
-// PNG Buffer, zlib compression level 3 (from 0-9), faster but bigger
-var buf2 = canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE);
-
-// ARGB32 Buffer, native-endian
-var buf3 = canvas.toBuffer('raw');
-var stride = canvas.stride;
-// In memory, this is `canvas.height * canvas.stride` bytes long.
-// The top row of pixels, in ARGB order, left-to-right, is:
-var topPixelsARGBLeftToRight = buf3.slice(0, canvas.width * 4);
-var row3 = buf3.slice(2 * canvas.stride, 2 * canvas.stride + canvas.width * 4);
+// Disable 2x2 chromaSubsampling for deeper colors and use a higher quality
+const stream = canvas.createJPEGStream({
+  quality: 95,
+  chromaSubsampling: false
+})
 ```
 
-### Canvas#toBuffer() async
+### Canvas#createPDFStream()
 
-Optionally we may pass a callback function to `Canvas#toBuffer()`, and this process will be performed asynchronously, and will `callback(err, buf)`.
+> ```ts
+> canvas.createPDFStream(config?: any) => ReadableStream
+> ```
 
-```javascript
-canvas.toBuffer(function(err, buf){
+Applies to PDF canvases only. Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits the encoded PDF. `canvas.toBuffer()` also produces an encoded PDF, but `createPDFStream()` can be used to reduce memory usage.
 
-});
+### Canvas#toDataURL()
+
+This is a standard API, but several non-standard calls are supported. The full list of supported calls is:
+
+```js
+dataUrl = canvas.toDataURL() // defaults to PNG
+dataUrl = canvas.toDataURL('image/png')
+canvas.toDataURL((err, png) => { }) // defaults to PNG
+canvas.toDataURL('image/png', (err, png) => { })
+canvas.toDataURL('image/jpeg', (err, jpeg) => { }) // sync JPEG is not supported
+canvas.toDataURL('image/jpeg', {...opts}, (err, jpeg) => { }) // see Canvas#createJPEGStream for valid options
+canvas.toDataURL('image/jpeg', quality, (err, jpeg) => { }) // spec-following; quality from 0 to 1
 ```
-
-### Canvas#toDataURL() sync and async
-
-The following syntax patterns are supported:
-
-```javascript
-var dataUrl = canvas.toDataURL(); // defaults to PNG
-var dataUrl = canvas.toDataURL('image/png');
-canvas.toDataURL(function(err, png){ }); // defaults to PNG
-canvas.toDataURL('image/png', function(err, png){ });
-canvas.toDataURL('image/jpeg', function(err, jpeg){ }); // sync JPEG is not supported
-canvas.toDataURL('image/jpeg', {opts...}, function(err, jpeg){ }); // see Canvas#jpegStream for valid options
-canvas.toDataURL('image/jpeg', quality, function(err, jpeg){ }); // spec-following; quality from 0 to 1
-```
-
-### Canvas.registerFont for bundled fonts
-
-It can be useful to use a custom font file if you are distributing code that uses node-canvas and a specific font. Or perhaps you are using it to do automated tests and you want the renderings to be the same across operating systems regardless of what fonts are installed.
-
-To do that, you should use `Canvas.registerFont`.
-
-**You need to call it before the Canvas is created**
-
-```javascript
-Canvas.registerFont('comicsans.ttf', {family: 'Comic Sans'});
-
-var canvas = new Canvas(500, 500),
-  ctx = canvas.getContext('2d');
-
-ctx.font = '12px "Comic Sans"';
-ctx.fillText(250, 10, 'Everyone hates this font :(');
-```
-
-The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional (and default to "normal").
 
 ### CanvasRenderingContext2D#patternQuality
 
-Given one of the values below will alter pattern (gradients, images, etc) render quality, defaults to _good_.
+> ```ts
+> context.patternQuality: 'fast'|'good'|'best'|'nearest'|'bilinear'
+> ```
 
-  - fast
-  - good
-  - best
-  - nearest
-  - bilinear
+Defaults to `'good'`. Affects pattern (gradient, image, etc.) rendering quality.
+
+### CanvasRenderingContext2D#quality
+
+> ```ts
+> context.quality: 'fast'|'good'|'best'|'nearest'|'bilinear'
+> ```
+
+Defaults to `'good'`. Like `patternQuality`, but applies to transformations affecting more than just patterns.
 
 ### CanvasRenderingContext2D#textDrawingMode
 
-Can be either `path` or `glyph`. Using `glyph` is much faster than `path` for drawing, and when using a PDF context will embed the text natively, so will be selectable and lower filesize. The downside is that cairo does not have any subpixel precision for `glyph`, so this will be noticeably lower quality for text positioning in cases such as rotated text. Also, strokeText in `glyph` will act the same as fillText, except using the stroke style for the fill.
+> ```ts
+> context.textDrawingMode: 'path'|'glyph'
+> ```
 
-Defaults to _path_.
+Defaults to `'path'`. The effect depends on the canvas type:
+
+* **Standard (image)** `glyph` and `path` both result in rasterized text. Glyph mode is faster than `path`, but may result in lower-quality text, especially when rotated or translated.
+
+* **PDF** `glyph` will embed text instead of paths into the PDF. This is faster to encode, faster to open with PDF viewers, yields a smaller file size and makes the text selectable. The subset of the font needed to render the glyphs will be embedded in the PDF. This is usually the mode you want to use with PDF canvases.
+
+* **SVG** `glyph` does *not* cause `<text>` elements to be produced as one might expect ([cairo bug](https://gitlab.freedesktop.org/cairo/cairo/issues/253)). Rather, `glyph` will create a `<defs>` section with a `<symbol>` for each glyph, then those glyphs be reused via `<use>` elements. `path` mode creates a `<path>` element for each text string. `glyph` mode is faster and yields a smaller file size.
+
+In `glyph` mode, `ctx.strokeText()` and `ctx.fillText()` behave the same (aside from using the stroke and fill style, respectively).
 
 This property is tracked as part of the canvas state in save/restore.
 
-### CanvasRenderingContext2D#filter
+### CanvasRenderingContext2D#globalCompositeOperator = 'saturate'
 
-Like `patternQuality`, but applies to transformations effecting more than just patterns. Defaults to _good_.
+In addition to all of the standard global composite operators defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operator is also available.
 
-  - fast
-  - good
-  - best
-  - nearest
-  - bilinear
+### CanvasRenderingContext2D#antialias
 
-### Global Composite Operations
+> ```ts
+> context.antialias: 'default'|'none'|'gray'|'subpixel'
+> ```
 
-In addition to those specified and commonly implemented by browsers, the following have been added:
+Sets the anti-aliasing mode.
 
-  - multiply
-  - screen
-  - overlay
-  - hard-light
-  - soft-light
-  - hsl-hue
-  - hsl-saturation
-  - hsl-color
-  - hsl-luminosity
+## PDF Output Support
 
-## Anti-Aliasing
-
- Set anti-aliasing mode
-
- - default
- - none
- - gray
- - subpixel
-
- For example:
-
-```javascript
-ctx.antialias = 'none';
-```
-
-## PDF Support
-
-  Basic PDF support was added in 0.11.0. Make sure to install cairo with `--enable-pdf=yes` for the PDF backend. node-canvas must know that it is creating
-  a PDF on initialization, using the "pdf" string:
+node-canvas can create PDF documents instead of images. The canvas type must be set when creating the canvas as follows:
 
 ```js
-var canvas = new Canvas(200, 500, 'pdf');
+const canvas = createCanvas(200, 500, 'pdf')
 ```
 
- An additional method `.addPage()` is then available to create
- multiple page PDFs:
+An additional method `.addPage()` is then available to create multiple page PDFs:
 
 ```js
-ctx.font = '22px Helvetica';
-ctx.fillText('Hello World', 50, 80);
-ctx.addPage();
+// On first page
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
 
-ctx.font = '22px Helvetica';
-ctx.fillText('Hello World 2', 50, 80);
-ctx.addPage();
+ctx.addPage()
+// Now on second page
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World 2', 50, 80)
 
-ctx.font = '22px Helvetica';
-ctx.fillText('Hello World 3', 50, 80);
-ctx.addPage();
+canvas.toBuffer() // returns a PDF file
+canvas.createPDFStream() // returns a ReadableStream that emits a PDF
 ```
 
-## SVG Support
+See also:
 
- Just like PDF support, make sure to install cairo with `--enable-svg=yes`.
- You also need to tell node-canvas that it is working on SVG upon its initialization:
+* [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs
+* [Canvas#createPDFStream()](#canvascreatepdfstream) for creating PDF streams
+* [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
+  for embedding text instead of paths
+
+## SVG Output Support
+
+node-canvas can create SVG documents instead of images. The canva type must be set when creating the canvas as follows:
 
 ```js
-var canvas = new Canvas(200, 500, 'svg');
+const canvas = createCanvas(200, 500, 'svg')
 // Use the normal primitives.
-fs.writeFile('out.svg', canvas.toBuffer());
+fs.writeFileSync('out.svg', canvas.toBuffer())
 ```
 
 ## SVG Image Support
 
-If librsvg is on your system when node-canvas is installed, node-canvas can render SVG images within your canvas context. Note that this currently works by simply rasterizing the SVG image using librsvg.
+If librsvg is available when node-canvas is installed, node-canvas can render SVG images to your canvas context. This currently works by rasterizing the SVG image (i.e. drawing an SVG image to an SVG canvas will not preserve the SVG data).
 
 ```js
-var img = new Image;
-img.src = './example.svg';
-ctx.drawImage(img, 0, 0, 100, 100);
+const img = new Image()
+img.onload = () => ctx.drawImage(img, 0, 0)
+img.onerror = err => { throw err }
+img.src = './example.svg'
 ```
 
 ## Image pixel formats (experimental)
 
-node-canvas has experimental support for additional pixel formats, roughly
-following the [Canvas color space proposal](https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md).
+node-canvas has experimental support for additional pixel formats, roughly following the [Canvas color space proposal](https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md).
 
 ```js
-var canvas = new Canvas(200, 200);
-var ctx = canvas.getContext('2d', {pixelFormat: 'A8'});
+const canvas = createCanvas(200, 200)
+const ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
 ```
 
-By default, canvases are created in the `RGBA32` format, which corresponds to
-the native HTML Canvas behavior. Each pixel is 32 bits. The JavaScript APIs
-that involve pixel data (`getImageData`, `putImageData`) store the colors in
-the order {red, green, blue, alpha} without alpha pre-multiplication. (The C++
-API stores the colors in the order {alpha, red, green, blue} in native-[endian](https://en.wikipedia.org/wiki/Endianness)
-ordering, with alpha pre-multiplication.)
+By default, canvases are created in the `RGBA32` format, which corresponds to the native HTML Canvas behavior. Each pixel is 32 bits. The JavaScript APIs that involve pixel data (`getImageData`, `putImageData`) store the colors in the order {red, green, blue, alpha} without alpha pre-multiplication. (The C++ API stores the colors in the order {alpha, red, green, blue} in native-[endian](https://en.wikipedia.org/wiki/Endianness) ordering, with alpha pre-multiplication.)
 
 These additional pixel formats have experimental support:
 
-* `RGB24` Like `RGBA32`, but the 8 alpha bits are always opaque. This format is
-  always used if the `alpha` context attribute is set to false (i.e.
-  `canvas.getContext('2d', {alpha: false})`). This format can be faster than
-  `RGBA32` because transparency does not need to be calculated.
-* `A8` Each pixel is 8 bits. This format can either be used for creating
-  grayscale images (treating each byte as an alpha value), or for creating
-  indexed PNGs (treating each byte as a palette index) (see [the example using
-  alpha values with `fillStyle`](examples/indexed-png-alpha.js) and [the
-  example using `imageData`](examples/indexed-png-image-data.js)).
-* `RGB16_565` Each pixel is 16 bits, with red in the upper 5 bits, green in the
-  middle 6 bits, and blue in the lower 5 bits, in native platform endianness.
-  Some hardware devices and frame buffers use this format. Note that PNG does
-  not support this format; when creating a PNG, the image will be converted to
-  24-bit RGB. This format is thus suboptimal for generating PNGs.
-  `ImageData` instances for this mode use a `Uint16Array` instead of a `Uint8ClampedArray`.
-* `A1` Each pixel is 1 bit, and pixels are packed together into 32-bit
-  quantities. The ordering of the bits matches the endianness of the
-  platform: on a little-endian machine, the first pixel is the least-
-  significant bit. This format can be used for creating single-color images.
-  *Support for this format is incomplete, see note below.*
-* `RGB30` Each pixel is 30 bits, with red in the upper 10, green
-  in the middle 10, and blue in the lower 10. (Requires Cairo 1.12 or later.)
-  *Support for this format is incomplete, see note below.*
+* `RGB24` Like `RGBA32`, but the 8 alpha bits are always opaque. This format is always used if the `alpha` context attribute is set to false (i.e. `canvas.getContext('2d', {alpha: false})`). This format can be faster than `RGBA32` because transparency does not need to be calculated.
+* `A8` Each pixel is 8 bits. This format can either be used for creating grayscale images (treating each byte as an alpha value), or for creating indexed PNGs (treating each byte as a palette index) (see [the example using alpha values with `fillStyle`](examples/indexed-png-alpha.js) and [the example using `imageData`](examples/indexed-png-image-data.js)).
+* `RGB16_565` Each pixel is 16 bits, with red in the upper 5 bits, green in the middle 6 bits, and blue in the lower 5 bits, in native platform endianness. Some hardware devices and frame buffers use this format. Note that PNG does not support this format; when creating a PNG, the image will be converted to 24-bit RGB. This format is thus suboptimal for generating PNGs. `ImageData` instances for this mode use a `Uint16Array` instead of a `Uint8ClampedArray`.
+* `A1` Each pixel is 1 bit, and pixels are packed together into 32-bit quantities. The ordering of the bits matches the endianness of the
+  platform: on a little-endian machine, the first pixel is the least-significant bit. This format can be used for creating single-color images. *Support for this format is incomplete, see note below.*
+* `RGB30` Each pixel is 30 bits, with red in the upper 10, green in the middle 10, and blue in the lower 10. (Requires Cairo 1.12 or later.) *Support for this format is incomplete, see note below.*
 
 Notes and caveats:
 
-* Using a non-default format can affect the behavior of APIs that involve pixel
-  data:
+* Using a non-default format can affect the behavior of APIs that involve pixel data:
 
-  * `context2d.createImageData` The size of the array returned depends on the
-    number of bit per pixel for the underlying image data format, per the above
-    descriptions.
-  * `context2d.getImageData` The format of the array returned depends on the
-    underlying image mode, per the above descriptions. Be aware of platform
-    endianness, which can be determined using node.js's [`os.endianness()`](https://nodejs.org/api/os.html#os_os_endianness)
+  * `context2d.createImageData` The size of the array returned depends on the number of bit per pixel for the underlying image data format, per the above descriptions.
+  * `context2d.getImageData` The format of the array returned depends on the underlying image mode, per the above descriptions. Be aware of platform endianness, which can be determined using node.js's [`os.endianness()`](https://nodejs.org/api/os.html#os_os_endianness)
     function.
   * `context2d.putImageData` As above.
 
-* `A1` and `RGB30` do not yet support `getImageData` or `putImageData`. Have a
-  use case and/or opinion on working with these formats? Open an issue and let
-  us know! (See #935.)
+* `A1` and `RGB30` do not yet support `getImageData` or `putImageData`. Have a use case and/or opinion on working with these formats? Open an issue and let us know! (See #935.)
 
-* `A1`, `A8`, `RGB30` and `RGB16_565` with shadow blurs may crash or not render
-  properly.
+* `A1`, `A8`, `RGB30` and `RGB16_565` with shadow blurs may crash or not render properly.
 
-* The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)`
-  constructors assume 4 bytes per pixel. To create an `ImageData` instance with
-  a different number of bytes per pixel, use
-  `new ImageData(new Uint8ClampedArray(size), width, height)` or
-  `new ImageData(new Uint16ClampedArray(size), width, height)`.
+* The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)` constructors assume 4 bytes per pixel. To create an `ImageData` instance with a different number of bytes per pixel, use `new ImageData(new Uint8ClampedArray(size), width, height)` or `new ImageData(new Uint16ClampedArray(size), width, height)`.
 
 ## Benchmarks
 
- Although node-canvas is extremely new, and we have not even begun optimization yet it is already quite fast. For benchmarks vs other node canvas implementations view this [gist](https://gist.github.com/664922), or update the submodules and run `$ make benchmark` yourself.
-
-## Contribute
-
- Want to contribute to node-canvas? patches for features, bug fixes, documentation, examples and others are certainly welcome. Take a look at the [issue queue](https://github.com/Automattic/node-canvas/issues) for existing issues.
+Benchmarks live in the `benchmarks` directory.
 
 ## Examples
 
- Examples are placed in _./examples_, be sure to check them out! most produce a png image of the same name, and others such as _live-clock.js_ launch an http server to be viewed in the browser.
+Examples line in the `examples` directory. Most produce a png image of the same name, and others such as *live-clock.js* launch an HTTP server to be viewed in the browser.
 
-## Testing
+## Original Authors
 
-If you have not previously, init git submodules:
-
-    $ git submodule update --init
-
-Install the node modules:
-
-    $ npm install
-
-Build node-canvas:
-
-    $ node-gyp rebuild
-
-Unit tests:
-
-    $ make test
-
-Visual tests:
-
-    $ make test-server
+  - TJ Holowaychuk ([tj](http://github.com/tj))
+  - Nathan Rajlich ([TooTallNate](http://github.com/TooTallNate))
+  - Rod Vagg ([rvagg](http://github.com/rvagg))
+  - Juriy Zaytsev ([kangax](http://github.com/kangax))
 
 ## License
+
+### node-canvas
 
 (The MIT License)
 
@@ -450,21 +532,23 @@ Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
 
 Copyright (c) 2014 Automattic, Inc and contributors &lt;dev@automattic.com&gt;
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the 'Software'), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### BMP parser
+
+See [license](src/bmp/LICENSE.md)

@@ -46,7 +46,22 @@ typedef struct {
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
   PangoFontDescription *fontDescription;
+  bool imageSmoothingEnabled;
 } canvas_state_t;
+
+/*
+ * Equivalent to a PangoRectangle but holds floats instead of ints
+ * (software pixels are stored here instead of pango units)
+ *
+ * Should be compatible with PANGO_ASCENT, PANGO_LBEARING, etc.
+ */
+
+typedef struct {
+  float x;
+  float y;
+  float width;
+  float height;
+} float_rectangle;
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
 
@@ -99,8 +114,10 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
     static NAN_METHOD(GetImageData);
+    static NAN_METHOD(GetMatrix);
     static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetPatternQuality);
+    static NAN_GETTER(GetImageSmoothingEnabled);
     static NAN_GETTER(GetGlobalCompositeOperation);
     static NAN_GETTER(GetGlobalAlpha);
     static NAN_GETTER(GetShadowColor);
@@ -116,8 +133,9 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetShadowBlur);
     static NAN_GETTER(GetAntiAlias);
     static NAN_GETTER(GetTextDrawingMode);
-    static NAN_GETTER(GetFilter);
+    static NAN_GETTER(GetQuality);
     static NAN_SETTER(SetPatternQuality);
+    static NAN_SETTER(SetImageSmoothingEnabled);
     static NAN_SETTER(SetGlobalCompositeOperation);
     static NAN_SETTER(SetGlobalAlpha);
     static NAN_SETTER(SetShadowColor);
@@ -131,14 +149,14 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_SETTER(SetShadowBlur);
     static NAN_SETTER(SetAntiAlias);
     static NAN_SETTER(SetTextDrawingMode);
-    static NAN_SETTER(SetFilter);
+    static NAN_SETTER(SetQuality);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(const char *str, double x, double y);
+    void setTextPath(double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void shadowStart();

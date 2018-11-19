@@ -8,14 +8,19 @@ ImageBackend::ImageBackend(int width, int height)
 
 ImageBackend::~ImageBackend()
 {
-	destroySurface();
+    if (surface) {
+        destroySurface();
+        Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
+    }
+}
 
-	Nan::AdjustExternalMemory(-1 * approxBytesPerPixel() * width * height);
+Backend *ImageBackend::construct(int width, int height){
+  return new ImageBackend(width, height);
 }
 
 // This returns an approximate value only, suitable for Nan::AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
-uint32_t ImageBackend::approxBytesPerPixel() {
+int32_t ImageBackend::approxBytesPerPixel() {
   switch (format) {
   case CAIRO_FORMAT_ARGB32:
   case CAIRO_FORMAT_RGB24:
@@ -36,12 +41,12 @@ uint32_t ImageBackend::approxBytesPerPixel() {
 
 cairo_surface_t* ImageBackend::createSurface()
 {
-	assert(!this->surface);
-	this->surface = cairo_image_surface_create(this->format, width, height);
-	assert(this->surface);
-	Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
+  assert(!this->surface);
+  this->surface = cairo_image_surface_create(this->format, width, height);
+  assert(this->surface);
+  Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
 
-	return this->surface;
+  return this->surface;
 }
 
 cairo_surface_t* ImageBackend::recreateSurface()
@@ -51,7 +56,7 @@ cairo_surface_t* ImageBackend::recreateSurface()
 		int old_width = cairo_image_surface_get_width(this->surface);
 		int old_height = cairo_image_surface_get_height(this->surface);
 		this->destroySurface();
-		Nan::AdjustExternalMemory(-1 * approxBytesPerPixel() * old_width * old_height);
+		Nan::AdjustExternalMemory(-approxBytesPerPixel() * old_width * old_height);
 	}
 
 	return createSurface();
@@ -78,15 +83,6 @@ void ImageBackend::Initialize(Handle<Object> target)
 	target->Set(Nan::New<String>("ImageBackend").ToLocalChecked(), ctor->GetFunction());
 }
 
-NAN_METHOD(ImageBackend::New)
-{
-	int width  = 0;
-	int height = 0;
-	if (info[0]->IsNumber()) width  = info[0]->Uint32Value();
-	if (info[1]->IsNumber()) height = info[1]->Uint32Value();
-
-	ImageBackend* backend = new ImageBackend(width, height);
-
-	backend->Wrap(info.This());
-	info.GetReturnValue().Set(info.This());
+NAN_METHOD(ImageBackend::New) {
+  init(info);
 }

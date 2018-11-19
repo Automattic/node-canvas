@@ -4,9 +4,9 @@
  * milliseconds to complete.
  */
 
-var Canvas = require('../')
-var canvas = new Canvas(200, 200)
-var largeCanvas = new Canvas(1000, 1000)
+var createCanvas = require('../').createCanvas
+var canvas = createCanvas(200, 200)
+var largeCanvas = createCanvas(1000, 1000)
 var ctx = canvas.getContext('2d')
 
 var initialTimes = 10
@@ -63,6 +63,10 @@ function done (benchmark, times, start, isAsync) {
 }
 
 // node-canvas
+
+bm('fillStyle= name', function () {
+  ctx.fillStyle = "transparent";
+});
 
 bm('lineTo()', function () {
   ctx.lineTo(0, 50)
