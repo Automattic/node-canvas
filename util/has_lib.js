@@ -32,7 +32,7 @@ function _hasQuery (query) {
 function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
 
-    // Try using ldconfig on linux systems
+  // Try using ldconfig on linux systems
   if (_hasQuery('ldconfig -p 2>/dev/null | grep -E "' + libName + '"')) {
     return true
   }
