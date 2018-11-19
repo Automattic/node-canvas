@@ -28,6 +28,7 @@ class Backend : public Nan::ObjectWrap
     cairo_surface_t* surface;
     Canvas* canvas;
 
+    Backend(string name);
     Backend(string name, int width, int height);
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }

@@ -145,6 +145,11 @@
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
           }
         }],
+        ['has_FBDev=="true"',
+        {
+            'defines': ['HAS_FBDEV'],
+            'sources': ['src/backend/FBDevBackend.cc']
+        }],
         ['with_jpeg=="true"', {
           'defines': [
             'HAVE_JPEG'
@@ -216,7 +221,10 @@
             }]
           ]
         }]
-      ]
+      ],
+      'variables': {
+        'has_FBDev%': 'true',
+      }
     }
   ]
 }

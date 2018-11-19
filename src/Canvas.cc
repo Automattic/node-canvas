@@ -25,6 +25,7 @@
 #include "JPEGStream.h"
 #endif
 
+#include "backend/FBDevBackend.h"
 #include "backend/ImageBackend.h"
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
@@ -104,7 +105,8 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+    if (Nan::New(FBDevBackend::constructor)->HasInstance(info[0]) ||
+        Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
