@@ -65,8 +65,8 @@ function done (benchmark, times, start, isAsync) {
 // node-canvas
 
 bm('fillStyle= name', function () {
-  ctx.fillStyle = "transparent";
-});
+  ctx.fillStyle = 'transparent'
+})
 
 bm('lineTo()', function () {
   ctx.lineTo(0, 50)
@@ -138,11 +138,11 @@ bm('moveTo() / arc() / stroke()', function () {
   ctx.beginPath()
   ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Outer circle
   ctx.moveTo(110, 75)
-  ctx.arc(75, 75, 35, 0, Math.PI, false)   // Mouth
+  ctx.arc(75, 75, 35, 0, Math.PI, false) // Mouth
   ctx.moveTo(65, 65)
-  ctx.arc(60, 65, 5, 0, Math.PI * 2, true)  // Left eye
+  ctx.arc(60, 65, 5, 0, Math.PI * 2, true) // Left eye
   ctx.moveTo(95, 65)
-  ctx.arc(90, 65, 5, 0, Math.PI * 2, true)  // Right eye
+  ctx.arc(90, 65, 5, 0, Math.PI * 2, true) // Right eye
   ctx.stroke()
 })
 

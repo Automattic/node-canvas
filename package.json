@@ -25,7 +25,7 @@
   "scripts": {
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
-    "pretest": "standard examples/*.js test/server.js test/public/*.js benchmark/run.js lib/context2d.js util/has_lib.js browser.js index.js && node-gyp build",
+    "pretest": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js && node-gyp build",
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
