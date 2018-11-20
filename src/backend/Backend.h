@@ -55,6 +55,7 @@ class Backend : public Nan::ObjectWrap
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
     virtual cairo_format_t getFormat();
+    virtual void setFormat(cairo_format_t format);
 
     bool isSurfaceValid();
     inline const char* getError(){ return error; }

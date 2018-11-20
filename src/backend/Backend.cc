@@ -92,6 +92,12 @@ cairo_format_t Backend::getFormat()
 {
 	return this->format;
 }
+void Backend::setFormat(cairo_format_t format)
+{
+	this->format = format;
+	this->recreateSurface();
+}
+
 bool Backend::isSurfaceValid(){
   bool hadSurface = surface != NULL;
   bool isValid = true;
