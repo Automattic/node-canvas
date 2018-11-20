@@ -121,7 +121,7 @@ void FBDevBackend::setHeight(int height)
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
 
-	Backend::setHeight(width);
+	Backend::setHeight(height);
 }
 void FBDevBackend::setFormat(cairo_format_t format)
 {
