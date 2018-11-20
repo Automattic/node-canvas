@@ -37,6 +37,14 @@ FBDevBackend::FBDevBackend(string deviceName)
 
 	if(this->fb_data == MAP_FAILED)
 		throw FBDevBackendException("Failed to map framebuffer device to memory");
+
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+		"Error reading variable framebuffer information");
+
+	Backend::setWidth(fb_vinfo.xres);
+	Backend::setHeight(fb_vinfo.yres);
 }
 
 FBDevBackend::~FBDevBackend()
@@ -62,9 +70,6 @@ cairo_surface_t* FBDevBackend::createSurface()
 
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
-
-	this->width  = fb_vinfo.xres;
-	this->height = fb_vinfo.yres;
 
 	// switch through bpp and decide on which format for the cairo surface to use
 	cairo_format_t format;
