@@ -15,6 +15,20 @@
 using namespace v8;
 
 
+// switch through bpp and decide on which format for the cairo surface to use
+cairo_format_t bits2format(__u32 bits_per_pixel)
+{
+	switch(bits_per_pixel)
+	{
+		case 16: return CAIRO_FORMAT_RGB16_565;
+		case 32: return CAIRO_FORMAT_ARGB32;
+
+		default:
+			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
+	}
+}
+
+
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
@@ -45,6 +59,7 @@ FBDevBackend::FBDevBackend(string deviceName)
 
 	Backend::setWidth(fb_vinfo.xres);
 	Backend::setHeight(fb_vinfo.yres);
+	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
 }
 
 FBDevBackend::~FBDevBackend()
@@ -71,20 +86,10 @@ cairo_surface_t* FBDevBackend::createSurface()
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
 
-	// switch through bpp and decide on which format for the cairo surface to use
-	cairo_format_t format;
-	switch(fb_vinfo.bits_per_pixel)
-	{
-		case 16: format = CAIRO_FORMAT_RGB16_565; break;
-		case 32: format = CAIRO_FORMAT_ARGB32;    break;
-
-		default:
-			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
-	}
-
 	// create cairo surface from data
-	this->surface = cairo_image_surface_create_for_data(this->fb_data, format,
-		this->width, this->height, fb_finfo.line_length);
+	this->surface = cairo_image_surface_create_for_data(this->fb_data,
+		bits2format(fb_vinfo.bits_per_pixel), fb_vinfo.xres, fb_vinfo.yres,
+		fb_finfo.line_length);
 
 	return this->surface;
 }
