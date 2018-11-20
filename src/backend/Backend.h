@@ -21,6 +21,7 @@ class Backend : public Nan::ObjectWrap
   private:
     const string name;
     const char* error = NULL;
+    cairo_format_t format;
 
   protected:
     int width;
@@ -53,9 +54,7 @@ class Backend : public Nan::ObjectWrap
     virtual void setHeight(int height);
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
-    virtual cairo_format_t getFormat() {
-      return CAIRO_FORMAT_INVALID;
-    }
+    virtual cairo_format_t getFormat();
 
     bool isSurfaceValid();
     inline const char* getError(){ return error; }

@@ -3,6 +3,7 @@
 
 Backend::Backend(string name)
 	: name(name)
+	, format(CAIRO_FORMAT_INVALID)
 	, width(0)
 	, height(0)
 	, surface(NULL)
@@ -10,6 +11,7 @@ Backend::Backend(string name)
 {}
 Backend::Backend(string name, int width, int height)
   : name(name)
+	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
   , surface(NULL)
@@ -86,6 +88,10 @@ void Backend::setHeight(int height_)
   this->recreateSurface();
 }
 
+cairo_format_t Backend::getFormat()
+{
+	return this->format;
+}
 bool Backend::isSurfaceValid(){
   bool hadSurface = surface != NULL;
   bool isValid = true;
