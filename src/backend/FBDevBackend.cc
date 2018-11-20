@@ -113,6 +113,27 @@ void FBDevBackend::setHeight(int height)
 
 	Backend::setHeight(width);
 }
+void FBDevBackend::setFormat(cairo_format_t format)
+{
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+		"Error reading variable framebuffer information");
+
+	switch(format)
+	{
+		case CAIRO_FORMAT_RGB16_565: fb_vinfo.bits_per_pixel = 16; break;
+		case CAIRO_FORMAT_ARGB32:    fb_vinfo.bits_per_pixel = 32; break;
+
+		default:
+			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
+	}
+
+	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
+		"Error setting variable framebuffer information");
+
+	Backend::setFormat(format);
+}
 
 
 Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;

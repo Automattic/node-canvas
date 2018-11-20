@@ -17,6 +17,7 @@
      cairo_surface_t* createSurface();
      void setWidth(int width);
     void setHeight(int height);
+    void setFormat(cairo_format_t format);
    public:
     FBDevBackend(string deviceName);
      static Nan::Persistent<v8::FunctionTemplate> constructor;
