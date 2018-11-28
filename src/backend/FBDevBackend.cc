@@ -45,8 +45,8 @@ FBDevBackend::FBDevBackend(string deviceName)
 
 	this->initFbDev(deviceName, &fb_vinfo);
 
-	Backend::setWidth(fb_vinfo.xres);
-	Backend::setHeight(fb_vinfo.yres);
+	this->width  = fb_vinfo.xres;
+	this->height = fb_vinfo.yres;
 }
 
 FBDevBackend::~FBDevBackend()
