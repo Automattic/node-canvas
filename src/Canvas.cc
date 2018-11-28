@@ -94,7 +94,13 @@ NAN_METHOD(Canvas::New) {
     if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
     if (info[2]->IsString()) {
-      if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
+      if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
+        if (info[3]->IsString())
+          backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
+        else
+          backend = new FBDevBackend(width, height);
+      }
+      else if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
         backend = new PdfBackend(width, height);
       else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);

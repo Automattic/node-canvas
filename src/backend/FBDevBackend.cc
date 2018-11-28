@@ -29,6 +29,16 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 }
 
 
+FBDevBackend::FBDevBackend(int width, int height, string deviceName)
+	: Backend("fbdev", width, height)
+{
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->initFbDev(deviceName, &fb_vinfo);
+
+	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
+}
+
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
