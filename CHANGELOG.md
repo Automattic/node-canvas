@@ -9,13 +9,15 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* BMP support
+
 ### Fixed
+* Reset context on resurface (#1292)
 
 2.1.0
 ==================
 ### Added
 * Warn when building with old, unsupported versions of cairo or libjpeg.
-* BMP support
 
 2.0.0
 ==================

@@ -352,22 +352,34 @@ describe('Canvas', function () {
   })
 
   it('Canvas#{width,height}=', function () {
-    var context; var canvas = createCanvas(100, 200)
+    const canvas = createCanvas(100, 200);
+    const context = canvas.getContext('2d');
 
-    assert.equal(100, canvas.width)
-    assert.equal(200, canvas.height)
+    assert.equal(canvas.width, 100);
+    assert.equal(canvas.height, 200);
 
-    canvas = createCanvas()
-    context = canvas.getContext('2d')
-    assert.equal(0, canvas.width)
-    assert.equal(0, canvas.height)
+    context.globalAlpha = .5;
+    context.fillStyle = '#0f0';
+    context.strokeStyle = '#0f0';
+    context.font = '20px arial';
+    context.fillRect(0, 0, 1, 1);
 
-    canvas.width = 50
-    canvas.height = 50
-    assert.equal(50, canvas.width)
-    assert.equal(50, canvas.height)
-    assert.equal(1, context.lineWidth) // #1095
-  })
+    canvas.width = 50;
+    canvas.height = 70;
+    assert.equal(canvas.width, 50);
+    assert.equal(canvas.height, 70);
+
+    context.font = '20px arial';
+    assert.equal(context.font, '20px arial');
+    canvas.width |= 0;
+
+    assert.equal(context.lineWidth, 1); // #1095
+    assert.equal(context.globalAlpha, 1); // #1292
+    assert.equal(context.fillStyle, '#000000');
+    assert.equal(context.strokeStyle, '#000000');
+    assert.equal(context.font, '10px sans-serif');
+    assert.strictEqual(context.getImageData(0, 0, 1, 1).data.join(','), '0,0,0,0');
+  });
 
   it('Canvas#stride', function () {
     var canvas = createCanvas(24, 10)
@@ -922,8 +934,9 @@ describe('Canvas', function () {
       // Positive = going down from the baseline
       assert.ok(metrics.actualBoundingBoxDescent > 0) // ~4-5
 
-      ctx.textBaseline = 'bottom'
-      metrics = ctx.measureText('Alphabet')
+      ctx.textBaseline = "bottom"
+      metrics = ctx.measureText("Alphabet")
+      assert.strictEqual(ctx.textBaseline, "bottom")
       assert.ok(metrics.alphabeticBaseline > 0) // ~4-5
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // On the baseline or slightly above
@@ -932,18 +945,28 @@ describe('Canvas', function () {
   })
 
   it('Context2d#currentTransform', function () {
-    var canvas = createCanvas(20, 20)
-    var ctx = canvas.getContext('2d')
+    var canvas = createCanvas(20, 20);
+    var ctx = canvas.getContext('2d');
 
-    ctx.scale(0.1, 0.3)
-    var actual = ctx.currentTransform
-    assert.equal(actual.a, 0.1)
-    assert.equal(actual.b, 0)
-    assert.equal(actual.c, 0)
-    assert.equal(actual.d, 0.3)
-    assert.equal(actual.e, 0)
-    assert.equal(actual.f, 0)
-  })
+    ctx.scale(0.1, 0.3);
+    var mat1 = ctx.currentTransform;
+    assert.equal(mat1.a, 0.1);
+    assert.equal(mat1.b, 0);
+    assert.equal(mat1.c, 0);
+    assert.equal(mat1.d, 0.3);
+    assert.equal(mat1.e, 0);
+    assert.equal(mat1.f, 0);
+
+    ctx.resetTransform();
+    var mat2 = ctx.currentTransform;
+    assert.equal(mat2.a, 1);
+    assert.equal(mat2.d, 1);
+
+    ctx.currentTransform = mat1;
+    var mat3 = ctx.currentTransform;
+    assert.equal(mat3.a, 0.1);
+    assert.equal(mat3.d, 0.3);
+  });
 
   it('Context2d#createImageData(ImageData)', function () {
     var canvas = createCanvas(20, 20)

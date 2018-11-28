@@ -71,9 +71,12 @@ class Context2d: public Nan::ObjectWrap {
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
+    static Nan::Persistent<Function> _DOMMatrix;
+    static Nan::Persistent<Function> _parseFont;
     static Nan::Persistent<FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
+    static NAN_METHOD(SaveExternalModules);
     static NAN_METHOD(DrawImage);
     static NAN_METHOD(PutImageData);
     static NAN_METHOD(Save);
@@ -83,6 +86,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(Scale);
     static NAN_METHOD(Transform);
     static NAN_METHOD(ResetTransform);
+    static NAN_METHOD(SetTransform);
     static NAN_METHOD(IsPointInPath);
     static NAN_METHOD(BeginPath);
     static NAN_METHOD(ClosePath);
@@ -95,9 +99,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(SetFont);
     static NAN_METHOD(SetFillColor);
     static NAN_METHOD(SetStrokeColor);
-    static NAN_METHOD(SetFillPattern);
     static NAN_METHOD(SetStrokePattern);
-    static NAN_METHOD(SetTextBaseline);
     static NAN_METHOD(SetTextAlignment);
     static NAN_METHOD(SetLineDash);
     static NAN_METHOD(GetLineDash);
@@ -114,15 +116,17 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
     static NAN_METHOD(GetImageData);
-    static NAN_METHOD(GetMatrix);
+    static NAN_METHOD(CreateImageData);
+    static NAN_METHOD(GetStrokeColor);
+    static NAN_METHOD(CreatePattern);
+    static NAN_METHOD(CreateLinearGradient);
+    static NAN_METHOD(CreateRadialGradient);
     static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetPatternQuality);
     static NAN_GETTER(GetImageSmoothingEnabled);
     static NAN_GETTER(GetGlobalCompositeOperation);
     static NAN_GETTER(GetGlobalAlpha);
     static NAN_GETTER(GetShadowColor);
-    static NAN_GETTER(GetFillColor);
-    static NAN_GETTER(GetStrokeColor);
     static NAN_GETTER(GetMiterLimit);
     static NAN_GETTER(GetLineCap);
     static NAN_GETTER(GetLineJoin);
@@ -134,6 +138,12 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetAntiAlias);
     static NAN_GETTER(GetTextDrawingMode);
     static NAN_GETTER(GetQuality);
+    static NAN_GETTER(GetCurrentTransform);
+    static NAN_GETTER(GetFillStyle);
+    static NAN_GETTER(GetStrokeStyle);
+    static NAN_GETTER(GetFont);
+    static NAN_GETTER(GetTextBaseline);
+    static NAN_GETTER(GetTextAlign);
     static NAN_SETTER(SetPatternQuality);
     static NAN_SETTER(SetImageSmoothingEnabled);
     static NAN_SETTER(SetGlobalCompositeOperation);
@@ -150,6 +160,12 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_SETTER(SetAntiAlias);
     static NAN_SETTER(SetTextDrawingMode);
     static NAN_SETTER(SetQuality);
+    static NAN_SETTER(SetCurrentTransform);
+    static NAN_SETTER(SetFillStyle);
+    static NAN_SETTER(SetStrokeStyle);
+    static NAN_SETTER(SetFont);
+    static NAN_SETTER(SetTextBaseline);
+    static NAN_SETTER(SetTextAlign);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
@@ -171,10 +187,23 @@ class Context2d: public Nan::ObjectWrap {
     void save();
     void restore();
     void setFontFromState();
+    void resetState(bool init = false);
     inline PangoLayout *layout(){ return _layout; }
 
   private:
     ~Context2d();
+    void _resetPersistentHandles();
+    Local<Value> _getFillColor();
+    Local<Value> _getStrokeColor();
+    void _setFillColor(Local<Value> arg);
+    void _setFillPattern(Local<Value> arg);
+    void _setStrokeColor(Local<Value> arg);
+    void _setStrokePattern(Local<Value> arg);
+    Nan::Persistent<Value> _fillStyle;
+    Nan::Persistent<Value> _strokeStyle;
+    Nan::Persistent<Value> _font;
+    Nan::Persistent<Value> _textBaseline;
+    Nan::Persistent<Value> _textAlign;
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
