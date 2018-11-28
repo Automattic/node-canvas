@@ -6,7 +6,12 @@
  #include <v8.h>
  #include "Backend.h"
  using namespace std;
- class FBDevBackend : public Backend
+
+
+const string DEFAULT_DEVICE = "/dev/fb0";
+
+
+class FBDevBackend : public Backend
 {
   private:
     int fb_fd;

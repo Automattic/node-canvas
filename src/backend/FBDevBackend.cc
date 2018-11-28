@@ -161,7 +161,7 @@ void FBDevBackend::Initialize(Handle<Object> target)
 
 NAN_METHOD(FBDevBackend::New)
 {
-	string fbDevice = "/dev/fb0";
+	string fbDevice = DEFAULT_DEVICE;
 	if(info[0]->IsString()) fbDevice = *String::Utf8Value(info[0].As<String>());
 
 	FBDevBackend* backend = new FBDevBackend(fbDevice);

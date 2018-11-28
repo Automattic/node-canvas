@@ -11,7 +11,7 @@ const { backends: { FBDevBackend }, Canvas } = require('..')
 
 const squareSize = 100
 
-var device = process.argv[2] || '/dev/fb0'
+var device = process.argv[2]
 
 var backend = new FBDevBackend(device)
 var canvas = new Canvas(backend)
