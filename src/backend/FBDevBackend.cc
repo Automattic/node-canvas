@@ -36,7 +36,6 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 
 	this->initFbDev(deviceName, &fb_vinfo);
 
-	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
 }
 
 FBDevBackend::FBDevBackend(string deviceName)
@@ -48,7 +47,6 @@ FBDevBackend::FBDevBackend(string deviceName)
 
 	Backend::setWidth(fb_vinfo.xres);
 	Backend::setHeight(fb_vinfo.yres);
-	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
 }
 
 FBDevBackend::~FBDevBackend()
@@ -84,6 +82,8 @@ void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vin
 
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, fb_vinfo,
 		"Error reading variable framebuffer information");
+
+	this->format = bits2format(fb_vinfo->bits_per_pixel);
 }
 
 

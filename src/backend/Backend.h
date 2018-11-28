@@ -21,11 +21,11 @@ class Backend : public Nan::ObjectWrap
   private:
     const string name;
     const char* error = NULL;
-    cairo_format_t format;
 
   protected:
     int width;
     int height;
+    cairo_format_t format;
     cairo_surface_t* surface;
     Canvas* canvas;
 
