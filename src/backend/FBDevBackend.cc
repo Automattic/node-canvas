@@ -32,6 +32,26 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->initFbDev(deviceName, &fb_vinfo);
+
+	Backend::setWidth(fb_vinfo.xres);
+	Backend::setHeight(fb_vinfo.yres);
+	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
+}
+
+FBDevBackend::~FBDevBackend()
+{
+	this->destroySurface();
+
+	munmap(this->fb_data, this->fb_finfo.smem_len);
+	close(this->fb_fd);
+}
+
+
+void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo)
+{
 	// Open the file for reading and writing
 	this->fb_fd = open(deviceName.c_str(), O_RDWR);
 
@@ -52,22 +72,8 @@ FBDevBackend::FBDevBackend(string deviceName)
 	if(this->fb_data == MAP_FAILED)
 		throw FBDevBackendException("Failed to map framebuffer device to memory");
 
-	struct fb_var_screeninfo fb_vinfo;
-
-	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, fb_vinfo,
 		"Error reading variable framebuffer information");
-
-	Backend::setWidth(fb_vinfo.xres);
-	Backend::setHeight(fb_vinfo.yres);
-	Backend::setFormat(bits2format(fb_vinfo.bits_per_pixel));
-}
-
-FBDevBackend::~FBDevBackend()
-{
-	this->destroySurface();
-
-	munmap(this->fb_data, this->fb_finfo.smem_len);
-	close(this->fb_fd);
 }
 
 

@@ -17,10 +17,13 @@ class FBDevBackend : public Backend
     int fb_fd;
     struct fb_fix_screeninfo fb_finfo;
     unsigned char* fb_data;
-     ~FBDevBackend();
-     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
-     cairo_surface_t* createSurface();
-     void setWidth(int width);
+
+    ~FBDevBackend();
+
+    void initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo);
+    void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
+    cairo_surface_t* createSurface();
+    void setWidth(int width);
     void setHeight(int height);
     void setFormat(cairo_format_t format);
    public:
