@@ -36,6 +36,11 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 
 	this->initFbDev(deviceName, &fb_vinfo);
 
+	fb_vinfo.xres = width;
+	fb_vinfo.yres = height;
+
+	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
+		"Error setting variable framebuffer information");
 }
 
 FBDevBackend::FBDevBackend(string deviceName)
