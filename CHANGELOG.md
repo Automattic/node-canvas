@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Reset context on resurface (#1292)
+* Support Jest test framework (#1311)
 
 2.1.0
 ==================
