@@ -58,6 +58,8 @@ class Backend : public Nan::ObjectWrap
 
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
+
+    virtual void onPaint(){};
 };
 
 

@@ -426,6 +426,9 @@ Context2d::fill(bool preserve) {
       ? shadow(cairo_fill)
       : cairo_fill(_context);
   }
+
+  // Notify backend that the Cairo surface has got a painting operation
+  canvas()->backend()->onPaint();
 }
 
 /*
@@ -480,6 +483,9 @@ Context2d::stroke(bool preserve) {
       ? shadow(cairo_stroke)
       : cairo_stroke(_context);
   }
+
+  // Notify backend that the Cairo surface has got a painting operation
+  canvas()->backend()->onPaint();
 }
 
 /*
@@ -756,7 +762,9 @@ NAN_METHOD(Context2d::AddPage) {
     return Nan::ThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
-  return;
+
+  // Notify backend that the Cairo surface has got a painting operation
+  context->canvas()->backend()->onPaint();
 }
 
 /*
@@ -946,6 +954,9 @@ NAN_METHOD(Context2d::PutImageData) {
     , dy
     , cols
     , rows);
+
+  // Notify backend that the Cairo surface has got a painting operation
+  context->canvas()->backend()->onPaint();
 }
 
 /*
@@ -1343,6 +1354,9 @@ NAN_METHOD(Context2d::DrawImage) {
     cairo_destroy(ctxTemp);
     cairo_surface_destroy(surfTemp);
   }
+
+  // Notify backend that the Cairo surface has got a painting operation
+  context->canvas()->backend()->onPaint();
 }
 
 /*
