@@ -26,6 +26,9 @@ class FBDevBackend : public Backend
     void setWidth(int width);
     void setHeight(int height);
     void setFormat(cairo_format_t format);
+
+    void onPaint();
+
    public:
     FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE);
     FBDevBackend(string deviceName);

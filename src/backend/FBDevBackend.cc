@@ -167,6 +167,12 @@ void FBDevBackend::setFormat(cairo_format_t format)
 }
 
 
+void FBDevBackend::onPaint()
+{
+	std::cout << "onPaint" << std::endl;
+}
+
+
 Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;
 
 void FBDevBackend::Initialize(Handle<Object> target)
