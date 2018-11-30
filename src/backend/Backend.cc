@@ -1,4 +1,30 @@
+#include <nan.h>
+
 #include "Backend.h"
+
+
+using Nan::AsyncQueueWorker;
+using Nan::AsyncWorker;
+using Nan::Callback;
+
+
+class WaitVSync: public AsyncWorker
+{
+	public:
+		WaitVSync(Callback* callback, Backend* backend)
+			: AsyncWorker(callback, "Backend:WaitVSync")
+			, backend(backend)
+		{}
+
+		void Execute()
+		{
+			backend->waitVSync();
+			backend->swapBuffers();
+		}
+
+	private:
+		Backend* backend;
+};
 
 
 Backend::Backend(string name, int width, int height)
@@ -7,6 +33,7 @@ Backend::Backend(string name, int width, int height)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
+	, waitingVSync(true)
 {}
 
 Backend::~Backend()
@@ -94,6 +121,16 @@ bool Backend::isSurfaceValid(){
     destroySurface();
 
   return isValid;
+}
+
+void Backend::onPaint()
+{
+	if(waitingVSync) return;
+
+	waitingVSync = true;
+
+	// Dispatch thread to wait for VSync
+	AsyncQueueWorker(new WaitVSync(NULL, this));
 }
 
 

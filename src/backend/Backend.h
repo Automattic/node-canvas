@@ -27,6 +27,7 @@ class Backend : public Nan::ObjectWrap
     int height;
     cairo_surface_t* surface;
     Canvas* canvas;
+    bool waitingVSync;
 
     Backend(string name, int width, int height);
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
@@ -59,7 +60,10 @@ class Backend : public Nan::ObjectWrap
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
 
-    virtual void onPaint(){};
+    void onPaint();
+
+    virtual void waitVSync(){};
+    virtual void swapBuffers(){};
 };
 
 
