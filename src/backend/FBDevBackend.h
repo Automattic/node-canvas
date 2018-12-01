@@ -17,10 +17,14 @@ class FBDevBackend : public Backend
     int fb_fd;
     struct fb_fix_screeninfo fb_finfo;
     unsigned char* fb_data;
+    unsigned char* fb_data_screen;
+    unsigned char* fb_data_surface;
+    bool useCopyBuffer;
 
     ~FBDevBackend();
 
     void initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo);
+    void enableDoubleBuffer(int height, struct fb_var_screeninfo* fb_vinfo);
     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
     cairo_surface_t* createSurface();
     void setWidth(int width);
@@ -28,6 +32,7 @@ class FBDevBackend : public Backend
     void setFormat(cairo_format_t format);
 
     void waitVSync();
+    void swapBuffers();
 
    public:
     FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE);

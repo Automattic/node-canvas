@@ -32,9 +32,6 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 	: Backend("fbdev", width, height)
 {
-	// Allow VSync requests by default
-	listenOnDraw = true;
-
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->initFbDev(deviceName, &fb_vinfo);
@@ -44,25 +41,28 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
+
+	this->enableDoubleBuffer(height, &fb_vinfo);
 }
 
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
-	// Allow VSync requests by default
-	listenOnDraw = true;
-
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->initFbDev(deviceName, &fb_vinfo);
 
 	this->width  = fb_vinfo.xres;
 	this->height = fb_vinfo.yres;
+
+	this->enableDoubleBuffer(height, &fb_vinfo);
 }
 
 FBDevBackend::~FBDevBackend()
 {
 	this->destroySurface();
+
+	if(useCopyBuffer) free(fb_data_surface);
 
 	munmap(this->fb_data, this->fb_finfo.smem_len);
 	close(this->fb_fd);
@@ -97,6 +97,26 @@ void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vin
 	this->format = bits2format(fb_vinfo->bits_per_pixel);
 }
 
+void FBDevBackend::enableDoubleBuffer(int height, struct fb_var_screeninfo* fb_vinfo)
+{
+	fb_vinfo->yres_virtual = height * 2;
+
+	// Try to use real double buffer inside graphic card memory. If framebuffer
+	// driver don't support to have a virtual framebuffer bigger than the actual
+	// one, then we'll use a buffer in memory. It's not so efficient and could
+	// lead to some tearing, but with VSync this should be minimal and at least
+	// we'll not see screen redraws.
+	useCopyBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, fb_vinfo) == -1;
+
+	fb_data_screen  = this->fb_data;
+	fb_data_surface = useCopyBuffer
+		? (unsigned char*)malloc(this->fb_finfo.smem_len)
+		: this->fb_data + fb_vinfo->yres * fb_finfo.line_length;
+
+	// Allow VSync requests by default
+	listenOnDraw = true;
+}
+
 
 void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data,
 	string errmsg)
@@ -114,7 +134,7 @@ cairo_surface_t* FBDevBackend::createSurface()
 		"Error reading variable framebuffer information");
 
 	// create cairo surface from data
-	this->surface = cairo_image_surface_create_for_data(this->fb_data,
+	this->surface = cairo_image_surface_create_for_data(this->fb_data_surface,
 		bits2format(fb_vinfo.bits_per_pixel), fb_vinfo.xres, fb_vinfo.yres,
 		fb_finfo.line_length);
 
@@ -144,6 +164,8 @@ void FBDevBackend::setHeight(int height)
 		"Error reading variable framebuffer information");
 
 	fb_vinfo.yres = height;
+
+	if(useCopyBuffer) fb_vinfo.yres_virtual = height * 2;
 
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
@@ -179,6 +201,38 @@ void FBDevBackend::waitVSync()
 
   this->FbDevIoctlHelper(FBIO_WAITFORVSYNC, &arg,
     "Error waiting for framebuffer VSync");
+}
+
+void FBDevBackend::swapBuffers()
+{
+	if(useCopyBuffer)
+		memcpy(fb_data_screen, fb_data_surface, this->fb_finfo.smem_len);
+
+	else
+	{
+		// Update display panning
+		struct fb_var_screeninfo fb_vinfo;
+
+		this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+			"Error reading variable framebuffer information");
+
+		fb_vinfo.yoffset = fb_vinfo.yoffset ? 0 : fb_vinfo.yres;
+
+		this->FbDevIoctlHelper(FBIOPAN_DISPLAY, &fb_vinfo,
+			"Error panning the framebuffer display");
+
+		// Swap front and back buffers pointers
+		unsigned char* fb_data_aux = fb_data_screen;
+		fb_data_screen  = fb_data_surface;
+		fb_data_surface = fb_data_aux;
+
+		// HACK Update surface pointer
+		// TODO Find how to cast `surface` pointer to `cairo_image_surface_t*`,
+		//      or better how to get direct access to the `pixman_image` object
+		//cairo_surface_flush(surface);
+		//((cairo_image_surface_t*)surface)->pixman_image->bits.bits = fb_data_surface;
+		//cairo_surface_mark_dirty(surface);
+	}
 }
 
 
