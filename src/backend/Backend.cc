@@ -1,14 +1,6 @@
 #include "Backend.h"
 
 
-Backend::Backend(string name)
-	: name(name)
-	, format(CAIRO_FORMAT_INVALID)
-	, width(0)
-	, height(0)
-	, surface(NULL)
-	, canvas(NULL)
-{}
 Backend::Backend(string name, int width, int height)
   : name(name)
 	, format(CAIRO_FORMAT_INVALID)
