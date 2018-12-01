@@ -22,18 +22,21 @@ class Backend : public Nan::ObjectWrap
     const string name;
     const char* error = NULL;
 
+    uv_thread_t vSyncThread;
+
   protected:
     int width;
     int height;
     cairo_surface_t* surface;
     Canvas* canvas;
-    bool waitingVSync;
 
     Backend(string name, int width, int height);
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
 
   public:
+    bool listenOnDraw;
+
     virtual ~Backend();
 
     void setCanvas(Canvas* canvas);

@@ -3,28 +3,16 @@
 #include "Backend.h"
 
 
-using Nan::AsyncQueueWorker;
-using Nan::AsyncWorker;
-using Nan::Callback;
-
-
-class WaitVSync: public AsyncWorker
+void WaitVSync(void* arg)
 {
-	public:
-		WaitVSync(Callback* callback, Backend* backend)
-			: AsyncWorker(callback, "Backend:WaitVSync")
-			, backend(backend)
-		{}
+	Backend* backend = (Backend*)arg;
 
-		void Execute()
-		{
-			backend->waitVSync();
-			backend->swapBuffers();
-		}
+	backend->waitVSync();
+	backend->swapBuffers();
 
-	private:
-		Backend* backend;
-};
+	// Listen new `onDraw()` requests
+	backend->listenOnDraw = true;
+}
 
 
 Backend::Backend(string name, int width, int height)
@@ -33,7 +21,7 @@ Backend::Backend(string name, int width, int height)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
-	, waitingVSync(true)
+	, listenOnDraw(false)
 {}
 
 Backend::~Backend()
@@ -125,12 +113,12 @@ bool Backend::isSurfaceValid(){
 
 void Backend::onPaint()
 {
-	if(waitingVSync) return;
+	if(!listenOnDraw) return;
 
-	waitingVSync = true;
+	listenOnDraw = false;
 
 	// Dispatch thread to wait for VSync
-	AsyncQueueWorker(new WaitVSync(NULL, this));
+	uv_thread_create(&vSyncThread, WaitVSync, this);
 }
 
 
