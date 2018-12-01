@@ -22,6 +22,8 @@ class Backend : public Nan::ObjectWrap
     const string name;
     const char* error = NULL;
 
+    uv_thread_t vSyncThread;
+
   protected:
     int width;
     int height;
@@ -34,6 +36,8 @@ class Backend : public Nan::ObjectWrap
     static Backend *construct(int width, int height){ return nullptr; }
 
   public:
+    bool listenOnDraw;
+
     virtual ~Backend();
 
     void setCanvas(Canvas* canvas);
@@ -59,7 +63,10 @@ class Backend : public Nan::ObjectWrap
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
 
-    virtual void onPaint(){};
+    void onPaint();
+
+    virtual void waitVSync(){};
+    virtual void swapBuffers(){};
 };
 
 

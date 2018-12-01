@@ -1,4 +1,18 @@
+#include <nan.h>
+
 #include "Backend.h"
+
+
+void WaitVSync(void* arg)
+{
+	Backend* backend = (Backend*)arg;
+
+	backend->waitVSync();
+	backend->swapBuffers();
+
+	// Listen new `onDraw()` requests
+	backend->listenOnDraw = true;
+}
 
 
 Backend::Backend(string name, int width, int height)
@@ -8,6 +22,7 @@ Backend::Backend(string name, int width, int height)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
+	, listenOnDraw(false)
 {}
 
 Backend::~Backend()
@@ -105,6 +120,16 @@ bool Backend::isSurfaceValid(){
     destroySurface();
 
   return isValid;
+}
+
+void Backend::onPaint()
+{
+	if(!listenOnDraw) return;
+
+	listenOnDraw = false;
+
+	// Dispatch thread to wait for VSync
+	uv_thread_create(&vSyncThread, WaitVSync, this);
 }
 
 
