@@ -32,6 +32,9 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 	: Backend("fbdev", width, height)
 {
+	// Allow VSync requests by default
+	listenOnDraw = true;
+
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->initFbDev(deviceName, &fb_vinfo);
@@ -46,6 +49,9 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 FBDevBackend::FBDevBackend(string deviceName)
 	: Backend("fbdev")
 {
+	// Allow VSync requests by default
+	listenOnDraw = true;
+
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->initFbDev(deviceName, &fb_vinfo);
@@ -167,9 +173,12 @@ void FBDevBackend::setFormat(cairo_format_t format)
 }
 
 
-void FBDevBackend::onPaint()
+void FBDevBackend::waitVSync()
 {
-	std::cout << "onPaint" << std::endl;
+  int arg = 0;
+
+  this->FbDevIoctlHelper(FBIO_WAITFORVSYNC, &arg,
+    "Error waiting for framebuffer VSync");
 }
 
 
