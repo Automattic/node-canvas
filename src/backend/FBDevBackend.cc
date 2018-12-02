@@ -226,12 +226,8 @@ void FBDevBackend::swapBuffers()
 		fb_data_screen  = fb_data_surface;
 		fb_data_surface = fb_data_aux;
 
-		// HACK Update surface pointer
-		// TODO Find how to cast `surface` pointer to `cairo_image_surface_t*`,
-		//      or better how to get direct access to the `pixman_image` object
-		//cairo_surface_flush(surface);
-		//((cairo_image_surface_t*)surface)->pixman_image->bits.bits = fb_data_surface;
-		//cairo_surface_mark_dirty(surface);
+		// Destroy Cairo surface to force create new one in the new back buffer
+		destroySurface();
 	}
 }
 
