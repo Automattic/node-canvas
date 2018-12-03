@@ -1,6 +1,13 @@
+#include <sys/time.h>
 #include <nan.h>
 
 #include "Backend.h"
+
+
+using Nan::New;
+using v8::Local;
+using v8::Number;
+using v8::Value;
 
 
 void WaitVSync(void* arg)
@@ -8,21 +15,33 @@ void WaitVSync(void* arg)
 	Backend* backend = (Backend*)arg;
 
 	backend->waitVSync();
-	backend->swapBuffers();
 
-	// Listen new `onDraw()` requests
-	backend->listenOnDraw = true;
+	// Swap buffers if it was requested
+	if(!backend->listenOnPaint)
+	{
+		backend->swapBuffers();
+
+		backend->listenOnPaint = true;
+	}
+
+	// Execute `requestAnimationFrame()` callbacks (if any)
+	backend->executeCallbacks();
+
+	// Listen new `VSync` requests
+	backend->waitingVSync = false;
 }
 
 
 Backend::Backend(string name, int width, int height)
   : name(name)
+	, requestID(0)
 	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
-	, listenOnDraw(false)
+	, listenOnPaint(false)
+	, raf_callbacks(NULL)
 {}
 
 Backend::~Backend()
@@ -124,12 +143,78 @@ bool Backend::isSurfaceValid(){
 
 void Backend::onPaint()
 {
-	if(!listenOnDraw) return;
+	if(!listenOnPaint) return;
 
-	listenOnDraw = false;
+	listenOnPaint = false;
+
+	dispatchWaitVSync();
+}
+
+void Backend::dispatchWaitVSync()
+{
+	if(waitingVSync) return;
+
+	waitingVSync = true;
 
 	// Dispatch thread to wait for VSync
 	uv_thread_create(&vSyncThread, WaitVSync, this);
+}
+
+void Backend::executeCallbacks()
+{
+	if(!raf_callbacks) return;
+
+	map_callbacks* callbacks = raf_callbacks;
+	raf_callbacks = NULL;
+
+	if(callbacks->size())
+	{
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		double timestamp = tp.tv_sec * 1000 + tp.tv_usec / 1000;  // milliseconds
+
+		Local<Value> argv[] = {New<Number>(timestamp)};
+
+		for(auto it = callbacks->cbegin(); it != callbacks->cend(); ++it)
+		{
+			Callback* callback = (*it).second;
+
+			callback->Call(1, argv);
+			delete callback;
+		}
+
+		callbacks->clear();
+	}
+
+	delete callbacks;
+}
+
+
+//
+// Animation Frame Provider API
+//
+// https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animationframeprovider
+//
+
+NAN_METHOD(Backend::requestAnimationFrame)
+{
+	requestID++;
+
+	if(!raf_callbacks) raf_callbacks = new map_callbacks;
+
+	raf_callbacks->insert(std::pair<long, Callback*>(requestID,
+		new Callback(Nan::To<v8::Function>(info[0]).ToLocalChecked())));
+
+	dispatchWaitVSync();
+
+	info.GetReturnValue().Set(Nan::New<Number>(requestID));
+}
+
+NAN_METHOD(Backend::cancelAnimationFrame)
+{
+	if(!raf_callbacks) return;
+
+	raf_callbacks->erase(Nan::To<long>(info[0]).FromJust());
 }
 
 

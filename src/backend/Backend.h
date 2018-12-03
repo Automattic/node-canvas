@@ -2,6 +2,7 @@
 #define __BACKEND_H__
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <sstream>
 #include <exception>
@@ -16,6 +17,12 @@ class Canvas;
 
 using namespace std;
 
+using Nan::Callback;
+
+
+typedef map<long, Callback*> map_callbacks;
+
+
 class Backend : public Nan::ObjectWrap
 {
   private:
@@ -23,6 +30,9 @@ class Backend : public Nan::ObjectWrap
     const char* error = NULL;
 
     uv_thread_t vSyncThread;
+    long requestID;
+
+    void dispatchWaitVSync();
 
   protected:
     int width;
@@ -36,7 +46,9 @@ class Backend : public Nan::ObjectWrap
     static Backend *construct(int width, int height){ return nullptr; }
 
   public:
-    bool listenOnDraw;
+    bool listenOnPaint;
+    bool waitingVSync;
+    map_callbacks* raf_callbacks;
 
     virtual ~Backend();
 
@@ -67,6 +79,10 @@ class Backend : public Nan::ObjectWrap
 
     virtual void waitVSync(){};
     virtual void swapBuffers(){};
+    void executeCallbacks();
+
+    NAN_METHOD(requestAnimationFrame);
+    NAN_METHOD(cancelAnimationFrame);
 };
 
 
