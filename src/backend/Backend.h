@@ -35,7 +35,7 @@ class Backend : public Nan::ObjectWrap
     static Backend *construct(int width, int height){ return nullptr; }
 
   public:
-    bool listenOnDraw;
+    bool listenOnPaint;
 
     virtual ~Backend();
 

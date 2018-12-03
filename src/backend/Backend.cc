@@ -11,7 +11,7 @@ void WaitVSync(void* arg)
 	backend->swapBuffers();
 
 	// Listen new `onDraw()` requests
-	backend->listenOnDraw = true;
+	backend->listenOnPaint = true;
 }
 
 
@@ -21,7 +21,7 @@ Backend::Backend(string name, int width, int height)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
-	, listenOnDraw(false)
+	, listenOnPaint(false)
 {}
 
 Backend::~Backend()
@@ -113,9 +113,9 @@ bool Backend::isSurfaceValid(){
 
 void Backend::onPaint()
 {
-	if(!listenOnDraw) return;
+	if(!listenOnPaint) return;
 
-	listenOnDraw = false;
+	listenOnPaint = false;
 
 	// Dispatch thread to wait for VSync
 	uv_thread_create(&vSyncThread, WaitVSync, this);
