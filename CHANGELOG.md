@@ -9,6 +9,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+### Fixed
+
+2.2.0
+==================
+### Added
 * BMP support
 
 ### Fixed
