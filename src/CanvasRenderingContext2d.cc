@@ -1718,7 +1718,7 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
 
-#if NODE_MAJOR_VERSION > 6
+#if NODE_MAJOR_VERSION >= 8
   if (!Nan::To<Object>(value).ToLocalChecked()->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked())
     return Nan::ThrowTypeError("Expected DOMMatrix");
 #endif
