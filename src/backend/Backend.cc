@@ -1,6 +1,13 @@
+#include <sys/time.h>
 #include <nan.h>
 
 #include "Backend.h"
+
+
+using Nan::New;
+using v8::Local;
+using v8::Number;
+using v8::Value;
 
 
 void WaitVSync(void* arg)
@@ -17,6 +24,9 @@ void WaitVSync(void* arg)
 		backend->listenOnPaint = true;
 	}
 
+	// Execute `requestAnimationFrame()` callbacks (if any)
+	backend->executeCallbacks();
+
 	// Listen new `VSync` requests
 	backend->waitingVSync = false;
 }
@@ -24,11 +34,13 @@ void WaitVSync(void* arg)
 
 Backend::Backend(string name, int width, int height)
   : name(name)
+	, requestID(0)
   , width(width)
   , height(height)
   , surface(NULL)
   , canvas(NULL)
 	, listenOnPaint(false)
+	, raf_callbacks(NULL)
 {}
 
 Backend::~Backend()
@@ -135,6 +147,63 @@ void Backend::dispatchWaitVSync()
 
 	// Dispatch thread to wait for VSync
 	uv_thread_create(&vSyncThread, WaitVSync, this);
+}
+
+void Backend::executeCallbacks()
+{
+	if(!raf_callbacks) return;
+
+	map_callbacks* callbacks = raf_callbacks;
+	raf_callbacks = NULL;
+
+	if(callbacks->size())
+	{
+		struct timeval tp;
+		gettimeofday(&tp, NULL);
+		double timestamp = tp.tv_sec * 1000 + tp.tv_usec / 1000;  // milliseconds
+
+		Local<Value> argv[] = {New<Number>(timestamp)};
+
+		for(auto it = callbacks->cbegin(); it != callbacks->cend(); ++it)
+		{
+			Callback* callback = (*it).second;
+
+			callback->Call(1, argv);
+			delete callback;
+		}
+
+		callbacks->clear();
+	}
+
+	delete callbacks;
+}
+
+
+//
+// Animation Frame Provider API
+//
+// https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animationframeprovider
+//
+
+NAN_METHOD(Backend::requestAnimationFrame)
+{
+	requestID++;
+
+	if(!raf_callbacks) raf_callbacks = new map_callbacks;
+
+	raf_callbacks->insert(std::pair<long, Callback*>(requestID,
+		new Callback(Nan::To<v8::Function>(info[0]).ToLocalChecked())));
+
+	dispatchWaitVSync();
+
+	info.GetReturnValue().Set(Nan::New<Number>(requestID));
+}
+
+NAN_METHOD(Backend::cancelAnimationFrame)
+{
+	if(!raf_callbacks) return;
+
+	raf_callbacks->erase(Nan::To<long>(info[0]).FromJust());
 }
 
 
