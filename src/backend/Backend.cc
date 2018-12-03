@@ -8,10 +8,17 @@ void WaitVSync(void* arg)
 	Backend* backend = (Backend*)arg;
 
 	backend->waitVSync();
-	backend->swapBuffers();
 
-	// Listen new `onDraw()` requests
-	backend->listenOnPaint = true;
+	// Swap buffers if it was requested
+	if(!backend->listenOnPaint)
+	{
+		backend->swapBuffers();
+
+		backend->listenOnPaint = true;
+	}
+
+	// Listen new `VSync` requests
+	backend->waitingVSync = false;
 }
 
 
@@ -116,6 +123,15 @@ void Backend::onPaint()
 	if(!listenOnPaint) return;
 
 	listenOnPaint = false;
+
+	dispatchWaitVSync();
+}
+
+void Backend::dispatchWaitVSync()
+{
+	if(waitingVSync) return;
+
+	waitingVSync = true;
 
 	// Dispatch thread to wait for VSync
 	uv_thread_create(&vSyncThread, WaitVSync, this);

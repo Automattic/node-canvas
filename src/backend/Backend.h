@@ -23,6 +23,7 @@ class Backend : public Nan::ObjectWrap
     const char* error = NULL;
 
     uv_thread_t vSyncThread;
+    void dispatchWaitVSync();
 
   protected:
     int width;
@@ -36,6 +37,7 @@ class Backend : public Nan::ObjectWrap
 
   public:
     bool listenOnPaint;
+    bool waitingVSync;
 
     virtual ~Backend();
 
