@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Don't crash when font string is invalid (bug since 2.2.0) (#1328)
+* Fix memory leak in toBuffer
 
 2.2.0
 ==================
