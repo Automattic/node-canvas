@@ -11,11 +11,6 @@
 #include <jpeglib.h>
 #include <jerror.h>
 
-#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
-// jpeg_mem_dest:
-#error("libjpeg-turbo v1.3 or later, or libjpeg v8 or later is required")
-#endif
-
 /*
  * Expanded data destination object for closure output,
  * inspired by IJG's jdatadst.c
@@ -164,13 +159,13 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure
 }
 
 void
-write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure, unsigned char** outbuff, uint32_t* outsize) {
+write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure) {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
-  unsigned long ulOutsize;
-  jpeg_mem_dest(&cinfo, outbuff, &ulOutsize);
+  cinfo.client_data = closure;
+  cinfo.dest = closure->jpeg_dest_mgr;
   encode_jpeg(
     cinfo,
     surface,
@@ -178,7 +173,6 @@ write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure, unsigned ch
     closure->progressive,
     closure->chromaSubsampling,
     closure->chromaSubsampling);
-  *outsize = static_cast<uint32_t>(ulOutsize);
 }
 
 #endif

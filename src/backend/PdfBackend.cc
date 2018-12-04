@@ -5,7 +5,6 @@
 
 #include "../Canvas.h"
 #include "../closure.h"
-#include "../toBuffer.h"
 
 
 using namespace v8;
@@ -27,7 +26,7 @@ Backend *PdfBackend::construct(int width, int height){
 
 cairo_surface_t* PdfBackend::createSurface() {
   if (!_closure) _closure = new PdfSvgClosure(canvas);
-  surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, width, height);
+  surface = cairo_pdf_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
   return surface;
 }
 
