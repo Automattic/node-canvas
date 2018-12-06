@@ -97,6 +97,19 @@ bool Backend::isSurfaceValid(){
 }
 
 
+NAN_METHOD(Backend::swapBuffers)
+{
+  Backend* backend = Nan::ObjectWrap::Unwrap<Backend>(info.This());
+
+  backend->swapBuffers();
+}
+
+void Backend::Initialize(Local<FunctionTemplate> ctor)
+{
+	Nan::SetPrototypeMethod(ctor, "swapBuffers", swapBuffers);
+}
+
+
 BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
   string operation_name)
   : backend(backend)
