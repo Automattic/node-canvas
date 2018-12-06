@@ -1,4 +1,3 @@
-<!----------------------------------- STOP! ----------------------------------->
 <!---
 Having trouble installing node-canvas? Please make sure you have read
 the installation instructions located here before asking for help:
@@ -21,5 +20,5 @@ var ctx = canvas.getContext('2d');
 ```
 
 ## Your Environment
-* Version of node-canvas (e.g. 1.4.0):
+* Version of node-canvas (output of `npm list canvas` or `yarn list canvas`):
 * Environment (e.g. node 4.2.0 on Mac OS X 10.8):
