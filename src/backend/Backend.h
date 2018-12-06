@@ -26,6 +26,7 @@ class Backend : public Nan::ObjectWrap
     const string name;
     const char* error = NULL;
 
+    virtual void swapBuffers(){};
     virtual void waitVSync(){};
 
   protected:
@@ -66,6 +67,7 @@ class Backend : public Nan::ObjectWrap
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
 
+    static NAN_METHOD(swapBuffers);
     static NAN_METHOD(waitVSync);
 };
 

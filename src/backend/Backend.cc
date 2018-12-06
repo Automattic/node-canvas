@@ -131,6 +131,13 @@ bool Backend::isSurfaceValid(){
 }
 
 
+NAN_METHOD(Backend::swapBuffers)
+{
+  Backend* backend = Nan::ObjectWrap::Unwrap<Backend>(info.This());
+
+  backend->swapBuffers();
+}
+
 NAN_METHOD(Backend::waitVSync)
 {
   Backend* backend = Nan::ObjectWrap::Unwrap<Backend>(info.This());
@@ -142,6 +149,7 @@ NAN_METHOD(Backend::waitVSync)
 
 void Backend::Initialize(Local<FunctionTemplate> ctor)
 {
+  Nan::SetPrototypeMethod(ctor, "swapBuffers", swapBuffers);
 	Nan::SetPrototypeMethod(ctor, "waitVSync", waitVSync);
 }
 
