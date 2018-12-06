@@ -26,7 +26,10 @@ class FBDevBackend : public Backend
     void setWidth(int width);
     void setHeight(int height);
     void setFormat(cairo_format_t format);
-   public:
+
+    void waitVSync();
+
+  public:
     FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE);
     FBDevBackend(string deviceName);
      static Nan::Persistent<v8::FunctionTemplate> constructor;

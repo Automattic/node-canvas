@@ -167,6 +167,15 @@ void FBDevBackend::setFormat(cairo_format_t format)
 }
 
 
+void FBDevBackend::waitVSync()
+{
+	int arg = 0;
+
+	this->FbDevIoctlHelper(FBIO_WAITFORVSYNC, &arg,
+		"Error waiting for framebuffer VSync");
+}
+
+
 Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;
 
 void FBDevBackend::Initialize(Handle<Object> target)
@@ -177,6 +186,9 @@ void FBDevBackend::Initialize(Handle<Object> target)
 	FBDevBackend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(Nan::New<String>("FBDevBackend").ToLocalChecked());
+
+	Backend::Initialize(ctor);
+
 	target->Set(Nan::New<String>("FBDevBackend").ToLocalChecked(), ctor->GetFunction());
 }
 
