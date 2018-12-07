@@ -29,8 +29,11 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 }
 
 
-FBDevBackend::FBDevBackend(int width, int height, string deviceName)
+FBDevBackend::FBDevBackend(int width, int height, string deviceName,
+	bool useDoubleBuffer, bool forceUseCopyBuffer)
 	: Backend("fbdev", width, height)
+	, useDoubleBuffer(useDoubleBuffer)
+	, useCopyBackBuffer(false)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -41,10 +44,15 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName)
 
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
+
+	this->enableDoubleBuffer(&fb_vinfo, forceUseCopyBuffer);
 }
 
-FBDevBackend::FBDevBackend(string deviceName)
+FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer,
+	bool forceUseCopyBuffer)
 	: Backend("fbdev")
+	, useDoubleBuffer(useDoubleBuffer)
+	, useCopyBackBuffer(false)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -52,11 +60,15 @@ FBDevBackend::FBDevBackend(string deviceName)
 
 	this->width  = fb_vinfo.xres;
 	this->height = fb_vinfo.yres;
+
+	this->enableDoubleBuffer(&fb_vinfo, forceUseCopyBuffer);
 }
 
 FBDevBackend::~FBDevBackend()
 {
 	this->destroySurface();
+
+	if(useCopyBackBuffer) free(back_buffer);
 
 	munmap(this->fb_data, this->fb_finfo.smem_len);
 	close(this->fb_fd);
@@ -91,6 +103,36 @@ void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vin
 	this->format = bits2format(fb_vinfo->bits_per_pixel);
 }
 
+void FBDevBackend::enableDoubleBuffer(struct fb_var_screeninfo* fb_vinfo,
+	bool forceUseCopyBuffer)
+{
+	front_buffer = this->fb_data;
+
+	if(!useDoubleBuffer)
+		back_buffer = this->fb_data;
+
+	else
+	{
+		if(forceUseCopyBuffer)
+			useCopyBackBuffer = true;
+
+		else
+		{
+			fb_vinfo->yres_virtual = height * 2;
+
+			// Try to use real double buffer inside graphic card memory. If FbDev
+			// driver don't support to have a virtual framebuffer bigger than the
+			// actual one, then we'll use a buffer in memory. It's not so efficient
+			// and could lead to some tearing, but with VSync this should be minimal
+			// and at least we'll not see screen redraws.
+			useCopyBackBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, fb_vinfo) == -1;
+		}
+
+		back_buffer = useCopyBackBuffer
+			? (unsigned char*)malloc(this->fb_finfo.smem_len)
+			: this->fb_data + fb_vinfo->yres * fb_finfo.line_length;
+	}
+}
 
 void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data,
 	string errmsg)
@@ -108,7 +150,7 @@ cairo_surface_t* FBDevBackend::createSurface()
 		"Error reading variable framebuffer information");
 
 	// create cairo surface from data
-	this->surface = cairo_image_surface_create_for_data(this->fb_data,
+	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
 		bits2format(fb_vinfo.bits_per_pixel), fb_vinfo.xres, fb_vinfo.yres,
 		fb_finfo.line_length);
 
@@ -139,6 +181,8 @@ void FBDevBackend::setHeight(int height)
 
 	fb_vinfo.yres = height;
 
+	if(useCopyBackBuffer) fb_vinfo.yres_virtual = height * 2;
+
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
 
@@ -166,6 +210,43 @@ void FBDevBackend::setFormat(cairo_format_t format)
 	Backend::setFormat(format);
 }
 
+
+void FBDevBackend::copyBackBuffer()
+{
+	memcpy(front_buffer, back_buffer, this->fb_finfo.smem_len);
+}
+void FBDevBackend::flipBuffers()
+{
+	// Update display panning
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+		"Error reading variable framebuffer information");
+
+	fb_vinfo.yoffset = fb_vinfo.yoffset ? 0 : fb_vinfo.yres;
+
+	this->FbDevIoctlHelper(FBIOPAN_DISPLAY, &fb_vinfo,
+		"Error panning the framebuffer display");
+
+	// Swap front and back buffers pointers
+	unsigned char* aux = front_buffer;
+	front_buffer = back_buffer;
+	back_buffer  = aux;
+
+	// Destroy Cairo surface to force to create a new one in the new back buffer
+	destroySurface();
+}
+
+void FBDevBackend::swapBuffers()
+{
+	if(!useDoubleBuffer) return;
+
+	if(useCopyBackBuffer)
+		copyBackBuffer();
+
+	else
+		flipBuffers();
+}
 
 void FBDevBackend::waitVSync()
 {

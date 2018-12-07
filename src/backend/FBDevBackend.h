@@ -17,21 +17,34 @@ class FBDevBackend : public Backend
     int fb_fd;
     struct fb_fix_screeninfo fb_finfo;
     unsigned char* fb_data;
+    unsigned char* front_buffer;
+    unsigned char* back_buffer;
+    bool useDoubleBuffer;
+    bool useCopyBackBuffer;
 
     ~FBDevBackend();
 
     void initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo);
+    void enableDoubleBuffer(struct fb_var_screeninfo* fb_vinfo,
+      bool forceUseCopyBuffer);
     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
+
     cairo_surface_t* createSurface();
+
     void setWidth(int width);
     void setHeight(int height);
     void setFormat(cairo_format_t format);
 
+    void copyBackBuffer();
+    void flipBuffers();
+    void swapBuffers();
     void waitVSync();
 
   public:
-    FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE);
-    FBDevBackend(string deviceName);
+    FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE,
+      bool useDoubleBuffer = false, bool forceUseCopyBuffer = false);
+    FBDevBackend(string deviceName, bool useDoubleBuffer = false,
+      bool forceUseCopyBuffer = false);
      static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
