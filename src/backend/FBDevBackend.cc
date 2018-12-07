@@ -278,7 +278,14 @@ NAN_METHOD(FBDevBackend::New)
 	string fbDevice = DEFAULT_DEVICE;
 	if(info[0]->IsString()) fbDevice = *String::Utf8Value(info[0].As<String>());
 
-	FBDevBackend* backend = new FBDevBackend(fbDevice);
+	bool useDoubleBuffer = false;
+	if(info[1]->IsBoolean()) useDoubleBuffer = info[1]->BooleanValue();
+
+	bool forceUseCopyBuffer = false;
+	if(info[2]->IsBoolean()) forceUseCopyBuffer = info[2]->BooleanValue();
+
+	FBDevBackend* backend = new FBDevBackend(fbDevice, useDoubleBuffer,
+		forceUseCopyBuffer);
 
 	backend->Wrap(info.This());
 	info.GetReturnValue().Set(info.This());

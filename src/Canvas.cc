@@ -95,8 +95,18 @@ NAN_METHOD(Canvas::New) {
 
     if (info[2]->IsString()) {
       if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
-        if (info[3]->IsString())
-          backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
+        if (info[3]->IsString()) {
+          if(info[4]->IsBoolean()) {
+            if(info[5]->IsBoolean())
+              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
+                info[4]->BooleanValue(), info[5]->BooleanValue());
+            else
+              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
+                info[4]->BooleanValue());
+          }
+          else
+            backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
+        }
         else
           backend = new FBDevBackend(width, height);
       }
