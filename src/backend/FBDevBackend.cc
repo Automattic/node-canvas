@@ -211,21 +211,17 @@ void FBDevBackend::setFormat(cairo_format_t format)
 }
 
 
-void FBDevBackend::copyBackBuffer()
+void FBDevBackend::copyBackBuffer(struct fb_var_screeninfo* fb_vinfo)
 {
-	memcpy(front_buffer, back_buffer, this->fb_finfo.smem_len);
+	memcpy(front_buffer, back_buffer, fb_vinfo->yres * fb_finfo.line_length);
 }
-void FBDevBackend::flipBuffers()
+void FBDevBackend::flipBuffers(struct fb_var_screeninfo* fb_vinfo)
 {
 	// Update display panning
-	struct fb_var_screeninfo fb_vinfo;
+	fb_vinfo->yoffset = fb_vinfo->yoffset ? 0 : fb_vinfo->yres;
 
-	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
-		"Error reading variable framebuffer information");
 
-	fb_vinfo.yoffset = fb_vinfo.yoffset ? 0 : fb_vinfo.yres;
-
-	this->FbDevIoctlHelper(FBIOPAN_DISPLAY, &fb_vinfo,
+	this->FbDevIoctlHelper(FBIOPAN_DISPLAY, fb_vinfo,
 		"Error panning the framebuffer display");
 
 	// Swap front and back buffers pointers
@@ -241,11 +237,16 @@ void FBDevBackend::swapBuffers()
 {
 	if(!useDoubleBuffer) return;
 
+	struct fb_var_screeninfo fb_vinfo;
+
+	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
+		"Error reading variable framebuffer information");
+
 	if(useCopyBackBuffer)
-		copyBackBuffer();
+		copyBackBuffer(&fb_vinfo);
 
 	else
-		flipBuffers();
+		flipBuffers(&fb_vinfo);
 }
 
 void FBDevBackend::waitVSync()

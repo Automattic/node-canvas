@@ -35,8 +35,8 @@ class FBDevBackend : public Backend
     void setHeight(int height);
     void setFormat(cairo_format_t format);
 
-    void copyBackBuffer();
-    void flipBuffers();
+    void copyBackBuffer(struct fb_var_screeninfo* fb_vinfo);
+    void flipBuffers(struct fb_var_screeninfo* fb_vinfo);
     void swapBuffers();
     void waitVSync();
 
