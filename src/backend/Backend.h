@@ -47,11 +47,10 @@ class Backend : public Nan::ObjectWrap
     void setCanvas(Canvas* canvas);
 
     virtual cairo_surface_t* createSurface() = 0;
+    virtual void             destroySurface();
     virtual cairo_surface_t* recreateSurface();
 
     DLL_PUBLIC cairo_surface_t* getSurface();
-    void             destroySurface();
-
     DLL_PUBLIC string getName();
 
     DLL_PUBLIC int getWidth();
