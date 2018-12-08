@@ -30,6 +30,7 @@ class FBDevBackend : public Backend
     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
 
     cairo_surface_t* createSurface();
+    void             destroySurface();
 
     void setWidth(int width);
     void setHeight(int height);

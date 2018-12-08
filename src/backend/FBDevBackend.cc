@@ -157,6 +157,13 @@ cairo_surface_t* FBDevBackend::createSurface()
 	return this->surface;
 }
 
+void FBDevBackend::destroySurface()
+{
+	if(useInMemoryBackBuffer) free(back_buffer);
+
+	Backend::destroySurface();
+}
+
 
 void FBDevBackend::setWidth(int width)
 {
