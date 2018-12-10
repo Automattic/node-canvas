@@ -36,7 +36,7 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 	: Backend("fbdev", width, height)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
-	, useCopyBackBuffer(false)
+	, useFlipPages(false)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -53,7 +53,7 @@ FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer)
 	: Backend("fbdev")
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
-	, useCopyBackBuffer(false)
+	, useFlipPages(false)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -139,7 +139,7 @@ cairo_surface_t* FBDevBackend::createSurface()
 
 		if(useInMemoryBackBuffer)
 		{
-			useCopyBackBuffer = true;
+			useFlipPages = false;
 
 			int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 			back_buffer = (unsigned char*)malloc(fb_vinfo.yres * stride);
@@ -156,10 +156,10 @@ cairo_surface_t* FBDevBackend::createSurface()
 			// VSync this should be minimal and at least we'll not see screen redraws.
 			fb_vinfo.yoffset = fb_vinfo.yres;
 
-			useCopyBackBuffer = fb_vinfo.bits_per_pixel != 24
-												&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == -1;
+			useFlipPages = fb_vinfo.bits_per_pixel != 24
+									&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == -1;
 
-			if(!useCopyBackBuffer)
+			if(useFlipPages)
 			{
 				front_buffer = back_buffer;
 				back_buffer  = this->fb_data;
@@ -283,11 +283,11 @@ void FBDevBackend::swapBuffers()
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
 
-	if(useCopyBackBuffer)
-		copyBackBuffer(&fb_vinfo);
+	if(useFlipPages)
+		flipPages(&fb_vinfo);
 
 	else
-		flipBuffers(&fb_vinfo);
+		copyBackBuffer(&fb_vinfo);
 }
 
 void FBDevBackend::waitVSync()

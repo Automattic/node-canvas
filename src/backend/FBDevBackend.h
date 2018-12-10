@@ -21,7 +21,7 @@ class FBDevBackend : public Backend
     unsigned char* back_buffer;
     bool useDoubleBuffer;
     bool useInMemoryBackBuffer;
-    bool useCopyBackBuffer;
+    bool useFlipPages;
 
     ~FBDevBackend();
 
@@ -36,7 +36,7 @@ class FBDevBackend : public Backend
     void setFormat(cairo_format_t format);
 
     void copyBackBuffer(struct fb_var_screeninfo* fb_vinfo);
-    void flipBuffers(struct fb_var_screeninfo* fb_vinfo);
+    void flipPages(struct fb_var_screeninfo* fb_vinfo);
     void swapBuffers();
     void waitVSync();
 
