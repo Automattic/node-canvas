@@ -142,7 +142,7 @@ cairo_surface_t* FBDevBackend::createSurface()
 			useFlipPages = false;
 
 			int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
-			back_buffer = (unsigned char*)malloc(fb_vinfo.yres * stride);
+			back_buffer = (unsigned char*)calloc(fb_vinfo.yres, stride);
 		}
 
 		else
