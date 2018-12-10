@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,10 +22,11 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 	switch(bits_per_pixel)
 	{
 		case 16: return CAIRO_FORMAT_RGB16_565;
+		case 24: return CAIRO_FORMAT_RGB24;
 		case 32: return CAIRO_FORMAT_ARGB32;
 
 		default:
-			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
+			throw FBDevBackendException("Only valid formats are RGB16_565, RGB24 and ARGB32");
 	}
 }
 
@@ -92,8 +94,6 @@ void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vin
 	if(this->fb_data == MAP_FAILED)
 		throw FBDevBackendException("Failed to map framebuffer device to memory");
 
-	front_buffer = back_buffer = this->fb_data;
-
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, fb_vinfo,
 		"Error reading variable framebuffer information");
 
@@ -116,10 +116,13 @@ cairo_surface_t* FBDevBackend::createSurface()
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
 
-	if(useDoubleBuffer)
-	{
-		front_buffer = this->fb_data;
+	front_buffer = this->fb_data;
 
+	if(!useDoubleBuffer && fb_vinfo.bits_per_pixel != 24)
+		back_buffer = front_buffer;
+
+	else
+	{
 		// Try to use page flipping inside graphic card memory. If FbDev driver
 		// don't support to have a virtual framebuffer bigger than the actual one,
 		// then we'll use a buffer in memory. It's not so efficient and could lead
@@ -127,13 +130,19 @@ cairo_surface_t* FBDevBackend::createSurface()
 		// not see screen redraws.
 		fb_vinfo.yres_virtual = height * 2;
 
+		// Adjust virtual framebuffer width to hold RGB24 Cairo surface in 24 bits
+		fb_vinfo.xres_virtual = fb_vinfo.bits_per_pixel != 24
+													? width
+													: ceil(width*4/3);
+
 		useInMemoryBackBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, &fb_vinfo) == -1;
 
 		if(useInMemoryBackBuffer)
 		{
 			useCopyBackBuffer = true;
 
-			back_buffer = (unsigned char*)malloc(fb_vinfo.yres * fb_finfo.line_length);
+			int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
+			back_buffer = (unsigned char*)malloc(fb_vinfo.yres * stride);
 		}
 
 		else
@@ -147,7 +156,8 @@ cairo_surface_t* FBDevBackend::createSurface()
 			// VSync this should be minimal and at least we'll not see screen redraws.
 			fb_vinfo.yoffset = fb_vinfo.yres;
 
-			useCopyBackBuffer = ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == -1;
+			useCopyBackBuffer = fb_vinfo.bits_per_pixel != 24
+												&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == -1;
 
 			if(!useCopyBackBuffer)
 			{
@@ -158,9 +168,9 @@ cairo_surface_t* FBDevBackend::createSurface()
 	}
 
 	// create cairo surface from data
+	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
-		bits2format(fb_vinfo.bits_per_pixel), fb_vinfo.xres, fb_vinfo.yres,
-		fb_finfo.line_length);
+		format, fb_vinfo.xres, fb_vinfo.yres, stride);
 
 	return this->surface;
 }
@@ -211,10 +221,11 @@ void FBDevBackend::setFormat(cairo_format_t format)
 	switch(format)
 	{
 		case CAIRO_FORMAT_RGB16_565: fb_vinfo.bits_per_pixel = 16; break;
+		case CAIRO_FORMAT_RGB24:     fb_vinfo.bits_per_pixel = 24; break;
 		case CAIRO_FORMAT_ARGB32:    fb_vinfo.bits_per_pixel = 32; break;
 
 		default:
-			throw FBDevBackendException("Only valid formats are RGB16_565 & ARGB32");
+			throw FBDevBackendException("Only valid formats are RGB16_565, RGB24 and ARGB32");
 	}
 
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
@@ -226,10 +237,24 @@ void FBDevBackend::setFormat(cairo_format_t format)
 
 void FBDevBackend::copyBackBuffer(struct fb_var_screeninfo* fb_vinfo)
 {
-	memcpy(front_buffer, back_buffer, fb_vinfo->yres * fb_finfo.line_length);
+	if(fb_vinfo->bits_per_pixel != 24)
+		memcpy(front_buffer, back_buffer, fb_vinfo->yres * fb_finfo.line_length);
+
+	else
+	{
+		int stride = cairo_format_stride_for_width(format, fb_vinfo->xres);
+
+		for(unsigned int y=0; y<fb_vinfo->yres; y++)
+			for(unsigned int x=0; x<fb_vinfo->xres; x++)
+				memcpy(front_buffer + y*fb_finfo.line_length + x*3,
+							 back_buffer  + y*stride               + x*4 + 1,
+							 3);
+	}
 }
-void FBDevBackend::flipBuffers(struct fb_var_screeninfo* fb_vinfo)
+void FBDevBackend::flipPages(struct fb_var_screeninfo* fb_vinfo)
 {
+	if(!this->surface) return;
+
 	// Update display panning
 	fb_vinfo->yoffset = fb_vinfo->yoffset ? 0 : fb_vinfo->yres;
 
@@ -242,18 +267,15 @@ void FBDevBackend::flipBuffers(struct fb_var_screeninfo* fb_vinfo)
 	back_buffer  = aux;
 
 	// Destroy Cairo surface and create it in the new back buffer vertical offset
-	if(this->surface)
-	{
-		cairo_surface_destroy(this->surface);
+	cairo_surface_destroy(this->surface);
 
-		this->surface = cairo_image_surface_create_for_data(this->back_buffer,
-			bits2format(fb_vinfo->bits_per_pixel), fb_vinfo->xres, fb_vinfo->yres,
-			fb_finfo.line_length);
-	}
+	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
+		format, fb_vinfo->xres, fb_vinfo->yres, fb_finfo.line_length);
 }
 
 void FBDevBackend::swapBuffers()
 {
+	if(!this->surface) return;
 	if(!useDoubleBuffer) return;
 
 	struct fb_var_screeninfo fb_vinfo;
