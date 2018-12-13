@@ -152,7 +152,7 @@ void FBDevBackend::createSurface()
 		else
 		{
 			// back buffer in memory card
-			back_buffer = this->fb_data + fb_vinfo.yres * fb_finfo.line_length;
+			back_buffer = front_buffer + fb_vinfo.yres * fb_finfo.line_length;
 
 			// Try to use page flipping inside graphic card memory. If FbDev driver
 			// don't support vertical panning, then we'll need to copy data from back
