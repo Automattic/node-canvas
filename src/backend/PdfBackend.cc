@@ -25,16 +25,14 @@ Backend *PdfBackend::construct(int width, int height){
   return new PdfBackend(width, height);
 }
 
-cairo_surface_t* PdfBackend::createSurface() {
+void PdfBackend::createSurface() {
   if (!_closure) _closure = new PdfSvgClosure(canvas);
+
   surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, width, height);
-  return surface;
 }
 
-cairo_surface_t* PdfBackend::recreateSurface() {
+void PdfBackend::recreateSurface() {
   cairo_pdf_surface_set_size(surface, width, height);
-
-  return surface;
 }
 
 

@@ -94,7 +94,12 @@ describe('Canvas', function () {
 
       assert.deepEqual(actual, expected, 'Failed to parse: ' + str)
     }
-  })
+
+    assert.throws(() => {
+      const ctx = createCanvas(10, 10).getContext('2d')
+      ctx.font = 'bold undefinedpx Arial'
+    })
+  });
 
   it('registerFont', function () {
     // Minimal test to make sure nothing is thrown

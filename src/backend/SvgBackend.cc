@@ -25,18 +25,18 @@ Backend *SvgBackend::construct(int width, int height){
   return new SvgBackend(width, height);
 }
 
-cairo_surface_t* SvgBackend::createSurface() {
+void SvgBackend::createSurface() {
   if (!_closure) _closure = new PdfSvgClosure(canvas);
+
   surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, width, height);
-  return surface;
 }
 
-cairo_surface_t* SvgBackend::recreateSurface() {
+void SvgBackend::recreateSurface() {
   cairo_surface_finish(surface);
   delete _closure;
   cairo_surface_destroy(surface);
 
-  return createSurface();
+  createSurface();
  }
 
 
