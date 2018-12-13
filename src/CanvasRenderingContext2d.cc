@@ -2451,8 +2451,12 @@ NAN_SETTER(Context2d::SetFont) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { value };
-  Local<Value> parsed = _parseFont.Get(iso)->Call(ctx, ctx->Global(), argc, argv).ToLocalChecked();
-  Local<Object> font = Nan::To<Object>(parsed).ToLocalChecked();
+
+  MaybeLocal<Value> mparsed = _parseFont.Get(iso)->Call(ctx, ctx->Global(), argc, argv);
+  if (mparsed.IsEmpty()) return;
+  MaybeLocal<Object> mfont = Nan::To<Object>(mparsed.ToLocalChecked());
+  if (mfont.IsEmpty()) return;
+  Local<Object> font = mfont.ToLocalChecked();
 
   Nan::Utf8String weight(font->Get(ctx, Nan::New("weight").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String style(font->Get(ctx, Nan::New("style").ToLocalChecked()).ToLocalChecked());
