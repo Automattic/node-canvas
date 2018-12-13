@@ -29,6 +29,11 @@ class Backend : public Nan::ObjectWrap
     Canvas* canvas;
 
     Backend(string name, int width, int height);
+
+    virtual void createSurface() = 0;
+    virtual void destroySurface();
+    virtual void recreateSurface();
+
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
 
@@ -36,9 +41,6 @@ class Backend : public Nan::ObjectWrap
     virtual ~Backend();
 
     void setCanvas(Canvas* canvas);
-
-    virtual cairo_surface_t* createSurface() = 0;
-    virtual cairo_surface_t* recreateSurface();
 
     DLL_PUBLIC cairo_surface_t* getSurface();
     void             destroySurface();

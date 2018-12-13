@@ -10,8 +10,8 @@ using namespace std;
 class ImageBackend : public Backend
 {
   private:
-    cairo_surface_t* createSurface();
-    cairo_surface_t* recreateSurface();
+    void createSurface();
+    void recreateSurface();
     cairo_format_t format = DEFAULT_FORMAT;
 
   public:
