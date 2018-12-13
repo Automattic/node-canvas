@@ -34,6 +34,7 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 	bool useDoubleBuffer)
 	: Backend("fbdev", width, height)
+	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
 	, useFlipPages(false)
@@ -51,6 +52,7 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 
 FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer)
 	: Backend("fbdev")
+	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
 	, useFlipPages(false)
@@ -111,6 +113,8 @@ void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data,
 
 void FBDevBackend::createSurface()
 {
+	destroySurface();
+
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
@@ -176,9 +180,14 @@ void FBDevBackend::createSurface()
 
 void FBDevBackend::destroySurface()
 {
-	if(useInMemoryBackBuffer) free(back_buffer);
-
 	Backend::destroySurface();
+
+	if(useInMemoryBackBuffer && back_buffer)
+	{
+		free(back_buffer);
+
+		back_buffer = NULL;
+	}
 }
 
 
