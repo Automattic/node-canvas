@@ -157,10 +157,11 @@ void FBDevBackend::createSurface()
 			fb_vinfo.yoffset = fb_vinfo.yres;
 
 			useFlipPages = fb_vinfo.bits_per_pixel != 24
-									&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == -1;
+									&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == 0;
 
 			if(useFlipPages)
 			{
+				// Swap front and back buffers since vertical panning was succesful
 				front_buffer = back_buffer;
 				back_buffer  = this->fb_data;
 			}
