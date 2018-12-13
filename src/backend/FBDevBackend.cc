@@ -109,7 +109,7 @@ void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data,
 }
 
 
-cairo_surface_t* FBDevBackend::createSurface()
+void FBDevBackend::createSurface()
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -171,8 +171,6 @@ cairo_surface_t* FBDevBackend::createSurface()
 	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
 		format, fb_vinfo.xres, fb_vinfo.yres, stride);
-
-	return this->surface;
 }
 
 void FBDevBackend::destroySurface()

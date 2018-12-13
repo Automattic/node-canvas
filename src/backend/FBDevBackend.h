@@ -28,8 +28,8 @@ class FBDevBackend : public Backend
     void initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo);
     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
 
-    cairo_surface_t* createSurface();
-    void             destroySurface();
+    void createSurface();
+    void destroySurface();
 
     void setWidth(int width);
     void setHeight(int height);
