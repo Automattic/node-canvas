@@ -34,6 +34,7 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 	bool useDoubleBuffer)
 	: Backend("fbdev", width, height)
+	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
@@ -52,6 +53,7 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 
 FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer)
 	: Backend("fbdev")
+	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
@@ -69,7 +71,6 @@ FBDevBackend::~FBDevBackend()
 {
 	this->destroySurface();
 
-	munmap(this->fb_data, this->fb_finfo.smem_len);
 	close(this->fb_fd);
 }
 
@@ -85,16 +86,6 @@ void FBDevBackend::initFbDev(string deviceName, struct fb_var_screeninfo* fb_vin
 		o << "cannot open framebuffer device \"" << deviceName << "\"";
 		throw FBDevBackendException(o.str());
 	}
-
-	this->FbDevIoctlHelper(FBIOGET_FSCREENINFO, &this->fb_finfo,
-		"Error reading fixed framebuffer information");
-
-	// Map the device to memory
-	this->fb_data = (unsigned char*) mmap(0, this->fb_finfo.smem_len,
-		PROT_READ | PROT_WRITE, MAP_SHARED, this->fb_fd, 0);
-
-	if(this->fb_data == MAP_FAILED)
-		throw FBDevBackendException("Failed to map framebuffer device to memory");
 
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, fb_vinfo,
 		"Error reading variable framebuffer information");
@@ -120,13 +111,13 @@ void FBDevBackend::createSurface()
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
 
-	front_buffer = this->fb_data;
+	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 
-	if(!useDoubleBuffer && fb_vinfo.bits_per_pixel != 24)
-		back_buffer = front_buffer;
-
-	else
+	// Check support for double buffering features
+	if(useDoubleBuffer || fb_vinfo.bits_per_pixel == 24)
 	{
+		useFlipPages = false;
+
 		// Try to use page flipping inside graphic card memory. If FbDev driver
 		// don't support to have a virtual framebuffer bigger than the actual one,
 		// then we'll use a buffer in memory. It's not so efficient and could lead
@@ -141,39 +132,52 @@ void FBDevBackend::createSurface()
 
 		useInMemoryBackBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, &fb_vinfo) == -1;
 
-		if(useInMemoryBackBuffer)
+		if(!useInMemoryBackBuffer && fb_vinfo.bits_per_pixel != 24)
 		{
-			useFlipPages = false;
-
-			int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
-			back_buffer = (unsigned char*)calloc(fb_vinfo.yres, stride);
-		}
-
-		else
-		{
-			// back buffer in memory card
-			back_buffer = front_buffer + fb_vinfo.yres * fb_finfo.line_length;
-
 			// Try to use page flipping inside graphic card memory. If FbDev driver
 			// don't support vertical panning, then we'll need to copy data from back
 			// buffer. It's not so efficient and could lead to some tearing, but with
 			// VSync this should be minimal and at least we'll not see screen redraws.
 			fb_vinfo.yoffset = fb_vinfo.yres;
 
-			useFlipPages = fb_vinfo.bits_per_pixel != 24
-									&& ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == 0;
+			useFlipPages = ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == 0;
+		}
+	}
 
-			if(useFlipPages)
-			{
-				// Swap front and back buffers since vertical panning was succesful
-				front_buffer = back_buffer;
-				back_buffer  = this->fb_data;
-			}
+	// Map the device to memory with new virtual framebuffer dimensions and config
+	this->FbDevIoctlHelper(FBIOGET_FSCREENINFO, &fb_finfo,
+		"Error reading fixed framebuffer information");
+
+	this->fb_data = (unsigned char*) mmap(0, fb_finfo.smem_len,
+		PROT_READ | PROT_WRITE, MAP_SHARED, this->fb_fd, 0);
+
+	if(this->fb_data == MAP_FAILED)
+		throw FBDevBackendException("Failed to map framebuffer device to memory");
+
+	// Set pointers of the front and back buffers
+	front_buffer = this->fb_data;
+
+	if(!useDoubleBuffer && fb_vinfo.bits_per_pixel != 24)
+		back_buffer = front_buffer;
+
+	else if(useInMemoryBackBuffer)
+		back_buffer = (unsigned char*)calloc(fb_vinfo.yres, stride);
+
+	else
+	{
+		// back buffer in graphic card memory
+		back_buffer = front_buffer + fb_vinfo.yres * fb_finfo.line_length;
+
+		if(useFlipPages)
+		{
+			// Swap front and back buffers since vertical panning checking was
+			// succesful (so for the graphic card they are already swapped)
+			front_buffer = back_buffer;
+			back_buffer  = this->fb_data;
 		}
 	}
 
 	// create cairo surface from data
-	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
 		format, fb_vinfo.xres, fb_vinfo.yres, stride);
 }
@@ -187,6 +191,13 @@ void FBDevBackend::destroySurface()
 		free(back_buffer);
 
 		back_buffer = NULL;
+	}
+
+	if(this->fb_data)
+	{
+		munmap(this->fb_data, fb_finfo.smem_len);
+
+		this->fb_data = NULL;
 	}
 }
 
