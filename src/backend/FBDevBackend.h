@@ -22,6 +22,7 @@ class FBDevBackend : public Backend
     bool useDoubleBuffer;
     bool useInMemoryBackBuffer;
     bool useFlipPages;
+    bool enableFlipPages;
 
     ~FBDevBackend();
 
@@ -42,8 +43,9 @@ class FBDevBackend : public Backend
 
   public:
     FBDevBackend(int width, int height, string deviceName = DEFAULT_DEVICE,
-      bool useDoubleBuffer = false);
-    FBDevBackend(string deviceName, bool useDoubleBuffer = false);
+      bool useDoubleBuffer = false, bool enableFlipPages = false);
+    FBDevBackend(string deviceName, bool useDoubleBuffer = false,
+      bool enableFlipPages = false);
      static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);

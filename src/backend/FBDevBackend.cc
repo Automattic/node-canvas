@@ -32,13 +32,14 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 
 
 FBDevBackend::FBDevBackend(int width, int height, string deviceName,
-	bool useDoubleBuffer)
+	bool useDoubleBuffer, bool enableFlipPages)
 	: Backend("fbdev", width, height)
 	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
 	, useFlipPages(false)
+	, enableFlipPages(enableFlipPages)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -51,13 +52,15 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 		"Error setting variable framebuffer information");
 }
 
-FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer)
+FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer,
+	bool enableFlipPages)
 	: Backend("fbdev")
 	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
 	, useInMemoryBackBuffer(false)
 	, useFlipPages(false)
+	, enableFlipPages(enableFlipPages)
 {
 	struct fb_var_screeninfo fb_vinfo;
 
@@ -132,7 +135,7 @@ void FBDevBackend::createSurface()
 
 		useInMemoryBackBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, &fb_vinfo) == -1;
 
-		if(!useInMemoryBackBuffer && fb_vinfo.bits_per_pixel != 24)
+		if(enableFlipPages && !useInMemoryBackBuffer && fb_vinfo.bits_per_pixel != 24)
 		{
 			// Try to use page flipping inside graphic card memory. If FbDev driver
 			// don't support vertical panning, then we'll need to copy data from back
@@ -342,7 +345,11 @@ NAN_METHOD(FBDevBackend::New)
 	bool useDoubleBuffer = false;
 	if(info[1]->IsBoolean()) useDoubleBuffer = info[1]->BooleanValue();
 
-	FBDevBackend* backend = new FBDevBackend(fbDevice, useDoubleBuffer);
+	bool enableFlipPages = false;
+	if(info[2]->IsBoolean()) enableFlipPages = info[2]->BooleanValue();
+
+	FBDevBackend* backend = new FBDevBackend(fbDevice, useDoubleBuffer,
+		enableFlipPages);
 
 	backend->Wrap(info.This());
 	info.GetReturnValue().Set(info.This());
