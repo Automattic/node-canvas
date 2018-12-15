@@ -116,6 +116,10 @@ void FBDevBackend::createSurface()
 
 	int stride = cairo_format_stride_for_width(format, fb_vinfo.xres);
 
+	// Reset vertical panning
+	fb_vinfo.yoffset = 0;
+	ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo);
+
 	// Check support for double buffering features
 	if(useDoubleBuffer || fb_vinfo.bits_per_pixel == 24)
 	{
