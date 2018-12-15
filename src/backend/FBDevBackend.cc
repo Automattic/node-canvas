@@ -130,12 +130,12 @@ void FBDevBackend::createSurface()
 		// then we'll use a buffer in memory. It's not so efficient and could lead
 		// to some tearing, but with VSync this should be minimal and at least we'll
 		// not see screen redraws.
-		fb_vinfo.yres_virtual = height * 2;
+		fb_vinfo.yres_virtual = fb_vinfo.yres * 2;
 
 		// Adjust virtual framebuffer width to hold RGB24 Cairo surface in 24 bits
-		fb_vinfo.xres_virtual = fb_vinfo.bits_per_pixel != 24
-													? width
-													: ceil(width*4/3);
+		fb_vinfo.xres_virtual = fb_vinfo.bits_per_pixel == 24
+													? ceil(fb_vinfo.xres*4/3)
+													: fb_vinfo.xres;
 
 		useInMemoryBackBuffer = ioctl(this->fb_fd, FBIOPUT_VSCREENINFO, &fb_vinfo) == -1;
 
@@ -178,7 +178,7 @@ void FBDevBackend::createSurface()
 		if(useFlipPages)
 		{
 			// Swap front and back buffers since vertical panning checking was
-			// succesful (so for the graphic card they are already swapped)
+			// succesful (so for the graphic card they were already swapped)
 			front_buffer = back_buffer;
 			back_buffer  = this->fb_data;
 		}
