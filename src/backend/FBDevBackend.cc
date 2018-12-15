@@ -302,12 +302,13 @@ void FBDevBackend::flipPages(struct fb_var_screeninfo* fb_vinfo)
 void FBDevBackend::swapBuffers()
 {
 	if(!this->surface) return;
-	if(!useDoubleBuffer) return;
 
 	struct fb_var_screeninfo fb_vinfo;
 
 	this->FbDevIoctlHelper(FBIOGET_VSCREENINFO, &fb_vinfo,
 		"Error reading variable framebuffer information");
+
+	if(!useDoubleBuffer && fb_vinfo.bits_per_pixel != 24) return;
 
 	if(useFlipPages)
 		flipPages(&fb_vinfo);
