@@ -29,7 +29,8 @@
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+    "dtslint": "dtslint types"
   },
   "binary": {
     "module_name": "canvas",
@@ -42,14 +43,18 @@
     "binding.gyp",
     "lib/",
     "src/",
-    "util/"
+    "util/",
+    "types/index.d.ts"
   ],
+  "types": "types",
   "dependencies": {
     "nan": "^2.12.1",
     "node-pre-gyp": "^0.11.0"
   },
   "devDependencies": {
+    "@types/node": "^10.12.18",
     "assert-rejects": "^1.0.0",
+    "dtslint": "^0.5.3",
     "express": "^4.16.3",
     "mocha": "^5.2.0",
     "pixelmatch": "^4.0.2",
