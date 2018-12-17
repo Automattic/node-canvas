@@ -25,8 +25,7 @@
 
 struct Closure {
   std::vector<uint8_t> vec;
-  Nan::Callback *pfn;
-  Local<Function> fn;
+  Nan::Callback cb;
   Canvas* canvas = nullptr;
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
 

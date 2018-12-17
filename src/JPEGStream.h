@@ -41,7 +41,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
       Nan::Null()
     , buf
   };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof argv / sizeof *argv, argv);
+  dest->closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
 
   dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
@@ -62,16 +62,14 @@ term_closure_destination(j_compress_ptr cinfo){
       Nan::Null()
     , buf
   };
-
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof data_argv / sizeof *data_argv, data_argv);
+  dest->closure->cb.Call(sizeof data_argv / sizeof *data_argv, data_argv, &async);
 
   // emit "end"
   Local<Value> end_argv[2] = {
       Nan::Null()
     , Nan::Null()
   };
-
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof end_argv / sizeof *end_argv, end_argv);
+  dest->closure->cb.Call(sizeof end_argv / sizeof *end_argv, end_argv, &async);
 }
 
 void
