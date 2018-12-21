@@ -2460,7 +2460,10 @@ NAN_SETTER(Context2d::SetFont) {
 
   MaybeLocal<Value> mparsed = _parseFont.Get(iso)->Call(ctx, ctx->Global(), argc, argv);
   if (mparsed.IsEmpty()) return;
-  MaybeLocal<Object> mfont = Nan::To<Object>(mparsed.ToLocalChecked());
+  Local<Value> mparsedChecked = mparsed.ToLocalChecked();
+  // parseFont returns undefined for invalid CSS font strings
+  if (mparsedChecked->IsUndefined()) return;
+  MaybeLocal<Object> mfont = Nan::To<Object>(mparsedChecked);
   if (mfont.IsEmpty()) return;
   Local<Object> font = mfont.ToLocalChecked();
 
