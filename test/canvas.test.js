@@ -93,10 +93,7 @@ describe('Canvas', function () {
       assert.deepEqual(actual, expected, 'Failed to parse: ' + str);
     }
 
-    assert.throws(() => {
-      const ctx = createCanvas(10, 10).getContext('2d')
-      ctx.font = 'bold undefinedpx Arial'
-    })
+    assert.strictEqual(parseFont('Helvetica, sans'), undefined)
   });
 
   it('registerFont', function () {
@@ -417,12 +414,15 @@ describe('Canvas', function () {
   });
 
   it('Context2d#font=', function () {
-    var canvas = createCanvas(200, 200)
-      , ctx = canvas.getContext('2d');
+    const canvas = createCanvas(200, 200)
+    const ctx = canvas.getContext('2d')
 
-    assert.equal('10px sans-serif', ctx.font);
-    ctx.font = '15px Arial, sans-serif';
-    assert.equal('15px Arial, sans-serif', ctx.font);
+    assert.equal(ctx.font, '10px sans-serif')
+    ctx.font = '15px Arial, sans-serif'
+    assert.equal(ctx.font, '15px Arial, sans-serif')
+
+    ctx.font = 'Helvetica, sans' // invalid
+    assert.equal(ctx.font, '15px Arial, sans-serif')
   });
 
   it('Context2d#lineWidth=', function () {
