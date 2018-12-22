@@ -9,7 +9,25 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Add support for multiple PDF page sizes
+
 ### Fixed
+* Don't crash when font string is invalid (bug since 2.2.0) (#1328)
+* Fix memory leak in toBuffer
+
+2.2.0
+==================
+### Added
+* BMP support
+
+### Fixed
+* Reset context on resurface (#1292)
+* Support Jest test framework (#1311)
+
+2.1.0
+==================
+### Added
+* Warn when building with old, unsupported versions of cairo or libjpeg.
 
 2.0.0
 ==================

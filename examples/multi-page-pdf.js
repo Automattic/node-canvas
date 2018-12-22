@@ -29,7 +29,7 @@ ctx.addPage()
 reset()
 h1('Page #2')
 p('This is the second page')
-ctx.addPage()
+ctx.addPage(250, 250) // create a page with half the size of the canvas
 
 reset()
 h1('Page #3')

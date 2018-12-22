@@ -19,7 +19,7 @@ The minimum version of Node.js required is **6.0.0**.
 
 If you don't have a supported OS or processor architecture, or you use `--build-from-source`, the module will be compiled on your system. This requires several dependencies, including Cairo and Pango.
 
-For detailed installation information, see the [wiki](https://github.com/Automattic/node-canvas/wiki/_pages). One-line installation instructions for common OSes are below. Note that libgif/giflib, librsvg and libjpeg are optional and only required if you need GIF, SVG and JPEG support, respectively.
+For detailed installation information, see the [wiki](https://github.com/Automattic/node-canvas/wiki/_pages). One-line installation instructions for common OSes are below. Note that libgif/giflib, librsvg and libjpeg are optional and only required if you need GIF, SVG and JPEG support, respectively. Cairo v1.10.0 or later is required.
 
 OS | Command
 ----- | -----
@@ -32,6 +32,7 @@ Windows | See the [wiki](https://github.com/Automattic/node-canvas/wiki/Installa
 Others | See the [wiki](https://github.com/Automattic/node-canvas/wiki)
 
 **Mac OS X v10.11+:** If you have recently updated to Mac OS X v10.11+ and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
+If you have xcode 10.0 or higher installed, in order to build from source you need NPM 6.4.1 or higher.
 
 ## Quick Example
 
@@ -443,6 +444,16 @@ canvas.toBuffer() // returns a PDF file
 canvas.createPDFStream() // returns a ReadableStream that emits a PDF
 ```
 
+It is also possible to create pages with different sizes by passing `width` and `height` to the `.addPage()` method:
+
+```js
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.addPage(400, 800)
+
+ctx.fillText('Hello World 2', 50, 80)
+```
+
 See also:
 
 * [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs
@@ -523,6 +534,8 @@ Examples line in the `examples` directory. Most produce a png image of the same 
 
 ## License
 
+### node-canvas
+
 (The MIT License)
 
 Copyright (c) 2010 LearnBoost, and contributors &lt;dev@learnboost.com&gt;
@@ -545,3 +558,7 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### BMP parser
+
+See [license](src/bmp/LICENSE.md)

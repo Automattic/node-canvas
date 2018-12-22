@@ -63,6 +63,7 @@
         'src/backend/ImageBackend.cc',
         'src/backend/PdfBackend.cc',
         'src/backend/SvgBackend.cc',
+        'src/bmp/BMPParser.cc',
         'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
@@ -73,8 +74,7 @@
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
-        'src/register_font.cc',
-        'src/toBuffer.cc'
+        'src/register_font.cc'
       ],
       'conditions': [
         ['OS=="win"', {

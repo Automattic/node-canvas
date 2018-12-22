@@ -19,7 +19,6 @@
 #include "CanvasRenderingContext2d.h"
 #include "closure.h"
 #include "register_font.h"
-#include "toBuffer.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -88,9 +87,9 @@ NAN_METHOD(Canvas::New) {
 
   Backend* backend = NULL;
   if (info[0]->IsNumber()) {
-    int width = info[0]->Uint32Value(), height = 0;
+    int width = Nan::To<uint32_t>(info[0]).FromMaybe(0), height = 0;
 
-    if (info[1]->IsNumber()) height = info[1]->Uint32Value();
+    if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
     if (info[2]->IsString()) {
       if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
@@ -107,7 +106,7 @@ NAN_METHOD(Canvas::New) {
     if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
-      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+      backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
     }
@@ -162,7 +161,7 @@ NAN_GETTER(Canvas::GetWidth) {
 NAN_SETTER(Canvas::SetWidth) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setWidth(value->Uint32Value());
+    canvas->backend()->setWidth(Nan::To<uint32_t>(value).FromMaybe(0));
     canvas->resurface(info.This());
   }
 }
@@ -183,7 +182,7 @@ NAN_GETTER(Canvas::GetHeight) {
 NAN_SETTER(Canvas::SetHeight) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setHeight(value->Uint32Value());
+    canvas->backend()->setHeight(Nan::To<uint32_t>(value).FromMaybe(0));
     canvas->resurface(info.This());
   }
 }
@@ -198,7 +197,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 
   closure->status = canvas_write_to_png_stream(
     closure->canvas->surface(),
-    toBuffer,
+    PngClosure::writeVec,
     closure);
 }
 
@@ -206,8 +205,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 void
 Canvas::ToJpegBufferAsync(uv_work_t *req) {
   JpegClosure* closure = static_cast<JpegClosure*>(req->data);
-
-  write_to_jpeg_buffer(closure->canvas->surface(), closure, &closure->data, &closure->len);
+  write_to_jpeg_buffer(closure->canvas->surface(), closure);
 }
 #endif
 
@@ -224,31 +222,30 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(1, argv, &async);
+    closure->cb.Call(1, argv, &async);
   } else {
-    Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
+    closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
-  delete closure->pfn; // TODO move to destructor
   delete closure;
 }
 
 static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
   if (arg->IsObject()) {
-    Local<Object> obj = arg->ToObject();
+    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
     Local<Value> cLevel = obj->Get(Nan::New("compressionLevel").ToLocalChecked());
     if (cLevel->IsUint32()) {
-      uint32_t val = cLevel->Uint32Value();
+      uint32_t val = Nan::To<uint32_t>(cLevel).FromMaybe(0);
       // See quote below from spec section 4.12.5.5.
       if (val <= 9) pngargs.compressionLevel = val;
     }
 
     Local<Value> filters = obj->Get(Nan::New("filters").ToLocalChecked());
-    if (filters->IsUint32()) pngargs.filters = filters->Uint32Value();
+    if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
 
     Local<Value> palette = obj->Get(Nan::New("palette").ToLocalChecked());
     if (palette->IsUint8ClampedArray()) {
@@ -263,7 +260,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
       // Optional background color index:
       Local<Value> backgroundIndexVal = obj->Get(Nan::New("backgroundIndex").ToLocalChecked());
       if (backgroundIndexVal->IsUint32()) {
-        pngargs.backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
+        pngargs.backgroundIndex = static_cast<uint8_t>(Nan::To<uint32_t>(backgroundIndexVal).FromMaybe(0));
       }
     }
   }
@@ -274,11 +271,11 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // user agent must use its default quality value, as if the quality argument 
   // had not been given." - 4.12.5.5
   if (arg->IsObject()) {
-    Local<Object> obj = arg->ToObject();
+    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
     Local<Value> qual = obj->Get(Nan::New("quality").ToLocalChecked());
     if (qual->IsNumber()) {
-      double quality = qual->NumberValue();
+      double quality = Nan::To<double>(qual).FromMaybe(0);
       if (quality >= 0.0 && quality <= 1.0) {
         jpegargs.quality = static_cast<uint32_t>(100.0 * quality);
       }
@@ -286,15 +283,15 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
 
     Local<Value> chroma = obj->Get(Nan::New("chromaSubsampling").ToLocalChecked());
     if (chroma->IsBoolean()) {
-      bool subsample = chroma->BooleanValue();
+      bool subsample = Nan::To<bool>(chroma).FromMaybe(0);
       jpegargs.chromaSubsampling = subsample ? 2 : 1;
     } else if (chroma->IsNumber()) {
-      jpegargs.chromaSubsampling = chroma->Uint32Value();
+      jpegargs.chromaSubsampling = Nan::To<uint32_t>(chroma).FromMaybe(0);
     }
 
     Local<Value> progressive = obj->Get(Nan::New("progressive").ToLocalChecked());
     if (!progressive->IsUndefined()) {
-      jpegargs.progressive = progressive->BooleanValue();
+      jpegargs.progressive = Nan::To<bool>(progressive).FromMaybe(0);
     }
   }
 }
@@ -342,7 +339,7 @@ NAN_METHOD(Canvas::ToBuffer) {
       closure = static_cast<SvgBackend*>(canvas->backend())->closure();
     }
 
-    Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
@@ -368,14 +365,15 @@ NAN_METHOD(Canvas::ToBuffer) {
       }
 
       Nan::TryCatch try_catch;
-      status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
+      status = canvas_write_to_png_stream(canvas->surface(), PngClosure::writeVec, &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else if (status) {
         throw status;
       } else {
-        Local<Object> buf = Nan::CopyBuffer((char *)closure.data, closure.len).ToLocalChecked();
+        // TODO it's possible to avoid this copy
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -402,9 +400,8 @@ NAN_METHOD(Canvas::ToBuffer) {
       return;
     }
 
-    // TODO: only one callback fn in closure
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -424,15 +421,13 @@ NAN_METHOD(Canvas::ToBuffer) {
       parseJPEGArgs(info[1], closure);
 
       Nan::TryCatch try_catch;
-      unsigned char *outbuff = NULL;
-      uint32_t outsize = 0;
-      write_to_jpeg_buffer(canvas->surface(), &closure, &outbuff, &outsize);
+      write_to_jpeg_buffer(canvas->surface(), &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else {
-        char *signedOutBuff = reinterpret_cast<char*>(outbuff);
-        Local<Object> buf = Nan::CopyBuffer(signedOutBuff, outsize).ToLocalChecked();
+        // TODO it's possible to avoid this copy.
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -453,9 +448,8 @@ NAN_METHOD(Canvas::ToBuffer) {
     
     parseJPEGArgs(info[1], *closure);
     
-    // TODO: only one callback fn in closure // TODO what does this comment mean?
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -482,7 +476,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
+  closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -500,7 +494,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   PngClosure closure(canvas);
   parsePNGArgs(info[1], closure);
 
-  closure.fn = Local<Function>::Cast(info[0]);
+  closure.cb.Reset(Local<Function>::Cast(info[0]));
 
   Nan::TryCatch try_catch;
 
@@ -511,13 +505,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
   return;
 }
@@ -589,8 +583,8 @@ NAN_METHOD(Canvas::StreamPDFSync) {
   Local<Function> fn = info[0].As<Function>();
   PdfStreamInfo streaminfo;
   streaminfo.fn = fn;
-  streaminfo.data = closure->data;
-  streaminfo.len = closure->len;
+  streaminfo.data = &closure->vec[0];
+  streaminfo.len = closure->vec.size();
 
   Nan::TryCatch try_catch;
 
@@ -623,7 +617,7 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   JpegClosure closure(canvas);
   parseJPEGArgs(info[0], closure);
-  closure.fn = Local<Function>::Cast(info[1]);
+  closure.cb.Reset(Local<Function>::Cast(info[1]));
 
   Nan::TryCatch try_catch;
   uint32_t bufsize = getSafeBufSize(canvas);
@@ -663,7 +657,7 @@ NAN_METHOD(Canvas::RegisterFont) {
   PangoFontDescription *user_desc = pango_font_description_new();
 
   // now check the attrs, there are many ways to be wrong
-  Local<Object> js_user_desc = info[1]->ToObject();
+  Local<Object> js_user_desc = Nan::To<Object>(info[1]).ToLocalChecked();
   Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
   Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
   Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
@@ -857,9 +851,10 @@ Canvas::resurface(Local<Object> canvas) {
   // Reset context
 	context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
 	if (!context->IsUndefined()) {
-		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(Nan::To<Object>(context).ToLocalChecked());
 		cairo_t *prev = context2d->context();
 		context2d->setContext(createCairoContext());
+		context2d->resetState();
 		cairo_destroy(prev);
 	}
 }

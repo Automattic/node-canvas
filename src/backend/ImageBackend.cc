@@ -14,6 +14,10 @@ ImageBackend::~ImageBackend()
     }
 }
 
+Backend *ImageBackend::construct(int width, int height){
+  return new ImageBackend(width, height);
+}
+
 // This returns an approximate value only, suitable for Nan::AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
 int32_t ImageBackend::approxBytesPerPixel() {
@@ -79,15 +83,6 @@ void ImageBackend::Initialize(Handle<Object> target)
 	target->Set(Nan::New<String>("ImageBackend").ToLocalChecked(), ctor->GetFunction());
 }
 
-NAN_METHOD(ImageBackend::New)
-{
-	int width  = 0;
-	int height = 0;
-	if (info[0]->IsNumber()) width  = info[0]->Uint32Value();
-	if (info[1]->IsNumber()) height = info[1]->Uint32Value();
-
-	ImageBackend* backend = new ImageBackend(width, height);
-
-	backend->Wrap(info.This());
-	info.GetReturnValue().Set(info.This());
+NAN_METHOD(ImageBackend::New) {
+  init(info);
 }
