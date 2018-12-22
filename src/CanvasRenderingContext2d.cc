@@ -1766,7 +1766,6 @@ NAN_GETTER(Context2d::GetFillStyle) {
 
 NAN_SETTER(Context2d::SetFillStyle) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Local<Context> ctx = Nan::GetCurrentContext();
 
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
@@ -1813,8 +1812,6 @@ NAN_GETTER(Context2d::GetStrokeStyle) {
 
 NAN_SETTER(Context2d::SetStrokeStyle) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Isolate *iso = Isolate::GetCurrent();
-  Local<Context> ctx = Nan::GetCurrentContext();
 
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
