@@ -6,8 +6,6 @@
 #include "../closure.h"
 #include "Backend.h"
 
-using namespace std;
-
 class PdfBackend : public Backend
 {
   private:

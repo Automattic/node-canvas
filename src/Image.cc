@@ -40,6 +40,8 @@ typedef struct {
   uint8_t *buf;
 } read_closure_t;
 
+using namespace v8;
+
 Nan::Persistent<FunctionTemplate> Image::constructor;
 
 /*
@@ -239,9 +241,9 @@ NAN_METHOD(Image::SetSource){
     img->filename = strdup(*src);
     status = img->load();
   // Buffer
-  } else if (Buffer::HasInstance(value)) {
-    uint8_t *buf = (uint8_t *) Buffer::Data(Nan::To<Object>(value).ToLocalChecked());
-    unsigned len = Buffer::Length(Nan::To<Object>(value).ToLocalChecked());
+  } else if (node::Buffer::HasInstance(value)) {
+    uint8_t *buf = (uint8_t *) node::Buffer::Data(Nan::To<Object>(value).ToLocalChecked());
+    unsigned len = node::Buffer::Length(Nan::To<Object>(value).ToLocalChecked());
     status = img->loadFromBuffer(buf, len);
   }
 
@@ -1374,7 +1376,7 @@ Image::isSVG(uint8_t *data, unsigned len) {
 
 int Image::isBMP(uint8_t *data, unsigned len) {
   if(len < 2) return false;
-  string sig = string(1, (char)data[0]) + (char)data[1];
+  std::string sig = std::string(1, (char)data[0]) + (char)data[1];
   return sig == "BM" ||
          sig == "BA" ||
          sig == "CI" ||

@@ -9,6 +9,8 @@
 #include "Image.h"
 #include "CanvasPattern.h"
 
+using namespace v8;
+
 const cairo_user_data_key_t *pattern_repeat_key;
 
 Nan::Persistent<FunctionTemplate> Pattern::constructor;

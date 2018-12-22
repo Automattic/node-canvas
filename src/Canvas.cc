@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cctype>
 #include <string>
+#include <algorithm> // std::min
 #include <vector>
 #include <unordered_set>
 #include <node_buffer.h>
@@ -36,6 +37,9 @@
   "The second argument to registerFont is required, and should be an object " \
   "with at least a family (string) and optionally weight (string/number) " \
   "and style (string)."
+
+using namespace v8;
+using namespace std;
 
 Nan::Persistent<FunctionTemplate> Canvas::constructor;
 
@@ -305,7 +309,7 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
-  return min(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
+  return std::min(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
 }
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
@@ -377,7 +381,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   // Vector canvases, sync only
-  const string name = canvas->backend()->getName();
+  const std::string name = canvas->backend()->getName();
   if (name == "pdf" || name == "svg") {
     // mime type may be present, but it's not checked
     PdfSvgClosure* closure;

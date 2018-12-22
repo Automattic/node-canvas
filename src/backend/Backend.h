@@ -1,9 +1,7 @@
 #ifndef __BACKEND_H__
 #define __BACKEND_H__
 
-#include <iostream>
 #include <string>
-#include <sstream>
 #include <exception>
 
 #include <v8.h>
@@ -14,12 +12,10 @@
 
 class Canvas;
 
-using namespace std;
-
 class Backend : public Nan::ObjectWrap
 {
   private:
-    const string name;
+    const std::string name;
     const char* error = NULL;
 
   protected:
@@ -28,7 +24,7 @@ class Backend : public Nan::ObjectWrap
     cairo_surface_t* surface = nullptr;
     Canvas* canvas = nullptr;
 
-    Backend(string name, int width, int height);
+    Backend(std::string name, int width, int height);
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
 
@@ -43,7 +39,7 @@ class Backend : public Nan::ObjectWrap
     DLL_PUBLIC cairo_surface_t* getSurface();
     virtual void destroySurface();
 
-    DLL_PUBLIC string getName();
+    DLL_PUBLIC std::string getName();
 
     DLL_PUBLIC int getWidth();
     virtual void setWidth(int width);
@@ -61,14 +57,14 @@ class Backend : public Nan::ObjectWrap
 };
 
 
-class BackendOperationNotAvailable: public exception
+class BackendOperationNotAvailable: public std::exception
 {
   private:
     Backend* backend;
-    string operation_name;
+    std::string operation_name;
 
   public:
-    BackendOperationNotAvailable(Backend* backend, string operation_name);
+    BackendOperationNotAvailable(Backend* backend, std::string operation_name);
     ~BackendOperationNotAvailable() throw();
 
     const char* what() const throw();

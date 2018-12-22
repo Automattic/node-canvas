@@ -6,8 +6,6 @@
 #include "Backend.h"
 #include "../closure.h"
 
-using namespace std;
-
 class SvgBackend : public Backend
 {
   private:

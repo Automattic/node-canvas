@@ -31,6 +31,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+using namespace v8;
+
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf

@@ -5,8 +5,6 @@
 
 #include "Backend.h"
 
-using namespace std;
-
 class ImageBackend : public Backend
 {
   private:

@@ -9,6 +9,8 @@
 #include "Canvas.h"
 #include "CanvasGradient.h"
 
+using namespace v8;
+
 Nan::Persistent<FunctionTemplate> Gradient::constructor;
 
 /*

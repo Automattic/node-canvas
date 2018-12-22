@@ -8,6 +8,8 @@
 #include "Util.h"
 #include "ImageData.h"
 
+using namespace v8;
+
 Nan::Persistent<FunctionTemplate> ImageData::constructor;
 
 /*

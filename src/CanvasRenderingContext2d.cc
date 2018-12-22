@@ -24,6 +24,8 @@
 #include "backend/ImageBackend.h"
 #include <cairo/cairo-pdf.h>
 
+using namespace v8;
+
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
 #define isnan(x) _isnan(x)
