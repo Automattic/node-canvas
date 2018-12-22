@@ -1,23 +1,17 @@
-
-//
-// closure.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CLOSURE_H__
-#define __NODE_CLOSURE_H__
+#pragma once
 
+#include "Canvas.h"
+#include <jpeglib.h>
 #include <nan.h>
 #include <png.h>
-#include <jpeglib.h>
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <vector>
 
 #ifndef PAGE_SIZE
   #define PAGE_SIZE 4096
 #endif
-
-#include "Canvas.h"
 
 /*
  * Image encoding closures.
@@ -79,5 +73,3 @@ struct JpegClosure : Closure {
     delete jpeg_dest_mgr;
   }
 };
-
-#endif /* __NODE_CLOSURE_H__ */

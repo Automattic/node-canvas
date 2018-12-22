@@ -1,18 +1,14 @@
-//
-// Image.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
+#include "Image.h"
+
+#include "bmp/BMPParser.h"
+#include "Canvas.h"
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <cerrno>
 #include <node_buffer.h>
-
 #include "Util.h"
-#include "Canvas.h"
-#include "Image.h"
-#include "bmp/BMPParser.h"
 
 #ifdef HAVE_GIF
 typedef struct {

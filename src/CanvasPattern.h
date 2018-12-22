@@ -1,14 +1,10 @@
-
-//
-// CanvasPattern.h
-//
 // Copyright (c) 2011 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_PATTERN_H__
-#define __NODE_PATTERN_H__
+#pragma once
 
-#include "Canvas.h"
+#include <cairo.h>
+#include <nan.h>
+#include <v8.h>
 
 /*
  * Canvas types.
@@ -36,5 +32,3 @@ class Pattern: public Nan::ObjectWrap {
     cairo_pattern_t *_pattern;
     repeat_type_t _repeat;
 };
-
-#endif

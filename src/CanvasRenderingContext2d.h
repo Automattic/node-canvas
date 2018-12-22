@@ -1,19 +1,12 @@
-
-//
-// CanvasRenderingContext2d.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CONTEXT2D_H__
-#define __NODE_CONTEXT2D_H__
+#pragma once
 
-#include <vector>
-#include <pango/pangocairo.h>
-
-#include "color.h"
+#include "cairo.h"
 #include "Canvas.h"
-#include "CanvasGradient.h"
+#include "color.h"
+#include "nan.h"
+#include <pango/pangocairo.h>
 
 typedef enum {
   TEXT_DRAW_PATHS,
@@ -207,5 +200,3 @@ class Context2d: public Nan::ObjectWrap {
     cairo_path_t *_path;
     PangoLayout *_layout;
 };
-
-#endif

@@ -1,10 +1,8 @@
-#ifndef __PDF_BACKEND_H__
-#define __PDF_BACKEND_H__
+#pragma once
 
-#include <v8.h>
-
-#include "../closure.h"
 #include "Backend.h"
+#include "../closure.h"
+#include <v8.h>
 
 class PdfBackend : public Backend
 {
@@ -24,5 +22,3 @@ class PdfBackend : public Backend
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
 };
-
-#endif

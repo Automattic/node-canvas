@@ -1,14 +1,10 @@
-
-//
-// CanvasGradient.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_GRADIENT_H__
-#define __NODE_GRADIENT_H__
+#pragma once
 
-#include "Canvas.h"
+#include <nan.h>
+#include <v8.h>
+#include <cairo.h>
 
 class Gradient: public Nan::ObjectWrap {
   public:
@@ -24,5 +20,3 @@ class Gradient: public Nan::ObjectWrap {
     ~Gradient();
     cairo_pattern_t *_pattern;
 };
-
-#endif

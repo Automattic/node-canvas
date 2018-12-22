@@ -1,10 +1,8 @@
-#ifndef __SVG_BACKEND_H__
-#define __SVG_BACKEND_H__
-
-#include <v8.h>
+#pragma once
 
 #include "Backend.h"
 #include "../closure.h"
+#include <v8.h>
 
 class SvgBackend : public Backend
 {
@@ -24,5 +22,3 @@ class SvgBackend : public Backend
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
 };
-
-#endif

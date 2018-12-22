@@ -1,5 +1,4 @@
-#ifndef __CANVAS_ERROR_H__
-#define __CANVAS_ERROR_H__
+#pragma once
 
 #include <string>
 
@@ -22,5 +21,3 @@ class CanvasError {
       cerrno = 0;
     }
 };
-
-#endif

@@ -1,23 +1,14 @@
-
-//
-// Canvas.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CANVAS_H__
-#define __NODE_CANVAS_H__
+#pragma once
 
-#include <node.h>
-#include <v8.h>
-#include <node_object_wrap.h>
-#include <node_version.h>
-#include <pango/pangocairo.h>
-#include <cairo.h>
-#include <nan.h>
-
-#include "dll_visibility.h"
 #include "backend/Backend.h"
+#include <cairo.h>
+#include "dll_visibility.h"
+#include <nan.h>
+#include <pango/pangocairo.h>
+#include <v8.h>
+#include <vector>
 
 /*
  * Maxmimum states per context.
@@ -84,5 +75,3 @@ class Canvas: public Nan::ObjectWrap {
     ~Canvas();
     Backend* _backend;
 };
-
-#endif

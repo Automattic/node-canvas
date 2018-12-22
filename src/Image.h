@@ -1,16 +1,13 @@
-
-//
-// Image.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_IMAGE_H__
-#define __NODE_IMAGE_H__
+#pragma once
 
-#include "Canvas.h"
+#include <cairo.h>
 #include "CanvasError.h"
 #include <functional>
+#include <nan.h>
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
+#include <v8.h>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -128,5 +125,3 @@ class Image: public Nan::ObjectWrap {
 #endif
     ~Image();
 };
-
-#endif

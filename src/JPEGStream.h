@@ -1,13 +1,6 @@
-
-//
-// JPEGStream.h
-//
-
-#ifndef __NODE_JPEG_STREAM_H__
-#define __NODE_JPEG_STREAM_H__
+#pragma once
 
 #include "closure.h"
-#include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
 
@@ -172,5 +165,3 @@ write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure) {
     closure->chromaSubsampling,
     closure->chromaSubsampling);
 }
-
-#endif

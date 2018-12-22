@@ -1,12 +1,8 @@
-
-//
-// ImageData.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
+
+#include "ImageData.h"
 
 #include "Util.h"
-#include "ImageData.h"
 
 using namespace v8;
 

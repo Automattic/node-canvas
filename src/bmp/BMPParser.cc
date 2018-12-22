@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include "BMPParser.h"
+
+#include <cassert>
 
 using namespace std;
 using namespace BMPParser;

@@ -1,14 +1,11 @@
-#ifndef __BACKEND_H__
-#define __BACKEND_H__
+#pragma once
 
-#include <string>
-#include <exception>
-
-#include <v8.h>
-#include <nan.h>
 #include <cairo.h>
-
 #include "../dll_visibility.h"
+#include <exception>
+#include <nan.h>
+#include <string>
+#include <v8.h>
 
 class Canvas;
 
@@ -69,5 +66,3 @@ class BackendOperationNotAvailable: public std::exception
 
     const char* what() const throw();
 };
-
-#endif

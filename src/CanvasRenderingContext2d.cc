@@ -1,28 +1,23 @@
-
-//
-// CanvasRenderingContext2d.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include <cmath>
-#include <cstdlib>
-#include <limits>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <map>
-
-#include "Util.h"
-#include "Canvas.h"
-#include "Point.h"
-#include "Image.h"
-#include "ImageData.h"
 #include "CanvasRenderingContext2d.h"
-#include "CanvasGradient.h"
-#include "CanvasPattern.h"
+
+#include <algorithm>
 #include "backend/ImageBackend.h"
 #include <cairo/cairo-pdf.h>
+#include "Canvas.h"
+#include "CanvasGradient.h"
+#include "CanvasPattern.h"
+#include <cmath>
+#include <cstdlib>
+#include "Image.h"
+#include "ImageData.h"
+#include <limits>
+#include <map>
+#include "Point.h"
+#include <string>
+#include "Util.h"
+#include <vector>
 
 using namespace v8;
 

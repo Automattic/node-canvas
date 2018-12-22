@@ -1,13 +1,7 @@
-
-//
-// init.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
 #include <cstdio>
 #include <pango/pango.h>
-#include <glib.h>
 
 #include <cairo.h>
 #if CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 10, 0)
