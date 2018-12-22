@@ -517,6 +517,18 @@ Notes and caveats:
 
 * The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)` constructors assume 4 bytes per pixel. To create an `ImageData` instance with a different number of bytes per pixel, use `new ImageData(new Uint8ClampedArray(size), width, height)` or `new ImageData(new Uint16ClampedArray(size), width, height)`.
 
+## Testing
+
+First make sure you've built the latest version. Get all the deps you need (see [compiling](#compiling) above), and run:
+
+```
+npm install --build-from-source
+```
+
+For visual tests: `npm run test-server` and point your browser to http://localhost:4000.
+
+For unit tests: `npm run test`.
+
 ## Benchmarks
 
 Benchmarks live in the `benchmarks` directory.
