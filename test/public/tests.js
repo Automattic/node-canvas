@@ -1289,7 +1289,7 @@ tests['drawImage issue #1249'] = function (ctx, done) {
 
 tests['drawImage 9 arguments big numbers'] = function (ctx, done) {
   var img = new Image()
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false
   img.onload = function () {
     // we use big numbers because is over the max canvas allowed
     ctx.drawImage(img, -90000, -90000, 90080, 90080, -180000, -18000, 180160, 18016)
