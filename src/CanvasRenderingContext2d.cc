@@ -1334,6 +1334,8 @@ NAN_METHOD(Context2d::DrawImage) {
     if (real_h > source_h) {
       real_h = source_h;
     }
+    // TODO: find a way to limit the surfTemp to real_w and real_h if fx and fy are bigger than 1.
+    // there are no more pixel than the one available in the source, no need to create a bigger surface.
     surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, round(real_w * fx), round(real_h * fy));
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
@@ -1343,7 +1345,6 @@ NAN_METHOD(Context2d::DrawImage) {
     if (sy > 0) {
       translate_y = sy * current_scale_y;
     }
-    // cairo_translate(ctxTemp, -translate_x, -translate_y);
     cairo_set_source_surface(ctxTemp, surface, -translate_x, -translate_y);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
