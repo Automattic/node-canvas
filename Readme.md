@@ -97,7 +97,7 @@ This project is an implementation of the Web Canvas API and implements that API 
 ### createCanvas()
 
 > ```ts
-> createCanvas(width: number, height: number, type?: 'PDF'|'SVG') => Canvas
+> createCanvas(width: number, height: number, type?: 'fbdev'|'pdf'|'svg') => Canvas
 > ```
 
 Creates a Canvas instance. This method works in both Node.js and Web browsers, where there is no Canvas constructor. (See `browser.js` for the implementation that runs in browsers.)
@@ -463,7 +463,7 @@ See also:
 
 ## SVG Output Support
 
-node-canvas can create SVG documents instead of images. The canva type must be set when creating the canvas as follows:
+node-canvas can create SVG documents instead of images. The canvas type must be set when creating the canvas as follows:
 
 ```js
 const canvas = createCanvas(200, 500, 'svg')
