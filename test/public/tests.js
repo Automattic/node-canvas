@@ -2448,3 +2448,12 @@ tests['image sampling (#1084)'] = function (ctx, done) {
   img1.src = imageSrc('halved-1.jpeg')
   img2.src = imageSrc('halved-2.jpeg')
 }
+
+tests['drawImage reflection bug'] = function (ctx, done) {
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
+    done()
+  }
+  img1.src = imageSrc('chrome.jpg')
+}

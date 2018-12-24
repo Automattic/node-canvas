@@ -62,13 +62,16 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
   SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
-
-  Nan::SetMethod(proto, "getSource", GetSource);
-  Nan::SetMethod(proto, "setSource", SetSource);
   SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
+
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
+
   Nan::Set(target, Nan::New("Image").ToLocalChecked(), ctor->GetFunction());
+
+  // Used internally in lib/image.js
+  NAN_EXPORT(target, GetSource);
+  NAN_EXPORT(target, SetSource);
 }
 
 /*

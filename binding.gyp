@@ -74,8 +74,7 @@
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
-        'src/register_font.cc',
-        'src/toBuffer.cc'
+        'src/register_font.cc'
       ],
       'conditions': [
         ['OS=="win"', {

@@ -19,7 +19,6 @@
 #include "CanvasRenderingContext2d.h"
 #include "closure.h"
 #include "register_font.h"
-#include "toBuffer.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -206,7 +205,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 
   closure->status = canvas_write_to_png_stream(
     closure->canvas->surface(),
-    toBuffer,
+    PngClosure::writeVec,
     closure);
 }
 
@@ -214,8 +213,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 void
 Canvas::ToJpegBufferAsync(uv_work_t *req) {
   JpegClosure* closure = static_cast<JpegClosure*>(req->data);
-
-  write_to_jpeg_buffer(closure->canvas->surface(), closure, &closure->data, &closure->len);
+  write_to_jpeg_buffer(closure->canvas->surface(), closure);
 }
 #endif
 
@@ -232,15 +230,14 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(1, argv, &async);
+    closure->cb.Call(1, argv, &async);
   } else {
-    Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
+    closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
-  delete closure->pfn; // TODO move to destructor
   delete closure;
 }
 
@@ -350,7 +347,7 @@ NAN_METHOD(Canvas::ToBuffer) {
       closure = static_cast<SvgBackend*>(canvas->backend())->closure();
     }
 
-    Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
@@ -376,14 +373,15 @@ NAN_METHOD(Canvas::ToBuffer) {
       }
 
       Nan::TryCatch try_catch;
-      status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
+      status = canvas_write_to_png_stream(canvas->surface(), PngClosure::writeVec, &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else if (status) {
         throw status;
       } else {
-        Local<Object> buf = Nan::CopyBuffer((char *)closure.data, closure.len).ToLocalChecked();
+        // TODO it's possible to avoid this copy
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -410,9 +408,8 @@ NAN_METHOD(Canvas::ToBuffer) {
       return;
     }
 
-    // TODO: only one callback fn in closure
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -432,15 +429,13 @@ NAN_METHOD(Canvas::ToBuffer) {
       parseJPEGArgs(info[1], closure);
 
       Nan::TryCatch try_catch;
-      unsigned char *outbuff = NULL;
-      uint32_t outsize = 0;
-      write_to_jpeg_buffer(canvas->surface(), &closure, &outbuff, &outsize);
+      write_to_jpeg_buffer(canvas->surface(), &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else {
-        char *signedOutBuff = reinterpret_cast<char*>(outbuff);
-        Local<Object> buf = Nan::CopyBuffer(signedOutBuff, outsize).ToLocalChecked();
+        // TODO it's possible to avoid this copy.
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -461,9 +456,8 @@ NAN_METHOD(Canvas::ToBuffer) {
     
     parseJPEGArgs(info[1], *closure);
     
-    // TODO: only one callback fn in closure // TODO what does this comment mean?
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -490,7 +484,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
+  closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -508,7 +502,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   PngClosure closure(canvas);
   parsePNGArgs(info[1], closure);
 
-  closure.fn = Local<Function>::Cast(info[0]);
+  closure.cb.Reset(Local<Function>::Cast(info[0]));
 
   Nan::TryCatch try_catch;
 
@@ -519,13 +513,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
   return;
 }
@@ -597,8 +591,8 @@ NAN_METHOD(Canvas::StreamPDFSync) {
   Local<Function> fn = info[0].As<Function>();
   PdfStreamInfo streaminfo;
   streaminfo.fn = fn;
-  streaminfo.data = closure->data;
-  streaminfo.len = closure->len;
+  streaminfo.data = &closure->vec[0];
+  streaminfo.len = closure->vec.size();
 
   Nan::TryCatch try_catch;
 
@@ -631,7 +625,7 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   JpegClosure closure(canvas);
   parseJPEGArgs(info[0], closure);
-  closure.fn = Local<Function>::Cast(info[1]);
+  closure.cb.Reset(Local<Function>::Cast(info[1]));
 
   Nan::TryCatch try_catch;
   uint32_t bufsize = getSafeBufSize(canvas);
