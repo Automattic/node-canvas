@@ -22,6 +22,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "backend/ImageBackend.h"
+#include <cairo/cairo-pdf.h>
 
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
@@ -756,6 +757,11 @@ NAN_METHOD(Context2d::AddPage) {
     return Nan::ThrowError("only PDF canvases support .nextPage()");
   }
   cairo_show_page(context->context());
+  int width = Nan::To<int32_t>(info[0]).FromMaybe(0);
+  int height = Nan::To<int32_t>(info[1]).FromMaybe(0);
+  if (width < 1) width = context->canvas()->getWidth();
+  if (height < 1) height = context->canvas()->getHeight();
+  cairo_pdf_surface_set_size(context->canvas()->surface(), width, height);
   return;
 }
 
@@ -2451,8 +2457,12 @@ NAN_SETTER(Context2d::SetFont) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { value };
-  Local<Value> parsed = _parseFont.Get(iso)->Call(ctx, ctx->Global(), argc, argv).ToLocalChecked();
-  Local<Object> font = Nan::To<Object>(parsed).ToLocalChecked();
+
+  MaybeLocal<Value> mparsed = _parseFont.Get(iso)->Call(ctx, ctx->Global(), argc, argv);
+  if (mparsed.IsEmpty()) return;
+  MaybeLocal<Object> mfont = Nan::To<Object>(mparsed.ToLocalChecked());
+  if (mfont.IsEmpty()) return;
+  Local<Object> font = mfont.ToLocalChecked();
 
   Nan::Utf8String weight(font->Get(ctx, Nan::New("weight").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String style(font->Get(ctx, Nan::New("style").ToLocalChecked()).ToLocalChecked());

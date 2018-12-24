@@ -444,6 +444,16 @@ canvas.toBuffer() // returns a PDF file
 canvas.createPDFStream() // returns a ReadableStream that emits a PDF
 ```
 
+It is also possible to create pages with different sizes by passing `width` and `height` to the `.addPage()` method:
+
+```js
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.addPage(400, 800)
+
+ctx.fillText('Hello World 2', 50, 80)
+```
+
 See also:
 
 * [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs
