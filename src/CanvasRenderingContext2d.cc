@@ -1289,8 +1289,8 @@ NAN_METHOD(Context2d::DrawImage) {
   decompose_matrix(matrix, transforms);
   // extract the scale value from the current transform so that we know how many pixels we
   // need for our extra canvas in the drawImage operation.
-  double current_scale_y = transforms[1];
-  double current_scale_x = transforms[2];
+  double current_scale_x = transforms[1];
+  double current_scale_y = transforms[2];
   float extra_dx = 0;
   float extra_dy = 0;
   float fx = (float) dw / sw * current_scale_x; // transforms[1] is scale on X
