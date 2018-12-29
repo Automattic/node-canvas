@@ -347,7 +347,7 @@ out.on('finish', () =>  console.log('The JPEG file was created.'))
 
 // Disable 2x2 chromaSubsampling for deeper colors and use a higher quality
 const stream = canvas.createJPEGStream({
-  quality: 95,
+  quality: 0.95,
   chromaSubsampling: false
 })
 ```
