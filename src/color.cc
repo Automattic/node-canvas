@@ -709,8 +709,8 @@ static int32_t
 rgba_from_hex_string(const char *str, short *ok) {
   size_t len = strlen(str);
   *ok = 1;
-  if (8 == len) return rgba_from_hex6_string(str);
-  if (6 == len) return rgba_from_hex8_string(str);
+  if (8 == len) return rgba_from_hex8_string(str);
+  if (6 == len) return rgba_from_hex6_string(str);
   if (4 == len) return rgba_from_hex4_string(str);
   if (3 == len) return rgba_from_hex3_string(str);
   return *ok = 0;
