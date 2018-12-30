@@ -551,6 +551,20 @@ rgba_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 /*
+ * Return rgba from #RRGGBBAA
+ */
+
+static int32_t
+rgba_from_hex8_string(const char *str) {
+  return rgba_from_rgba(
+    (h(str[0]) << 4) + h(str[1]),
+    (h(str[2]) << 4) + h(str[3]),
+    (h(str[4]) << 4) + h(str[5]),
+    (h(str[6]) << 4) + h(str[7])
+  );
+}
+
+/*
  * Return rgb from "#RRGGBB".
  */
 
@@ -561,6 +575,20 @@ rgba_from_hex6_string(const char *str) {
     , (h(str[2]) << 4) + h(str[3])
     , (h(str[4]) << 4) + h(str[5])
     );
+}
+
+/*
+* Return rgba from #RGBA
+*/
+
+static int32_t
+rgba_from_hex4_string(const char *str) {
+  return rgba_from_rgba(
+    (h(str[0]) << 4) + h(str[0]),
+    (h(str[1]) << 4) + h(str[1]),
+    (h(str[2]) << 4) + h(str[2]),
+    (h(str[3]) << 4) + h(str[3])
+  );
 }
 
 /*
