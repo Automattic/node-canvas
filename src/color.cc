@@ -60,7 +60,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
    const char*& str = *pStr;
    const char* startStr = str;
    if (!str || !*str)
-       return false; 
+       return false;
    parsed_t integerPart = 0;
    parsed_t fractionPart = 0;
    int divisorForFraction = 1;
@@ -68,7 +68,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
    int exponent = 0;
    int digits = 0;
    bool inFraction = false;
-  
+
    if (*str == '-') {
        ++str;
        sign = -1;
@@ -83,7 +83,7 @@ parse_css_number(const char** pStr, parsed_t *pParsed) {
           }
           else {
             ++digits;
-          
+
             if (inFraction) {
                 fractionPart = fractionPart*10 + (*str - '0');
                 divisorForFraction *= 10;
@@ -137,7 +137,7 @@ clip(T value, T minValue, T maxValue) {
 /*
  * Wrap value to the range [0, limit]
  */
- 
+
 template <typename T>
 static T
 wrap_float(T value, T limit) {
@@ -186,7 +186,7 @@ parse_degrees(const char** pStr, float *pDegrees) {
  */
 
 static bool
-parse_clipped_percentage(const char** pStr, float *pFraction) { 
+parse_clipped_percentage(const char** pStr, float *pFraction) {
   float percentage;
   bool result = parse_css_number(pStr,&percentage);
   const char*& str = *pStr;
@@ -671,7 +671,7 @@ rgba_from_hsl_string(const char *str, short *ok) {
 
 /*
  * Return rgb from:
- *  
+ *
  *  - "#RGB"
  *  - "#RRGGBB"
  *
@@ -681,7 +681,9 @@ static int32_t
 rgba_from_hex_string(const char *str, short *ok) {
   size_t len = strlen(str);
   *ok = 1;
-  if (6 == len) return rgba_from_hex6_string(str);
+  if (8 == len) return rgba_from_hex6_string(str);
+  if (6 == len) return rgba_from_hex8_string(str);
+  if (4 == len) return rgba_from_hex4_string(str);
   if (3 == len) return rgba_from_hex3_string(str);
   return *ok = 0;
 }
@@ -703,7 +705,7 @@ rgba_from_name_string(const char *str, short *ok) {
 
 /*
  * Return rgb from:
- *  
+ *
  *  - #RGB
  *  - #RRGGBB
  *  - rgb(r,g,b)
@@ -716,7 +718,7 @@ rgba_from_name_string(const char *str, short *ok) {
 
 int32_t
 rgba_from_string(const char *str, short *ok) {
-  if ('#' == str[0]) 
+  if ('#' == str[0])
     return rgba_from_hex_string(++str, ok);
   if (str == strstr(str, "rgba"))
     return rgba_from_rgba_string(str, ok);
