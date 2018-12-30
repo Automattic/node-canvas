@@ -142,6 +142,16 @@ describe('Canvas', function () {
     ctx.fillStyle = 'afasdfasdf';
     assert.equal('#ffffff', ctx.fillStyle);
 
+    // #rgba and #rrggbbaa
+    ctx.fillStyle = '#ffccaa80'
+    assert.equal('rgba(255, 204, 170, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = '#acf8'
+    assert.equal('rgba(170, 204, 255, 0.53)', ctx.fillStyle)
+
+    ctx.fillStyle = '#BEAD'
+    assert.equal('rgba(187, 238, 170, 0.87)', ctx.fillStyle)
+
     ctx.fillStyle = 'rgb(255,255,255)';
     assert.equal('#ffffff', ctx.fillStyle);
 
