@@ -6,7 +6,11 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
+#include <cctype>
+#include <string>
+#include <vector>
+#include <unordered_set>
 #include <node_buffer.h>
 #include <node_version.h>
 #include <glib.h>
@@ -34,6 +38,8 @@
   "and style (string)."
 
 Nan::Persistent<FunctionTemplate> Canvas::constructor;
+
+std::vector<FontFace> font_face_list;
 
 /*
  * Initialize Canvas.
@@ -671,23 +677,18 @@ NAN_METHOD(Canvas::RegisterFont) {
     pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
     pango_font_description_set_family(user_desc, family);
 
-    std::vector<FontFace>::iterator it = _font_face_list.begin();
-    FontFace *already_registered = NULL;
-
-    for (; it != _font_face_list.end() && !already_registered; ++it) {
-      if (pango_font_description_equal(it->sys_desc, sys_desc)) {
-        already_registered = &(*it);
-      }
-    }
-
-    if (already_registered) {
-      pango_font_description_free(already_registered->user_desc);
-      already_registered->user_desc = user_desc;
+    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+      return pango_font_description_equal(f.sys_desc, sys_desc);
+    });
+    
+    if (found != font_face_list.end()) {
+      pango_font_description_free(found->user_desc);
+      found->user_desc = user_desc;
     } else if (register_font((unsigned char *) *filePath)) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
-      _font_face_list.push_back(face);
+      font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
       Nan::ThrowError("Could not load font to the system's font host");
@@ -719,14 +720,6 @@ Canvas::~Canvas() {
 		delete _backend;
 	}
 }
-
-std::vector<FontFace>
-_init_font_face_list() {
-  std::vector<FontFace> x;
-  return x;
-}
-
-std::vector<FontFace> Canvas::_font_face_list = _init_font_face_list();
 
 /*
  * Get a PangoStyle from a CSS string (like "italic")
@@ -782,6 +775,12 @@ Canvas::GetWeightFromCSSString(const char *weight) {
   return w;
 }
 
+bool streq_casein(std::string& str1, std::string& str2) {
+  return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(), [](char& c1, char& c2) {
+    return c1 == c2 || std::toupper(c1) == std::toupper(c2);
+  });
+}
+
 /*
  * Given a user description, return a description that will select the
  * font either from the system or @font-face
@@ -789,50 +788,44 @@ Canvas::GetWeightFromCSSString(const char *weight) {
 
 PangoFontDescription *
 Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
-  FontFace best;
-  PangoFontDescription *ret = NULL;
-
   // One of the user-specified families could map to multiple SFNT family names
   // if someone registered two different fonts under the same family name.
   // https://drafts.csswg.org/css-fonts-3/#font-style-matching
-  char **families = g_strsplit(pango_font_description_get_family(desc), ",", -1);
-  GHashTable *seen_families = g_hash_table_new(g_str_hash, g_str_equal);
-  GString *resolved_families = g_string_new("");
+  FontFace best;
+  istringstream families(pango_font_description_get_family(desc));
+  unordered_set<string> seen_families;
+  string resolved_families;
+  bool first = true;
 
-  for (int i = 0; families[i]; ++i) {
-    GString *renamed_families = g_string_new("");
-    std::vector<FontFace>::iterator it = _font_face_list.begin();
-
-    for (; it != _font_face_list.end(); ++it) {
-      if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
-        char *name = g_strdup(pango_font_description_get_family(it->sys_desc));
-        bool unseen = g_hash_table_lookup(seen_families, name) == NULL;
+  for (string family; getline(families, family, ','); ) {
+    string renamed_families;
+    for (auto& ff : font_face_list) {
+      string pangofamily = string(pango_font_description_get_family(ff.user_desc));
+      if (streq_casein(family, pangofamily)) {
+        const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
+        bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
 
         // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
         // https://bugzilla.gnome.org/show_bug.cgi?id=762873
         if (unseen) {
-          g_hash_table_replace(seen_families, name, name);
-          if (renamed_families->len) g_string_append(renamed_families, ",");
-          g_string_append(renamed_families, name);
+          seen_families.insert(sys_desc_family_name);
+          if (renamed_families.size()) renamed_families += ',';
+          renamed_families += sys_desc_family_name;
         }
 
-        if (i == 0 && (best.user_desc == NULL || pango_font_description_better_match(desc, best.user_desc, it->user_desc))) {
-          best = *it;
+        if (first && (best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc))) {
+          best = ff;
         }
       }
     }
 
-    if (resolved_families->len) g_string_append(resolved_families, ",");
-    g_string_append(resolved_families, renamed_families->len ? renamed_families->str : families[i]);
-    g_string_free(renamed_families, true);
+    if (resolved_families.size()) resolved_families += ',';
+    resolved_families += renamed_families.size() ? renamed_families : family;
+    first = false;
   }
 
-  ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
-  pango_font_description_set_family_static(ret, resolved_families->str);
-
-  g_strfreev(families);
-  g_string_free(resolved_families, false);
-  g_hash_table_destroy(seen_families);
+  PangoFontDescription* ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
+  pango_font_description_set_family(ret, resolved_families.c_str());
 
   return ret;
 }
