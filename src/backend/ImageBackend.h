@@ -11,12 +11,11 @@ class ImageBackend : public Backend
 {
   private:
     cairo_surface_t* createSurface();
-    cairo_surface_t* recreateSurface();
+    void destroySurface();
     cairo_format_t format = DEFAULT_FORMAT;
 
   public:
     ImageBackend(int width, int height);
-    ~ImageBackend();
     static Backend *construct(int width, int height);
 
     cairo_format_t getFormat();

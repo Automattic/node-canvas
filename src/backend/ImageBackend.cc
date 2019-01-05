@@ -6,14 +6,6 @@ ImageBackend::ImageBackend(int width, int height)
 	: Backend("image", width, height)
 	{}
 
-ImageBackend::~ImageBackend()
-{
-    if (surface) {
-        destroySurface();
-        Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
-    }
-}
-
 Backend *ImageBackend::construct(int width, int height){
   return new ImageBackend(width, height);
 }
@@ -39,27 +31,20 @@ int32_t ImageBackend::approxBytesPerPixel() {
   }
 }
 
-cairo_surface_t* ImageBackend::createSurface()
-{
-  assert(!this->surface);
-  this->surface = cairo_image_surface_create(this->format, width, height);
-  assert(this->surface);
+cairo_surface_t* ImageBackend::createSurface() {
+  assert(!surface);
+  surface = cairo_image_surface_create(format, width, height);
+  assert(surface);
   Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
-
-  return this->surface;
+  return surface;
 }
 
-cairo_surface_t* ImageBackend::recreateSurface()
-{
-	// Re-surface
-	if (this->surface) {
-		int old_width = cairo_image_surface_get_width(this->surface);
-		int old_height = cairo_image_surface_get_height(this->surface);
-		this->destroySurface();
-		Nan::AdjustExternalMemory(-approxBytesPerPixel() * old_width * old_height);
-	}
-
-	return createSurface();
+void ImageBackend::destroySurface() {
+  if (surface) {
+    cairo_surface_destroy(surface);
+    surface = nullptr;
+    Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
+  }
 }
 
 cairo_format_t ImageBackend::getFormat() {
@@ -72,8 +57,7 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 
 Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
 
-void ImageBackend::Initialize(Handle<Object> target)
-{
+void ImageBackend::Initialize(Handle<Object> target) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);
