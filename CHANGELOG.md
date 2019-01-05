@@ -13,7 +13,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Don't crash when font string is invalid (bug since 2.2.0) (#1328)
-* Fix memory leak in toBuffer
+* Fix memory leak in `canvas.toBuffer()` (#1202, #1296)
+* Fix memory leak in `ctx.font=` (#1202)
 
 2.2.0
 ==================

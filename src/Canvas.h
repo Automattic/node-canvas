@@ -13,7 +13,6 @@
 #include <node_object_wrap.h>
 #include <node_version.h>
 #include <pango/pangocairo.h>
-#include <vector>
 #include <cairo.h>
 #include <nan.h>
 
@@ -39,8 +38,8 @@ using namespace v8;
  */
 class FontFace {
   public:
-    PangoFontDescription *sys_desc = NULL;
-    PangoFontDescription *user_desc = NULL;
+    PangoFontDescription *sys_desc = nullptr;
+    PangoFontDescription *user_desc = nullptr;
 };
 
 /*
@@ -88,7 +87,6 @@ class Canvas: public Nan::ObjectWrap {
   private:
     ~Canvas();
     Backend* _backend;
-    static std::vector<FontFace> _font_face_list;
 };
 
 #endif
