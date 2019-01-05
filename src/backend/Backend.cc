@@ -1,12 +1,9 @@
 #include "Backend.h"
 
-
 Backend::Backend(string name, int width, int height)
   : name(name)
   , width(width)
   , height(height)
-  , surface(NULL)
-  , canvas(NULL)
 {}
 
 Backend::~Backend()
