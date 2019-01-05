@@ -39,7 +39,7 @@
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
   "dependencies": {
-    "nan": "^2.11.1",
+    "nan": "^2.12.1",
     "node-pre-gyp": "^0.11.0"
   },
   "devDependencies": {
