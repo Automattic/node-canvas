@@ -240,12 +240,19 @@ Enabling mime data tracking has no benefits (only a slow down) unless you are ge
 Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the image contained in the canvas.
 
 * **callback** If provided, the buffer will be provided in the callback instead of being returned by the function. Invoked with an error as the first argument if encoding failed, or the resulting buffer as the second argument if it succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases.
-* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support) and `raw` (unencoded ARGB32 data in native-endian byte order, top-to-bottom). Defaults to `image/png`. If the canvas is a PDF or SVG canvas, this argument is ignored and a PDF or SVG is returned always.
+* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support), `raw` (unencoded ARGB32 data in native-endian byte order, top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
 * **config**
-  * For `image/jpeg` an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
+  * For `image/jpeg`, an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
+
   * For `image/png`, an object specifying the ZLIB compression level (between 0 and 9), the compression filter(s), the palette (indexed PNGs only), the the background palette index (indexed PNGs only) and/or the resolution (ppi): `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`. All properties are optional.
 
     Note that the PNG format encodes the resolution in pixels per meter, so if you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution is undefined by default to match common browser behavior.
+
+  * For `application/pdf`, an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. All properties are optional and default to `undefined`, except for `creationDate`, which defaults to the current date. *Adding metadata requires Cairo 1.16.0 or later.*
+
+    For a description of these properties, see page 550 of [PDF 32000-1:2008](https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf).
+
+    Note that there is no standard separator for `keywords`. A space is recommended because it is in common use by other applications, and Cairo will enclose the list of keywords in quotes if a comma or semicolon is used.
 
 **Return value**
 
@@ -283,9 +290,15 @@ const topPixelsARGBLeftToRight = buf4.slice(0, width * 4)
 // And the third row is:
 const row3 = buf4.slice(2 * stride, 2 * stride + width * 4)
 
-// SVG and PDF canvases ignore the mimeType argument
+// SVG and PDF canvases
 const myCanvas = createCanvas(w, h, 'pdf')
 myCanvas.toBuffer() // returns a buffer containing a PDF-encoded canvas
+// With optional metadata:
+myCanvas.toBuffer('application/pdf', {
+  title: 'my picture',
+  keywords: 'node.js demo cairo',
+  creationDate: new Date()
+})
 ```
 
 ### Canvas#createPNGStream()
@@ -357,6 +370,8 @@ const stream = canvas.createJPEGStream({
 > ```ts
 > canvas.createPDFStream(config?: any) => ReadableStream
 > ```
+
+* `config` an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. See `toBuffer()` for more information. *Adding metadata requires Cairo 1.16.0 or later.*
 
 Applies to PDF canvases only. Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits the encoded PDF. `canvas.toBuffer()` also produces an encoded PDF, but `createPDFStream()` can be used to reduce memory usage.
 
@@ -442,6 +457,12 @@ ctx.fillText('Hello World 2', 50, 80)
 
 canvas.toBuffer() // returns a PDF file
 canvas.createPDFStream() // returns a ReadableStream that emits a PDF
+// With optional document metadata (requires Cairo 1.16.0):
+canvas.toBuffer('application/pdf', {
+  title: 'my picture',
+  keywords: 'node.js demo cairo',
+  creationDate: new Date()
+})
 ```
 
 It is also possible to create pages with different sizes by passing `width` and `height` to the `.addPage()` method:
@@ -463,7 +484,7 @@ See also:
 
 ## SVG Output Support
 
-node-canvas can create SVG documents instead of images. The canva type must be set when creating the canvas as follows:
+node-canvas can create SVG documents instead of images. The canvas type must be set when creating the canvas as follows:
 
 ```js
 const canvas = createCanvas(200, 500, 'svg')
