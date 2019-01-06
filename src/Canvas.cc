@@ -16,7 +16,7 @@
 #include <glib.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
-
+#include <ctime>
 #include "Util.h"
 #include "Canvas.h"
 #include "PNG.h"
@@ -308,10 +308,52 @@ static uint32_t getSafeBufSize(Canvas* canvas) {
   return min(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
 }
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+static inline void setPdfMetaStr(cairo_surface_t* surf, Local<Object> opts,
+  cairo_pdf_metadata_t t, const char* pName) {
+  auto propName = Nan::New(pName).ToLocalChecked();
+  if (opts->Get(propName)->IsString()) {
+    auto val = opts->Get(propName);
+    // (copies char data)
+    cairo_pdf_surface_set_metadata(surf, t, *Nan::Utf8String(val));
+  }
+}
+
+static inline void setPdfMetaDate(cairo_surface_t* surf, Local<Object> opts,
+  cairo_pdf_metadata_t t, const char* pName) {
+  auto propName = Nan::New(pName).ToLocalChecked();
+  if (opts->Get(propName)->IsDate()) {
+    auto val = opts->Get(propName).As<Date>();
+    auto date = static_cast<time_t>(val->ValueOf() / 1000); // ms -> s
+    char buf[sizeof "2011-10-08T07:07:09Z"];
+    strftime(buf, sizeof buf, "%FT%TZ", gmtime(&date));
+    cairo_pdf_surface_set_metadata(surf, t, buf);
+  }
+}
+
+static void setPdfMetadata(Canvas* canvas, Local<Object> opts) {
+  cairo_surface_t* surf = canvas->surface();
+
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_TITLE, "title");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_AUTHOR, "author");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_SUBJECT, "subject");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_KEYWORDS, "keywords");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_CREATOR, "creator");
+  setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_CREATE_DATE, "creationDate");
+  setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_MOD_DATE, "modDate");
+}
+
+#endif // CAIRO 16+
+
 /*
  * Converts/encodes data to a Buffer. Async when a callback function is passed.
 
- * PDF/SVG canvases:
+ * PDF canvases:
+    (any) => Buffer
+    ("application/pdf", config) => Buffer
+
+ * SVG canvases:
     (any) => Buffer
 
  * ARGB data:
@@ -337,14 +379,20 @@ NAN_METHOD(Canvas::ToBuffer) {
   // Vector canvases, sync only
   const string name = canvas->backend()->getName();
   if (name == "pdf" || name == "svg") {
-    cairo_surface_finish(canvas->surface());
+    // mime type may be present, but it's not checked
     PdfSvgClosure* closure;
     if (name == "pdf") {
       closure = static_cast<PdfBackend*>(canvas->backend())->closure();
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+      if (info[1]->IsObject()) { // toBuffer("application/pdf", config)
+        setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+      }
+#endif // CAIRO 16+
     } else {
       closure = static_cast<SvgBackend*>(canvas->backend())->closure();
     }
 
+    cairo_surface_finish(canvas->surface());
     Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
@@ -582,6 +630,12 @@ NAN_METHOD(Canvas::StreamPDFSync) {
 
   if (canvas->backend()->getName() != "pdf")
     return Nan::ThrowTypeError("wrong canvas type");
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+  if (info[1]->IsObject()) {
+    setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+  }
+#endif
 
   cairo_surface_finish(canvas->surface());
 
