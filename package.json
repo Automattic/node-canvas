@@ -32,7 +32,7 @@
     "install": "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
-    "module_name": "canvas-prebuilt",
+    "module_name": "canvas",
     "module_path": "build/Release",
     "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
     "remote_path": "v{version}",
