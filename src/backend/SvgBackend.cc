@@ -1,11 +1,8 @@
 #include "SvgBackend.h"
 
 #include <cairo-svg.h>
-#include <png.h>
-
 #include "../Canvas.h"
 #include "../closure.h"
-
 
 using namespace v8;
 

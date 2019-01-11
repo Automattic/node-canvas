@@ -1,13 +1,11 @@
-
-//
-// Gradient.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include "color.h"
-#include "Canvas.h"
 #include "CanvasGradient.h"
+
+#include "Canvas.h"
+#include "color.h"
+
+using namespace v8;
 
 Nan::Persistent<FunctionTemplate> Gradient::constructor;
 

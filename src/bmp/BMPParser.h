@@ -1,11 +1,11 @@
-#ifndef __NODE_BMP_PARSER_H__
-#define __NODE_BMP_PARSER_H__
+#pragma once
 
 #ifdef ERROR
 #define ERROR_ ERROR
 #undef ERROR
 #endif
 
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <string>
 
 namespace BMPParser{
@@ -55,6 +55,4 @@ namespace BMPParser{
 #ifdef ERROR_
 #define ERROR ERROR_
 #undef ERROR_
-#endif
-
 #endif

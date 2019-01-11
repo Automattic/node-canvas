@@ -1,13 +1,6 @@
-
-//
-// JPEGStream.h
-//
-
-#ifndef __NODE_JPEG_STREAM_H__
-#define __NODE_JPEG_STREAM_H__
+#pragma once
 
 #include "closure.h"
-#include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
 
@@ -34,10 +27,10 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Nan::AsyncResource async("canvas:empty_closure_output_buffer");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
-  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
+  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
 
   // emit "data"
-  Local<Value> argv[2] = {
+  v8::Local<v8::Value> argv[2] = {
       Nan::Null()
     , buf
   };
@@ -56,16 +49,16 @@ term_closure_destination(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
   /* emit remaining data */
-  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer).ToLocalChecked();
+  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer).ToLocalChecked();
 
-  Local<Value> data_argv[2] = {
+  v8::Local<v8::Value> data_argv[2] = {
       Nan::Null()
     , buf
   };
   dest->closure->cb.Call(sizeof data_argv / sizeof *data_argv, data_argv, &async);
 
   // emit "end"
-  Local<Value> end_argv[2] = {
+  v8::Local<v8::Value> end_argv[2] = {
       Nan::Null()
     , Nan::Null()
   };
@@ -172,5 +165,3 @@ write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure) {
     closure->chromaSubsampling,
     closure->chromaSubsampling);
 }
-
-#endif

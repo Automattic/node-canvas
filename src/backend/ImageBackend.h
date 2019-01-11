@@ -1,11 +1,7 @@
-#ifndef __IMAGE_BACKEND_H__
-#define __IMAGE_BACKEND_H__
-
-#include <v8.h>
+#pragma once
 
 #include "Backend.h"
-
-using namespace std;
+#include <v8.h>
 
 class ImageBackend : public Backend
 {
@@ -28,5 +24,3 @@ class ImageBackend : public Backend
     static NAN_METHOD(New);
     const static cairo_format_t DEFAULT_FORMAT = CAIRO_FORMAT_ARGB32;
 };
-
-#endif

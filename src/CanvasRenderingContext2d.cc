@@ -1,28 +1,25 @@
-
-//
-// CanvasRenderingContext2d.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include <cmath>
-#include <cstdlib>
-#include <limits>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <map>
-
-#include "Util.h"
-#include "Canvas.h"
-#include "Point.h"
-#include "Image.h"
-#include "ImageData.h"
 #include "CanvasRenderingContext2d.h"
-#include "CanvasGradient.h"
-#include "CanvasPattern.h"
+
+#include <algorithm>
 #include "backend/ImageBackend.h"
 #include <cairo/cairo-pdf.h>
+#include "Canvas.h"
+#include "CanvasGradient.h"
+#include "CanvasPattern.h"
+#include <cmath>
+#include <cstdlib>
+#include "Image.h"
+#include "ImageData.h"
+#include <limits>
+#include <map>
+#include "Point.h"
+#include <string>
+#include "Util.h"
+#include <vector>
+
+using namespace v8;
 
 // Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
@@ -1766,7 +1763,6 @@ NAN_GETTER(Context2d::GetFillStyle) {
 
 NAN_SETTER(Context2d::SetFillStyle) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Local<Context> ctx = Nan::GetCurrentContext();
 
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
@@ -1813,8 +1809,6 @@ NAN_GETTER(Context2d::GetStrokeStyle) {
 
 NAN_SETTER(Context2d::SetStrokeStyle) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Isolate *iso = Isolate::GetCurrent();
-  Local<Context> ctx = Nan::GetCurrentContext();
 
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
