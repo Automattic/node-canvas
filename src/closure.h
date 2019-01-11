@@ -27,7 +27,7 @@ struct Closure {
     Closure* closure = static_cast<Closure*>(c);
     try {
       closure->vec.insert(closure->vec.end(), odata, odata + len);
-    } catch (std::bad_alloc) {
+    } catch (const std::bad_alloc &) {
       return CAIRO_STATUS_NO_MEMORY;
     }
     return CAIRO_STATUS_SUCCESS;
