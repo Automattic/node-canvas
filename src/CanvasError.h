@@ -8,11 +8,11 @@ class CanvasError {
     std::string syscall;
     std::string path;
     int cerrno = 0;
-    void set(char *iMessage = NULL, char *iSyscall = NULL, int iErrno = 0, char *iPath = NULL) {
-      if (iMessage) message = std::string(iMessage);
-      if (iSyscall) syscall = std::string(iSyscall);
+    void set(const char* iMessage = NULL, const char* iSyscall = NULL, int iErrno = 0, const char* iPath = NULL) {
+      if (iMessage) message.assign(iMessage);
+      if (iSyscall) syscall.assign(iSyscall);
       cerrno = iErrno;
-      if (iPath) path = std::string(iPath);
+      if (iPath) path.assign(iPath);
     }
     void reset() {
       message.clear();
