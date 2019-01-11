@@ -9,6 +9,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+### Fixed
+
+2.3.0
+==================
+### Added
 * Add support for multiple PDF page sizes
 * Add support for embedding document metadata in PDFs
 
