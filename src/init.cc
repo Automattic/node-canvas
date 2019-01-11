@@ -61,7 +61,8 @@ NAN_MODULE_INIT(init) {
 #endif
 
   char jpeg_version[10];
-  if (JPEG_LIB_VERSION_MINOR > 0) {
+  static bool minor_gt_0 = JPEG_LIB_VERSION_MINOR > 0;
+  if (minor_gt_0) {
     snprintf(jpeg_version, 10, "%d%c", JPEG_LIB_VERSION_MAJOR, JPEG_LIB_VERSION_MINOR + 'a' - 1);
   } else {
     snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
