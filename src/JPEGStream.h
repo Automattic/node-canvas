@@ -9,12 +9,12 @@
  * inspired by IJG's jdatadst.c
  */
 
-typedef struct {
-  struct jpeg_destination_mgr pub;
+struct closure_destination_mgr {
+  jpeg_destination_mgr pub;
   JpegClosure* closure;
   JOCTET *buffer;
   int bufsize;
-} closure_destination_mgr;
+};
 
 void
 init_closure_destination(j_compress_ptr cinfo){
@@ -135,8 +135,8 @@ void encode_jpeg(jpeg_compress_struct cinfo, cairo_surface_t *surface, int quali
 
 void
 write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure) {
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
+  jpeg_compress_struct cinfo;
+  jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
   jpeg_closure_dest(&cinfo, closure, bufsize);
@@ -151,8 +151,8 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure
 
 void
 write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure) {
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
+  jpeg_compress_struct cinfo;
+  jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
   cinfo.client_data = closure;
