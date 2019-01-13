@@ -492,16 +492,9 @@ NAN_METHOD(Canvas::ToBuffer) {
 
   // Async JPEG
   if (info[0]->IsFunction() && info[1]->StrictEquals(jpegStr)) {
-    JpegClosure* closure;
-    try {
-      closure = new JpegClosure(canvas);
-    } catch (cairo_status_t ex) {
-      Nan::ThrowError(Canvas::Error(ex));
-      return;
-    }
-    
-    parseJPEGArgs(info[1], *closure);
-    
+    JpegClosure* closure = new JpegClosure(canvas);
+    parseJPEGArgs(info[2], *closure);
+
     canvas->Ref();
     closure->cb.Reset(info[0].As<Function>());
 
