@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+2.3.1
+==================
+### Fixed
 * Fix `canvas.toBuffer()` for JPEGs (#1350)
 
 2.3.0
