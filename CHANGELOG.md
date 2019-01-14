@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* PDF metadata (added in 2.3.0) wasn't being set with `canvas.createPDFStream()`
 
 2.3.1
 ==================
