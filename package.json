@@ -38,6 +38,12 @@
     "remote_path": "v{version}",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
+  "files": [
+    "binding.gyp",
+    "lib/",
+    "src/",
+    "util/"
+  ],
   "dependencies": {
     "nan": "^2.12.1",
     "node-pre-gyp": "^0.11.0"
