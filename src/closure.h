@@ -56,7 +56,7 @@ struct JpegClosure : Closure {
   uint32_t quality = 75;
   uint32_t chromaSubsampling = 2;
   bool progressive = false;
-  jpeg_destination_mgr* jpeg_dest_mgr;
+  jpeg_destination_mgr* jpeg_dest_mgr = nullptr;
 
   static void init_destination(j_compress_ptr cinfo);
   static boolean empty_output_buffer(j_compress_ptr cinfo);
