@@ -1,12 +1,8 @@
 #include "PdfBackend.h"
 
 #include <cairo-pdf.h>
-#include <png.h>
-
 #include "../Canvas.h"
 #include "../closure.h"
-#include "../toBuffer.h"
-
 
 using namespace v8;
 
@@ -21,10 +17,13 @@ PdfBackend::~PdfBackend() {
   destroySurface();
 }
 
+Backend *PdfBackend::construct(int width, int height){
+  return new PdfBackend(width, height);
+}
 
 cairo_surface_t* PdfBackend::createSurface() {
   if (!_closure) _closure = new PdfSvgClosure(canvas);
-  surface = cairo_pdf_surface_create_for_stream(toBuffer, _closure, width, height);
+  surface = cairo_pdf_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
   return surface;
 }
 
@@ -48,13 +47,5 @@ void PdfBackend::Initialize(Handle<Object> target) {
 }
 
 NAN_METHOD(PdfBackend::New) {
-  int width  = 0;
-  int height = 0;
-  if (info[0]->IsNumber()) width  = info[0]->Uint32Value();
-  if (info[1]->IsNumber()) height = info[1]->Uint32Value();
-
-  PdfBackend* backend = new PdfBackend(width, height);
-
-  backend->Wrap(info.This());
-  info.GetReturnValue().Set(info.This());
+  init(info);
 }

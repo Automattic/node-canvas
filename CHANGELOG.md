@@ -5,29 +5,83 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](http://semver.org/).
 
-2.0.0 (unreleased -- encompasses all alpha versions)
+(Unreleased)
+==================
+### Changed
+### Added
+### Fixed
+* PDF metadata (added in 2.3.0) wasn't being set with `canvas.createPDFStream()`
+* Fix custom "inspect" function deprecation warnings (#1326)
+
+2.3.1
+==================
+### Fixed
+* Fix `canvas.toBuffer()` for JPEGs (#1350)
+
+2.3.0
+==================
+### Added
+* Add support for multiple PDF page sizes
+* Add support for embedding document metadata in PDFs
+
+### Fixed
+* Don't crash when font string is invalid (bug since 2.2.0) (#1328)
+* Fix memory leak in `canvas.toBuffer()` (#1202, #1296)
+* Fix memory leak in `ctx.font=` (#1202)
+
+2.2.0
+==================
+### Added
+* BMP support
+
+### Fixed
+* Reset context on resurface (#1292)
+* Support Jest test framework (#1311)
+
+2.1.0
+==================
+### Added
+* Warn when building with old, unsupported versions of cairo or libjpeg.
+
+2.0.0
 ==================
 
 **Upgrading from 1.x**
 ```js
-// (1) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
-//     goes from 0 to 1 instead of from 0 to 100:
-canvas.createJPEGStream({quality: 50}) // old
-canvas.createJPEGStream({quality: 0.5}) // new
+// (1) The Canvas constructor is no longer the default export from the module.
+/* old: */
+const Canvas = require('canvas')
+const mycanvas = new Canvas(width, height)
+/* new: */
+const { createCanvas, Canvas } = require('canvas')
+const mycanvas = createCanvas(width, height)
+mycanvas instanceof Canvas // true
 
-// (2) The ZLIB compression level and PNG filter options for canvas.toBuffer are
+/* old: */
+const Canvas = require('canvas')
+const myimg = new Canvas.Image()
+/* new: */
+const { Image } = require('canvas')
+const myimg = new Image()
+
+// (2) The quality argument for canvas.createJPEGStream/canvas.jpegStream now
+//     goes from 0 to 1 instead of from 0 to 100:
+canvas.createJPEGStream({ quality: 50 }) // old
+canvas.createJPEGStream({ quality: 0.5 }) // new
+
+// (3) The ZLIB compression level and PNG filter options for canvas.toBuffer are
 //     now named instead of positional arguments:
 canvas.toBuffer(undefined, 3, canvas.PNG_FILTER_NONE) // old
-canvas.toBuffer(undefined, {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.toBuffer(undefined, { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 // or specify the mime type explicitly:
-canvas.toBuffer("image/png", {compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.toBuffer('image/png', { compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 
-// (3) #2 also applies for canvas.pngStream, although these arguments were not
+// (4) #2 also applies for canvas.pngStream, although these arguments were not
 //     documented:
 canvas.pngStream(3, canvas.PNG_FILTER_NONE) // old
-canvas.pngStream({compressionLevel: 3, filters: canvas.PNG_FILTER_NONE}) // new
+canvas.pngStream({ compressionLevel: 3, filters: canvas.PNG_FILTER_NONE }) // new
 
-// (4) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
+// (5) canvas.syncPNGStream() and canvas.syncJPEGStream() have been removed:
 canvas.syncPNGStream() // old
 canvas.createSyncPNGStream() // old
 canvas.createPNGStream() // new
@@ -35,6 +89,11 @@ canvas.createPNGStream() // new
 canvas.syncJPEGStream() // old
 canvas.createSyncJPEGStream() // old
 canvas.createJPEGStream() // new
+
+// (6) Context2d.filter has been renamed to context2d.quality to avoid a
+//     conflict with the new standard 'filter' property.
+context.filter = 'best' // old
+context.quality = 'best' // new
 ```
 
 ### Breaking
@@ -50,6 +109,9 @@ canvas.createJPEGStream() // new
  * See also: *Correct some of the `globalCompositeOperator` types* under
    **Fixed**. These changes were bug-fixes, but will break existing code relying
    on the incorrect types.
+ * Rename `context2d.filter` to `context2d.quality` to avoid a conflict with the
+   new standard 'filter' property. Note that the standard 'filter' property is
+   not yet implemented.
 
 ### Fixed
  * Fix build with SVG support enabled (#1123)

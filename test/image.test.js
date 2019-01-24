@@ -6,18 +6,20 @@
  * Module dependencies.
  */
 
-const loadImage = require('../').loadImage
+const {createCanvas, loadImage} = require('../');
 const Image = require('../').Image
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
 const fs = require('fs')
+const path = require('path')
 
 const png_checkers = `${__dirname}/fixtures/checkers.png`
 const png_clock = `${__dirname}/fixtures/clock.png`
 const jpg_chrome = `${__dirname}/fixtures/chrome.jpg`
 const jpg_face = `${__dirname}/fixtures/face.jpeg`
 const svg_tree = `${__dirname}/fixtures/tree.svg`
+const bmp_dir = `${__dirname}/fixtures/bmp`
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
@@ -80,6 +82,12 @@ describe('Image', function () {
       assert.strictEqual(img.height, 320)
       assert.strictEqual(img.complete, true)
     })
+  })
+
+  it('detects invalid PNG', function (done) {
+    const img = new Image()
+    img.onerror = () => done()
+    img.src = Buffer.from('89504E470D', 'hex')
   })
 
   it('loads SVG data URL base64', function () {
@@ -307,5 +315,140 @@ describe('Image', function () {
     assert.ok(!keys.includes('source'));
     assert.ok(!keys.includes('getSource'));
     assert.ok(!keys.includes('setSource'));
+  });
+
+  describe('supports BMP', function () {
+    it('parses 1-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 111);
+        assert.strictEqual(img.height, 72);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, '1-bit.bmp');
+    });
+
+    it('parses 24-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 2);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          0, 0, 255, 255,
+          0, 255, 0, 255,
+          255, 0, 0, 255,
+          255, 255, 255, 255,
+        ]);
+
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, '24-bit.bmp');
+    });
+
+    it('parses 32-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 4);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          0, 0, 255, 255,
+          0, 255, 0, 255,
+          255, 0, 0, 255,
+          255, 255, 255, 255,
+          0, 0, 255, 127,
+          0, 255, 0, 127,
+          255, 0, 0, 127,
+          255, 255, 255, 127,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = fs.readFileSync(path.join(bmp_dir, '32-bit.bmp')); // Also tests loading from buffer
+    });
+
+    it('parses minimal BMP', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 1);
+        assert.strictEqual(img.height, 1);
+
+        testImgd(img, [
+          255, 0, 0, 255,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'min.bmp');
+    });
+
+    it('properly handles negative height', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 1);
+        assert.strictEqual(img.height, 2);
+
+        testImgd(img, [
+          255, 0, 0, 255,
+          0, 255, 0, 255,
+        ]);
+        
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'negative-height.bmp');
+    });
+
+    it('catches BMP errors', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        throw new Error('Invalid image should not be loaded properly');
+      };
+
+      img.onerror = err => {
+        let msg = 'Error while processing file header - unexpected end of file';
+        assert.strictEqual(err.message, msg);
+        done();
+      };
+
+      img.src = Buffer.from('BM');
+    });
+
+    it('BMP bomb', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        throw new Error('Invalid image should not be loaded properly');
+      };
+
+      img.onerror = err => {
+        done();
+      };
+
+      img.src = path.join(bmp_dir, 'bomb.bmp');
+    });
+
+    function testImgd(img, data){
+      let ctx = createCanvas(img.width, img.height).getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var actualData = ctx.getImageData(0, 0, img.width, img.height).data;
+      assert.strictEqual(String(actualData), String(data));
+    }
   });
 })

@@ -32,6 +32,10 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'public', 'app.html'))
 })
 
+app.get('/pixelmatch.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '../node_modules/pixelmatch/', 'index.js'))
+})
+
 app.get('/render', function (req, res, next) {
   var canvas = Canvas.createCanvas(200, 200)
 

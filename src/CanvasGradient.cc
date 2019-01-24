@@ -1,13 +1,11 @@
-
-//
-// Gradient.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include "color.h"
-#include "Canvas.h"
 #include "CanvasGradient.h"
+
+#include "Canvas.h"
+#include "color.h"
+
+using namespace v8;
 
 Nan::Persistent<FunctionTemplate> Gradient::constructor;
 
@@ -42,10 +40,10 @@ NAN_METHOD(Gradient::New) {
   // Linear
   if (4 == info.Length()) {
     Gradient *grad = new Gradient(
-        info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue());
+        Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0));
     grad->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
     return;
@@ -54,12 +52,12 @@ NAN_METHOD(Gradient::New) {
   // Radial
   if (6 == info.Length()) {
     Gradient *grad = new Gradient(
-        info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue()
-      , info[4]->NumberValue()
-      , info[5]->NumberValue());
+        Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0)
+      , Nan::To<double>(info[4]).FromMaybe(0)
+      , Nan::To<double>(info[5]).FromMaybe(0));
     grad->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
     return;
@@ -87,7 +85,7 @@ NAN_METHOD(Gradient::AddColorStop) {
     rgba_t color = rgba_create(rgba);
     cairo_pattern_add_color_stop_rgba(
         grad->pattern()
-      , info[0]->NumberValue()
+      , Nan::To<double>(info[0]).FromMaybe(0)
       , color.r
       , color.g
       , color.b

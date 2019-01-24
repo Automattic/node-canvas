@@ -1,16 +1,13 @@
-
-//
-// Image.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_IMAGE_H__
-#define __NODE_IMAGE_H__
+#pragma once
 
-#include "Canvas.h"
+#include <cairo.h>
 #include "CanvasError.h"
 #include <functional>
+#include <nan.h>
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
+#include <v8.h>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -42,7 +39,7 @@ class Image: public Nan::ObjectWrap {
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetComplete);
@@ -63,6 +60,7 @@ class Image: public Nan::ObjectWrap {
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
     static int isSVG(uint8_t *data, unsigned len);
+    static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
     cairo_surface_t *surface();
@@ -85,11 +83,11 @@ class Image: public Nan::ObjectWrap {
     cairo_status_t loadJPEG(FILE *stream);
     void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
     cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
-#if CAIRO_VERSION_MINOR >= 10
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
 #endif
-#endif
+    cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadBMP(FILE *stream);
     CanvasError errorInfo;
     void loaded();
     cairo_status_t load();
@@ -128,5 +126,3 @@ class Image: public Nan::ObjectWrap {
 #endif
     ~Image();
 };
-
-#endif

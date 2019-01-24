@@ -1,12 +1,8 @@
-#ifndef __SVG_BACKEND_H__
-#define __SVG_BACKEND_H__
-
-#include <v8.h>
+#pragma once
 
 #include "Backend.h"
 #include "../closure.h"
-
-using namespace std;
+#include <v8.h>
 
 class SvgBackend : public Backend
 {
@@ -20,10 +16,9 @@ class SvgBackend : public Backend
 
     SvgBackend(int width, int height);
     ~SvgBackend();
+    static Backend *construct(int width, int height);
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
 };
-
-#endif

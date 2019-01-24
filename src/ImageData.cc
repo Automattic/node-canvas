@@ -1,12 +1,10 @@
-
-//
-// ImageData.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
+
+#include "ImageData.h"
 
 #include "Util.h"
-#include "ImageData.h"
+
+using namespace v8;
 
 Nan::Persistent<FunctionTemplate> ImageData::constructor;
 
@@ -46,12 +44,12 @@ NAN_METHOD(ImageData::New) {
   int length;
 
   if (info[0]->IsUint32() && info[1]->IsUint32()) {
-    width = info[0]->Uint32Value();
+    width = Nan::To<uint32_t>(info[0]).FromMaybe(0);
     if (width == 0) {
       Nan::ThrowRangeError("The source width is zero.");
       return;
     }
-    height = info[1]->Uint32Value();
+    height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
     if (height == 0) {
       Nan::ThrowRangeError("The source height is zero.");
       return;
@@ -72,7 +70,7 @@ NAN_METHOD(ImageData::New) {
     // Don't assert that the ImageData length is a multiple of four because some
     // data formats are not 4 BPP.
 
-    width = info[1]->Uint32Value();
+    width = Nan::To<uint32_t>(info[1]).FromMaybe(0);
     if (width == 0) {
       Nan::ThrowRangeError("The source width is zero.");
       return;
@@ -81,7 +79,7 @@ NAN_METHOD(ImageData::New) {
     // Don't assert that the byte length is a multiple of 4 * width, ditto.
 
     if (info[2]->IsUint32()) { // Explicit height given
-      height = info[2]->Uint32Value();
+      height = Nan::To<uint32_t>(info[2]).FromMaybe(0);
     } else { // Calculate height assuming 4 BPP
       int size = length / 4;
       height = size / width;
@@ -96,14 +94,14 @@ NAN_METHOD(ImageData::New) {
     return;
   }
 
-  width = info[1]->Uint32Value();
+  width = Nan::To<uint32_t>(info[1]).FromMaybe(0);
   if (width == 0) {
     Nan::ThrowRangeError("The source width is zero.");
     return;
   }
 
   if (info[2]->IsUint32()) { // Explicit height given
-    height = info[2]->Uint32Value();
+    height = Nan::To<uint32_t>(info[2]).FromMaybe(0);
   } else { // Calculate height assuming 2 BPP
     int size = length / 2;
     height = size / width;

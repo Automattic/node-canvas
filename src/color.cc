@@ -1,17 +1,14 @@
-
-//
-// color.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include <cstdlib>
-#include <cmath>
-#include <limits>
-#include <string>
-#include <algorithm>
 #include "color.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
 #include <map>
+#include <string>
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900

@@ -1,13 +1,11 @@
-
-//
-// Pattern.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
+
+#include "CanvasPattern.h"
 
 #include "Canvas.h"
 #include "Image.h"
-#include "CanvasPattern.h"
+
+using namespace v8;
 
 const cairo_user_data_key_t *pattern_repeat_key;
 
@@ -45,7 +43,7 @@ NAN_METHOD(Pattern::New) {
 
   cairo_surface_t *surface;
 
-  Local<Object> obj = info[0]->ToObject();
+  Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
 
   // Image
   if (Nan::New(Image::constructor)->HasInstance(obj)) {

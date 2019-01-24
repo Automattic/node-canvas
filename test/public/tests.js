@@ -1654,6 +1654,51 @@ tests['shadow image'] = function (ctx, done) {
   img.src = imageSrc('star.png')
 }
 
+tests['shadow image with crop'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 150, 150, 25, 25, 150, 150)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['shadow image with crop and zoom'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.shadowColor = '#000'
+    ctx.shadowBlur = 4
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+
+    // cropped
+    ctx.drawImage(img, 100, 100, 40, 40, 25, 25, 150, 150)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['drawImage canvas over canvas'] = function (ctx) {
+  // Drawing canvas to itself
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(5, 5, 10, 10)
+  ctx.drawImage(ctx.canvas, 20, 20)
+}
+
 tests['scaled shadow image'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
@@ -1666,6 +1711,79 @@ tests['scaled shadow image'] = function (ctx, done) {
   }
   img.onerror = done
   img.src = imageSrc('star.png')
+}
+
+tests['smoothing disabled image'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    // cropped
+    ctx.drawImage(img, 0, 0, 10, 10, 0, 0, 200, 200)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() with globalAlpha and smoothing off scaling down'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(0.1, 0.1)
+    ctx.globalAlpha = 0.95
+    ctx.fillStyle = pattern
+    ctx.fillRect(100, 100, 800, 800)
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 800
+    ctx.strokeRect(1400, 1100, 1, 800)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() with globalAlpha and smoothing off scaling up'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.imageSmoothingEnabled = false
+    ctx.patternQuality = 'good'
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.scale(20, 20)
+    ctx.globalAlpha = 0.95
+    ctx.fillStyle = pattern
+    ctx.fillRect(1, 1, 8, 3)
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = pattern
+    ctx.lineWidth = 2
+    ctx.strokeRect(2, 6, 6, 1)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['smoothing and gradients (gradients are not influenced by patternQuality)'] = function (ctx) {
+  var grad1 = ctx.createLinearGradient(0, 0, 10, 10)
+  grad1.addColorStop(0, 'yellow')
+  grad1.addColorStop(0.25, 'red')
+  grad1.addColorStop(0.75, 'blue')
+  grad1.addColorStop(1, 'limegreen')
+  ctx.imageSmoothingEnabled = false
+  ctx.patternQuality = 'nearest'
+  ctx.globalAlpha = 0.9
+  // linear grad box
+  ctx.fillStyle = grad1
+  ctx.moveTo(0, 0)
+  ctx.lineTo(200, 0)
+  ctx.lineTo(200, 200)
+  ctx.lineTo(0, 200)
+  ctx.lineTo(0, 0)
+  ctx.scale(20, 20)
+  ctx.fill()
 }
 
 tests['shadow integration'] = function (ctx) {
@@ -2329,4 +2447,13 @@ tests['image sampling (#1084)'] = function (ctx, done) {
 
   img1.src = imageSrc('halved-1.jpeg')
   img2.src = imageSrc('halved-2.jpeg')
+}
+
+tests['drawImage reflection bug'] = function (ctx, done) {
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
+    done()
+  }
+  img1.src = imageSrc('chrome.jpg')
 }

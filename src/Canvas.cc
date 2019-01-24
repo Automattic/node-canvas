@@ -1,25 +1,25 @@
-//
-// Canvas.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
+#include "Canvas.h"
+
+#include <algorithm> // std::min
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <node_buffer.h>
-#include <node_version.h>
-#include <glib.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
-
-#include "Util.h"
-#include "Canvas.h"
-#include "PNG.h"
 #include "CanvasRenderingContext2d.h"
 #include "closure.h"
+#include <cstring>
+#include <cctype>
+#include <ctime>
+#include <glib.h>
+#include "PNG.h"
 #include "register_font.h"
-#include "toBuffer.h"
+#include <sstream>
+#include <stdlib.h>
+#include <string>
+#include <unordered_set>
+#include "Util.h"
+#include <vector>
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -34,7 +34,12 @@
   "with at least a family (string) and optionally weight (string/number) " \
   "and style (string)."
 
+using namespace v8;
+using namespace std;
+
 Nan::Persistent<FunctionTemplate> Canvas::constructor;
+
+std::vector<FontFace> font_face_list;
 
 /*
  * Initialize Canvas.
@@ -88,9 +93,9 @@ NAN_METHOD(Canvas::New) {
 
   Backend* backend = NULL;
   if (info[0]->IsNumber()) {
-    int width = info[0]->Uint32Value(), height = 0;
+    int width = Nan::To<uint32_t>(info[0]).FromMaybe(0), height = 0;
 
-    if (info[1]->IsNumber()) height = info[1]->Uint32Value();
+    if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
     if (info[2]->IsString()) {
       if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
@@ -107,7 +112,7 @@ NAN_METHOD(Canvas::New) {
     if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
-      backend = Nan::ObjectWrap::Unwrap<Backend>(info[0]->ToObject());
+      backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
     }
@@ -162,7 +167,7 @@ NAN_GETTER(Canvas::GetWidth) {
 NAN_SETTER(Canvas::SetWidth) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setWidth(value->Uint32Value());
+    canvas->backend()->setWidth(Nan::To<uint32_t>(value).FromMaybe(0));
     canvas->resurface(info.This());
   }
 }
@@ -183,7 +188,7 @@ NAN_GETTER(Canvas::GetHeight) {
 NAN_SETTER(Canvas::SetHeight) {
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setHeight(value->Uint32Value());
+    canvas->backend()->setHeight(Nan::To<uint32_t>(value).FromMaybe(0));
     canvas->resurface(info.This());
   }
 }
@@ -198,7 +203,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 
   closure->status = canvas_write_to_png_stream(
     closure->canvas->surface(),
-    toBuffer,
+    PngClosure::writeVec,
     closure);
 }
 
@@ -206,8 +211,7 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 void
 Canvas::ToJpegBufferAsync(uv_work_t *req) {
   JpegClosure* closure = static_cast<JpegClosure*>(req->data);
-
-  write_to_jpeg_buffer(closure->canvas->surface(), closure, &closure->data, &closure->len);
+  write_to_jpeg_buffer(closure->canvas->surface(), closure);
 }
 #endif
 
@@ -224,31 +228,30 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 
   if (closure->status) {
     Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->pfn->Call(1, argv, &async);
+    closure->cb.Call(1, argv, &async);
   } else {
-    Local<Object> buf = Nan::CopyBuffer((char*)closure->data, closure->len).ToLocalChecked();
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->pfn->Call(sizeof argv / sizeof *argv, argv, &async);
+    closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   }
 
   closure->canvas->Unref();
-  delete closure->pfn; // TODO move to destructor
   delete closure;
 }
 
 static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
   if (arg->IsObject()) {
-    Local<Object> obj = arg->ToObject();
+    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
     Local<Value> cLevel = obj->Get(Nan::New("compressionLevel").ToLocalChecked());
     if (cLevel->IsUint32()) {
-      uint32_t val = cLevel->Uint32Value();
+      uint32_t val = Nan::To<uint32_t>(cLevel).FromMaybe(0);
       // See quote below from spec section 4.12.5.5.
       if (val <= 9) pngargs.compressionLevel = val;
     }
 
     Local<Value> filters = obj->Get(Nan::New("filters").ToLocalChecked());
-    if (filters->IsUint32()) pngargs.filters = filters->Uint32Value();
+    if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
 
     Local<Value> palette = obj->Get(Nan::New("palette").ToLocalChecked());
     if (palette->IsUint8ClampedArray()) {
@@ -263,7 +266,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
       // Optional background color index:
       Local<Value> backgroundIndexVal = obj->Get(Nan::New("backgroundIndex").ToLocalChecked());
       if (backgroundIndexVal->IsUint32()) {
-        pngargs.backgroundIndex = static_cast<uint8_t>(backgroundIndexVal->Uint32Value());
+        pngargs.backgroundIndex = static_cast<uint8_t>(Nan::To<uint32_t>(backgroundIndexVal).FromMaybe(0));
       }
     }
   }
@@ -274,11 +277,11 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // user agent must use its default quality value, as if the quality argument 
   // had not been given." - 4.12.5.5
   if (arg->IsObject()) {
-    Local<Object> obj = arg->ToObject();
+    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
     Local<Value> qual = obj->Get(Nan::New("quality").ToLocalChecked());
     if (qual->IsNumber()) {
-      double quality = qual->NumberValue();
+      double quality = Nan::To<double>(qual).FromMaybe(0);
       if (quality >= 0.0 && quality <= 1.0) {
         jpegargs.quality = static_cast<uint32_t>(100.0 * quality);
       }
@@ -286,15 +289,15 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
 
     Local<Value> chroma = obj->Get(Nan::New("chromaSubsampling").ToLocalChecked());
     if (chroma->IsBoolean()) {
-      bool subsample = chroma->BooleanValue();
+      bool subsample = Nan::To<bool>(chroma).FromMaybe(0);
       jpegargs.chromaSubsampling = subsample ? 2 : 1;
     } else if (chroma->IsNumber()) {
-      jpegargs.chromaSubsampling = chroma->Uint32Value();
+      jpegargs.chromaSubsampling = Nan::To<uint32_t>(chroma).FromMaybe(0);
     }
 
     Local<Value> progressive = obj->Get(Nan::New("progressive").ToLocalChecked());
     if (!progressive->IsUndefined()) {
-      jpegargs.progressive = progressive->BooleanValue();
+      jpegargs.progressive = Nan::To<bool>(progressive).FromMaybe(0);
     }
   }
 }
@@ -302,13 +305,55 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
-  return min(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
+  return (std::min)(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+static inline void setPdfMetaStr(cairo_surface_t* surf, Local<Object> opts,
+  cairo_pdf_metadata_t t, const char* pName) {
+  auto propName = Nan::New(pName).ToLocalChecked();
+  if (opts->Get(propName)->IsString()) {
+    auto val = opts->Get(propName);
+    // (copies char data)
+    cairo_pdf_surface_set_metadata(surf, t, *Nan::Utf8String(val));
+  }
+}
+
+static inline void setPdfMetaDate(cairo_surface_t* surf, Local<Object> opts,
+  cairo_pdf_metadata_t t, const char* pName) {
+  auto propName = Nan::New(pName).ToLocalChecked();
+  if (opts->Get(propName)->IsDate()) {
+    auto val = opts->Get(propName).As<Date>();
+    auto date = static_cast<time_t>(val->ValueOf() / 1000); // ms -> s
+    char buf[sizeof "2011-10-08T07:07:09Z"];
+    strftime(buf, sizeof buf, "%FT%TZ", gmtime(&date));
+    cairo_pdf_surface_set_metadata(surf, t, buf);
+  }
+}
+
+static void setPdfMetadata(Canvas* canvas, Local<Object> opts) {
+  cairo_surface_t* surf = canvas->surface();
+
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_TITLE, "title");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_AUTHOR, "author");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_SUBJECT, "subject");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_KEYWORDS, "keywords");
+  setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_CREATOR, "creator");
+  setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_CREATE_DATE, "creationDate");
+  setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_MOD_DATE, "modDate");
+}
+
+#endif // CAIRO 16+
 
 /*
  * Converts/encodes data to a Buffer. Async when a callback function is passed.
 
- * PDF/SVG canvases:
+ * PDF canvases:
+    (any) => Buffer
+    ("application/pdf", config) => Buffer
+
+ * SVG canvases:
     (any) => Buffer
 
  * ARGB data:
@@ -332,17 +377,23 @@ NAN_METHOD(Canvas::ToBuffer) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   // Vector canvases, sync only
-  const string name = canvas->backend()->getName();
+  const std::string name = canvas->backend()->getName();
   if (name == "pdf" || name == "svg") {
-    cairo_surface_finish(canvas->surface());
+    // mime type may be present, but it's not checked
     PdfSvgClosure* closure;
     if (name == "pdf") {
       closure = static_cast<PdfBackend*>(canvas->backend())->closure();
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+      if (info[1]->IsObject()) { // toBuffer("application/pdf", config)
+        setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+      }
+#endif // CAIRO 16+
     } else {
       closure = static_cast<SvgBackend*>(canvas->backend())->closure();
     }
 
-    Local<Object> buf = Nan::CopyBuffer((char*) closure->data, closure->len).ToLocalChecked();
+    cairo_surface_finish(canvas->surface());
+    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
@@ -368,14 +419,15 @@ NAN_METHOD(Canvas::ToBuffer) {
       }
 
       Nan::TryCatch try_catch;
-      status = canvas_write_to_png_stream(canvas->surface(), toBuffer, &closure);
+      status = canvas_write_to_png_stream(canvas->surface(), PngClosure::writeVec, &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else if (status) {
         throw status;
       } else {
-        Local<Object> buf = Nan::CopyBuffer((char *)closure.data, closure.len).ToLocalChecked();
+        // TODO it's possible to avoid this copy
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -402,9 +454,8 @@ NAN_METHOD(Canvas::ToBuffer) {
       return;
     }
 
-    // TODO: only one callback fn in closure
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -424,15 +475,13 @@ NAN_METHOD(Canvas::ToBuffer) {
       parseJPEGArgs(info[1], closure);
 
       Nan::TryCatch try_catch;
-      unsigned char *outbuff = NULL;
-      uint32_t outsize = 0;
-      write_to_jpeg_buffer(canvas->surface(), &closure, &outbuff, &outsize);
+      write_to_jpeg_buffer(canvas->surface(), &closure);
 
       if (try_catch.HasCaught()) {
         try_catch.ReThrow();
       } else {
-        char *signedOutBuff = reinterpret_cast<char*>(outbuff);
-        Local<Object> buf = Nan::CopyBuffer(signedOutBuff, outsize).ToLocalChecked();
+        // TODO it's possible to avoid this copy.
+        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
         info.GetReturnValue().Set(buf);
       }
     } catch (cairo_status_t ex) {
@@ -443,19 +492,11 @@ NAN_METHOD(Canvas::ToBuffer) {
 
   // Async JPEG
   if (info[0]->IsFunction() && info[1]->StrictEquals(jpegStr)) {
-    JpegClosure* closure;
-    try {
-      closure = new JpegClosure(canvas);
-    } catch (cairo_status_t ex) {
-      Nan::ThrowError(Canvas::Error(ex));
-      return;
-    }
-    
-    parseJPEGArgs(info[1], *closure);
-    
-    // TODO: only one callback fn in closure // TODO what does this comment mean?
+    JpegClosure* closure = new JpegClosure(canvas);
+    parseJPEGArgs(info[2], *closure);
+
     canvas->Ref();
-    closure->pfn = new Nan::Callback(info[0].As<Function>());
+    closure->cb.Reset(info[0].As<Function>());
 
     uv_work_t* req = new uv_work_t;
     req->data = closure;
@@ -482,7 +523,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
       Nan::Null()
     , buf
     , Nan::New<Number>(len) };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), closure->fn, sizeof argv / sizeof *argv, argv);
+  closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -500,7 +541,7 @@ NAN_METHOD(Canvas::StreamPNGSync) {
   PngClosure closure(canvas);
   parsePNGArgs(info[1], closure);
 
-  closure.fn = Local<Function>::Cast(info[0]);
+  closure.cb.Reset(Local<Function>::Cast(info[0]));
 
   Nan::TryCatch try_catch;
 
@@ -511,13 +552,13 @@ NAN_METHOD(Canvas::StreamPNGSync) {
     return;
   } else if (status) {
     Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   } else {
     Local<Value> argv[3] = {
         Nan::Null()
       , Nan::Null()
       , Nan::New<Uint32>(0) };
-    Nan::Call(closure.fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
   }
   return;
 }
@@ -583,14 +624,20 @@ NAN_METHOD(Canvas::StreamPDFSync) {
   if (canvas->backend()->getName() != "pdf")
     return Nan::ThrowTypeError("wrong canvas type");
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+  if (info[1]->IsObject()) {
+    setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+  }
+#endif
+
   cairo_surface_finish(canvas->surface());
 
   PdfSvgClosure* closure = static_cast<PdfBackend*>(canvas->backend())->closure();
   Local<Function> fn = info[0].As<Function>();
   PdfStreamInfo streaminfo;
   streaminfo.fn = fn;
-  streaminfo.data = closure->data;
-  streaminfo.len = closure->len;
+  streaminfo.data = &closure->vec[0];
+  streaminfo.len = closure->vec.size();
 
   Nan::TryCatch try_catch;
 
@@ -623,7 +670,7 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   JpegClosure closure(canvas);
   parseJPEGArgs(info[0], closure);
-  closure.fn = Local<Function>::Cast(info[1]);
+  closure.cb.Reset(Local<Function>::Cast(info[1]));
 
   Nan::TryCatch try_catch;
   uint32_t bufsize = getSafeBufSize(canvas);
@@ -663,7 +710,7 @@ NAN_METHOD(Canvas::RegisterFont) {
   PangoFontDescription *user_desc = pango_font_description_new();
 
   // now check the attrs, there are many ways to be wrong
-  Local<Object> js_user_desc = info[1]->ToObject();
+  Local<Object> js_user_desc = Nan::To<Object>(info[1]).ToLocalChecked();
   Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
   Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
   Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
@@ -677,23 +724,18 @@ NAN_METHOD(Canvas::RegisterFont) {
     pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
     pango_font_description_set_family(user_desc, family);
 
-    std::vector<FontFace>::iterator it = _font_face_list.begin();
-    FontFace *already_registered = NULL;
-
-    for (; it != _font_face_list.end() && !already_registered; ++it) {
-      if (pango_font_description_equal(it->sys_desc, sys_desc)) {
-        already_registered = &(*it);
-      }
-    }
-
-    if (already_registered) {
-      pango_font_description_free(already_registered->user_desc);
-      already_registered->user_desc = user_desc;
+    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+      return pango_font_description_equal(f.sys_desc, sys_desc);
+    });
+    
+    if (found != font_face_list.end()) {
+      pango_font_description_free(found->user_desc);
+      found->user_desc = user_desc;
     } else if (register_font((unsigned char *) *filePath)) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
-      _font_face_list.push_back(face);
+      font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
       Nan::ThrowError("Could not load font to the system's font host");
@@ -725,14 +767,6 @@ Canvas::~Canvas() {
 		delete _backend;
 	}
 }
-
-std::vector<FontFace>
-_init_font_face_list() {
-  std::vector<FontFace> x;
-  return x;
-}
-
-std::vector<FontFace> Canvas::_font_face_list = _init_font_face_list();
 
 /*
  * Get a PangoStyle from a CSS string (like "italic")
@@ -788,6 +822,12 @@ Canvas::GetWeightFromCSSString(const char *weight) {
   return w;
 }
 
+bool streq_casein(std::string& str1, std::string& str2) {
+  return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(), [](char& c1, char& c2) {
+    return c1 == c2 || std::toupper(c1) == std::toupper(c2);
+  });
+}
+
 /*
  * Given a user description, return a description that will select the
  * font either from the system or @font-face
@@ -795,50 +835,44 @@ Canvas::GetWeightFromCSSString(const char *weight) {
 
 PangoFontDescription *
 Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
-  FontFace best;
-  PangoFontDescription *ret = NULL;
-
   // One of the user-specified families could map to multiple SFNT family names
   // if someone registered two different fonts under the same family name.
   // https://drafts.csswg.org/css-fonts-3/#font-style-matching
-  char **families = g_strsplit(pango_font_description_get_family(desc), ",", -1);
-  GHashTable *seen_families = g_hash_table_new(g_str_hash, g_str_equal);
-  GString *resolved_families = g_string_new("");
+  FontFace best;
+  istringstream families(pango_font_description_get_family(desc));
+  unordered_set<string> seen_families;
+  string resolved_families;
+  bool first = true;
 
-  for (int i = 0; families[i]; ++i) {
-    GString *renamed_families = g_string_new("");
-    std::vector<FontFace>::iterator it = _font_face_list.begin();
-
-    for (; it != _font_face_list.end(); ++it) {
-      if (g_ascii_strcasecmp(families[i], pango_font_description_get_family(it->user_desc)) == 0) {
-        char *name = g_strdup(pango_font_description_get_family(it->sys_desc));
-        bool unseen = g_hash_table_lookup(seen_families, name) == NULL;
+  for (string family; getline(families, family, ','); ) {
+    string renamed_families;
+    for (auto& ff : font_face_list) {
+      string pangofamily = string(pango_font_description_get_family(ff.user_desc));
+      if (streq_casein(family, pangofamily)) {
+        const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
+        bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
 
         // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
         // https://bugzilla.gnome.org/show_bug.cgi?id=762873
         if (unseen) {
-          g_hash_table_replace(seen_families, name, name);
-          if (renamed_families->len) g_string_append(renamed_families, ",");
-          g_string_append(renamed_families, name);
+          seen_families.insert(sys_desc_family_name);
+          if (renamed_families.size()) renamed_families += ',';
+          renamed_families += sys_desc_family_name;
         }
 
-        if (i == 0 && (best.user_desc == NULL || pango_font_description_better_match(desc, best.user_desc, it->user_desc))) {
-          best = *it;
+        if (first && (best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc))) {
+          best = ff;
         }
       }
     }
 
-    if (resolved_families->len) g_string_append(resolved_families, ",");
-    g_string_append(resolved_families, renamed_families->len ? renamed_families->str : families[i]);
-    g_string_free(renamed_families, true);
+    if (resolved_families.size()) resolved_families += ',';
+    resolved_families += renamed_families.size() ? renamed_families : family;
+    first = false;
   }
 
-  ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
-  pango_font_description_set_family_static(ret, resolved_families->str);
-
-  g_strfreev(families);
-  g_string_free(resolved_families, false);
-  g_hash_table_destroy(seen_families);
+  PangoFontDescription* ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
+  pango_font_description_set_family(ret, resolved_families.c_str());
 
   return ret;
 }
@@ -857,9 +891,10 @@ Canvas::resurface(Local<Object> canvas) {
   // Reset context
 	context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
 	if (!context->IsUndefined()) {
-		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(context->ToObject());
+		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(Nan::To<Object>(context).ToLocalChecked());
 		cairo_t *prev = context2d->context();
 		context2d->setContext(createCairoContext());
+		context2d->resetState();
 		cairo_destroy(prev);
 	}
 }
