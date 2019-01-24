@@ -115,12 +115,12 @@ describe('Image', function () {
   })
 
   it('returns raw image data', function() {
-      var img = new Image();
-      img.src = png_clock;
-      var buf = img.rawData;
-      assert.ok(buf instanceof Buffer);
-      assert.strictEqual(409600, img.rawData.length);
-  });
+    const img = new Image();
+    img.src = png_clock;
+    const buf = img.rawData;
+    assert.ok(buf instanceof Buffer);
+    assert.strictEqual(buf.length, 409600);
+  })
 
   it('calls Image#onload multiple times', function () {
     return loadImage(png_clock).then((img) => {
