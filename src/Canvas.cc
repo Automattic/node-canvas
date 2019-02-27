@@ -250,6 +250,12 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
       if (val <= 9) pngargs.compressionLevel = val;
     }
 
+    Local<Value> rez = obj->Get(Nan::New("resolution").ToLocalChecked());
+    if (rez->IsUint32()) {
+      uint32_t val = Nan::To<uint32_t>(rez).FromMaybe(0);
+      if (val > 0) pngargs.resolution = val;
+    }
+
     Local<Value> filters = obj->Get(Nan::New("filters").ToLocalChecked());
     if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
 
