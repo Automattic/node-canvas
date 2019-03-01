@@ -114,6 +114,14 @@ describe('Image', function () {
     })
   })
 
+  it('returns raw image data', function() {
+    const img = new Image();
+    img.src = png_clock;
+    const buf = img.rawData;
+    assert.ok(buf instanceof Buffer);
+    assert.strictEqual(buf.length, 409600);
+  })
+
   it('calls Image#onload multiple times', function () {
     return loadImage(png_clock).then((img) => {
       let onloadCalled = 0

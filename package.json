@@ -28,8 +28,7 @@
     "pretest": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js && node-gyp build",
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
-    "test-server": "node test/server.js",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "test-server": "node test/server.js"
   },
   "binary": {
     "module_name": "canvas",
