@@ -1286,8 +1286,8 @@ NAN_METHOD(Context2d::DrawImage) {
   decompose_matrix(matrix, transforms);
   // extract the scale value from the current transform so that we know how many pixels we
   // need for our extra canvas in the drawImage operation.
-  double current_scale_x = transforms[1];
-  double current_scale_y = transforms[2];
+  double current_scale_x = abs(transforms[1]);
+  double current_scale_y = abs(transforms[2]);
   double extra_dx = 0;
   double extra_dy = 0;
   double fx = dw / sw * current_scale_x; // transforms[1] is scale on X
@@ -1336,10 +1336,10 @@ NAN_METHOD(Context2d::DrawImage) {
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
     if (sx > 0) {
-      translate_x = sx * current_scale_x;
+      translate_x = sx;
     }
     if (sy > 0) {
-      translate_y = sy * current_scale_y;
+      translate_y = sy;
     }
     cairo_set_source_surface(ctxTemp, surface, -translate_x, -translate_y);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);

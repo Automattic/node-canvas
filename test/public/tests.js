@@ -2485,3 +2485,24 @@ tests['drawImage reflection bug'] = function (ctx, done) {
   }
   img1.src = imageSrc('chrome.jpg')
 }
+
+tests['drawImage reflection bug with skewing'] = function (ctx, done) {
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.transform(1.2, 1, 1.8, 1.3, 0, 0);
+    ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
+    ctx.setTransform(1.2, 1.8, 0.3, 0.8, 0, 0);
+    ctx.drawImage(img1, 30, 60, 150, 150, -5, -5, 200, 200)
+    done()
+  }
+  img1.src = imageSrc('chrome.jpg')
+}
+
+tests['transformed drawimage'] = function (ctx) {
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(5, 5, 50, 50)
+  ctx.transform(1.2, 1, 1.8, 1.3, 0, 0);
+  ctx.drawImage(ctx.canvas, 0, 0)
+}
