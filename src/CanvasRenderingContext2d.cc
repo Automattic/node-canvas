@@ -1294,9 +1294,8 @@ NAN_METHOD(Context2d::DrawImage) {
   double fy = dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
-  bool needAdditionalCut = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale || needAdditionalCut;
+  bool needsExtraSurface = sameCanvas || needCut || needScale;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
