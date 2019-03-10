@@ -1205,7 +1205,7 @@ NAN_METHOD(Context2d::DrawImage) {
   if(!checkArgs(info, args, infoLen - 1, 1))
     return;
 
-  float sx = 0
+  double sx = 0
     , sy = 0
     , sw = 0
     , sh = 0
@@ -1288,10 +1288,10 @@ NAN_METHOD(Context2d::DrawImage) {
   // need for our extra canvas in the drawImage operation.
   double current_scale_x = transforms[1];
   double current_scale_y = transforms[2];
-  float extra_dx = 0;
-  float extra_dy = 0;
-  float fx = (float) dw / sw * current_scale_x; // transforms[1] is scale on X
-  float fy = (float) dh / sh * current_scale_y; // transforms[2] is scale on X
+  double extra_dx = 0;
+  double extra_dy = 0;
+  double fx = dw / sw * current_scale_x; // transforms[1] is scale on X
+  double fy = dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
   bool needAdditionalCut = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
@@ -1306,8 +1306,8 @@ NAN_METHOD(Context2d::DrawImage) {
     // from sw and sh we want to remove the part that is outside the source_w and soruce_h
     double real_w = sw;
     double real_h = sh;
-    float translate_x = 0;
-    float translate_y = 0;
+    double translate_x = 0;
+    double translate_y = 0;
     // if sx or sy are negative, a part of the area represented by sw and sh is empty
     // because there are empty pixels, so we cut it out.
     // On the other hand if sx or sy are positive, but sw and sh extend outside the real
@@ -1381,8 +1381,8 @@ NAN_METHOD(Context2d::DrawImage) {
     }
   }
 
-  float scaled_dx = dx;
-  float scaled_dy = dy;
+  double scaled_dx = dx;
+  double scaled_dy = dy;
 
   if (needsExtraSurface && (current_scale_x != 1 || current_scale_y != 1)) {
     // in this case our surface contains already current_scale_x, we need to scale back
