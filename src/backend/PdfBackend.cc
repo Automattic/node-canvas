@@ -1,11 +1,8 @@
 #include "PdfBackend.h"
 
 #include <cairo-pdf.h>
-#include <png.h>
-
 #include "../Canvas.h"
 #include "../closure.h"
-
 
 using namespace v8;
 

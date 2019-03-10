@@ -9,11 +9,27 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* (Actually) added `resolution` option for `canvas.toBuffer("image/png")` and
+  `canvas.createPNGStream()`. This was documented since 2.0.0 but not working.
+### Fixed
+* PDF metadata (added in 2.3.0) wasn't being set with `canvas.createPDFStream()`
+* Fix custom "inspect" function deprecation warnings (#1326)
+
+2.3.1
+==================
+### Fixed
+* Fix `canvas.toBuffer()` for JPEGs (#1350)
+
+2.3.0
+==================
+### Added
 * Add support for multiple PDF page sizes
+* Add support for embedding document metadata in PDFs
 
 ### Fixed
 * Don't crash when font string is invalid (bug since 2.2.0) (#1328)
-* Fix memory leak in toBuffer
+* Fix memory leak in `canvas.toBuffer()` (#1202, #1296)
+* Fix memory leak in `ctx.font=` (#1202)
 
 2.2.0
 ==================
@@ -158,8 +174,8 @@ context.quality = 'best' // new
  * Support for `canvas.toBuffer("image/jpeg")`
  * Unified configuration options for `canvas.toBuffer()`, `canvas.pngStream()`
    and `canvas.jpegStream()`
- * Added `resolution` option for `canvas.toBuffer("image/png")` and
-   `canvas.createPNGStream()`
+ * ~~Added `resolution` option for `canvas.toBuffer("image/png")` and
+   `canvas.createPNGStream()`~~ this was not working
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
  * Support for `img.src = <url>` to match browsers
  * Support reading data URL on `img.src`

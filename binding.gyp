@@ -105,7 +105,7 @@
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
                   'DisableSpecificWarnings': [
-                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                    4100, 4611
                   ]
                 }
               }
@@ -116,7 +116,7 @@
                   'WarningLevel': 4,
                   'ExceptionHandling': 1,
                   'DisableSpecificWarnings': [
-                    4100, 4127, 4201, 4244, 4267, 4506, 4611, 4714, 4512
+                    4100, 4611
                   ]
                 }
               }

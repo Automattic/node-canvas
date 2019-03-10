@@ -84,6 +84,12 @@ describe('Image', function () {
     })
   })
 
+  it('detects invalid PNG', function (done) {
+    const img = new Image()
+    img.onerror = () => done()
+    img.src = Buffer.from('89504E470D', 'hex')
+  })
+
   it('loads SVG data URL base64', function () {
     const base64Enc = fs.readFileSync(svg_tree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
