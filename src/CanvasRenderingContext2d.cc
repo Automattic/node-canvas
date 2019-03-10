@@ -1390,7 +1390,6 @@ NAN_METHOD(Context2d::DrawImage) {
     scaled_dx *= current_scale_x;
     scaled_dy *= current_scale_y;
   }
-  // cairo_translate(ctx, extra_dx, extra_dy);
   // Paint
   cairo_set_source_surface(ctx, surface, scaled_dx + extra_dx, scaled_dy + extra_dy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
