@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * (Actually) added `resolution` option for `canvas.toBuffer("image/png")` and
   `canvas.createPNGStream()`. This was documented since 2.0.0 but not working.
+* Add typescript definitions.
 ### Fixed
 * PDF metadata (added in 2.3.0) wasn't being set with `canvas.createPDFStream()`
 * Fix custom "inspect" function deprecation warnings (#1326)

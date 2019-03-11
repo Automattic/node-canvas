@@ -382,6 +382,8 @@ This is a standard API, but several non-standard calls are supported. The full l
 ```js
 dataUrl = canvas.toDataURL() // defaults to PNG
 dataUrl = canvas.toDataURL('image/png')
+dataUrl = canvas.toDataURL('image/jpeg')
+dataUrl = canvas.toDataURL('image/jpeg', quality) // quality from 0 to 1
 canvas.toDataURL((err, png) => { }) // defaults to PNG
 canvas.toDataURL('image/png', (err, png) => { })
 canvas.toDataURL('image/jpeg', (err, jpeg) => { }) // sync JPEG is not supported
@@ -423,9 +425,9 @@ In `glyph` mode, `ctx.strokeText()` and `ctx.fillText()` behave the same (aside 
 
 This property is tracked as part of the canvas state in save/restore.
 
-### CanvasRenderingContext2D#globalCompositeOperator = 'saturate'
+### CanvasRenderingContext2D#globalCompositeOperation = 'saturate'
 
-In addition to all of the standard global composite operators defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operator is also available.
+In addition to all of the standard global composite operations defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operation is also available.
 
 ### CanvasRenderingContext2D#antialias
 
