@@ -9,6 +9,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+### Fixed
+
+2.4.0
+==================
+### Added
 * (Actually) added `resolution` option for `canvas.toBuffer("image/png")` and
   `canvas.createPNGStream()`. This was documented since 2.0.0 but not working.
 * Add typescript definitions.
