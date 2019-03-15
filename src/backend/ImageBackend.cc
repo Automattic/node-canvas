@@ -57,7 +57,7 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 
 Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
 
-void ImageBackend::Initialize(Handle<Object> target) {
+void ImageBackend::Initialize(Local<Object> target) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);

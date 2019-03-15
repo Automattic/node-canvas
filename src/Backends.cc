@@ -6,7 +6,7 @@
 
 using namespace v8;
 
-void Backends::Initialize(Handle<Object> target) {
+void Backends::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
   Local<Object> obj = Nan::New<Object>();

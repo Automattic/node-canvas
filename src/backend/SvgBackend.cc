@@ -38,7 +38,7 @@ cairo_surface_t* SvgBackend::recreateSurface() {
 
 Nan::Persistent<FunctionTemplate> SvgBackend::constructor;
 
-void SvgBackend::Initialize(Handle<Object> target) {
+void SvgBackend::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(SvgBackend::New);
