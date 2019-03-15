@@ -36,7 +36,7 @@ cairo_surface_t* PdfBackend::recreateSurface() {
 
 Nan::Persistent<FunctionTemplate> PdfBackend::constructor;
 
-void PdfBackend::Initialize(Handle<Object> target) {
+void PdfBackend::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(PdfBackend::New);
