@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix electron 5 and node 12 compatibility
 
 2.4.0
 ==================
