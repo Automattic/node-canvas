@@ -252,7 +252,7 @@ NAN_METHOD(Image::SetSource){
         argv[0] = Nan::ErrnoException(errorInfo.cerrno, errorInfo.syscall.c_str(), errorInfo.message.c_str(), errorInfo.path.c_str());
       } else if (!errorInfo.message.empty()) {
         argv[0] = Nan::Error(Nan::New(errorInfo.message).ToLocalChecked());
-      } else {      
+      } else {
         argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
       }
       onerrorFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 1, argv);
@@ -453,7 +453,7 @@ Image::loadSurface() {
     return loadPNG();
   }
 
-  
+
   if (isGIF(buf)) {
 #ifdef HAVE_GIF
     return loadGIF(stream);
@@ -643,9 +643,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   uint32_t *dst_data = (uint32_t*) data;
 
   if (!gif->Image.Interlace) {
-    if (naturalWidth == img->Width && naturalHeight == img->Height) {
-      for (int y = 0; y < naturalHeight; ++y) {
-        for (int x = 0; x < naturalWidth; ++x) {
+    if (naturalWidth == static_cast<size_t>(img->Width) && naturalHeight == static_cast<size_t>(img->Height)) {
+      for (size_t y = 0; y < naturalHeight; ++y) {
+        for (size_t x = 0; x < naturalWidth; ++x) {
           *dst_data = ((*src_data == alphaColor) ? 0 : 255) << 24
             | colormap->Colors[*src_data].Red << 16
             | colormap->Colors[*src_data].Green << 8
@@ -657,8 +657,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
       }
     } else {
       // Image does not take up whole "screen" so we need to fill-in the background
-      int bottom = img->Top + img->Height;
-      int right = img->Left + img->Width;
+      size_t bottom = static_cast<size_t>(img->Top) + static_cast<size_t>(img->Height);
+      size_t right = static_cast<size_t>(img->Left) + static_cast<size_t>(img->Width);
 
       uint32_t bgPixel =
         ((bgColor == alphaColor) ? 0 : 255) << 24
@@ -666,9 +666,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
         | colormap->Colors[bgColor].Green << 8
         | colormap->Colors[bgColor].Blue;
 
-      for (int y = 0; y < naturalHeight; ++y) {
-        for (int x = 0; x < naturalWidth; ++x) {
-          if (y < img->Top || y >= bottom || x < img->Left || x >= right) {
+      for (size_t y = 0; y < naturalHeight; ++y) {
+        for (size_t x = 0; x < naturalWidth; ++x) {
+          if (y < static_cast<size_t>(img->Top) || y >= bottom || x < static_cast<size_t>(img->Left) || x >= right) {
             *dst_data = bgPixel;
             dst_data++;
           } else {
@@ -686,16 +686,16 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     // Image is interlaced so that it streams nice over 14.4k and 28.8k modems :)
     // We first load in 1/8 of the image, followed by another 1/8, followed by
     // 1/4 and finally the remaining 1/2.
-    int ioffs[] = { 0, 4, 2, 1 };
-    int ijumps[] = { 8, 8, 4, 2 };
+    size_t ioffs[] = { 0, 4, 2, 1 };
+    size_t ijumps[] = { 8, 8, 4, 2 };
 
     uint8_t *src_ptr = src_data;
     uint32_t *dst_ptr;
 
-    for(int z = 0; z < 4; z++) {
-      for(int y = ioffs[z]; y < naturalHeight; y += ijumps[z]) {
+    for(size_t z = 0; z < 4; z++) {
+      for(size_t y = ioffs[z]; y < naturalHeight; y += ijumps[z]) {
         dst_ptr = dst_data + naturalWidth * y;
-        for(int x = 0; x < naturalWidth; ++x) {
+        for(size_t x = 0; x < naturalWidth; ++x) {
           *dst_ptr = ((*src_ptr == alphaColor) ? 0 : 255) << 24
             | (colormap->Colors[*src_ptr].Red) << 16
             | (colormap->Colors[*src_ptr].Green) << 8
@@ -780,12 +780,13 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
 #endif
 
 void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
-  int stride = naturalWidth * 4;
-  for (int y = 0; y < naturalHeight; ++y) {
+  size_t stride = naturalWidth * 4;
+
+  for (size_t y = 0; y < naturalHeight; ++y) {
     jpeg_read_scanlines(args, &src, 1);
     uint32_t *row = (uint32_t*)(data + stride * y);
-    for (int x = 0; x < naturalWidth; ++x) {
-      int bx = args->output_components * x;
+    for (size_t x = 0; x < naturalWidth; ++x) {
+      size_t bx = args->output_components * x;
       row[x] = decode(src + bx);
     }
   }
@@ -799,8 +800,26 @@ void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
-  
-  uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
+
+  size_t stride = naturalWidth * 4;
+  if (naturalWidth != 0 && stride / naturalWidth != 4) {
+    // The integer overflowed, which means we cannot allocate that much memory.
+    jpeg_abort_decompress(args);
+    jpeg_destroy_decompress(args);
+    this->errorInfo.set(NULL, "malloc", errno);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t size = naturalHeight * stride;
+  if (naturalHeight != 0 && size / naturalHeight != stride) {
+    // The integer overflowed, which means we cannot allocate that much memory.
+    jpeg_abort_decompress(args);
+    jpeg_destroy_decompress(args);
+    this->errorInfo.set(NULL, "malloc", errno);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  uint8_t *data = new uint8_t[size];
   if (!data) {
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);

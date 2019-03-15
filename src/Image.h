@@ -37,8 +37,8 @@ using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 class Image: public Nan::ObjectWrap {
   public:
     char *filename;
-    int width, height;
-    int naturalWidth, naturalHeight;
+    size_t width, height;
+    size_t naturalWidth, naturalHeight;
     static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
@@ -120,8 +120,8 @@ class Image: public Nan::ObjectWrap {
 #ifdef HAVE_RSVG
     RsvgHandle *_rsvg;
     bool _is_svg;
-    int _svg_last_width;
-    int _svg_last_height;
+    size_t _svg_last_width;
+    size_t _svg_last_height;
 #endif
     ~Image();
 };

@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Use size_t where appropriate and guard against overflow
 * Fix electron 5 and node 12 compatibility
 * Fix encoding options (quality) parameter in `canvas.toDataURL()`
 
