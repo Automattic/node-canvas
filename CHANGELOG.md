@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix encoding options (quality) parameter in `canvas.toDataURL()`
 
 2.4.0
 ==================
