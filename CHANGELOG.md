@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Fix electron 5 and node 12 compatibility
+* Fix encoding options (quality) parameter in `canvas.toDataURL()`
 
 2.4.0
 ==================
