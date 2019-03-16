@@ -10,6 +10,11 @@
 #include <node_buffer.h>
 #include "Util.h"
 
+/* Cairo limit:
+  * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+  */
+static constexpr const size_t canvas_max_side = (1 << 15) - 1;
+
 #ifdef HAVE_GIF
 typedef struct {
   uint8_t *buf;
@@ -607,10 +612,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = gif->SWidth;
   height = naturalHeight = gif->SHeight;
 
-  /* Cairo limit:
-   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
-   */
-  if (width > 32767 || height > 32767) {
+  if (width > canvas_max_side || height > canvas_max_side) {
     GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_INVALID_SIZE;
   }
@@ -1097,6 +1099,12 @@ Image::loadJPEG(FILE *stream) {
 
     jpeg_read_header(&args, 1);
     jpeg_start_decompress(&args);
+
+    if (args.output_width > canvas_max_side || args.output_height > canvas_max_side) {
+      jpeg_destroy_decompress(&args);
+      return CAIRO_STATUS_INVALID_SIZE;
+    }
+
     width = naturalWidth = args.output_width;
     height = naturalHeight = args.output_height;
 
