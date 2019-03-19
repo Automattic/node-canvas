@@ -10,6 +10,11 @@
 #include <node_buffer.h>
 #include "Util.h"
 
+/* Cairo limit:
+  * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
+  */
+static constexpr int canvas_max_side = (1 << 15) - 1;
+
 #ifdef HAVE_GIF
 typedef struct {
   uint8_t *buf;
@@ -252,7 +257,7 @@ NAN_METHOD(Image::SetSource){
         argv[0] = Nan::ErrnoException(errorInfo.cerrno, errorInfo.syscall.c_str(), errorInfo.message.c_str(), errorInfo.path.c_str());
       } else if (!errorInfo.message.empty()) {
         argv[0] = Nan::Error(Nan::New(errorInfo.message).ToLocalChecked());
-      } else {      
+      } else {
         argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
       }
       onerrorFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 1, argv);
@@ -453,7 +458,7 @@ Image::loadSurface() {
     return loadPNG();
   }
 
-  
+
   if (isGIF(buf)) {
 #ifdef HAVE_GIF
     return loadGIF(stream);
@@ -604,16 +609,13 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  width = naturalWidth = gif->SWidth;
-  height = naturalHeight = gif->SHeight;
-
-  /* Cairo limit:
-   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
-   */
-  if (width > 32767 || height > 32767) {
+  if (gif->SWidth > canvas_max_side || gif->SHeight > canvas_max_side) {
     GIF_CLOSE_FILE(gif);
     return CAIRO_STATUS_INVALID_SIZE;
   }
+
+  width = naturalWidth = gif->SWidth;
+  height = naturalHeight = gif->SHeight;
 
   uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
@@ -799,7 +801,7 @@ void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src
 cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args) {
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
-  
+
   uint8_t *data = new uint8_t[naturalWidth * naturalHeight * 4];
   if (!data) {
     jpeg_abort_decompress(args);
@@ -1078,6 +1080,12 @@ Image::loadJPEG(FILE *stream) {
 
     jpeg_read_header(&args, 1);
     jpeg_start_decompress(&args);
+
+    if (args.output_width > canvas_max_side || args.output_height > canvas_max_side) {
+      jpeg_destroy_decompress(&args);
+      return CAIRO_STATUS_INVALID_SIZE;
+    }
+
     width = naturalWidth = args.output_width;
     height = naturalHeight = args.output_height;
 
