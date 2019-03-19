@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+2.4.1
+==================
+### Fixed
 * Guard JPEG width/height against maximum supported (#1385)
 * Fix electron 5 and node 12 compatibility
 * Fix encoding options (quality) parameter in `canvas.toDataURL()`
