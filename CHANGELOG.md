@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Changed Image download success check to rely on a success-code range instead of strictly code 200
 ### Added
 ### Fixed
 
