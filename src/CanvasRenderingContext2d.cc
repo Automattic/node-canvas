@@ -187,7 +187,7 @@ Context2d::Context2d(Canvas *canvas) {
   _context = canvas->createCairoContext();
   _layout = pango_cairo_create_layout(_context);
   state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-  
+
   resetState(true);
 }
 
@@ -1171,6 +1171,20 @@ NAN_METHOD(Context2d::CreateImageData){
 }
 
 /*
+ * Take a transform matrix and return its components
+ * 0: angle, 1: scaleX, 2: scaleY, 3: skewX, 4: translateX, 5: translateY
+ */
+void decompose_matrix(cairo_matrix_t matrix, double *destination) {
+  double denom = pow(matrix.xx, 2) + pow(matrix.yx, 2);
+  destination[0] = atan2(matrix.yx, matrix.xx);
+  destination[1] = sqrt(denom);
+  destination[2] = (matrix.xx * matrix.yy - matrix.xy * matrix.yx) / destination[1];
+  destination[3] = atan2(matrix.xx * matrix.xy + matrix.yx * matrix.yy, denom);
+  destination[4] = matrix.x0;
+  destination[5] = matrix.y0;
+}
+
+/*
  * Draw image src image to the destination (context).
  *
  *  - dx, dy
@@ -1191,7 +1205,7 @@ NAN_METHOD(Context2d::DrawImage) {
   if(!checkArgs(info, args, infoLen - 1, 1))
     return;
 
-  float sx = 0
+  double sx = 0
     , sy = 0
     , sw = 0
     , sh = 0
@@ -1266,41 +1280,73 @@ NAN_METHOD(Context2d::DrawImage) {
   // Start draw
   cairo_save(ctx);
 
-  // Scale src
-  float fx = (float) dw / sw;
-  float fy = (float) dh / sh;
+  cairo_matrix_t matrix;
+  double transforms[6];
+  cairo_get_matrix(context->context(), &matrix);
+  decompose_matrix(matrix, transforms);
+  // extract the scale value from the current transform so that we know how many pixels we
+  // need for our extra canvas in the drawImage operation.
+  double current_scale_x = abs(transforms[1]);
+  double current_scale_y = abs(transforms[2]);
+  double extra_dx = 0;
+  double extra_dy = 0;
+  double fx = dw / sw * current_scale_x; // transforms[1] is scale on X
+  double fy = dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
-  bool needCairoClip = sx < 0 || sy < 0 || sw > source_w || sh > source_h;
-
   bool sameCanvas = surface == context->canvas()->surface();
-  bool needsExtraSurface = sameCanvas || needCut || needScale || needCairoClip;
+  bool needsExtraSurface = sameCanvas || needCut || needScale;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;
 
   if (needsExtraSurface) {
-    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dw, dh);
+    // we want to create the extra surface as small as possible.
+    // fx and fy are the total scaling we need to apply to sw, sh.
+    // from sw and sh we want to remove the part that is outside the source_w and soruce_h
+    double real_w = sw;
+    double real_h = sh;
+    double translate_x = 0;
+    double translate_y = 0;
+    // if sx or sy are negative, a part of the area represented by sw and sh is empty
+    // because there are empty pixels, so we cut it out.
+    // On the other hand if sx or sy are positive, but sw and sh extend outside the real
+    // source pixels, we cut the area in that case too.
+    if (sx < 0) {
+      extra_dx = -sx * fx;
+      real_w = sw + sx;
+    } else if (sx + sw > source_w) {
+      real_w = sw - (sx + sw - source_w);
+    }
+    if (sy < 0) {
+      extra_dy = -sy * fy;
+      real_h = sh + sy;
+    } else if (sy + sh > source_h) {
+      real_h = sh - (sy + sh - source_h);
+    }
+    // if after cutting we are still bigger than source pixels, we restrict again
+    if (real_w > source_w) {
+      real_w = source_w;
+    }
+    if (real_h > source_h) {
+      real_h = source_h;
+    }
+    // TODO: find a way to limit the surfTemp to real_w and real_h if fx and fy are bigger than 1.
+    // there are no more pixel than the one available in the source, no need to create a bigger surface.
+    surfTemp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, round(real_w * fx), round(real_h * fy));
     ctxTemp = cairo_create(surfTemp);
     cairo_scale(ctxTemp, fx, fy);
-    if (needCairoClip) {
-      float clip_w = (std::min)(sw, source_w);
-      float clip_h = (std::min)(sh, source_h);
-      if (sx > 0) {
-        clip_w -= sx;
-      }
-      if (sy > 0) {
-        clip_h -= sy;
-      }
-      cairo_rectangle(ctxTemp, -sx , -sy , clip_w, clip_h);
-      cairo_clip(ctxTemp);
+    if (sx > 0) {
+      translate_x = sx;
     }
-    cairo_set_source_surface(ctxTemp, surface, -sx, -sy);
+    if (sy > 0) {
+      translate_y = sy;
+    }
+    cairo_set_source_surface(ctxTemp, surface, -translate_x, -translate_y);
     cairo_pattern_set_filter(cairo_get_source(ctxTemp), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
     cairo_pattern_set_extend(cairo_get_source(ctxTemp), CAIRO_EXTEND_REFLECT);
     cairo_paint_with_alpha(ctxTemp, 1);
     surface = surfTemp;
   }
-
   // apply shadow if there is one
   if (context->hasShadow()) {
     if(context->state->shadowBlur) {
@@ -1334,8 +1380,17 @@ NAN_METHOD(Context2d::DrawImage) {
     }
   }
 
+  double scaled_dx = dx;
+  double scaled_dy = dy;
+
+  if (needsExtraSurface && (current_scale_x != 1 || current_scale_y != 1)) {
+    // in this case our surface contains already current_scale_x, we need to scale back
+    cairo_scale(ctx, 1 / current_scale_x, 1 / current_scale_y);
+    scaled_dx *= current_scale_x;
+    scaled_dy *= current_scale_y;
+  }
   // Paint
-  cairo_set_source_surface(ctx, surface, dx, dy);
+  cairo_set_source_surface(ctx, surface, scaled_dx + extra_dx, scaled_dy + extra_dy);
   cairo_pattern_set_filter(cairo_get_source(ctx), context->state->imageSmoothingEnabled ? context->state->patternQuality : CAIRO_FILTER_NEAREST);
   cairo_pattern_set_extend(cairo_get_source(ctx), CAIRO_EXTEND_NONE);
   cairo_paint_with_alpha(ctx, context->state->globalAlpha);
@@ -1767,7 +1822,7 @@ NAN_SETTER(Context2d::SetFillStyle) {
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
     context->_fillStyle.Reset(value);
-    
+
     Local<Object> obj = Nan::To<Object>(value).ToLocalChecked();
     if (Nan::New(Gradient::constructor)->HasInstance(obj)){
       Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
@@ -1813,7 +1868,7 @@ NAN_SETTER(Context2d::SetStrokeStyle) {
   if (Nan::New(Gradient::constructor)->HasInstance(value) ||
       Nan::New(Pattern::constructor)->HasInstance(value)) {
     context->_strokeStyle.Reset(value);
-    
+
     Local<Object> obj = Nan::To<Object>(value).ToLocalChecked();
     if (Nan::New(Gradient::constructor)->HasInstance(obj)){
       Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
@@ -2438,7 +2493,7 @@ NAN_GETTER(Context2d::GetFont) {
  *   - size
  *   - unit
  *   - family
- */ 
+ */
 
 NAN_SETTER(Context2d::SetFont) {
   if (!value->IsString()) return;
