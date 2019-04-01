@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Use [simple-get](https://github.com/feross/simple-get) for fetching images, now supports redirects (#1398)
 ### Added
 ### Fixed
 
