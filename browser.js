@@ -21,8 +21,8 @@ exports.createImageData = function (array, width, height) {
 exports.loadImage = function (src) {
   return new Promise((resolve, reject) => {
     const image = document.createElement('img')
-    image.crossOrigin = "anonymous"
-    
+    image.crossOrigin = 'anonymous'
+
     function cleanup () {
       image.onload = null
       image.onerror = null
