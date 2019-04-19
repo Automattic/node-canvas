@@ -751,7 +751,7 @@ NAN_GETTER(Context2d::GetFormat) {
 NAN_METHOD(Context2d::AddPage) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (context->canvas()->backend()->getName() != "pdf") {
-    return Nan::ThrowError("only PDF canvases support .nextPage()");
+    return Nan::ThrowError("only PDF canvases support .addPage()");
   }
   cairo_show_page(context->context());
   int width = Nan::To<int32_t>(info[0]).FromMaybe(0);
