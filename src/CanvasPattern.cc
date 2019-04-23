@@ -29,7 +29,10 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
 
   // Prototype
-  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target,
+           Nan::New("CanvasPattern").ToLocalChecked(),
+           ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*

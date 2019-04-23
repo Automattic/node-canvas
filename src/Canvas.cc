@@ -79,7 +79,10 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Class methods
   Nan::SetMethod(ctor, "_registerFont", RegisterFont);
 
-  Nan::Set(target, Nan::New("Canvas").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target,
+           Nan::New("Canvas").ToLocalChecked(),
+           ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*
@@ -241,25 +244,26 @@ Canvas::ToBufferAsyncAfter(uv_work_t *req) {
 
 static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
   if (arg->IsObject()) {
+    Local<Context> v8ctx = Nan::GetCurrentContext();
     Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
-    Local<Value> cLevel = obj->Get(Nan::New("compressionLevel").ToLocalChecked());
+    Local<Value> cLevel = obj->Get(v8ctx, Nan::New("compressionLevel").ToLocalChecked()).ToLocalChecked();
     if (cLevel->IsUint32()) {
       uint32_t val = Nan::To<uint32_t>(cLevel).FromMaybe(0);
       // See quote below from spec section 4.12.5.5.
       if (val <= 9) pngargs.compressionLevel = val;
     }
 
-    Local<Value> rez = obj->Get(Nan::New("resolution").ToLocalChecked());
+    Local<Value> rez = obj->Get(v8ctx, Nan::New("resolution").ToLocalChecked()).ToLocalChecked();
     if (rez->IsUint32()) {
       uint32_t val = Nan::To<uint32_t>(rez).FromMaybe(0);
       if (val > 0) pngargs.resolution = val;
     }
 
-    Local<Value> filters = obj->Get(Nan::New("filters").ToLocalChecked());
+    Local<Value> filters = obj->Get(v8ctx, Nan::New("filters").ToLocalChecked()).ToLocalChecked();
     if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
 
-    Local<Value> palette = obj->Get(Nan::New("palette").ToLocalChecked());
+    Local<Value> palette = obj->Get(v8ctx, Nan::New("palette").ToLocalChecked()).ToLocalChecked();
     if (palette->IsUint8ClampedArray()) {
       Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
       pngargs.nPaletteColors = palette_ta->Length();
@@ -270,7 +274,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
       Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
       pngargs.palette = *_paletteColors;
       // Optional background color index:
-      Local<Value> backgroundIndexVal = obj->Get(Nan::New("backgroundIndex").ToLocalChecked());
+      Local<Value> backgroundIndexVal = obj->Get(v8ctx, Nan::New("backgroundIndex").ToLocalChecked()).ToLocalChecked();
       if (backgroundIndexVal->IsUint32()) {
         pngargs.backgroundIndex = static_cast<uint8_t>(Nan::To<uint32_t>(backgroundIndexVal).FromMaybe(0));
       }
@@ -283,9 +287,10 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // user agent must use its default quality value, as if the quality argument 
   // had not been given." - 4.12.5.5
   if (arg->IsObject()) {
+    Local<Context> v8ctx = Nan::GetCurrentContext();
     Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
 
-    Local<Value> qual = obj->Get(Nan::New("quality").ToLocalChecked());
+    Local<Value> qual = obj->Get(v8ctx, Nan::New("quality").ToLocalChecked()).ToLocalChecked();
     if (qual->IsNumber()) {
       double quality = Nan::To<double>(qual).FromMaybe(0);
       if (quality >= 0.0 && quality <= 1.0) {
@@ -293,7 +298,7 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
       }
     }
 
-    Local<Value> chroma = obj->Get(Nan::New("chromaSubsampling").ToLocalChecked());
+    Local<Value> chroma = obj->Get(v8ctx, Nan::New("chromaSubsampling").ToLocalChecked()).ToLocalChecked();
     if (chroma->IsBoolean()) {
       bool subsample = Nan::To<bool>(chroma).FromMaybe(0);
       jpegargs.chromaSubsampling = subsample ? 2 : 1;
@@ -301,7 +306,7 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
       jpegargs.chromaSubsampling = Nan::To<uint32_t>(chroma).FromMaybe(0);
     }
 
-    Local<Value> progressive = obj->Get(Nan::New("progressive").ToLocalChecked());
+    Local<Value> progressive = obj->Get(v8ctx, Nan::New("progressive").ToLocalChecked()).ToLocalChecked();
     if (!progressive->IsUndefined()) {
       jpegargs.progressive = Nan::To<bool>(progressive).FromMaybe(0);
     }
@@ -721,9 +726,10 @@ NAN_METHOD(Canvas::RegisterFont) {
   Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
   Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
 
-  char *family = str_value(js_user_desc->Get(family_prop), NULL, false);
-  char *weight = str_value(js_user_desc->Get(weight_prop), "normal", true);
-  char *style = str_value(js_user_desc->Get(style_prop), "normal", false);
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  char *family = str_value(js_user_desc->Get(v8ctx, family_prop).ToLocalChecked(), NULL, false);
+  char *weight = str_value(js_user_desc->Get(v8ctx, weight_prop).ToLocalChecked(), "normal", true);
+  char *style = str_value(js_user_desc->Get(v8ctx, style_prop).ToLocalChecked(), "normal", false);
 
   if (family && weight && style) {
     pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
@@ -895,7 +901,8 @@ Canvas::resurface(Local<Object> canvas) {
   backend()->recreateSurface();
 
   // Reset context
-	context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+	context = canvas->Get(v8ctx, Nan::New<String>("context").ToLocalChecked()).ToLocalChecked();
 	if (!context->IsUndefined()) {
 		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(Nan::To<Object>(context).ToLocalChecked());
 		cairo_t *prev = context2d->context();

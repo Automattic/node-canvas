@@ -25,7 +25,10 @@ Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Nan::SetPrototypeMethod(ctor, "addColorStop", AddColorStop);
-  Nan::Set(target, Nan::New("CanvasGradient").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target,
+           Nan::New("CanvasGradient").ToLocalChecked(),
+           ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*

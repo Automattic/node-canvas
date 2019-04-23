@@ -26,7 +26,8 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
-  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*
@@ -116,7 +117,8 @@ NAN_METHOD(ImageData::New) {
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
-  info.This()->Set(Nan::New("data").ToLocalChecked(), dataArray);
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  info.This()->Set(v8ctx, Nan::New("data").ToLocalChecked(), dataArray);
   info.GetReturnValue().Set(info.This());
 }
 

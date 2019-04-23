@@ -70,7 +70,8 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
 
-  Nan::Set(target, Nan::New("Image").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target, Nan::New("Image").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 
   // Used internally in lib/image.js
   NAN_EXPORT(target, GetSource);
@@ -89,8 +90,9 @@ NAN_METHOD(Image::New) {
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
   img->Wrap(info.This());
-  info.This()->Set(Nan::New("onload").ToLocalChecked(), Nan::Null());
-  info.This()->Set(Nan::New("onerror").ToLocalChecked(), Nan::Null());
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  info.This()->Set(v8ctx, Nan::New("onload").ToLocalChecked(), Nan::Null());
+  info.This()->Set(v8ctx, Nan::New("onerror").ToLocalChecked(), Nan::Null());
   info.GetReturnValue().Set(info.This());
 }
 
@@ -249,7 +251,8 @@ NAN_METHOD(Image::SetSource){
   }
 
   if (status) {
-    Local<Value> onerrorFn = info.This()->Get(Nan::New("onerror").ToLocalChecked());
+    Local<Context> v8ctx = Nan::GetCurrentContext();
+    Local<Value> onerrorFn = info.This()->Get(v8ctx, Nan::New("onerror").ToLocalChecked()).ToLocalChecked();
     if (onerrorFn->IsFunction()) {
       Local<Value> argv[1];
       CanvasError errorInfo = img->errorInfo;
@@ -260,13 +263,15 @@ NAN_METHOD(Image::SetSource){
       } else {
         argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
       }
-      onerrorFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 1, argv);
+      Local<Context> ctx = Nan::GetCurrentContext();
+      onerrorFn.As<Function>()->Call(ctx, ctx->Global(), 1, argv);
     }
   } else {
     img->loaded();
-    Local<Value> onloadFn = info.This()->Get(Nan::New("onload").ToLocalChecked());
+    Local<Context> v8ctx = Nan::GetCurrentContext();
+    Local<Value> onloadFn = info.This()->Get(v8ctx, Nan::New("onload").ToLocalChecked()).ToLocalChecked();
     if (onloadFn->IsFunction()) {
-      onloadFn.As<Function>()->Call(Isolate::GetCurrent()->GetCurrentContext()->Global(), 0, NULL);
+      onloadFn.As<Function>()->Call(v8ctx, v8ctx->Global(), 0, NULL);
     }
   }
 }

@@ -2,6 +2,7 @@ language: node_js
 install:
   - npm install --build-from-source
 node_js:
+  - '12'
   - '10'
   - '8'
   - '6'

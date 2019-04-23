@@ -45,7 +45,10 @@ void SvgBackend::Initialize(Local<Object> target) {
   SvgBackend::constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New<String>("SvgBackend").ToLocalChecked());
-  target->Set(Nan::New<String>("SvgBackend").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  target->Set(v8ctx,
+              Nan::New<String>("SvgBackend").ToLocalChecked(),
+              ctor->GetFunction(v8ctx).ToLocalChecked());
 }
 
 NAN_METHOD(SvgBackend::New) {
