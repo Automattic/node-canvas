@@ -294,7 +294,7 @@ export function createImageData(width: number, height: number): ImageData
  * @param src URL, `data: ` URI or (Node.js only) a local file path or Buffer
  * instance.
  */
-export function loadImage(src: string|Buffer): Promise<Image>
+export function loadImage(src: string|Buffer, options?: any): Promise<Image>
 
 /**
  * Registers a font that is not installed as a system font. This must be used

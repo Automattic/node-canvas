@@ -18,9 +18,9 @@ exports.createImageData = function (array, width, height) {
   }
 }
 
-exports.loadImage = function (src) {
+exports.loadImage = function (src, options) {
   return new Promise((resolve, reject) => {
-    const image = document.createElement('img')
+    const image = Object.assign(document.createElement('img'), options)
 
     function cleanup () {
       image.onload = null
