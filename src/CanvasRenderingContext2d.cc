@@ -174,7 +174,8 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont, ctor);
   SetProtoAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline, ctor);
   SetProtoAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign, ctor);
-  Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
   Nan::Set(target, Nan::New("CanvasRenderingContext2dInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
 }
 
@@ -684,9 +685,10 @@ NAN_METHOD(Context2d::New) {
   if (isImageBackend) {
     cairo_format_t format = ImageBackend::DEFAULT_FORMAT;
     if (info[1]->IsObject()) {
+      Local<Context> v8ctx = Nan::GetCurrentContext();
       Local<Object> ctxAttributes = Nan::To<Object>(info[1]).ToLocalChecked();
 
-      Local<Value> pixelFormat = ctxAttributes->Get(Nan::New("pixelFormat").ToLocalChecked());
+      Local<Value> pixelFormat = ctxAttributes->Get(v8ctx, Nan::New("pixelFormat").ToLocalChecked()).ToLocalChecked();
       if (pixelFormat->IsString()) {
         Nan::Utf8String utf8PixelFormat(pixelFormat);
         if (!strcmp(*utf8PixelFormat, "RGBA32")) format = CAIRO_FORMAT_ARGB32;
@@ -700,7 +702,7 @@ NAN_METHOD(Context2d::New) {
       }
 
       // alpha: false forces use of RGB24
-      Local<Value> alpha = ctxAttributes->Get(Nan::New("alpha").ToLocalChecked());
+      Local<Value> alpha = ctxAttributes->Get(v8ctx, Nan::New("alpha").ToLocalChecked()).ToLocalChecked();
       if (alpha->IsBoolean() && !Nan::To<bool>(alpha).FromMaybe(false)) {
         format = CAIRO_FORMAT_RGB24;
       }
@@ -2681,21 +2683,22 @@ NAN_METHOD(Context2d::MeasureText) {
   cairo_get_matrix(ctx, &matrix);
   double y_offset = getBaselineAdjustment(layout, context->state->textBaseline);
 
-  obj->Set(Nan::New<String>("width").ToLocalChecked(),
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  obj->Set(v8ctx, Nan::New<String>("width").ToLocalChecked(),
            Nan::New<Number>(logical_rect.width));
-  obj->Set(Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
            Nan::New<Number>(x_offset - PANGO_LBEARING(logical_rect)));
-  obj->Set(Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
            Nan::New<Number>(x_offset + PANGO_RBEARING(logical_rect)));
-  obj->Set(Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
            Nan::New<Number>(y_offset + PANGO_ASCENT(ink_rect)));
-  obj->Set(Nan::New<String>("actualBoundingBoxDescent").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("actualBoundingBoxDescent").ToLocalChecked(),
            Nan::New<Number>(PANGO_DESCENT(ink_rect) - y_offset));
-  obj->Set(Nan::New<String>("emHeightAscent").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("emHeightAscent").ToLocalChecked(),
            Nan::New<Number>(-(PANGO_ASCENT(logical_rect) - y_offset)));
-  obj->Set(Nan::New<String>("emHeightDescent").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("emHeightDescent").ToLocalChecked(),
            Nan::New<Number>(PANGO_DESCENT(logical_rect) - y_offset));
-  obj->Set(Nan::New<String>("alphabeticBaseline").ToLocalChecked(),
+  obj->Set(v8ctx, Nan::New<String>("alphabeticBaseline").ToLocalChecked(),
            Nan::New<Number>(-(pango_font_metrics_get_ascent(metrics) * inverse_pango_scale - y_offset)));
 
   pango_font_metrics_unref(metrics);
@@ -2714,8 +2717,9 @@ NAN_METHOD(Context2d::SetLineDash) {
   uint32_t dashes = dash->Length() & 1 ? dash->Length() * 2 : dash->Length();
   uint32_t zero_dashes = 0;
   std::vector<double> a(dashes);
+  Local<Context> v8ctx = Nan::GetCurrentContext();
   for (uint32_t i=0; i<dashes; i++) {
-    Local<Value> d = dash->Get(i % dash->Length());
+    Local<Value> d = dash->Get(v8ctx, i % dash->Length()).ToLocalChecked();
     if (!d->IsNumber()) return;
     a[i] = Nan::To<double>(d).FromMaybe(0);
     if (a[i] == 0) zero_dashes++;
@@ -2746,8 +2750,9 @@ NAN_METHOD(Context2d::GetLineDash) {
   cairo_get_dash(ctx, a.data(), NULL);
 
   Local<Array> dash = Nan::New<Array>(dashes);
+  Local<Context> v8ctx = Nan::GetCurrentContext();
   for (int i=0; i<dashes; i++)
-      dash->Set(Nan::New<Number>(i), Nan::New<Number>(a[i]));
+      dash->Set(v8ctx, Nan::New<Number>(i), Nan::New<Number>(a[i]));
 
   info.GetReturnValue().Set(dash);
 }

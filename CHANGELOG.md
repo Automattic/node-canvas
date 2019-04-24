@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Use [simple-get](https://github.com/feross/simple-get) for fetching images, now supports redirects (#1398)
 ### Added
+* Support Node.js v12
 ### Fixed
 
 2.4.1

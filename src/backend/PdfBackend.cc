@@ -43,7 +43,10 @@ void PdfBackend::Initialize(Local<Object> target) {
   PdfBackend::constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New<String>("PdfBackend").ToLocalChecked());
-  target->Set(Nan::New<String>("PdfBackend").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> v8ctx = Nan::GetCurrentContext();
+  target->Set(v8ctx,
+              Nan::New<String>("PdfBackend").ToLocalChecked(),
+              ctor->GetFunction(v8ctx).ToLocalChecked());
 }
 
 NAN_METHOD(PdfBackend::New) {
