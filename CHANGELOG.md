@@ -12,6 +12,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Support Node.js v12
 ### Fixed
+* Fix object literal & arrow function syntax usage for IE.
 
 2.4.1
 ==================
