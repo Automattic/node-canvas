@@ -117,8 +117,7 @@ NAN_METHOD(ImageData::New) {
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
-  Local<Context> v8ctx = Nan::GetCurrentContext();
-  info.This()->Set(v8ctx, Nan::New("data").ToLocalChecked(), dataArray);
+  Nan::Set(info.This(), Nan::New("data").ToLocalChecked(), dataArray).Check();
   info.GetReturnValue().Set(info.This());
 }
 
