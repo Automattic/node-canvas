@@ -8,8 +8,13 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
-* Use [simple-get](https://github.com/feross/simple-get) for fetching images, now supports redirects (#1398)
 ### Added
+### Fixed
+
+2.5.0
+==================
+### Added
+* Support redirects when fetching images (using [simple-get](https://github.com/feross/simple-get)) (#1398)
 * Support Node.js v12
 ### Fixed
 * Fix object literal & arrow function syntax usage for IE.
