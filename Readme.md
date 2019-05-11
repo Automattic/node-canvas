@@ -240,7 +240,7 @@ Enabling mime data tracking has no benefits (only a slow down) unless you are ge
 Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the image contained in the canvas.
 
 * **callback** If provided, the buffer will be provided in the callback instead of being returned by the function. Invoked with an error as the first argument if encoding failed, or the resulting buffer as the second argument if it succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases.
-* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support), `raw` (unencoded ARGB32 data in native-endian byte order, top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
+* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support), `raw` (unencoded data in BGRA order on little-endian (most) systems, ARGB on big-endian systems; top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
 * **config**
   * For `image/jpeg`, an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
 
@@ -281,12 +281,13 @@ canvas.toBuffer((err, buf) => {
   // buf is JPEG-encoded image at 95% quality
 }, 'image/jpeg', { quality: 0.95 })
 
-// ARGB32 pixel values, native-endian
+// BGRA pixel values, native-endian
 const buf4 = canvas.toBuffer('raw')
 const { stride, width } = canvas
 // In memory, this is `canvas.height * canvas.stride` bytes long.
-// The top row of pixels, in ARGB order, left-to-right, is:
-const topPixelsARGBLeftToRight = buf4.slice(0, width * 4)
+// The top row of pixels, in BGRA order on little-endian hardware,
+// left-to-right, is:
+const topPixelsBGRALeftToRight = buf4.slice(0, width * 4)
 // And the third row is:
 const row3 = buf4.slice(2 * stride, 2 * stride + width * 4)
 

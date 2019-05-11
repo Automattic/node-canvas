@@ -102,8 +102,9 @@ export class Canvas {
 	toBuffer(mimeType: 'application/pdf', config?: PdfConfig): Buffer
 
 	/**
-	 * Returns the raw ARGB data without encoding in native-endian byte order,
-	 * top-to-bottom.
+	 * Returns the unencoded pixel data, top-to-bottom. On little-endian (most)
+	 * systems, the array will be ordered BGRA; on big-endian systems, it will
+	 * be ARGB.
 	 */
 	toBuffer(mimeType: 'raw'): Buffer
 
