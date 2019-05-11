@@ -20,6 +20,7 @@
 #include <unordered_set>
 #include "Util.h"
 #include <vector>
+#include "node_buffer.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -413,8 +414,13 @@ NAN_METHOD(Canvas::ToBuffer) {
   if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
+    if (canvas->nBytes() > node::Buffer::kMaxLength) {
+      Nan::ThrowError("Data exceeds maximum buffer length.");
+      return;
+    }
     const unsigned char *data = cairo_image_surface_get_data(surface);
-    Local<Object> buf = Nan::CopyBuffer(reinterpret_cast<const char*>(data), canvas->nBytes()).ToLocalChecked();
+    Isolate* iso = Nan::GetCurrentContext()->GetIsolate();
+    Local<Object> buf = node::Buffer::Copy(iso, reinterpret_cast<const char*>(data), canvas->nBytes()).ToLocalChecked();
     info.GetReturnValue().Set(buf);
     return;
   }
