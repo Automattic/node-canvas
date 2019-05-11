@@ -379,6 +379,19 @@ describe('Canvas', function () {
     assert.strictEqual(context.getImageData(0, 0, 1, 1).data.join(','), '0,0,0,0');
   });
 
+  it('Canvas#width= (resurfacing) doesn\'t crash when fillStyle is a pattern (#1357)', function (done) {
+    const canvas = createCanvas(100, 200);
+    const ctx = canvas.getContext('2d');
+
+    loadImage(`${__dirname}/fixtures/checkers.png`).then(img => {
+      const pattern = ctx.createPattern(img, 'repeat');
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, 300, 300);
+      canvas.width = 200; // cause canvas to resurface
+      done();
+    })
+  });
+
   it('Canvas#stride', function() {
     var canvas = createCanvas(24, 10);
     assert.ok(canvas.stride >= 24, 'canvas.stride is too short');
