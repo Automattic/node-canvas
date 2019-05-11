@@ -392,6 +392,11 @@ describe('Canvas', function () {
     })
   });
 
+  it('SVG Canvas#width changes don\'t crash (#1380)', function () {
+    const myCanvas = createCanvas(100, 100, 'svg')
+    myCanvas.width = 120;
+  });
+
   it('Canvas#stride', function() {
     var canvas = createCanvas(24, 10);
     assert.ok(canvas.stride >= 24, 'canvas.stride is too short');
