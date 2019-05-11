@@ -8,11 +8,13 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Allow larger buffers to be returned from `toBuffer('raw')`.
 ### Added
 ### Fixed
 * Fix crash when changing canvas width/height while `fillStyle` or `strokeStyle`
   was set to a `CanvasPattern` or `CanvasGradient` (#1357).
 * Fix crash when changing width/height of SVG canvases (#1380).
+* Fix crash when using `toBuffer('raw')` with large canvases (#1158).
 
 2.5.0
 ==================
