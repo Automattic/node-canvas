@@ -212,10 +212,10 @@ Context2d::~Context2d() {
 
 void Context2d::resetState(bool init) {
   if (!init) {
-    free(state->fillPattern);
-    free(state->strokePattern);
-    free(state->fillGradient);
-    free(state->strokeGradient);
+    cairo_pattern_destroy(state->fillPattern);
+    cairo_pattern_destroy(state->strokePattern);
+    cairo_pattern_destroy(state->fillGradient);
+    cairo_pattern_destroy(state->strokeGradient);
     pango_font_description_free(state->fontDescription);
   }
 
@@ -223,8 +223,10 @@ void Context2d::resetState(bool init) {
   state->shadowOffsetX = state->shadowOffsetY = 0;
   state->globalAlpha = 1;
   state->textAlignment = -1;
-  state->fillPattern = state->strokePattern = NULL;
-  state->fillGradient = state->strokeGradient = NULL;
+  state->fillPattern = nullptr;
+  state->strokePattern = nullptr;
+  state->fillGradient = nullptr;
+  state->strokeGradient = nullptr;
   state->textBaseline = TEXT_BASELINE_ALPHABETIC;
   rgba_t transparent = { 0, 0, 0, 1 };
   rgba_t transparent_black = { 0, 0, 0, 0 };

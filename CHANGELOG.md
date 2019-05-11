@@ -10,6 +10,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix crash when changing canvas width/height while `fillStyle` or `strokeStyle`
+  was set to a `CanvasPattern` or `CanvasGradient` (#1357).
 
 2.5.0
 ==================
