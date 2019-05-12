@@ -2523,24 +2523,25 @@ tests['clipped image'] = function(ctx, done) {
     }
 
     ctx.fillStyle = "#ffffff"
-    ctx.fill();
-    ctx.clip();
+    ctx.fill()
+    ctx.clip()
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    ctx.shadowBlur = 10
+    ctx.shadowColor = 'rgba(30,30,30,1)'
     ctx.rotate(-1.5708)
-    ctx.drawImage(img1, 0, x - size, size * 2, size * 2, 0, 0, size * 2 + 25, size * 2 + 15);
+    ctx.drawImage(img1, 0, x - size, size * 2, size * 2, 0, 0, size * 2 + 25, size * 2 + 15)
     ctx.restore()
 
-    ctx.globalCompositeOperation = 'xor';
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = 'rgba(30,30,30,1)';
-    ctx.beginPath();
+    ctx.globalCompositeOperation = 'xor'
+
+    ctx.beginPath()
     for (side = 0; side < 7; side++) {
-      ctx.lineTo(x + size * Math.cos(side * 2 * Math.PI / 6), y + size * Math.sin(side * 2 * Math.PI / 6));
+      ctx.lineTo(x + size * Math.cos(side * 2 * Math.PI / 6), y + size * Math.sin(side * 2 * Math.PI / 6))
     }
-    ctx.stroke();
-    ctx.globalCompositeOperation = 'destination-atop';
-    done();
+    ctx.stroke()
+    ctx.globalCompositeOperation = 'destination-atop'
+    done()
   }
   img1.src = imageSrc('clock.png')
 }
