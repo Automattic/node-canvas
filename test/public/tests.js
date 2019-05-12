@@ -2545,3 +2545,27 @@ tests['clipped image'] = function(ctx, done) {
   }
   img1.src = imageSrc('clock.png')
 }
+
+tests['gradient with low opacity'] = function(ctx) {
+  function rotate(x, y, a, ctx) {
+    ctx.resetTransform();
+    var cos = Math.cos(a);
+    var sin = Math.sin(a);
+    ctx.transform(cos, sin, -sin, cos, x, y);
+  }
+
+  var I = 100;
+
+  for (var i = 0; i < I; i++) {
+
+    // shifts coordinates and rotates
+    rotate(0 + i * 2, 0, 1, ctx);
+
+    var color = ctx.createLinearGradient(0, 0, 200, 200);
+    ctx.globalAlpha = 0.1;
+    color.addColorStop(0, 'rgba(244, 0, 0, 0.2)');
+    color.addColorStop(1, 'rgba(9, 200, 0, 0.2)');
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 200, 200);
+  }
+}
