@@ -46,7 +46,7 @@
     "util/",
     "types/index.d.ts"
   ],
-  "types": "types",
+  "types": "types/index.d.ts",
   "dependencies": {
     "nan": "^2.13.2",
     "node-pre-gyp": "^0.11.0",
