@@ -16,7 +16,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix crash when changing width/height of SVG canvases (#1380).
 * Fix crash when using `toBuffer('raw')` with large canvases (#1158).
 * Clarified meaning of byte ordering for `toBuffer('raw')` in readme. (#1416)
-* Fixed package.json Typings field (#1432)
+* Fix package.json Typings field to point to Declaration file (#1432)
 
 2.5.0
 ==================
