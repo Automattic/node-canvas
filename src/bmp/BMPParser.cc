@@ -127,6 +127,11 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   uint32_t rowPadding = (-w * bpp & 31) >> 3;
   uint32_t imgdSize = 0;
 
+  // Color palette data
+  uint8_t* paletteStart = 0;
+  uint32_t palColNum = 0;
+  uint32_t impCols = 0;
+
   if(dibSize == 40 || dibSize == 108){
     // Compression type
     compr = U4();
@@ -157,12 +162,11 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     skip(8);
 
     // Number of colors in the palette or 0 if no palette is present
-    auto palColNum = U4();
-    EU(palColNum, "non-empty color palette");
+    palColNum = U4();
 
     // Number of important colors used or 0 if all colors are important
-    auto impCols = U4();
-    EU(impCols, "non-zero important colors");
+    impCols = U4();
+    EU(palColNum != impCols, "important colors");
 
     // BITMAPV4HEADER has additional properties
     if(dibSize == 108){
@@ -177,13 +181,20 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
         skip(16);
       }
 
-      // Encure that the color space is LCS_WINDOWS_COLOR_SPACE
-      string colSpace = getStr(4, 1);
-      EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+      if(!palColNum){
+        // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE
+        string colSpace = getStr(4, 1);
+        EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+      }else{
+        skip(4);
+      }
 
       // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
       skip(48);
     }
+
+    if(palColNum)
+      paletteStart = ptr;
   }
 
   /**
@@ -223,7 +234,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   imgd = new (nothrow) uint8_t[buffLen];
   E(!imgd, "unable to allocate memory");
 
-  // Prepare color valus
+  // Prepare color values
   uint8_t color[4] = {0};
   uint8_t &red = color[0];
   uint8_t &green = color[1];
@@ -249,8 +260,19 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
             case 1:
               if(colOffset) ptr--;
               cval = (U1UC() >> (7 - colOffset)) & 1;
-              red = green = blue = cval ? 255 : 0;
-              alpha = 255;
+
+              if(palColNum){
+                uint8_t* entry = paletteStart + (cval << 2);
+                red = get<uint8_t>(entry);
+                green = get<uint8_t>(entry + 1);
+                blue = get<uint8_t>(entry + 2);
+                alpha = 255;
+                if(status == Status::ERROR) return;
+              }else{
+                red = green = blue = cval ? 255 : 0;
+                alpha = 255;
+              }
+
               colOffset = (colOffset + 1) & 7;
               break;
 
@@ -313,8 +335,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     skip(rowPadding);
   }
 
-  if(status == Status::ERROR)
-    return;
+  if(status == Status::ERROR) return;
 
   E(ptr - data != len, "extra data found at the end of file");
   status = Status::OK;
@@ -335,6 +356,13 @@ template <typename T, bool check> T Parser::get(){
     CHECK_OVERRUN(sizeof(T), T);
   T val = *(T*)ptr;
   ptr += sizeof(T);
+  return val;
+}
+
+template <typename T, bool check> T Parser::get(uint8_t* ptr){
+  if(check)
+    CHECK_OVERRUN(sizeof(T), T);
+  T val = *(T*)ptr;
   return val;
 }
 

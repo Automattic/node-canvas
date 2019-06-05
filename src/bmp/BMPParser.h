@@ -39,6 +39,7 @@ namespace BMPParser{
     std::string op = "";
 
     template <typename T, bool check=true> T get();
+    template <typename T, bool check=true> T get(uint8_t* ptr);
     std::string getStr(int len, bool reverse=false);
     void skip(int len);
 

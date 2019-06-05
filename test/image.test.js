@@ -406,6 +406,19 @@ describe('Image', function () {
       img.src = path.join(bmp_dir, 'negative-height.bmp');
     });
 
+    it('parses image with color palette', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'palette.bmp');
+    });
+
     it('catches BMP errors', function (done) {
       let img = new Image();
 
