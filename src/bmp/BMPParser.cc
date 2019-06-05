@@ -33,7 +33,7 @@ using namespace BMPParser;
   else if(col##Mask == 0xff000000u) col##Mask = 24; \
   else EU(1, #col " mask");
 
-#define CHECK_OVERRUN(size, type) \
+#define CHECK_OVERRUN(ptr, size, type) \
   if(ptr + (size) - data > len){ \
     setErr("unexpected end of file"); \
     return type(); \
@@ -128,7 +128,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   uint32_t imgdSize = 0;
 
   // Color palette data
-  uint8_t* paletteStart = 0;
+  uint8_t* paletteStart = nullptr;
   uint32_t palColNum = 0;
   uint32_t impCols = 0;
 
@@ -353,7 +353,7 @@ string Parser::getErrMsg() const{
 
 template <typename T, bool check> T Parser::get(){
   if(check)
-    CHECK_OVERRUN(sizeof(T), T);
+    CHECK_OVERRUN(ptr, sizeof(T), T);
   T val = *(T*)ptr;
   ptr += sizeof(T);
   return val;
@@ -361,13 +361,13 @@ template <typename T, bool check> T Parser::get(){
 
 template <typename T, bool check> T Parser::get(uint8_t* ptr){
   if(check)
-    CHECK_OVERRUN(sizeof(T), T);
+    CHECK_OVERRUN(ptr, sizeof(T), T);
   T val = *(T*)ptr;
   return val;
 }
 
 string Parser::getStr(int size, bool reverse){
-  CHECK_OVERRUN(size, string);
+  CHECK_OVERRUN(ptr, size, string);
   string val = "";
 
   while(size--){
@@ -379,7 +379,7 @@ string Parser::getStr(int size, bool reverse){
 }
 
 void Parser::skip(int size){
-  CHECK_OVERRUN(size, void);
+  CHECK_OVERRUN(ptr, size, void);
   ptr += size;
 }
 
