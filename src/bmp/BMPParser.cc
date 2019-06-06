@@ -158,28 +158,30 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     // Number of important colors used or 0 if all colors are important (generally ignored)
     skip(4);
 
-    // If BI_BITFIELDS are used, calculate masks, otherwise ignore them
-    if(compr == 3){
-      // Convert each mask to bit offset for faster shifting
-      calcMaskShift(redShift, redMask, redMultp);
-      calcMaskShift(greenShift, greenMask, greenMultp);
-      calcMaskShift(blueShift, blueMask, blueMultp);
-      skip(4);
-    }else{
-      skip(16);
-    }
-
-    if(infoHeader >= 4){
-      if(!palColNum){
-        // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE
-        string colSpace = getStr(4, 1);
-        EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+    if(infoHeader >= 2){
+      // If BI_BITFIELDS are used, calculate masks, otherwise ignore them
+      if(compr == 3){
+        // Convert each mask to bit offset for faster shifting
+        calcMaskShift(redShift, redMask, redMultp);
+        calcMaskShift(greenShift, greenMask, greenMultp);
+        calcMaskShift(blueShift, blueMask, blueMultp);
+        calcMaskShift(alphaShift, alphaMask, alphaMultp);
       }else{
-        skip(4);
+        skip(16);
       }
 
-      // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
-      skip(48);
+      if(infoHeader >= 4){
+        if(!palColNum){
+          // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE
+          string colSpace = getStr(4, 1);
+          EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+        }else{
+          skip(4);
+        }
+
+        // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
+        skip(48);
+      }
     }
 
     if(palColNum)
@@ -286,7 +288,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
           red = ((col >> redShift) & redMask) * redMultp + .5;
           green = ((col >> greenShift) & greenMask) * greenMultp + .5;
           blue = ((col >> blueShift) & blueMask) * blueMultp + .5;
-          alpha = 255;
+          alpha = alphaMask ? ((col >> alphaShift) & alphaMask) * alphaMultp + .5 : 255;
           break;
       }
 
