@@ -145,7 +145,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     auto isComprValid = compr == 0 || compr == 3;
     EX(!isComprValid, temp);
     
-    // Also ensure that BI_BITFIELDS appears only with BITMAPV4HEADER and 32-bit colors
+    // Also ensure that BI_BITFIELDS appears only with 16-bit or 32-bit color
     if(compr == 3)
       E(bpp != 16 && bpp != 32, "compression BI_BITFIELDS can be used only with 16-bit and 32-bit color depth");
 
@@ -175,14 +175,14 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
 
       if(infoHeader >= 4){
         if(!palColNum){
-          // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE
+          // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE or sRGB
           string colSpace = getStr(4, 1);
           EU(colSpace != "Win " && colSpace != "sRGB", "color space \"" + colSpace + "\"");
         }else{
           skip(4);
         }
 
-        // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE
+        // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE and sRGB
         skip(48);
       }
     }
@@ -191,10 +191,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
       paletteStart = ptr;
   }
 
-  /**
-   * Skip to the image data. There may be other chunks between,
-   * but they are optional.
-   */
+  // Skip to the image data (there may be other chunks between, but they are optional)
   E(ptr - data > imgdOffset, "image data overlaps with another structure");
   ptr = data + imgdOffset;
 
