@@ -406,7 +406,7 @@ describe('Image', function () {
       img.src = path.join(bmp_dir, 'negative-height.bmp');
     });
 
-    it('parses image with color palette', function (done) {
+    it('color palette', function (done) {
       let img = new Image();
 
       img.onload = () => {
@@ -417,6 +417,19 @@ describe('Image', function () {
 
       img.onerror = err => { throw err; };
       img.src = path.join(bmp_dir, 'palette.bmp');
+    });
+
+    it('V3 header', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 256);
+        assert.strictEqual(img.height, 192);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'v3-header.bmp');
     });
 
     it('catches BMP errors', function (done) {
