@@ -86,11 +86,14 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   temp = "DIB header";
   EU(dibSize == 64, temp + " \"OS22XBITMAPHEADER\"");
   EU(dibSize == 16, temp + " \"OS22XBITMAPHEADER\"");
-  EU(dibSize == 124, temp + " \"BITMAPV5HEADER\"");
 
-  uint32_t infoHeader = dibSize == 40 ? 1 : dibSize == 52 ? 2 : dibSize == 56 ? 3 : dibSize == 108 ? 4 : 0;
+  uint32_t infoHeader = dibSize == 40 ? 1 :
+                        dibSize == 52 ? 2 :
+                        dibSize == 56 ? 3 :
+                        dibSize == 108 ? 4 :
+                        dibSize == 124 ? 5 : 0;
 
-  // BITMAPCOREHEADER, BITMAP*INFOHEADER, BITMAPV4HEADER
+  // BITMAPCOREHEADER, BITMAP*INFOHEADER, BITMAP*HEADER
   auto isDibValid = dibSize == 12 || infoHeader;
   EX(!isDibValid, temp);
 
@@ -174,7 +177,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
         if(!palColNum){
           // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE
           string colSpace = getStr(4, 1);
-          EU(colSpace != "Win ", "color space \"" + colSpace + "\"");
+          EU(colSpace != "Win " && colSpace != "sRGB", "color space \"" + colSpace + "\"");
         }else{
           skip(4);
         }

@@ -432,6 +432,19 @@ describe('Image', function () {
       img.src = path.join(bmp_dir, 'v3-header.bmp');
     });
 
+    it('V5 header', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 256);
+        assert.strictEqual(img.height, 192);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'v5-header.bmp');
+    });
+
     it('catches BMP errors', function (done) {
       let img = new Image();
 
