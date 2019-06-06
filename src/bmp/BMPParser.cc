@@ -116,7 +116,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
 
   // Bits per pixel (color depth)
   auto bpp = U2();
-  auto isBppValid = bpp == 1 || bpp == 16 || bpp == 24 || bpp == 32;
+  auto isBppValid = bpp == 1 || bpp == 4 || bpp == 8 || bpp == 16 || bpp == 24 || bpp == 32;
   EU(!isBppValid, "color depth");
 
   // Calculate image data size and padding
@@ -257,9 +257,9 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
 
               if(palColNum){
                 uint8_t* entry = paletteStart + (cval << 2);
-                red = get<uint8_t>(entry);
+                blue = get<uint8_t>(entry);
                 green = get<uint8_t>(entry + 1);
-                blue = get<uint8_t>(entry + 2);
+                red = get<uint8_t>(entry + 2);
                 alpha = 255;
                 if(status == Status::ERROR) return;
               }else{
@@ -268,6 +268,41 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
               }
 
               colOffset = (colOffset + 1) & 7;
+              break;
+
+            case 4:
+              if(colOffset) ptr--;
+              cval = (U1UC() >> (4 - colOffset)) & 15;
+
+              if(palColNum){
+                uint8_t* entry = paletteStart + (cval << 2);
+                blue = get<uint8_t>(entry);
+                green = get<uint8_t>(entry + 1);
+                red = get<uint8_t>(entry + 2);
+                alpha = 255;
+                if(status == Status::ERROR) return;
+              }else{
+                red = green = blue = cval << 4;
+                alpha = 255;
+              }
+
+              colOffset = (colOffset + 4) & 7;
+              break;
+
+            case 8:
+              cval = U1UC();
+
+              if(palColNum){
+                uint8_t* entry = paletteStart + (cval << 2);
+                blue = get<uint8_t>(entry);
+                green = get<uint8_t>(entry + 1);
+                red = get<uint8_t>(entry + 2);
+                alpha = 255;
+                if(status == Status::ERROR) return;
+              }else{
+                red = green = blue = cval;
+                alpha = 255;
+              }
               break;
 
             case 24:
