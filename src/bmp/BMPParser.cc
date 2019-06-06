@@ -60,8 +60,8 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   EU(fhSig == "PT", temp + " \"PT\"");
   EX(fhSig != "BM", temp); // BM
 
-  // Length of the file should be equal to `len`
-  E(U4() != static_cast<uint32_t>(len), "inconsistent file size");
+  // Length of the file should not be larger than `len`
+  E(U4() > static_cast<uint32_t>(len), "inconsistent file size");
 
   // Skip unused values
   skip(4);
@@ -260,13 +260,12 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
                 blue = get<uint8_t>(entry);
                 green = get<uint8_t>(entry + 1);
                 red = get<uint8_t>(entry + 2);
-                alpha = 255;
                 if(status == Status::ERROR) return;
               }else{
                 red = green = blue = cval ? 255 : 0;
-                alpha = 255;
               }
 
+              alpha = 255;
               colOffset = (colOffset + 1) & 7;
               break;
 
@@ -279,13 +278,12 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
                 blue = get<uint8_t>(entry);
                 green = get<uint8_t>(entry + 1);
                 red = get<uint8_t>(entry + 2);
-                alpha = 255;
                 if(status == Status::ERROR) return;
               }else{
                 red = green = blue = cval << 4;
-                alpha = 255;
               }
 
+              alpha = 255;
               colOffset = (colOffset + 4) & 7;
               break;
 
@@ -297,12 +295,12 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
                 blue = get<uint8_t>(entry);
                 green = get<uint8_t>(entry + 1);
                 red = get<uint8_t>(entry + 2);
-                alpha = 255;
                 if(status == Status::ERROR) return;
               }else{
                 red = green = blue = cval;
-                alpha = 255;
               }
+
+              alpha = 255;
               break;
 
             case 24:
@@ -425,7 +423,7 @@ void Parser::calcMaskShift(uint32_t& shift, uint32_t& mask, double& multp){
 
   E(mask & mask + 1, "invalid color mask");
 
-  multp = 256. / (mask + 1);
+  multp = 255. / mask;
 }
 
 void Parser::setOp(string val){
