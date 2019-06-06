@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Allow larger buffers to be returned from `toBuffer('raw')`.
 ### Added
+* Support for various BMP headers and color depths (#1435)
 ### Fixed
 * Fix crash when changing canvas width/height while `fillStyle` or `strokeStyle`
   was set to a `CanvasPattern` or `CanvasGradient` (#1357).
