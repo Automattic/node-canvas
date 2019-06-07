@@ -26,7 +26,7 @@ using namespace BMPParser;
 #define U4UC() get<uint32_t, false>()
 
 #define CHECK_OVERRUN(ptr, size, type) \
-  if(ptr + (size) - data > len){ \
+  if((ptr) + (size) - data > len){ \
     setErr("unexpected end of file"); \
     return type(); \
   }
@@ -145,11 +145,11 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     auto isComprValid = compr == 0 || compr == 3;
     EX(!isComprValid, temp);
 
+    // Uncompressed 16-bit color is not supported
     EU(compr == 0 && bpp == 16, "uncompressed 16-bit color");
 
-    // Also ensure that BI_BITFIELDS appears only with 16-bit or 32-bit color
-    if(compr == 3)
-      E(bpp != 16 && bpp != 32, "compression BI_BITFIELDS can be used only with 16-bit and 32-bit color depth");
+    // Ensure that BI_BITFIELDS appears only with 16-bit or 32-bit color
+    E(compr == 3 && !(bpp == 16 || bpp == 32), "compression BI_BITFIELDS can be used only with 16-bit and 32-bit color depth");
 
     // Size of the image data
     imgdSize = U4();
@@ -159,6 +159,8 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
 
     // Number of colors in the palette or 0 if no palette is present
     palColNum = U4();
+    EU(palColNum && bpp > 8, "color palette and bit depth combination");
+    if(palColNum) paletteStart = data + dibSize + 14;
 
     // Number of important colors used or 0 if all colors are important (generally ignored)
     skip(4);
@@ -166,33 +168,21 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     if(infoHeader >= 2){
       // If BI_BITFIELDS are used, calculate masks, otherwise ignore them
       if(compr == 3){
-        // Convert each mask to bit offset for faster shifting
         calcMaskShift(redShift, redMask, redMultp);
         calcMaskShift(greenShift, greenMask, greenMultp);
         calcMaskShift(blueShift, blueMask, blueMultp);
         if(infoHeader >= 3) calcMaskShift(alphaShift, alphaMask, alphaMultp);
-        else skip(4);
         if(status == Status::ERROR) return;
       }else{
         skip(16);
       }
 
-      if(infoHeader >= 4){
-        if(!palColNum){
-          // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE or sRGB
-          string colSpace = getStr(4, 1);
-          EU(colSpace != "Win " && colSpace != "sRGB", "color space \"" + colSpace + "\"");
-        }else{
-          skip(4);
-        }
-
-        // The rest 48 bytes are ignored for LCS_WINDOWS_COLOR_SPACE and sRGB
-        skip(48);
+      // Ensure that the color space is LCS_WINDOWS_COLOR_SPACE or sRGB
+      if(infoHeader >= 4 && !palColNum){
+        string colSpace = getStr(4, 1);
+        EU(colSpace != "Win " && colSpace != "sRGB", "color space \"" + colSpace + "\"");
       }
     }
-
-    if(palColNum)
-      paletteStart = ptr;
   }
 
   // Skip to the image data (there may be other chunks between, but they are optional)
