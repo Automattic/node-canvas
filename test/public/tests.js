@@ -2556,7 +2556,7 @@ tests['gradient with low opacity'] = function(ctx) {
 
   for (let i = 0; i < 100; i++) {
     // shifts coordinates and rotates
-    ctx.rotate(0 + i * 2, 0, 1)
+    rotate(0 + i * 2, 0, 1, ctx)
 
     let color = ctx.createLinearGradient(0, 0, 200, 200)
     ctx.globalAlpha = 0.1
