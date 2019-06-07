@@ -387,10 +387,10 @@ template <typename T, bool check> inline T Parser::get(){
   return val;
 }
 
-template <typename T, bool check> inline T Parser::get(uint8_t* ptr){
+template <typename T, bool check> inline T Parser::get(uint8_t* pointer){
   if(check)
-    CHECK_OVERRUN(ptr, sizeof(T), T);
-  T val = *(T*)ptr;
+    CHECK_OVERRUN(pointer, sizeof(T), T);
+  T val = *(T*)pointer;
   return val;
 }
 
