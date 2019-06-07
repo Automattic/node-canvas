@@ -38,10 +38,10 @@ namespace BMPParser{
     std::string err = "";
     std::string op = "";
 
-    template <typename T, bool check=true> T get();
-    template <typename T, bool check=true> T get(uint8_t* ptr);
+    template <typename T, bool check=true> inline T get();
+    template <typename T, bool check=true> inline T get(uint8_t* ptr);
     std::string getStr(int len, bool reverse=false);
-    void skip(int len);
+    inline void skip(int len);
     void calcMaskShift(uint32_t& shift, uint32_t& mask, double& multp);
 
     void setOp(std::string val);

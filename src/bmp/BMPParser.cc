@@ -144,7 +144,9 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     // BI_RGB and BI_BITFIELDS
     auto isComprValid = compr == 0 || compr == 3;
     EX(!isComprValid, temp);
-    
+
+    EU(compr == 0 && bpp == 16, "uncompressed 16-bit color");
+
     // Also ensure that BI_BITFIELDS appears only with 16-bit or 32-bit color
     if(compr == 3)
       E(bpp != 16 && bpp != 32, "compression BI_BITFIELDS can be used only with 16-bit and 32-bit color depth");
@@ -168,7 +170,9 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
         calcMaskShift(redShift, redMask, redMultp);
         calcMaskShift(greenShift, greenMask, greenMultp);
         calcMaskShift(blueShift, blueMask, blueMultp);
-        calcMaskShift(alphaShift, alphaMask, alphaMultp);
+        if(infoHeader >= 3) calcMaskShift(alphaShift, alphaMask, alphaMultp);
+        else skip(4);
+        if(status == Status::ERROR) return;
       }else{
         skip(16);
       }
@@ -375,7 +379,7 @@ string Parser::getErrMsg() const{
   return "Error while processing " + getOp() + " - " + err;
 }
 
-template <typename T, bool check> T Parser::get(){
+template <typename T, bool check> inline T Parser::get(){
   if(check)
     CHECK_OVERRUN(ptr, sizeof(T), T);
   T val = *(T*)ptr;
@@ -383,7 +387,7 @@ template <typename T, bool check> T Parser::get(){
   return val;
 }
 
-template <typename T, bool check> T Parser::get(uint8_t* ptr){
+template <typename T, bool check> inline T Parser::get(uint8_t* ptr){
   if(check)
     CHECK_OVERRUN(ptr, sizeof(T), T);
   T val = *(T*)ptr;
@@ -402,7 +406,7 @@ string Parser::getStr(int size, bool reverse){
   return val;
 }
 
-void Parser::skip(int size){
+inline void Parser::skip(int size){
   CHECK_OVERRUN(ptr, size, void);
   ptr += size;
 }
@@ -418,7 +422,7 @@ void Parser::calcMaskShift(uint32_t& shift, uint32_t& mask, double& multp){
     shift++;
   }
 
-  E(mask & mask + 1, "invalid color mask");
+  E(mask & (mask + 1), "invalid color mask");
 
   multp = 255. / mask;
 }
