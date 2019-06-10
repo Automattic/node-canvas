@@ -18,6 +18,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix crash when using `toBuffer('raw')` with large canvases (#1158).
 * Clarified meaning of byte ordering for `toBuffer('raw')` in readme. (#1416)
 * Fix package.json Typings field to point to Declaration file (#1432)
+* Properly check return value from `Set` and `Call`. (#1415)
+* Use `Get` version from `Nan` instead of `v8`. (#1415)
 
 2.5.0
 ==================

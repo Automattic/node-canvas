@@ -14,6 +14,5 @@ void Backends::Initialize(Local<Object> target) {
   PdfBackend::Initialize(obj);
   SvgBackend::Initialize(obj);
 
-  Local<Context> v8ctx = Nan::GetCurrentContext();
-  target->Set(v8ctx, Nan::New<String>("Backends").ToLocalChecked(), obj);
+  Nan::Set(target, Nan::New<String>("Backends").ToLocalChecked(), obj).Check();
 }
