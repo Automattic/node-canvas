@@ -323,6 +323,32 @@ describe('Image', function () {
       img.src = path.join(bmp_dir, '1-bit.bmp');
     });
 
+    it('parses 4-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, '4-bit.bmp');
+    });
+
+    it('parses 8-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, '8-bit.bmp');
+    });
+
     it('parses 24-bit image', function (done) {
       let img = new Image();
 
@@ -404,6 +430,45 @@ describe('Image', function () {
 
       img.onerror = err => { throw err; };
       img.src = path.join(bmp_dir, 'negative-height.bmp');
+    });
+
+    it('color palette', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'palette.bmp');
+    });
+
+    it('V3 header', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 256);
+        assert.strictEqual(img.height, 192);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'v3-header.bmp');
+    });
+
+    it('V5 header', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 256);
+        assert.strictEqual(img.height, 192);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'v5-header.bmp');
     });
 
     it('catches BMP errors', function (done) {
