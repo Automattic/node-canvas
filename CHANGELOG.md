@@ -8,6 +8,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+### Added
+### Fixed
+
+2.6.0
+==================
+### Changed
 * Allow larger buffers to be returned from `toBuffer('raw')`.
 ### Added
 * Support for various BMP headers and color depths (#1435)
