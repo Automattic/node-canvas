@@ -948,6 +948,23 @@ describe('Canvas', function () {
     });
   });
 
+  it('Context2d#fillText()', function () {
+    [
+      [['A', 10, 10], true],
+      [['A', 10, 10, undefined], true],
+      [['A', 10, 10, NaN], false],
+    ].forEach(([args, shouldDraw]) => {
+      const canvas = createCanvas(20, 20)
+      const ctx = canvas.getContext('2d')
+
+      ctx.textBaseline = 'middle'
+      ctx.textAlign = 'center'
+      ctx.fillText(...args)
+
+      assert.strictEqual(ctx.getImageData(0, 0, 20, 20).data.some(a => a), shouldDraw)
+    })
+  })
+
   it('Context2d#currentTransform', function () {
     var canvas = createCanvas(20, 20);
     var ctx = canvas.getContext('2d');
