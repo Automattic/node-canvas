@@ -2340,7 +2340,7 @@ paintText(const Nan::FunctionCallbackInfo<Value> &info, bool stroke) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
 
   if (argsNum == 3 && info[3]->IsUndefined())
-    argsNum--;
+    argsNum = 2;
 
   double args[3];
   if(!checkArgs(info, args, argsNum, 1))
