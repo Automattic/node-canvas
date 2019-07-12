@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Ignore `maxWidth` in `fillText` and `strokeText` if it is undefined
 
 2.6.0
 ==================
