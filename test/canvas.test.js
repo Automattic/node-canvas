@@ -17,6 +17,9 @@ const os = require('os')
 const Readable = require('stream').Readable
 
 describe('Canvas', function () {
+  // Run with --expose-gc and uncomment this line to help find memory problems:
+  // afterEach(gc);
+
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
     const Canvas = require('../').Canvas;
     var c = new Canvas(10, 10);
