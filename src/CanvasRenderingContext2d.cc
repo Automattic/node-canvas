@@ -212,10 +212,6 @@ Context2d::~Context2d() {
 
 void Context2d::resetState(bool init) {
   if (!init) {
-    cairo_pattern_destroy(state->fillPattern);
-    cairo_pattern_destroy(state->strokePattern);
-    cairo_pattern_destroy(state->fillGradient);
-    cairo_pattern_destroy(state->strokeGradient);
     pango_font_description_free(state->fontDescription);
   }
 
@@ -1833,8 +1829,6 @@ NAN_SETTER(Context2d::SetFillStyle) {
     } else if(Nan::New(Pattern::constructor)->HasInstance(obj)){
       Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
       context->state->fillPattern = pattern->pattern();
-    } else {
-      return Nan::ThrowTypeError("Gradient or Pattern expected");
     }
   } else {
     MaybeLocal<String> mstr = Nan::To<String>(value);
