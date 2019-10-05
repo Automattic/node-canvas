@@ -11,7 +11,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Ignore `maxWidth` in `fillText` and `strokeText` if it is undefined
-* Fix crash (assertion failure) in Node 12.x when patterns or gradients are used
+* Fix crash (assertion failure) in Node.js 12.x when patterns or gradients are used
+* Fix crash (check failure) in Node.js 12.x when using RGB16_565 format. (The
+  underlying arraybuffer was incorrectly sized.)
 
 2.6.0
 ==================
