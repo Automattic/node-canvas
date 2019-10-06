@@ -1071,7 +1071,7 @@ describe('Canvas', function () {
       var imageData = ctx.getImageData(0,0,3,6);
       assert.equal(3, imageData.width);
       assert.equal(6, imageData.height);
-      assert.equal(3 * 6 * 2, imageData.data.length);
+      assert.equal(3 * 6, imageData.data.length);
 
       assert.equal((255 & 0b11111) << 11, imageData.data[0]);
       assert.equal((255 & 0b111111) << 5, imageData.data[1]);
@@ -1143,7 +1143,7 @@ describe('Canvas', function () {
       var imageData = ctx.getImageData(0,0,2,1);
       assert.equal(2, imageData.width);
       assert.equal(1, imageData.height);
-      assert.equal(2 * 1 * 2, imageData.data.length);
+      assert.equal(2 * 1, imageData.data.length);
 
       assert.equal((255 & 0b11111) << 11, imageData.data[0]);
       assert.equal((255 & 0b111111) << 5, imageData.data[1]);

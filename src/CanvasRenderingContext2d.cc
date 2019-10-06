@@ -1019,7 +1019,7 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<TypedArray> dataArray;
 
   if (canvas->backend()->getFormat() == CAIRO_FORMAT_RGB16_565) {
-    dataArray = Uint16Array::New(buffer, 0, size);
+    dataArray = Uint16Array::New(buffer, 0, size >> 1);
   } else {
     dataArray = Uint8ClampedArray::New(buffer, 0, size);
   }
