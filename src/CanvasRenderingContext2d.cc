@@ -520,6 +520,16 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
     cairo_translate(shadow_context, pad-x1, pad-y1);
     cairo_transform(shadow_context, &path_matrix);
 
+    // set lineCap lineJoin lineDash
+    cairo_set_line_cap(shadow_context, cairo_get_line_cap(_context));
+    cairo_set_line_join(shadow_context, cairo_get_line_join(_context));
+
+    double offset;
+    int dashes = cairo_get_dash_count(_context);
+    std::vector<double> a(dashes);
+    cairo_get_dash(_context, a.data(), &offset);
+    cairo_set_dash(shadow_context, a.data(), dashes, offset);
+
     // draw the path and blur
     cairo_set_line_width(shadow_context, cairo_get_line_width(_context));
     cairo_new_path(shadow_context);
