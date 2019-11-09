@@ -18,6 +18,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix crash (assertion failure) in Node.js 12.x when patterns or gradients are used
 * Fix crash (check failure) in Node.js 12.x when using RGB16_565 format. (The
   underlying arraybuffer was incorrectly sized.)
+* Fix rendering error when applying shadow width line style (lineCap lineJoin lineDash)
 
 2.6.0
 ==================
