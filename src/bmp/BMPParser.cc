@@ -1,8 +1,5 @@
 #include "BMPParser.h"
 
-#include <iostream>
-#define log(a) cout << (a) << endl;
-
 #include <cassert>
 
 using namespace std;
