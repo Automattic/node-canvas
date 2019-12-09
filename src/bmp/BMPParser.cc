@@ -145,9 +145,6 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     auto isComprValid = compr == 0 || compr == 3;
     EX(!isComprValid, temp);
 
-    // Uncompressed 16-bit color is not supported
-    EU(compr == 0 && bpp == 16, "uncompressed 16-bit color");
-
     // Ensure that BI_BITFIELDS appears only with 16-bit or 32-bit color
     E(compr == 3 && !(bpp == 16 || bpp == 32), "compression BI_BITFIELDS can be used only with 16-bit and 32-bit color depth");
 
@@ -197,7 +194,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     E(compr != 0, "missing image data size");
     imgdSize = expectedImgdSize;
   }else{
-    E(imgdSize != expectedImgdSize, "inconsistent image data size");
+    E(imgdSize < expectedImgdSize, "invalid image data size");
   }
 
   // Ensure that all image data is present
@@ -234,6 +231,7 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
     // Use in-byte offset for bpp < 8
     uint8_t colOffset = 0;
     uint8_t cval = 0;
+    uint32_t val = 0;
 
     for(int x = 0; x != w; x++){
       // Index in the output image data
@@ -294,6 +292,16 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
               alpha = 255;
               break;
 
+            case 16:
+              // RGB555
+              val = U1UC();
+              val |= U1UC() << 8;
+              red = (val >> 10) << 3;
+              green = (val >> 5) << 3;
+              blue = val << 3;
+              alpha = 255;
+              break;
+
             case 24:
               blue = U1UC();
               green = U1UC();
@@ -305,7 +313,13 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
               blue = U1UC();
               green = U1UC();
               red = U1UC();
-              alpha = U1UC();
+
+              if(infoHeader >= 3){
+                alpha = U1UC();
+              }else{
+                alpha = 255;
+                skip(1);
+              }
               break;
           }
           break;
@@ -354,8 +368,6 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
   }
 
   if(status == Status::ERROR) return;
-
-  E(ptr - data != len, "extra data found at the end of file");
   status = Status::OK;
 };
 
