@@ -293,12 +293,12 @@ void Parser::parse(uint8_t *buf, int bufSize, uint8_t *format){
               break;
 
             case 16:
-              // Format G5G4G3B7B6B5B4B3_R7R6R5R4R3G7G6
-              val = U1UC() << 8;
-              val |= U1UC();
-              blue = (val >> 8) << 3;
-              green = ((val >> 13) | (val << 3)) << 3;
-              red = (val >> 2) << 3;
+              // RGB555
+              val = U1UC();
+              val |= U1UC() << 8;
+              red = (val >> 10) << 3;
+              green = (val >> 5) << 3;
+              blue = val << 3;
               alpha = 255;
               break;
 
