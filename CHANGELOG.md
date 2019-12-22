@@ -9,7 +9,6 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
-* Support Node.js v13
 ### Fixed
 
 2.6.1
