@@ -62,7 +62,7 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 })
 ```
 
-## Upgrading from 2.x
+## Upgrading from 1.x to 2.x
 
 See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
 
