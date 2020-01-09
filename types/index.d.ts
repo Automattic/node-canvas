@@ -78,7 +78,7 @@ export class Canvas {
 	/** Constant used in PNG encoding methods. */
 	readonly PNG_FILTER_PAETH: number
 
-	constructor(width: number, height: number, type?: 'pdf'|'svg')
+	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 
 	getContext(contextId: '2d', contextAttributes?: NodeCanvasRenderingContext2DSettings): NodeCanvasRenderingContext2D
 
@@ -126,12 +126,6 @@ export class Canvas {
 	toDataURL(mimeType: 'image/jpeg', config: JpegConfig, cb: (err: Error|null, result: string) => void): void
 	/** _Non-standard._ */
 	toDataURL(mimeType: 'image/jpeg', quality: number, cb: (err: Error|null, result: string) => void): void
-
-	/**
-	 * For PDF canvases, adds another page. If width and/or height are omitted,
-	 * the canvas's initial size is used.
-	 */
-	addPage(width?: number, height?: number): void
 }
 
 declare class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
@@ -212,6 +206,12 @@ declare class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
 	createPattern(...args: any[]): NodeCanvasCanvasPattern
 	createLinearGradient(x0: number, y0: number, x1: number, y1: number): NodeCanvasCanvasGradient;
 	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): NodeCanvasCanvasGradient;
+
+	/**
+	 * For PDF canvases, adds another page. If width and/or height are omitted,
+	 * the canvas's initial size is used.
+	 */
+	addPage(width?: number, height?: number): void
 }
 export { NodeCanvasRenderingContext2D as CanvasRenderingContext2D }
 

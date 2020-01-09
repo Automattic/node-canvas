@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Fix BMP issues. (#1497)
+* Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)
 
 2.6.1
 ==================
