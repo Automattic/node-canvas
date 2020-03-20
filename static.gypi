@@ -42,6 +42,16 @@
             'static/libpng.gypi:png',
             'static/pango.gypi:pango'
         ],
-        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF']
+        'defines': ['HAVE_FREETYPE', 'HAVE_JPEG', 'HAVE_GIF'],
+        'cflags!': ['-fno-exceptions'],
+        'cflags_cc!': ['-fno-exceptions'],
+        'conditions':
+        [
+            ['OS=="mac"', {
+                'xcode_settings': {
+                    'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+                }
+            }]
+        ]
     }]
 }

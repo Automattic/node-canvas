@@ -10,7 +10,8 @@ var SYSTEM_PATHS = [
   '/usr/lib/x86_64-linux-gnu',
   '/usr/lib/i386-linux-gnu',
   '/usr/lib/arm-linux-gnueabihf',
-  '/usr/lib/arm-linux-gnueabi'
+  '/usr/lib/arm-linux-gnueabi',
+  '/usr/lib/aarch64-linux-gnu'
 ]
 
 function _hasQuery (query) {

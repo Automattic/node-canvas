@@ -84,6 +84,12 @@ describe('Image', function () {
     })
   })
 
+  it('detects invalid PNG', function (done) {
+    const img = new Image()
+    img.onerror = () => done()
+    img.src = Buffer.from('89504E470D', 'hex')
+  })
+
   it('loads SVG data URL base64', function () {
     const base64Enc = fs.readFileSync(svg_tree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
@@ -317,6 +323,21 @@ describe('Image', function () {
       img.src = path.join(bmp_dir, '1-bit.bmp')
     })
 
+    it('parses 4-bit image', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, '4-bit.bmp');
+    });
+
+    it('parses 8-bit image');
+
     it('parses 24-bit image', function (done) {
       let img = new Image()
 
@@ -399,6 +420,34 @@ describe('Image', function () {
       img.onerror = err => { throw err }
       img.src = path.join(bmp_dir, 'negative-height.bmp')
     })
+
+    it('color palette', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 32);
+        assert.strictEqual(img.height, 32);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'palette.bmp');
+    });
+
+    it('V3 header', function (done) {
+      let img = new Image();
+
+      img.onload = () => {
+        assert.strictEqual(img.width, 256);
+        assert.strictEqual(img.height, 192);
+        done();
+      };
+
+      img.onerror = err => { throw err; };
+      img.src = path.join(bmp_dir, 'v3-header.bmp');
+    });
+
+    it('V5 header');
 
     it('catches BMP errors', function (done) {
       let img = new Image()

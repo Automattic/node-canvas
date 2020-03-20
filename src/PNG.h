@@ -1,13 +1,12 @@
-#ifndef _CANVAS_PNG_H
-#define _CANVAS_PNG_H
+#pragma once
 
+#include <cairo.h>
+#include "closure.h"
+#include <cmath> // round
 #include <cstdlib>
 #include <cstring>
 #include <png.h>
 #include <pngconf.h>
-#include <cairo.h>
-#include <cmath> // round
-#include "closure.h"
 
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)
 #define likely(expr) (__builtin_expect (!!(expr), 1))
@@ -291,4 +290,3 @@ static cairo_status_t canvas_write_to_png_stream(cairo_surface_t *surface, cairo
 
     return canvas_write_png(surface, canvas_stream_write_func, &png_closure);
 }
-#endif

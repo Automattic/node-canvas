@@ -1,13 +1,11 @@
-
-//
-// Pattern.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
+
+#include "CanvasPattern.h"
 
 #include "Canvas.h"
 #include "Image.h"
-#include "CanvasPattern.h"
+
+using namespace v8;
 
 const cairo_user_data_key_t *pattern_repeat_key;
 
@@ -31,7 +29,10 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
 
   // Prototype
-  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target,
+           Nan::New("CanvasPattern").ToLocalChecked(),
+           ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*

@@ -106,8 +106,7 @@
                                     'ExceptionHandling': 1,
                                     'DisableSpecificWarnings':
                                     [
-                                        4100, 4127, 4201, 4244, 4267, 4506,
-                                        4611, 4714, 4512
+                                        4100, 4611
                                     ]
                                 }
                             }
@@ -122,8 +121,7 @@
                                     'ExceptionHandling': 1,
                                     'DisableSpecificWarnings':
                                     [
-                                        4100, 4127, 4201, 4244, 4267, 4506,
-                                        4611, 4714, 4512
+                                        4100, 4611
                                     ]
                                 }
                             }
@@ -144,7 +142,14 @@
                         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
                         '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
                         '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
-                    ]
+                    ],
+                    'cflags!': ['-fno-exceptions'],
+                    'cflags_cc!': ['-fno-exceptions']
+                }],
+                ['OS=="mac"', {
+                    'xcode_settings': {
+                        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+                    }
                 }],
 
                 ['with_freetype=="true"', {

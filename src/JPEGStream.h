@@ -1,32 +1,20 @@
-
-//
-// JPEGStream.h
-//
-
-#ifndef __NODE_JPEG_STREAM_H__
-#define __NODE_JPEG_STREAM_H__
+#pragma once
 
 #include "closure.h"
-#include "Canvas.h"
 #include <jpeglib.h>
 #include <jerror.h>
-
-#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
-// jpeg_mem_dest:
-#error("libjpeg-turbo v1.3 or later, or libjpeg v8 or later is required")
-#endif
 
 /*
  * Expanded data destination object for closure output,
  * inspired by IJG's jdatadst.c
  */
 
-typedef struct {
-  struct jpeg_destination_mgr pub;
+struct closure_destination_mgr {
+  jpeg_destination_mgr pub;
   JpegClosure* closure;
   JOCTET *buffer;
   int bufsize;
-} closure_destination_mgr;
+};
 
 void
 init_closure_destination(j_compress_ptr cinfo){
@@ -39,14 +27,14 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Nan::AsyncResource async("canvas:empty_closure_output_buffer");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
-  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
+  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
 
   // emit "data"
-  Local<Value> argv[2] = {
+  v8::Local<v8::Value> argv[2] = {
       Nan::Null()
     , buf
   };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof argv / sizeof *argv, argv);
+  dest->closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
 
   dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
@@ -61,22 +49,20 @@ term_closure_destination(j_compress_ptr cinfo){
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
 
   /* emit remaining data */
-  Local<Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer).ToLocalChecked();
+  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer).ToLocalChecked();
 
-  Local<Value> data_argv[2] = {
+  v8::Local<v8::Value> data_argv[2] = {
       Nan::Null()
     , buf
   };
-
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof data_argv / sizeof *data_argv, data_argv);
+  dest->closure->cb.Call(sizeof data_argv / sizeof *data_argv, data_argv, &async);
 
   // emit "end"
-  Local<Value> end_argv[2] = {
+  v8::Local<v8::Value> end_argv[2] = {
       Nan::Null()
     , Nan::Null()
   };
-
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), dest->closure->fn, sizeof end_argv / sizeof *end_argv, end_argv);
+  dest->closure->cb.Call(sizeof end_argv / sizeof *end_argv, end_argv, &async);
 }
 
 void
@@ -149,8 +135,8 @@ void encode_jpeg(jpeg_compress_struct cinfo, cairo_surface_t *surface, int quali
 
 void
 write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure) {
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
+  jpeg_compress_struct cinfo;
+  jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
   jpeg_closure_dest(&cinfo, closure, bufsize);
@@ -164,13 +150,13 @@ write_to_jpeg_stream(cairo_surface_t *surface, int bufsize, JpegClosure* closure
 }
 
 void
-write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure, unsigned char** outbuff, uint32_t* outsize) {
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
+write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure) {
+  jpeg_compress_struct cinfo;
+  jpeg_error_mgr jerr;
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
-  unsigned long ulOutsize;
-  jpeg_mem_dest(&cinfo, outbuff, &ulOutsize);
+  cinfo.client_data = closure;
+  cinfo.dest = closure->jpeg_dest_mgr;
   encode_jpeg(
     cinfo,
     surface,
@@ -178,7 +164,4 @@ write_to_jpeg_buffer(cairo_surface_t* surface, JpegClosure* closure, unsigned ch
     closure->progressive,
     closure->chromaSubsampling,
     closure->chromaSubsampling);
-  *outsize = static_cast<uint32_t>(ulOutsize);
 }
-
-#endif
