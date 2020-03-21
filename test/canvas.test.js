@@ -256,9 +256,9 @@ describe('Canvas', function () {
     assert.equal(canvas.type, 'pdf');
     var canvas = createCanvas(10, 10, 'svg');
     assert.equal(canvas.type, 'svg');
-    var canvas = createCanvas(10, 10, 'hey');
-    assert.equal(canvas.type, 'image');
-  });
+
+    assert.throws(function () { createCanvas(10, 10, 'hey'); }, /RangeError/);
+  })
 
   it('Canvas#getContext("2d")', function () {
     var canvas = createCanvas(200, 300)
