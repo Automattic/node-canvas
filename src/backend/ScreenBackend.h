@@ -3,15 +3,20 @@
 #include "Backend.h"
 
 
-class Canvas;
+using namespace v8;
+
 
 class ScreenBackend : public Backend
 {
+  friend class WaitVSync;
+
   private:
     virtual void swapBuffers(){};
+    virtual void waitVSync(){};
 
     static NAN_METHOD(swapBuffers);
+    static NAN_METHOD(waitVSync);
 
   protected:
-    static void Initialize(v8::Local<v8::FunctionTemplate> ctor);
+    static void Initialize(Local<FunctionTemplate> ctor);
 };

@@ -2,29 +2,6 @@
 #include <string>
 
 
-using Nan::AsyncQueueWorker;
-using Nan::AsyncWorker;
-using Nan::Callback;
-
-
-class WaitVSync: public AsyncWorker
-{
-  public:
-    WaitVSync(Callback* callback, Backend* backend)
-      : AsyncWorker(callback, "Backend:WaitVSync")
-      , backend(backend)
-    {}
-
-    void Execute()
-    {
-      backend->waitVSync();
-    }
-
-  private:
-    Backend* backend;
-};
-
-
 Backend::Backend(std::string name, int width, int height)
   : name(name)
   , width(width)
@@ -116,21 +93,6 @@ bool Backend::isSurfaceValid(){
     destroySurface();
 
   return isValid;
-}
-
-
-NAN_METHOD(Backend::waitVSync)
-{
-  Backend* backend = Nan::ObjectWrap::Unwrap<Backend>(info.This());
-
-  Callback* callback = new Callback(info[0].As<v8::Function>());
-
-  AsyncQueueWorker(new WaitVSync(callback, backend));
-}
-
-void Backend::Initialize(Local<FunctionTemplate> ctor)
-{
-	Nan::SetPrototypeMethod(ctor, "waitVSync", waitVSync);
 }
 
 
