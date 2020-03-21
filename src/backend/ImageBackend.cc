@@ -6,14 +6,6 @@ ImageBackend::ImageBackend(int width, int height)
 	: Backend("image", width, height)
 	{}
 
-ImageBackend::~ImageBackend()
-{
-    if (surface) {
-        destroySurface();
-        Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
-    }
-}
-
 Backend *ImageBackend::construct(int width, int height){
   return new ImageBackend(width, height);
 }
@@ -70,15 +62,16 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 
 Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
 
-void ImageBackend::Initialize(Handle<Object> target)
-{
+void ImageBackend::Initialize(Local<Object> target) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);
 	ImageBackend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(Nan::New<String>("ImageBackend").ToLocalChecked());
-	target->Set(Nan::New<String>("ImageBackend").ToLocalChecked(), ctor->GetFunction());
+  Nan::Set(target,
+           Nan::New<String>("ImageBackend").ToLocalChecked(),
+           Nan::GetFunction(ctor).ToLocalChecked()).Check();
 }
 
 NAN_METHOD(ImageBackend::New) {

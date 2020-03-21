@@ -1,11 +1,10 @@
-var fs = require('fs')
-var Canvas = require('..')
+const fs = require('fs')
+const { Image, createCanvas } = require('..')
 
-var Image = Canvas.Image
-var canvas = Canvas.createCanvas(500, 500, 'pdf')
-var ctx = canvas.getContext('2d')
+const canvas = createCanvas(500, 500, 'pdf')
+const ctx = canvas.getContext('2d')
 
-var x, y
+let x, y
 
 function reset () {
   x = 50
@@ -23,7 +22,7 @@ function p (str) {
 }
 
 function img (src) {
-  var img = new Image()
+  const img = new Image()
   img.src = src
   ctx.drawImage(img, x, (y += 20))
   y += img.height
@@ -43,7 +42,16 @@ img('examples/images/lime-cat.jpg')
 p('Figure 1.1 - Lime cat is awesome')
 ctx.addPage()
 
-fs.writeFile('out.pdf', canvas.toBuffer(), function (err) {
+const buff = canvas.toBuffer('application/pdf', {
+  title: 'Squid and Cat!',
+  author: 'Octocat',
+  subject: 'An example PDF made with node-canvas',
+  keywords: 'node.js squid cat lime',
+  creator: 'my app',
+  modDate: new Date()
+})
+
+fs.writeFile('out.pdf', buff, function (err) {
   if (err) throw err
 
   console.log('created out.pdf')

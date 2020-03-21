@@ -328,7 +328,7 @@ void FBDevBackend::waitVSync()
 
 Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;
 
-void FBDevBackend::Initialize(Handle<Object> target)
+void FBDevBackend::Initialize(Local<Object> target)
 {
 	Nan::HandleScope scope;
 
@@ -339,13 +339,15 @@ void FBDevBackend::Initialize(Handle<Object> target)
 
 	Backend::Initialize(ctor);
 
-	target->Set(Nan::New<String>("FBDevBackend").ToLocalChecked(), ctor->GetFunction());
+	Nan::Set(target,
+	         Nan::New<String>("FBDevBackend").ToLocalChecked(),
+	         Nan::GetFunction(ctor).ToLocalChecked()).Check();
 }
 
 NAN_METHOD(FBDevBackend::New)
 {
 	string fbDevice = DEFAULT_DEVICE;
-	if(info[0]->IsString()) fbDevice = *String::Utf8Value(info[0].As<String>());
+	if(info[0]->IsString()) fbDevice = *Nan::Utf8String(info[0]);
 
 	bool useDoubleBuffer = false;
 	if(info[1]->IsBoolean()) useDoubleBuffer = info[1]->BooleanValue();
