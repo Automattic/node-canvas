@@ -1,21 +1,12 @@
-
-//
-// CanvasRenderingContext2d.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CONTEXT2D_H__
-#define __NODE_CONTEXT2D_H__
+#pragma once
 
-#include <vector>
-#include <pango/pangocairo.h>
-
-#include "color.h"
+#include "cairo.h"
 #include "Canvas.h"
-#include "CanvasGradient.h"
-
-using namespace std;
+#include "color.h"
+#include "nan.h"
+#include <pango/pangocairo.h>
 
 typedef enum {
   TEXT_DRAW_PATHS,
@@ -46,7 +37,22 @@ typedef struct {
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
   PangoFontDescription *fontDescription;
+  bool imageSmoothingEnabled;
 } canvas_state_t;
+
+/*
+ * Equivalent to a PangoRectangle but holds floats instead of ints
+ * (software pixels are stored here instead of pango units)
+ *
+ * Should be compatible with PANGO_ASCENT, PANGO_LBEARING, etc.
+ */
+
+typedef struct {
+  float x;
+  float y;
+  float width;
+  float height;
+} float_rectangle;
 
 void state_assign_fontFamily(canvas_state_t *state, const char *str);
 
@@ -56,9 +62,12 @@ class Context2d: public Nan::ObjectWrap {
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::Function> _DOMMatrix;
+    static Nan::Persistent<v8::Function> _parseFont;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
+    static NAN_METHOD(SaveExternalModules);
     static NAN_METHOD(DrawImage);
     static NAN_METHOD(PutImageData);
     static NAN_METHOD(Save);
@@ -68,6 +77,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(Scale);
     static NAN_METHOD(Transform);
     static NAN_METHOD(ResetTransform);
+    static NAN_METHOD(SetTransform);
     static NAN_METHOD(IsPointInPath);
     static NAN_METHOD(BeginPath);
     static NAN_METHOD(ClosePath);
@@ -80,9 +90,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(SetFont);
     static NAN_METHOD(SetFillColor);
     static NAN_METHOD(SetStrokeColor);
-    static NAN_METHOD(SetFillPattern);
     static NAN_METHOD(SetStrokePattern);
-    static NAN_METHOD(SetTextBaseline);
     static NAN_METHOD(SetTextAlignment);
     static NAN_METHOD(SetLineDash);
     static NAN_METHOD(GetLineDash);
@@ -99,13 +107,17 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
     static NAN_METHOD(GetImageData);
+    static NAN_METHOD(CreateImageData);
+    static NAN_METHOD(GetStrokeColor);
+    static NAN_METHOD(CreatePattern);
+    static NAN_METHOD(CreateLinearGradient);
+    static NAN_METHOD(CreateRadialGradient);
     static NAN_GETTER(GetFormat);
     static NAN_GETTER(GetPatternQuality);
+    static NAN_GETTER(GetImageSmoothingEnabled);
     static NAN_GETTER(GetGlobalCompositeOperation);
     static NAN_GETTER(GetGlobalAlpha);
     static NAN_GETTER(GetShadowColor);
-    static NAN_GETTER(GetFillColor);
-    static NAN_GETTER(GetStrokeColor);
     static NAN_GETTER(GetMiterLimit);
     static NAN_GETTER(GetLineCap);
     static NAN_GETTER(GetLineJoin);
@@ -116,8 +128,15 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetShadowBlur);
     static NAN_GETTER(GetAntiAlias);
     static NAN_GETTER(GetTextDrawingMode);
-    static NAN_GETTER(GetFilter);
+    static NAN_GETTER(GetQuality);
+    static NAN_GETTER(GetCurrentTransform);
+    static NAN_GETTER(GetFillStyle);
+    static NAN_GETTER(GetStrokeStyle);
+    static NAN_GETTER(GetFont);
+    static NAN_GETTER(GetTextBaseline);
+    static NAN_GETTER(GetTextAlign);
     static NAN_SETTER(SetPatternQuality);
+    static NAN_SETTER(SetImageSmoothingEnabled);
     static NAN_SETTER(SetGlobalCompositeOperation);
     static NAN_SETTER(SetGlobalAlpha);
     static NAN_SETTER(SetShadowColor);
@@ -131,14 +150,20 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_SETTER(SetShadowBlur);
     static NAN_SETTER(SetAntiAlias);
     static NAN_SETTER(SetTextDrawingMode);
-    static NAN_SETTER(SetFilter);
+    static NAN_SETTER(SetQuality);
+    static NAN_SETTER(SetCurrentTransform);
+    static NAN_SETTER(SetFillStyle);
+    static NAN_SETTER(SetStrokeStyle);
+    static NAN_SETTER(SetFont);
+    static NAN_SETTER(SetTextBaseline);
+    static NAN_SETTER(SetTextAlign);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(const char *str, double x, double y);
+    void setTextPath(double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void shadowStart();
@@ -153,14 +178,25 @@ class Context2d: public Nan::ObjectWrap {
     void save();
     void restore();
     void setFontFromState();
+    void resetState(bool init = false);
     inline PangoLayout *layout(){ return _layout; }
 
   private:
     ~Context2d();
+    void _resetPersistentHandles();
+    v8::Local<v8::Value> _getFillColor();
+    v8::Local<v8::Value> _getStrokeColor();
+    void _setFillColor(v8::Local<v8::Value> arg);
+    void _setFillPattern(v8::Local<v8::Value> arg);
+    void _setStrokeColor(v8::Local<v8::Value> arg);
+    void _setStrokePattern(v8::Local<v8::Value> arg);
+    Nan::Persistent<v8::Value> _fillStyle;
+    Nan::Persistent<v8::Value> _strokeStyle;
+    Nan::Persistent<v8::Value> _font;
+    Nan::Persistent<v8::Value> _textBaseline;
+    Nan::Persistent<v8::Value> _textAlign;
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
     PangoLayout *_layout;
 };
-
-#endif

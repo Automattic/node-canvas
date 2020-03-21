@@ -6,7 +6,7 @@
 
 using namespace v8;
 
-void Backends::Initialize(Handle<Object> target) {
+void Backends::Initialize(Local<Object> target) {
   Nan::HandleScope scope;
 
   Local<Object> obj = Nan::New<Object>();
@@ -14,5 +14,5 @@ void Backends::Initialize(Handle<Object> target) {
   PdfBackend::Initialize(obj);
   SvgBackend::Initialize(obj);
 
-  target->Set(Nan::New<String>("Backends").ToLocalChecked(), obj);
+  Nan::Set(target, Nan::New<String>("Backends").ToLocalChecked(), obj).Check();
 }

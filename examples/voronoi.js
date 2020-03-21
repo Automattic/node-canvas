@@ -1,7 +1,7 @@
 var http = require('http')
 var Canvas = require('..')
 
-var canvas = new Canvas(1920, 1200)
+var canvas = Canvas.createCanvas(1920, 1200)
 var ctx = canvas.getContext('2d')
 
 var voronoiFactory = require('./rhill-voronoi-core-min')

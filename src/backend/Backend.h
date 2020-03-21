@@ -1,75 +1,68 @@
-#ifndef __BACKEND_H__
-#define __BACKEND_H__
+#pragma once
 
-#include <iostream>
-#include <string>
-#include <sstream>
+#include <cairo.h>
+#include "../dll_visibility.h"
 #include <exception>
-
 #include <nan.h>
-
-#if HAVE_PANGO
-  #include <pango/pangocairo.h>
-#else
-  #include <cairo/cairo.h>
-#endif
+#include <string>
+#include <v8.h>
 
 class Canvas;
-
-using namespace std;
 
 class Backend : public Nan::ObjectWrap
 {
   private:
-    const string name;
+    const std::string name;
+    const char* error = NULL;
 
   protected:
     int width;
     int height;
-    cairo_surface_t* surface;
-    Canvas* canvas;
+    cairo_surface_t* surface = nullptr;
+    Canvas* canvas = nullptr;
 
-    Backend(string name, int width, int height);
+    Backend(std::string name, int width, int height);
+    static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
+    static Backend *construct(int width, int height){ return nullptr; }
 
   public:
     virtual ~Backend();
-
-    // TODO Used only by SVG and PDF, move there
-    void* _closure;
-    inline void* closure(){ return _closure; }
 
     void setCanvas(Canvas* canvas);
 
     virtual cairo_surface_t* createSurface() = 0;
     virtual cairo_surface_t* recreateSurface();
 
-    cairo_surface_t* getSurface();
-    void             destroySurface();
+    DLL_PUBLIC cairo_surface_t* getSurface();
+    virtual void destroySurface();
 
-    string getName();
+    DLL_PUBLIC std::string getName();
 
-    int getWidth();
+    DLL_PUBLIC int getWidth();
     virtual void setWidth(int width);
 
-    int getHeight();
+    DLL_PUBLIC int getHeight();
     virtual void setHeight(int height);
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
-    virtual cairo_format_t getFormat() { return CAIRO_FORMAT_INVALID; }
+    virtual cairo_format_t getFormat() {
+      return CAIRO_FORMAT_INVALID;
+    }
+
+    bool isSurfaceValid();
+    inline const char* getError(){ return error; }
 };
 
 
-class BackendOperationNotAvailable: public exception
+class BackendOperationNotAvailable: public std::exception
 {
   private:
     Backend* backend;
-    string operation_name;
+    std::string operation_name;
 
   public:
-    BackendOperationNotAvailable(Backend* backend, string operation_name);
+    BackendOperationNotAvailable(Backend* backend, std::string operation_name);
     ~BackendOperationNotAvailable() throw();
 
     const char* what() const throw();
 };
-
-#endif

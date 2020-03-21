@@ -5,7 +5,7 @@ const parseFont = require('./lib/parse-font')
 exports.parseFont = parseFont
 
 exports.createCanvas = function (width, height) {
-  return Object.assign(document.createElement('canvas'), { width, height })
+  return Object.assign(document.createElement('canvas'), { width: width, height: height })
 }
 
 exports.createImageData = function (array, width, height) {
@@ -18,17 +18,17 @@ exports.createImageData = function (array, width, height) {
   }
 }
 
-exports.loadImage = function (src) {
-  return new Promise((resolve, reject) => {
-    const image = document.createElement('img')
+exports.loadImage = function (src, options) {
+  return new Promise(function (resolve, reject) {
+    const image = Object.assign(document.createElement('img'), options)
 
     function cleanup () {
       image.onload = null
       image.onerror = null
     }
 
-    image.onload = () => { cleanup(); resolve(image) }
-    image.onerror = () => { cleanup(); reject(new Error(`Failed to load the image "${src}"`)) }
+    image.onload = function () { cleanup(); resolve(image) }
+    image.onerror = function () { cleanup(); reject(new Error('Failed to load the image "' + src + '"')) }
 
     image.src = src
   })

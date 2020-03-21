@@ -1,30 +1,23 @@
 #include "closure.h"
 
-
-/*
- * Initialize the given closure.
- */
-
-cairo_status_t
-closure_init(closure_t *closure, Canvas *canvas, unsigned int compression_level, unsigned int filter) {
-  closure->len = 0;
-  closure->canvas = canvas;
-  closure->data = (uint8_t *) malloc(closure->max_len = PAGE_SIZE);
-  if (!closure->data) return CAIRO_STATUS_NO_MEMORY;
-  closure->compression_level = compression_level;
-  closure->filter = filter;
-  return CAIRO_STATUS_SUCCESS;
+void JpegClosure::init_destination(j_compress_ptr cinfo) {
+  JpegClosure* closure = (JpegClosure*)cinfo->client_data;
+  closure->vec.resize(PAGE_SIZE);
+  closure->jpeg_dest_mgr->next_output_byte = &closure->vec[0];
+  closure->jpeg_dest_mgr->free_in_buffer = closure->vec.size();
 }
 
-/*
- * Free the given closure's data,
- * and hint V8 at the memory dealloc.
- */
+boolean JpegClosure::empty_output_buffer(j_compress_ptr cinfo) {
+  JpegClosure* closure = (JpegClosure*)cinfo->client_data;
+  size_t currentSize = closure->vec.size();
+  closure->vec.resize(currentSize * 1.5);
+  closure->jpeg_dest_mgr->next_output_byte = &closure->vec[currentSize];
+  closure->jpeg_dest_mgr->free_in_buffer = closure->vec.size() - currentSize;
+  return true;
+}
 
-void
-closure_destroy(closure_t *closure) {
-  if (closure->len) {
-    free(closure->data);
-    Nan::AdjustExternalMemory(-((intptr_t) closure->max_len));
-  }
+void JpegClosure::term_destination(j_compress_ptr cinfo) {
+  JpegClosure* closure = (JpegClosure*)cinfo->client_data;
+  size_t finalSize = closure->vec.size() - closure->jpeg_dest_mgr->free_in_buffer;
+  closure->vec.resize(finalSize);
 }

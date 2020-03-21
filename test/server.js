@@ -14,7 +14,7 @@ function renderTest (canvas, name, cb) {
     throw new Error('Unknown test: ' + name)
   }
 
-  var ctx = canvas.getContext('2d', {pixelFormat: 'RGBA32'})
+  var ctx = canvas.getContext('2d', { pixelFormat: 'RGBA32' })
   var initialFillStyle = ctx.fillStyle
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, 200, 200)
@@ -32,6 +32,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'public', 'app.html'))
+})
+
+app.get('/pixelmatch.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '../node_modules/pixelmatch/', 'index.js'))
 })
 
 app.get('/render', function (req, res, next) {

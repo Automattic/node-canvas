@@ -1,13 +1,11 @@
-
-//
-// Gradient.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#include "color.h"
-#include "Canvas.h"
 #include "CanvasGradient.h"
+
+#include "Canvas.h"
+#include "color.h"
+
+using namespace v8;
 
 Nan::Persistent<FunctionTemplate> Gradient::constructor;
 
@@ -27,7 +25,10 @@ Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Nan::SetPrototypeMethod(ctor, "addColorStop", AddColorStop);
-  Nan::Set(target, Nan::New("CanvasGradient").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target,
+           Nan::New("CanvasGradient").ToLocalChecked(),
+           ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*
@@ -42,10 +43,10 @@ NAN_METHOD(Gradient::New) {
   // Linear
   if (4 == info.Length()) {
     Gradient *grad = new Gradient(
-        info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue());
+        Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0));
     grad->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
     return;
@@ -54,12 +55,12 @@ NAN_METHOD(Gradient::New) {
   // Radial
   if (6 == info.Length()) {
     Gradient *grad = new Gradient(
-        info[0]->NumberValue()
-      , info[1]->NumberValue()
-      , info[2]->NumberValue()
-      , info[3]->NumberValue()
-      , info[4]->NumberValue()
-      , info[5]->NumberValue());
+        Nan::To<double>(info[0]).FromMaybe(0)
+      , Nan::To<double>(info[1]).FromMaybe(0)
+      , Nan::To<double>(info[2]).FromMaybe(0)
+      , Nan::To<double>(info[3]).FromMaybe(0)
+      , Nan::To<double>(info[4]).FromMaybe(0)
+      , Nan::To<double>(info[5]).FromMaybe(0));
     grad->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
     return;
@@ -80,14 +81,14 @@ NAN_METHOD(Gradient::AddColorStop) {
 
   Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(info.This());
   short ok;
-  String::Utf8Value str(info[1]);
+  Nan::Utf8String str(info[1]);
   uint32_t rgba = rgba_from_string(*str, &ok);
 
   if (ok) {
     rgba_t color = rgba_create(rgba);
     cairo_pattern_add_color_stop_rgba(
         grad->pattern()
-      , info[0]->NumberValue()
+      , Nan::To<double>(info[0]).FromMaybe(0)
       , color.r
       , color.g
       , color.b

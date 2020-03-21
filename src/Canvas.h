@@ -1,27 +1,14 @@
-
-//
-// Canvas.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CANVAS_H__
-#define __NODE_CANVAS_H__
-
-#include <node.h>
-#include <v8.h>
-#include <node_object_wrap.h>
-#include <node_version.h>
-#include <pango/pangocairo.h>
-#include <vector>
-#include <cairo.h>
-#include <nan.h>
+#pragma once
 
 #include "backend/Backend.h"
-
-
-using namespace node;
-using namespace v8;
+#include <cairo.h>
+#include "dll_visibility.h"
+#include <nan.h>
+#include <pango/pangocairo.h>
+#include <v8.h>
+#include <vector>
 
 /*
  * Maxmimum states per context.
@@ -38,8 +25,8 @@ using namespace v8;
  */
 class FontFace {
   public:
-    PangoFontDescription *sys_desc = NULL;
-    PangoFontDescription *user_desc = NULL;
+    PangoFontDescription *sys_desc = nullptr;
+    PangoFontDescription *user_desc = nullptr;
 };
 
 /*
@@ -48,7 +35,7 @@ class FontFace {
 
 class Canvas: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
@@ -62,30 +49,29 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
-    static Local<Value> Error(cairo_status_t status);
-    static void ToBufferAsync(uv_work_t *req);
+    static v8::Local<v8::Value> Error(cairo_status_t status);
+    static void ToPngBufferAsync(uv_work_t *req);
+    static void ToJpegBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
-    inline Backend* backend() { return _backend; }
-    inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+    DLL_PUBLIC inline Backend* backend() { return _backend; }
+    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+    cairo_t* createCairoContext();
 
-    inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
-    inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    inline int nBytes(){ return getHeight() * stride(); }
+    DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
+    DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
+    DLL_PUBLIC inline int nBytes(){ return getHeight() * stride(); }
 
-    inline int getWidth() { return backend()->getWidth(); }
-    inline int getHeight() { return backend()->getHeight(); }
+    DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
+    DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
 
     Canvas(Backend* backend);
-    void resurface(Local<Object> canvas);
+    void resurface(v8::Local<v8::Object> canvas);
 
   private:
     ~Canvas();
     Backend* _backend;
-    static std::vector<FontFace> _font_face_list;
 };
-
-#endif

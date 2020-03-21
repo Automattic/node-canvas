@@ -1,8 +1,8 @@
 var Canvas = require('..')
 var fs = require('fs')
 var path = require('path')
-var canvas = new Canvas(200, 200)
-var ctx = canvas.getContext('2d', {pixelFormat: 'A8'})
+var canvas = Canvas.createCanvas(200, 200)
+var ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
 
 // Matches the "fillStyle" browser test, made by manipulating imageData
 var palette = new Uint8ClampedArray(37 * 4)
@@ -35,5 +35,5 @@ for (i = 0; i < 6; i++) {
 }
 ctx.putImageData(idata, 0, 0)
 
-canvas.createPNGStream({palette: palette})
-    .pipe(fs.createWriteStream(path.join(__dirname, 'indexed.png')))
+canvas.createPNGStream({ palette: palette })
+  .pipe(fs.createWriteStream(path.join(__dirname, 'indexed.png')))

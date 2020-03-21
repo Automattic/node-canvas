@@ -1,11 +1,8 @@
-#ifndef __SVG_BACKEND_H__
-#define __SVG_BACKEND_H__
-
-#include <v8.h>
+#pragma once
 
 #include "Backend.h"
-
-using namespace std;
+#include "../closure.h"
+#include <v8.h>
 
 class SvgBackend : public Backend
 {
@@ -14,12 +11,14 @@ class SvgBackend : public Backend
     cairo_surface_t* recreateSurface();
 
   public:
+    PdfSvgClosure* _closure = NULL;
+    inline PdfSvgClosure* closure() { return _closure; }
+
     SvgBackend(int width, int height);
     ~SvgBackend();
+    static Backend *construct(int width, int height);
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Handle<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target);
     static NAN_METHOD(New);
 };
-
-#endif

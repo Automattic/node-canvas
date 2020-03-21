@@ -4,10 +4,14 @@ var fs = require('fs')
 var SYSTEM_PATHS = [
   '/lib',
   '/usr/lib',
+  '/usr/lib64',
   '/usr/local/lib',
   '/opt/local/lib',
   '/usr/lib/x86_64-linux-gnu',
-  '/usr/lib/i386-linux-gnu'
+  '/usr/lib/i386-linux-gnu',
+  '/usr/lib/arm-linux-gnueabihf',
+  '/usr/lib/arm-linux-gnueabi',
+  '/usr/lib/aarch64-linux-gnu'
 ]
 
 function _hasQuery (query) {
@@ -23,20 +27,24 @@ function _hasQuery (query) {
 /**
  * Checks for lib using ldconfig if present, or searching SYSTEM_PATHS
  * otherwise.
- * @param String library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
- * @return Boolean exists
+ * @param {string} lib - library name, e.g. 'jpeg' in 'libjpeg64.so' (see first line)
+ * @return {boolean} exists
  */
 function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
 
-    // Try using ldconfig on linux systems
-  if (_hasQuery('ldconfig -p 2>/dev/null | grep -E "' + libName + '"')) {
-    return true
+  // Try using ldconfig on linux systems
+  if (hasLdconfig()) {
+    try {
+      if (execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
+        return true
+      }
+    } catch (err) {
+      // noop -- proceed to other search methods
+    }
   }
 
   // Try checking common library locations
-  var libNameRegex = new RegExp(libName)
-
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
       var dirListing = fs.readdirSync(systemPath)
@@ -50,6 +58,24 @@ function hasSystemLib (lib) {
 }
 
 /**
+ * Checks for ldconfig on the path and /sbin
+ * @return {boolean} exists
+ */
+function hasLdconfig () {
+  try {
+    // Add /sbin to path as ldconfig is located there on some systems -- e.g.
+    // Debian (and it can still be used by unprivileged users):
+    childProcess.execSync('export PATH="$PATH:/sbin"')
+    process.env.PATH = '...'
+    // execSync throws on nonzero exit
+    childProcess.execSync('hash ldconfig 2>/dev/null')
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+/**
  * Checks for freetype2 with --cflags-only-I
  * @return Boolean exists
  */
@@ -60,8 +86,8 @@ function hasFreetype () {
 
 /**
  * Checks for lib using pkg-config.
- * @param String library name
- * @return Boolean exists
+ * @param {string} lib - library name
+ * @return {boolean} exists
  */
 function hasPkgconfigLib (lib) {
   return _hasQuery('pkg-config --exists "' + lib + '" 2>/dev/null')

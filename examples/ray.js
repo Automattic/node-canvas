@@ -2,7 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var Canvas = require('..')
 
-var canvas = new Canvas(243 * 4, 243)
+var canvas = Canvas.createCanvas(243 * 4, 243)
 var ctx = canvas.getContext('2d')
 
 function render (level) {
@@ -82,4 +82,4 @@ render(1)
 
 console.log('Rendered in %s seconds', (new Date() - start) / 1000)
 
-canvas.pngStream().pipe(fs.createWriteStream(path.join(__dirname, 'ray.png')))
+canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'ray.png')))
