@@ -11,9 +11,13 @@ class Canvas;
 
 class Backend : public Nan::ObjectWrap
 {
+  friend class WaitVSync;
+
   private:
     const std::string name;
     const char* error = NULL;
+
+    virtual void waitVSync(){};
 
   protected:
     int width;
@@ -24,6 +28,7 @@ class Backend : public Nan::ObjectWrap
     Backend(std::string name, int width, int height);
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
+    static void Initialize(Local<FunctionTemplate> ctor);
 
   public:
     virtual ~Backend();
@@ -51,6 +56,8 @@ class Backend : public Nan::ObjectWrap
 
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
+
+    static NAN_METHOD(waitVSync);
 };
 
 
