@@ -289,15 +289,10 @@ void FBDevBackend::flipPages(struct fb_var_screeninfo* fb_vinfo)
 	this->FbDevIoctlHelper(FBIOPAN_DISPLAY, fb_vinfo,
 		"Error panning the framebuffer display");
 
-	// Swap front and back buffers pointers
-	unsigned char* aux = front_buffer;
-	front_buffer = back_buffer;
-	back_buffer  = aux;
-
-	// Swap front and back surfaces pointers
-	cairo_surface_t* aux_surface = flip_surface;
+	// Swap front and back surfaces
+	cairo_surface_t* aux = flip_surface;
 	flip_surface = surface;
-	surface  = aux_surface;
+	surface  = aux;
 }
 
 void FBDevBackend::swapBuffers()
