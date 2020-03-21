@@ -9,10 +9,84 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+### Fixed
+* Fix BMP issues. (#1497)
+* Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)
+
+2.6.1
+==================
+### Fixed
+* Ignore `maxWidth` in `fillText` and `strokeText` if it is undefined
+* Fix crash (assertion failure) in Node.js 12.x when patterns or gradients are used
+* Fix crash (check failure) in Node.js 12.x when using RGB16_565 format. (The
+  underlying arraybuffer was incorrectly sized.)
+* Fix rendering error when applying shadow width line style (lineCap lineJoin lineDash)
+
+2.6.0
+==================
+### Changed
+* Allow larger buffers to be returned from `toBuffer('raw')`.
+### Added
+* Support for various BMP headers and color depths (#1435)
+### Fixed
+* Fix crash when changing canvas width/height while `fillStyle` or `strokeStyle`
+  was set to a `CanvasPattern` or `CanvasGradient` (#1357).
+* Fix crash when changing width/height of SVG canvases (#1380).
+* Fix crash when using `toBuffer('raw')` with large canvases (#1158).
+* Clarified meaning of byte ordering for `toBuffer('raw')` in readme. (#1416)
+* Fix package.json Typings field to point to Declaration file (#1432)
+* Properly check return value from `Set` and `Call`. (#1415)
+* Use `Get` version from `Nan` instead of `v8`. (#1415)
+
+2.5.0
+==================
+### Added
+* Support redirects when fetching images (using [simple-get](https://github.com/feross/simple-get)) (#1398)
+* Support Node.js v12
+### Fixed
+* Fix object literal & arrow function syntax usage for IE.
+
+2.4.1
+==================
+### Fixed
+* Guard JPEG width/height against maximum supported (#1385)
+* Fix electron 5 and node 12 compatibility
+* Fix encoding options (quality) parameter in `canvas.toDataURL()`
+
+2.4.0
+==================
+### Added
+* (Actually) added `resolution` option for `canvas.toBuffer("image/png")` and
+  `canvas.createPNGStream()`. This was documented since 2.0.0 but not working.
+* Add typescript definitions.
+### Fixed
+* PDF metadata (added in 2.3.0) wasn't being set with `canvas.createPDFStream()`
+* Fix custom "inspect" function deprecation warnings (#1326)
+
+2.3.1
+==================
+### Fixed
+* Fix `canvas.toBuffer()` for JPEGs (#1350)
+
+2.3.0
+==================
+### Added
+* Add support for multiple PDF page sizes
+* Add support for embedding document metadata in PDFs
+
+### Fixed
+* Don't crash when font string is invalid (bug since 2.2.0) (#1328)
+* Fix memory leak in `canvas.toBuffer()` (#1202, #1296)
+* Fix memory leak in `ctx.font=` (#1202)
+
+2.2.0
+==================
+### Added
 * BMP support
 
 ### Fixed
 * Reset context on resurface (#1292)
+* Support Jest test framework (#1311)
 
 2.1.0
 ==================
@@ -148,8 +222,8 @@ context.quality = 'best' // new
  * Support for `canvas.toBuffer("image/jpeg")`
  * Unified configuration options for `canvas.toBuffer()`, `canvas.pngStream()`
    and `canvas.jpegStream()`
- * Added `resolution` option for `canvas.toBuffer("image/png")` and
-   `canvas.createPNGStream()`
+ * ~~Added `resolution` option for `canvas.toBuffer("image/png")` and
+   `canvas.createPNGStream()`~~ this was not working
  * Support for `canvas.toDataURI("image/jpeg")` (sync)
  * Support for `img.src = <url>` to match browsers
  * Support reading data URL on `img.src`

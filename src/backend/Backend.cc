@@ -2,46 +2,15 @@
 #include <nan.h>
 
 #include "Backend.h"
+#include <string>
 
 
-using Nan::New;
-using v8::Local;
-using v8::Number;
-using v8::Value;
-
-
-void WaitVSync(void* arg)
-{
-	Backend* backend = (Backend*)arg;
-
-	backend->waitVSync();
-
-	// Swap buffers if it was requested
-	if(!backend->listenOnPaint)
-	{
-		backend->swapBuffers();
-
-		backend->listenOnPaint = true;
-	}
-
-	// Execute `requestAnimationFrame()` callbacks (if any)
-	backend->executeCallbacks();
-
-	// Listen new `VSync` requests
-	backend->waitingVSync = false;
-}
-
-
-Backend::Backend(string name, int width, int height)
+Backend::Backend(std::string name, int width, int height)
   : name(name)
 	, requestID(0)
 	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
-  , surface(NULL)
-  , canvas(NULL)
-	, listenOnPaint(false)
-	, raf_callbacks(NULL)
 {}
 
 Backend::~Backend()
@@ -67,11 +36,11 @@ void Backend::setCanvas(Canvas* _canvas)
 }
 
 
-cairo_surface_t* Backend::recreateSurface()
+void Backend::recreateSurface()
 {
   this->destroySurface();
 
-  return this->createSurface();
+  this->createSurface();
 }
 
 DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
@@ -89,7 +58,7 @@ void Backend::destroySurface()
 }
 
 
-string Backend::getName()
+std::string Backend::getName()
 {
   return name;
 }
@@ -219,7 +188,7 @@ NAN_METHOD(Backend::cancelAnimationFrame)
 
 
 BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
-  string operation_name)
+  std::string operation_name)
   : backend(backend)
   , operation_name(operation_name)
 {};
@@ -228,10 +197,8 @@ BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {};
 
 const char* BackendOperationNotAvailable::what() const throw()
 {
-  std::ostringstream o;
+  std::string msg = "operation " + this->operation_name +
+    " not supported by backend " + backend->getName();
 
-  o << "operation " << this->operation_name;
-  o << " not supported by backend " + backend->getName();
-
-  return o.str().c_str();
+  return msg.c_str();
 };

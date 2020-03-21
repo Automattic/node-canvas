@@ -1,3 +1,5 @@
+#include "register_font.h"
+
 #include <pango/pangocairo.h>
 #include <pango/pango-fontmap.h>
 #include <pango/pango.h>

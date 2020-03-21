@@ -1,28 +1,14 @@
-
-//
-// Canvas.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CANVAS_H__
-#define __NODE_CANVAS_H__
+#pragma once
 
-#include <node.h>
-#include <v8.h>
-#include <node_object_wrap.h>
-#include <node_version.h>
-#include <pango/pangocairo.h>
-#include <vector>
-#include <cairo.h>
-#include <nan.h>
-
-#include "dll_visibility.h"
 #include "backend/Backend.h"
-
-
-using namespace node;
-using namespace v8;
+#include <cairo.h>
+#include "dll_visibility.h"
+#include <nan.h>
+#include <pango/pangocairo.h>
+#include <v8.h>
+#include <vector>
 
 /*
  * Maxmimum states per context.
@@ -39,8 +25,8 @@ using namespace v8;
  */
 class FontFace {
   public:
-    PangoFontDescription *sys_desc = NULL;
-    PangoFontDescription *user_desc = NULL;
+    PangoFontDescription *sys_desc = nullptr;
+    PangoFontDescription *user_desc = nullptr;
 };
 
 /*
@@ -49,7 +35,7 @@ class FontFace {
 
 class Canvas: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
@@ -63,7 +49,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
-    static Local<Value> Error(cairo_status_t status);
+    static v8::Local<v8::Value> Error(cairo_status_t status);
     static void ToPngBufferAsync(uv_work_t *req);
     static void ToJpegBufferAsync(uv_work_t *req);
     static void ToBufferAsyncAfter(uv_work_t *req);
@@ -83,12 +69,9 @@ class Canvas: public Nan::ObjectWrap {
     DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
 
     Canvas(Backend* backend);
-    void resurface(Local<Object> canvas);
+    void resurface(v8::Local<v8::Object> canvas);
 
   private:
     ~Canvas();
     Backend* _backend;
-    static std::vector<FontFace> _font_face_list;
 };
-
-#endif

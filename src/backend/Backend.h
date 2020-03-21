@@ -1,32 +1,18 @@
-#ifndef __BACKEND_H__
-#define __BACKEND_H__
+#pragma once
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <sstream>
-#include <exception>
-
-#include <v8.h>
-#include <nan.h>
 #include <cairo.h>
-
 #include "../dll_visibility.h"
+#include <exception>
+#include <nan.h>
+#include <string>
+#include <v8.h>
 
 class Canvas;
-
-using namespace std;
-
-using Nan::Callback;
-
-
-typedef map<long, Callback*> map_callbacks;
-
 
 class Backend : public Nan::ObjectWrap
 {
   private:
-    const string name;
+    const std::string name;
     const char* error = NULL;
 
     uv_thread_t vSyncThread;
@@ -38,10 +24,15 @@ class Backend : public Nan::ObjectWrap
     int width;
     int height;
     cairo_format_t format;
-    cairo_surface_t* surface;
-    Canvas* canvas;
+    cairo_surface_t* surface = nullptr;
+    Canvas* canvas = nullptr;
 
-    Backend(string name, int width = 0, int height = 0);
+    Backend(std::string name, int width = 0, int height = 0);
+
+    virtual void createSurface() = 0;
+    virtual void destroySurface();
+    virtual void recreateSurface();
+
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
 
@@ -54,13 +45,8 @@ class Backend : public Nan::ObjectWrap
 
     void setCanvas(Canvas* canvas);
 
-    virtual cairo_surface_t* createSurface() = 0;
-    virtual cairo_surface_t* recreateSurface();
-
     DLL_PUBLIC cairo_surface_t* getSurface();
-    void             destroySurface();
-
-    DLL_PUBLIC string getName();
+    DLL_PUBLIC std::string getName();
 
     DLL_PUBLIC int getWidth();
     virtual void setWidth(int width);
@@ -86,17 +72,15 @@ class Backend : public Nan::ObjectWrap
 };
 
 
-class BackendOperationNotAvailable: public exception
+class BackendOperationNotAvailable: public std::exception
 {
   private:
     Backend* backend;
-    string operation_name;
+    std::string operation_name;
 
   public:
-    BackendOperationNotAvailable(Backend* backend, string operation_name);
+    BackendOperationNotAvailable(Backend* backend, std::string operation_name);
     ~BackendOperationNotAvailable() throw();
 
     const char* what() const throw();
 };
-
-#endif
