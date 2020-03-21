@@ -1,21 +1,12 @@
-
-//
-// CanvasRenderingContext2d.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_CONTEXT2D_H__
-#define __NODE_CONTEXT2D_H__
+#pragma once
 
-#include <vector>
-#include <pango/pangocairo.h>
-
-#include "color.h"
+#include "cairo.h"
 #include "Canvas.h"
-#include "CanvasGradient.h"
-
-using namespace std;
+#include "color.h"
+#include "nan.h"
+#include <pango/pangocairo.h>
 
 typedef enum {
   TEXT_DRAW_PATHS,
@@ -71,9 +62,9 @@ class Context2d: public Nan::ObjectWrap {
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
-    static Nan::Persistent<Function> _DOMMatrix;
-    static Nan::Persistent<Function> _parseFont;
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::Function> _DOMMatrix;
+    static Nan::Persistent<v8::Function> _parseFont;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(SaveExternalModules);
@@ -193,21 +184,19 @@ class Context2d: public Nan::ObjectWrap {
   private:
     ~Context2d();
     void _resetPersistentHandles();
-    Local<Value> _getFillColor();
-    Local<Value> _getStrokeColor();
-    void _setFillColor(Local<Value> arg);
-    void _setFillPattern(Local<Value> arg);
-    void _setStrokeColor(Local<Value> arg);
-    void _setStrokePattern(Local<Value> arg);
-    Nan::Persistent<Value> _fillStyle;
-    Nan::Persistent<Value> _strokeStyle;
-    Nan::Persistent<Value> _font;
-    Nan::Persistent<Value> _textBaseline;
-    Nan::Persistent<Value> _textAlign;
+    v8::Local<v8::Value> _getFillColor();
+    v8::Local<v8::Value> _getStrokeColor();
+    void _setFillColor(v8::Local<v8::Value> arg);
+    void _setFillPattern(v8::Local<v8::Value> arg);
+    void _setStrokeColor(v8::Local<v8::Value> arg);
+    void _setStrokePattern(v8::Local<v8::Value> arg);
+    Nan::Persistent<v8::Value> _fillStyle;
+    Nan::Persistent<v8::Value> _strokeStyle;
+    Nan::Persistent<v8::Value> _font;
+    Nan::Persistent<v8::Value> _textBaseline;
+    Nan::Persistent<v8::Value> _textAlign;
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
     PangoLayout *_layout;
 };
-
-#endif

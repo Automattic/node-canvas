@@ -62,7 +62,7 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 })
 ```
 
-## Upgrading from 2.x
+## Upgrading from 1.x to 2.x
 
 See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
 
@@ -240,12 +240,19 @@ Enabling mime data tracking has no benefits (only a slow down) unless you are ge
 Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the image contained in the canvas.
 
 * **callback** If provided, the buffer will be provided in the callback instead of being returned by the function. Invoked with an error as the first argument if encoding failed, or the resulting buffer as the second argument if it succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases.
-* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support) and `raw` (unencoded ARGB32 data in native-endian byte order, top-to-bottom). Defaults to `image/png`. If the canvas is a PDF or SVG canvas, this argument is ignored and a PDF or SVG is returned always.
+* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support), `raw` (unencoded data in BGRA order on little-endian (most) systems, ARGB on big-endian systems; top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
 * **config**
-  * For `image/jpeg` an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
+  * For `image/jpeg`, an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
+
   * For `image/png`, an object specifying the ZLIB compression level (between 0 and 9), the compression filter(s), the palette (indexed PNGs only), the the background palette index (indexed PNGs only) and/or the resolution (ppi): `{compressionLevel: 6, filters: canvas.PNG_ALL_FILTERS, palette: undefined, backgroundIndex: 0, resolution: undefined}`. All properties are optional.
 
     Note that the PNG format encodes the resolution in pixels per meter, so if you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution is undefined by default to match common browser behavior.
+
+  * For `application/pdf`, an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. All properties are optional and default to `undefined`, except for `creationDate`, which defaults to the current date. *Adding metadata requires Cairo 1.16.0 or later.*
+
+    For a description of these properties, see page 550 of [PDF 32000-1:2008](https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf).
+
+    Note that there is no standard separator for `keywords`. A space is recommended because it is in common use by other applications, and Cairo will enclose the list of keywords in quotes if a comma or semicolon is used.
 
 **Return value**
 
@@ -274,18 +281,25 @@ canvas.toBuffer((err, buf) => {
   // buf is JPEG-encoded image at 95% quality
 }, 'image/jpeg', { quality: 0.95 })
 
-// ARGB32 pixel values, native-endian
+// BGRA pixel values, native-endian
 const buf4 = canvas.toBuffer('raw')
 const { stride, width } = canvas
 // In memory, this is `canvas.height * canvas.stride` bytes long.
-// The top row of pixels, in ARGB order, left-to-right, is:
-const topPixelsARGBLeftToRight = buf4.slice(0, width * 4)
+// The top row of pixels, in BGRA order on little-endian hardware,
+// left-to-right, is:
+const topPixelsBGRALeftToRight = buf4.slice(0, width * 4)
 // And the third row is:
 const row3 = buf4.slice(2 * stride, 2 * stride + width * 4)
 
-// SVG and PDF canvases ignore the mimeType argument
+// SVG and PDF canvases
 const myCanvas = createCanvas(w, h, 'pdf')
 myCanvas.toBuffer() // returns a buffer containing a PDF-encoded canvas
+// With optional metadata:
+myCanvas.toBuffer('application/pdf', {
+  title: 'my picture',
+  keywords: 'node.js demo cairo',
+  creationDate: new Date()
+})
 ```
 
 ### Canvas#createPNGStream()
@@ -347,7 +361,7 @@ out.on('finish', () =>  console.log('The JPEG file was created.'))
 
 // Disable 2x2 chromaSubsampling for deeper colors and use a higher quality
 const stream = canvas.createJPEGStream({
-  quality: 95,
+  quality: 0.95,
   chromaSubsampling: false
 })
 ```
@@ -358,6 +372,8 @@ const stream = canvas.createJPEGStream({
 > canvas.createPDFStream(config?: any) => ReadableStream
 > ```
 
+* `config` an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. See `toBuffer()` for more information. *Adding metadata requires Cairo 1.16.0 or later.*
+
 Applies to PDF canvases only. Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits the encoded PDF. `canvas.toBuffer()` also produces an encoded PDF, but `createPDFStream()` can be used to reduce memory usage.
 
 ### Canvas#toDataURL()
@@ -367,6 +383,8 @@ This is a standard API, but several non-standard calls are supported. The full l
 ```js
 dataUrl = canvas.toDataURL() // defaults to PNG
 dataUrl = canvas.toDataURL('image/png')
+dataUrl = canvas.toDataURL('image/jpeg')
+dataUrl = canvas.toDataURL('image/jpeg', quality) // quality from 0 to 1
 canvas.toDataURL((err, png) => { }) // defaults to PNG
 canvas.toDataURL('image/png', (err, png) => { })
 canvas.toDataURL('image/jpeg', (err, jpeg) => { }) // sync JPEG is not supported
@@ -408,9 +426,9 @@ In `glyph` mode, `ctx.strokeText()` and `ctx.fillText()` behave the same (aside 
 
 This property is tracked as part of the canvas state in save/restore.
 
-### CanvasRenderingContext2D#globalCompositeOperator = 'saturate'
+### CanvasRenderingContext2D#globalCompositeOperation = 'saturate'
 
-In addition to all of the standard global composite operators defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operator is also available.
+In addition to all of the standard global composite operations defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operation is also available.
 
 ### CanvasRenderingContext2D#antialias
 
@@ -442,6 +460,22 @@ ctx.fillText('Hello World 2', 50, 80)
 
 canvas.toBuffer() // returns a PDF file
 canvas.createPDFStream() // returns a ReadableStream that emits a PDF
+// With optional document metadata (requires Cairo 1.16.0):
+canvas.toBuffer('application/pdf', {
+  title: 'my picture',
+  keywords: 'node.js demo cairo',
+  creationDate: new Date()
+})
+```
+
+It is also possible to create pages with different sizes by passing `width` and `height` to the `.addPage()` method:
+
+```js
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.addPage(400, 800)
+
+ctx.fillText('Hello World 2', 50, 80)
 ```
 
 See also:
@@ -453,7 +487,7 @@ See also:
 
 ## SVG Output Support
 
-node-canvas can create SVG documents instead of images. The canva type must be set when creating the canvas as follows:
+node-canvas can create SVG documents instead of images. The canvas type must be set when creating the canvas as follows:
 
 ```js
 const canvas = createCanvas(200, 500, 'svg')
@@ -506,6 +540,18 @@ Notes and caveats:
 * `A1`, `A8`, `RGB30` and `RGB16_565` with shadow blurs may crash or not render properly.
 
 * The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)` constructors assume 4 bytes per pixel. To create an `ImageData` instance with a different number of bytes per pixel, use `new ImageData(new Uint8ClampedArray(size), width, height)` or `new ImageData(new Uint16ClampedArray(size), width, height)`.
+
+## Testing
+
+First make sure you've built the latest version. Get all the deps you need (see [compiling](#compiling) above), and run:
+
+```
+npm install --build-from-source
+```
+
+For visual tests: `npm run test-server` and point your browser to http://localhost:4000.
+
+For unit tests: `npm run test`.
 
 ## Benchmarks
 

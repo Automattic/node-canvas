@@ -1,17 +1,9 @@
-
-//
-// color.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __COLOR_PARSER_H__
-#define __COLOR_PARSER_H__
+#pragma once
 
-#include <cstdio>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
-#include <cstring>
-#include <cstddef>
+#include <cstdlib>
 
 /*
  * RGBA struct.
@@ -36,5 +28,3 @@ rgba_to_string(rgba_t rgba, char *buf, size_t len);
 
 void
 rgba_inspect(int32_t rgba);
-
-#endif /* __COLOR_PARSER_H__ */
