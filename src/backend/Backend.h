@@ -15,11 +15,6 @@ class Backend : public Nan::ObjectWrap
     const std::string name;
     const char* error = NULL;
 
-    uv_thread_t vSyncThread;
-    long requestID;
-
-    void dispatchWaitVSync();
-
   protected:
     int width;
     int height;
@@ -37,10 +32,6 @@ class Backend : public Nan::ObjectWrap
     static Backend *construct(int width, int height){ return nullptr; }
 
   public:
-    bool listenOnPaint;
-    bool waitingVSync;
-    map_callbacks* raf_callbacks;
-
     virtual ~Backend();
 
     void setCanvas(Canvas* canvas);
@@ -61,14 +52,7 @@ class Backend : public Nan::ObjectWrap
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
 
-    void onPaint();
-
-    virtual void waitVSync(){};
-    virtual void swapBuffers(){};
-    void executeCallbacks();
-
-    NAN_METHOD(requestAnimationFrame);
-    NAN_METHOD(cancelAnimationFrame);
+    virtual void onPaint(){};
 };
 
 

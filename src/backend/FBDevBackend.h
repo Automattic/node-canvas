@@ -32,7 +32,6 @@ class FBDevBackend : public ScreenBackend
     ~FBDevBackend();
 
     void initFbDev(string deviceName, struct fb_var_screeninfo* fb_vinfo);
-    void enableDoubleBuffer(int height, struct fb_var_screeninfo* fb_vinfo);
     void FbDevIoctlHelper(unsigned long request, void* data, string errmsg);
 
     void createSurface();
