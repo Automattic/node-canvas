@@ -62,6 +62,7 @@
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
         'src/backend/PdfBackend.cc',
+        'src/backend/ScreenBackend.cc',
         'src/backend/SvgBackend.cc',
         'src/bmp/BMPParser.cc',
         'src/Backends.cc',
