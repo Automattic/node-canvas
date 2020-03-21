@@ -1,11 +1,11 @@
-#ifndef __NODE_BMP_PARSER_H__
-#define __NODE_BMP_PARSER_H__
+#pragma once
 
 #ifdef ERROR
 #define ERROR_ ERROR
 #undef ERROR
 #endif
 
+#include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <string>
 
 namespace BMPParser{
@@ -38,9 +38,11 @@ namespace BMPParser{
     std::string err = "";
     std::string op = "";
 
-    template <typename T, bool check=true> T get();
+    template <typename T, bool check=true> inline T get();
+    template <typename T, bool check=true> inline T get(uint8_t* pointer);
     std::string getStr(int len, bool reverse=false);
-    void skip(int len);
+    inline void skip(int len);
+    void calcMaskShift(uint32_t& shift, uint32_t& mask, double& multp);
 
     void setOp(std::string val);
     std::string getOp() const;
@@ -55,6 +57,4 @@ namespace BMPParser{
 #ifdef ERROR_
 #define ERROR ERROR_
 #undef ERROR_
-#endif
-
 #endif

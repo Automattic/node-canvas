@@ -1,14 +1,10 @@
-#ifndef __NODE_BACKENDS_H__
-#define __NODE_BACKENDS_H__
-
-#include <nan.h>
+#pragma once
 
 #include "backend/Backend.h"
-
+#include <nan.h>
+#include <v8.h>
 
 class Backends : public Nan::ObjectWrap {
   public:
-    static void Initialize(v8::Handle<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target);
 };
-
-#endif

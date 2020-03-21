@@ -1287,6 +1287,23 @@ tests['drawImage issue #1249'] = function (ctx, done) {
   img1.src = imageSrc('chrome.jpg')
 }
 
+tests['drawImage 9 arguments big numbers'] = function (ctx, done) {
+  var img = new Image()
+  ctx.imageSmoothingEnabled = false
+  img.onload = function () {
+    // we use big numbers because is over the max canvas allowed
+    ctx.drawImage(img, -90000, -90000, 90080, 90080, -180000, -18000, 180160, 18016)
+    ctx.drawImage(img, -90000, -90000, 90040, 90040, -179930, -179930, 180060, 180060)
+    ctx.drawImage(img, -90000, -90000, 90080, 90080, -18000, -180000, 18016, 180160)
+    ctx.drawImage(img, 475, 380, 90000, 90000, 20, 20, 180000, 720000)
+    done(null)
+  }
+  img.onerror = function () {
+    done(new Error('Failed to load image'))
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
 tests['known bug #416'] = function (ctx, done) {
   var img1 = new Image()
   var img2 = new Image()
@@ -1934,6 +1951,17 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
+tests['drawImage(img,x,y,w,h) scale down in a scaled up context'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    ctx.scale(20, 20)
+    ctx.drawImage(img, 0, 0, 10, 10)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('state.png')
+}
+
 tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
   var img = new Image()
   img.onload = function () {
@@ -2447,4 +2475,34 @@ tests['image sampling (#1084)'] = function (ctx, done) {
 
   img1.src = imageSrc('halved-1.jpeg')
   img2.src = imageSrc('halved-2.jpeg')
+}
+
+tests['drawImage reflection bug'] = function (ctx, done) {
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
+    done()
+  }
+  img1.src = imageSrc('chrome.jpg')
+}
+
+tests['drawImage reflection bug with skewing'] = function (ctx, done) {
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
+    ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
+    ctx.setTransform(1.2, 1.8, 0.3, 0.8, 0, 0)
+    ctx.drawImage(img1, 30, 60, 150, 150, -5, -5, 200, 200)
+    done()
+  }
+  img1.src = imageSrc('chrome.jpg')
+}
+
+tests['transformed drawimage'] = function (ctx) {
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, 200, 200)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(5, 5, 50, 50)
+  ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
+  ctx.drawImage(ctx.canvas, 0, 0)
 }

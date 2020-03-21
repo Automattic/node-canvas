@@ -23,8 +23,8 @@ function assertApproxDeep(actual, expected, tolerance) {
 describe('DOMMatrix', function () {
   var Avals = [4,5,1,8, 0,3,6,1, 3,5,0,9, 2,4,6,1]
   var Bvals = [1,5,1,0, 0,3,6,1, 3,5,7,2, 2,0,6,1]
-  var AxB   = [7,25,31,22, 20,43,24,58, 37,73,45,94, 28,44,8,71]
-  var BxA   = [23,40,89,15, 20,39,66,16, 21,30,87,14, 22,52,74,17]
+  var AxB   = new Float64Array([7,25,31,22, 20,43,24,58, 37,73,45,94, 28,44,8,71])
+  var BxA   = new Float64Array([23,40,89,15, 20,39,66,16, 21,30,87,14, 22,52,74,17])
 
   describe('constructor, general', function () {
     it('aliases a,b,c,d,e,f properly', function () {
@@ -50,23 +50,23 @@ describe('DOMMatrix', function () {
 
     it('parses matrix2d(<16 numbers>) per spec', function () {
       var y = new DOMMatrix('matrix3d(1, -0, 0, 0, -2.12, 1, 0, 0, 3e2, 0, +1, 1.252, 0, 0, 0, 1)')
-      assert.deepEqual(y.toFloat64Array(), [
+      assert.deepEqual(y.toFloat64Array(), new Float64Array([
         1, 0, 0, 0,
         -2.12, 1, 0, 0,
         300, 0, 1, 1.252,
         0, 0, 0, 1
-      ])
+      ]))
       assert.strictEqual(y.is2D, false)
     })
 
     it('sets is2D to true if matrix2d(<16 numbers>) is 2D', function () {
       var y = new DOMMatrix('matrix3d(1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)')
-      assert.deepEqual(y.toFloat64Array(), [
+      assert.deepEqual(y.toFloat64Array(), new Float64Array([
         1, 2, 0, 0,
         3, 4, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
       assert.strictEqual(y.is2D, true)
     })
   })
@@ -112,105 +112,105 @@ describe('DOMMatrix', function () {
     it('works, 1 arg', function () {
       var A = new DOMMatrix()
       A.translateSelf(1)
-      assert.deepEqual(A.toFloat64Array(), [
+      assert.deepEqual(A.toFloat64Array(), new Float64Array([
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         1, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 2 args', function () {
       var A = new DOMMatrix(Avals)
       var C = A.translateSelf(2, 5)
-      assert.deepEqual(C.toFloat64Array(), [
+      assert.deepEqual(C.toFloat64Array(), new Float64Array([
         4, 5, 1, 8,
         0, 3, 6, 1,
         3, 5, 0, 9,
         10, 29, 38, 22
-      ])
+      ]))
     })
 
     it('works, 3 args', function () {
       var A = new DOMMatrix()
       A.translateSelf(1, 2, 3)
-      assert.deepEqual(A.toFloat64Array(), [
+      assert.deepEqual(A.toFloat64Array(), new Float64Array([
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         1, 2, 3, 1
-      ])
+      ]))
     })
   })
 
   describe('scale', function () {
     var x = new DOMMatrix()
     it('works, 1 arg', function () {
-      assert.deepEqual(x.scale(2).toFloat64Array(), [
+      assert.deepEqual(x.scale(2).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 2, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 2 args', function () {
-      assert.deepEqual(x.scale(2, 3).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 3).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 3, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 3 args', function () {
-      assert.deepEqual(x.scale(2, 3, 4).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 3, 4).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 3, 0, 0,
         0, 0, 4, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 4 args', function () {
-      assert.deepEqual(x.scale(2, 3, 4, 5).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 3, 4, 5).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 3, 0, 0,
         0, 0, 4, 0,
         -5, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 5 args', function () {
-      assert.deepEqual(x.scale(2, 3, 4, 5, 6).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 3, 4, 5, 6).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 3, 0, 0,
         0, 0, 4, 0,
         -5, -12, 0, 1
-      ])
+      ]))
     })
 
     it('works, 6 args', function () {
-      assert.deepEqual(x.scale(2, 1, 1, 0, 0, 0).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 1, 1, 0, 0, 0).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
 
-      assert.deepEqual(x.scale(2, 3, 2, 0, 0, 0).toFloat64Array(), [
+      assert.deepEqual(x.scale(2, 3, 2, 0, 0, 0).toFloat64Array(), new Float64Array([
         2, 0, 0, 0,
         0, 3, 0, 0,
         0, 0, 2, 0,
         0, 0, 0, 1
-      ])
+      ]))
 
-      assert.deepEqual(x.scale(5, -1, 2, 1, 3, 2).toFloat64Array(), [
+      assert.deepEqual(x.scale(5, -1, 2, 1, 3, 2).toFloat64Array(), new Float64Array([
         5, 0, 0, 0,
         0, -1, 0, 0,
         0, 0, 2, 0,
         -4, 6, -2, 1
-      ])
+      ]))
     })
   })
 
@@ -220,43 +220,43 @@ describe('DOMMatrix', function () {
     var x = new DOMMatrix(Avals)
 
     it('works, 0 args', function () {
-      assert.deepEqual(x.scale3d().toFloat64Array(), Avals)
+      assert.deepEqual(x.scale3d().toFloat64Array(), new Float64Array(Avals))
     })
 
     it('works, 1 arg', function () {
-      assert.deepEqual(x.scale3d(2).toFloat64Array(), [
+      assert.deepEqual(x.scale3d(2).toFloat64Array(), new Float64Array([
         8, 10, 2, 16,
         0, 6, 12, 2,
         6, 10, 0, 18,
         2, 4, 6, 1
-      ])
+      ]))
     })
 
     it('works, 2 args', function () {
-      assert.deepEqual(x.scale3d(2, 3).toFloat64Array(), [
+      assert.deepEqual(x.scale3d(2, 3).toFloat64Array(), new Float64Array([
         8, 10, 2, 16,
         0, 6, 12, 2,
         6, 10, 0, 18,
         -10, -11, 3, -23
-      ])
+      ]))
     })
 
     it('works, 3 args', function () {
-      assert.deepEqual(x.scale3d(2, 3, 4).toFloat64Array(), [
+      assert.deepEqual(x.scale3d(2, 3, 4).toFloat64Array(), new Float64Array([
         8, 10, 2, 16,
         0, 6, 12, 2,
         6, 10, 0, 18,
         -10, -23, -21, -27
-      ])
+      ]))
     })
 
     it('works, 4 args', function () {
-      assert.deepEqual(x.scale3d(2, 3, 4, 5).toFloat64Array(), [
+      assert.deepEqual(x.scale3d(2, 3, 4, 5).toFloat64Array(), new Float64Array([
         8, 10, 2, 16,
         0, 6, 12, 2,
         6, 10, 0, 18,
         -25, -48, -21, -72
-      ])
+      ]))
     })
   })
 
@@ -266,34 +266,34 @@ describe('DOMMatrix', function () {
     it('works, 1 arg', function () {
       var x = new DOMMatrix()
       var y = x.rotate(70)
-      assertApproxDeep(y.toFloat64Array(), [
+      assertApproxDeep(y.toFloat64Array(), new Float64Array([
         0.3420201, 0.9396926, 0, 0,
         -0.939692, 0.3420201, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
 
     it('works, 2 args', function () {
       var x = new DOMMatrix()
       var y = x.rotate(70, 30)
-      assertApproxDeep(y.toFloat64Array(), [
+      assertApproxDeep(y.toFloat64Array(), new Float64Array([
         0.8660254, 0, -0.5, 0,
         0.4698463, 0.3420201, 0.8137976, 0,
         0.1710100, -0.9396926, 0.2961981, 0,
         0, 0, 0, 1
-      ])
+      ]))
       assert.strictEqual(y.is2D, false)
     })
 
     it('works, 3 args', function () {
       var x = new DOMMatrix()
       var y = x.rotate(70, 30, 50)
-      assertApproxDeep(y.toFloat64Array(), [
+      assertApproxDeep(y.toFloat64Array(), new Float64Array([
         0.5566703, 0.6634139, -0.5, 0,
         0.0400087, 0.5797694, 0.8137976, 0,
         0.8297694, -0.4730214, 0.2961981, 0,
-        0, 0, 0, 1])
+        0, 0, 0, 1]))
     })
   })
 
@@ -302,19 +302,19 @@ describe('DOMMatrix', function () {
   describe('rotateFromVector', function () {
     var x = new DOMMatrix(Avals)
     it('works, no args and x/y=0', function () {
-      assert.deepEqual(x.rotateFromVector().toFloat64Array(), Avals)
-      assert.deepEqual(x.rotateFromVector(5).toFloat64Array(), Avals)
-      assert.deepEqual(x.rotateFromVector(0, 0).toFloat64Array(), Avals)
+      assert.deepEqual(x.rotateFromVector().toFloat64Array(), new Float64Array(Avals))
+      assert.deepEqual(x.rotateFromVector(5).toFloat64Array(), new Float64Array(Avals))
+      assert.deepEqual(x.rotateFromVector(0, 0).toFloat64Array(), new Float64Array(Avals))
     })
 
     it('works', function () {
       var y = x.rotateFromVector(4, 2).toFloat64Array()
-      var expect = [
+      var expect = new Float64Array([
         3.5777087, 5.8137767, 3.5777087, 7.6026311,
         -1.7888543, 0.4472135, 4.9193495, -2.6832815,
         3, 5, 0, 9,
         2, 4, 6, 1
-      ]
+      ])
       assertApproxDeep(expect, y)
     })
   })
@@ -325,18 +325,18 @@ describe('DOMMatrix', function () {
     it('works, 0 args', function () {
       var x = new DOMMatrix(Avals)
       var y = x.rotateAxisAngle().toFloat64Array()
-      assert.deepEqual(y, Avals)
+      assert.deepEqual(y, new Float64Array(Avals))
     })
 
     it('works, 4 args', function () {
       var x = new DOMMatrix(Avals)
       var y = x.rotateAxisAngle(2, 4, 1, 35).toFloat64Array()
-      var expect = [
+      var expect = new Float64Array([
         1.9640922, 2.4329989, 2.0179538, 2.6719387,
         0.6292488, 4.0133545, 5.6853755, 3.0697681,
         4.5548203, 6.0805840, -0.7774101, 11.3770500,
         2, 4, 6, 1
-      ]
+      ])
       assertApproxDeep(expect, y)
     })
   })
@@ -347,12 +347,12 @@ describe('DOMMatrix', function () {
     it('works', function () {
       var x = new DOMMatrix(Avals)
       var y = x.skewX(30).toFloat64Array()
-      var expect = [
+      var expect = new Float64Array([
         4, 5, 1, 8,
         2.3094010, 5.8867513, 6.5773502, 5.6188021,
         3, 5, 0, 9,
         2, 4, 6, 1
-      ]
+      ])
       assertApproxDeep(expect, y)
     })
   })
@@ -363,12 +363,12 @@ describe('DOMMatrix', function () {
     it('works', function () {
       var x = new DOMMatrix(Avals)
       var y = x.skewY(30).toFloat64Array()
-      var expect = [
+      var expect = new Float64Array([
         4, 6.7320508, 4.4641016, 8.5773502,
         0, 3, 6, 1,
         3, 5, 0, 9,
         2, 4, 6, 1
-      ]
+      ])
       assertApproxDeep(expect, y)
     })
   })
@@ -429,12 +429,12 @@ describe('DOMMatrix', function () {
       var x = new DOMMatrix()
       var y = x.toFloat32Array()
       assert.ok(y instanceof Float32Array)
-      assert.deepEqual(y, [
+      assert.deepEqual(y, new Float32Array([
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
   })
   
@@ -443,12 +443,12 @@ describe('DOMMatrix', function () {
       var x = new DOMMatrix()
       var y = x.toFloat64Array()
       assert.ok(y instanceof Float64Array)
-      assert.deepEqual(y, [
+      assert.deepEqual(y, new Float64Array([
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-      ])
+      ]))
     })
   })
 
