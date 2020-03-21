@@ -1,5 +1,7 @@
-#include <v8.h>
+#pragma once
+
 #include <nan.h>
+#include <v8.h>
 
 // Wrapper around Nan::SetAccessor that makes it easier to change the last
 // argument (signature). Getters/setters must be accessed only when there is

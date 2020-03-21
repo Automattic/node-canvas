@@ -1,12 +1,10 @@
-
-//
-// ImageData.cc
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
+
+#include "ImageData.h"
 
 #include "Util.h"
-#include "ImageData.h"
+
+using namespace v8;
 
 Nan::Persistent<FunctionTemplate> ImageData::constructor;
 
@@ -28,7 +26,8 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
-  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*
@@ -118,7 +117,7 @@ NAN_METHOD(ImageData::New) {
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
-  info.This()->Set(Nan::New("data").ToLocalChecked(), dataArray);
+  Nan::Set(info.This(), Nan::New("data").ToLocalChecked(), dataArray).Check();
   info.GetReturnValue().Set(info.This());
 }
 

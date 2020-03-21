@@ -1,13 +1,11 @@
 #include "Backend.h"
+#include <string>
 
-
-Backend::Backend(string name, int width, int height)
+Backend::Backend(std::string name, int width, int height)
   : name(name)
 	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
-  , surface(NULL)
-  , canvas(NULL)
 {}
 
 Backend::~Backend()
@@ -55,7 +53,7 @@ void Backend::destroySurface()
 }
 
 
-string Backend::getName()
+std::string Backend::getName()
 {
   return name;
 }
@@ -109,7 +107,7 @@ bool Backend::isSurfaceValid(){
 
 
 BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
-  string operation_name)
+  std::string operation_name)
   : backend(backend)
   , operation_name(operation_name)
 {};
@@ -118,10 +116,8 @@ BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {};
 
 const char* BackendOperationNotAvailable::what() const throw()
 {
-  std::ostringstream o;
+  std::string msg = "operation " + this->operation_name +
+    " not supported by backend " + backend->getName();
 
-  o << "operation " << this->operation_name;
-  o << " not supported by backend " + backend->getName();
-
-  return o.str().c_str();
+  return msg.c_str();
 };

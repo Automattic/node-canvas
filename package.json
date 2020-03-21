@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "2.2.0",
+  "version": "2.6.1",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -29,21 +29,33 @@
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+    "dtslint": "dtslint types"
   },
   "binary": {
-    "module_name": "canvas-prebuilt",
+    "module_name": "canvas",
     "module_path": "build/Release",
     "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
     "remote_path": "v{version}",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
+  "files": [
+    "binding.gyp",
+    "lib/",
+    "src/",
+    "util/",
+    "types/index.d.ts"
+  ],
+  "types": "types/index.d.ts",
   "dependencies": {
-    "nan": "^2.11.1",
-    "node-pre-gyp": "^0.11.0"
+    "nan": "^2.14.0",
+    "node-pre-gyp": "^0.11.0",
+    "simple-get": "^3.0.3"
   },
   "devDependencies": {
+    "@types/node": "^10.12.18",
     "assert-rejects": "^1.0.0",
+    "dtslint": "^0.5.3",
     "express": "^4.16.3",
     "mocha": "^5.2.0",
     "pixelmatch": "^4.0.2",

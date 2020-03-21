@@ -1,18 +1,14 @@
-
-//
-// CanvasGradient.h
-//
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
-//
 
-#ifndef __NODE_GRADIENT_H__
-#define __NODE_GRADIENT_H__
+#pragma once
 
-#include "Canvas.h"
+#include <nan.h>
+#include <v8.h>
+#include <cairo.h>
 
 class Gradient: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(AddColorStop);
@@ -24,5 +20,3 @@ class Gradient: public Nan::ObjectWrap {
     ~Gradient();
     cairo_pattern_t *_pattern;
 };
-
-#endif
