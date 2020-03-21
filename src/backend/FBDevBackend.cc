@@ -169,7 +169,7 @@ void FBDevBackend::setFormat(cairo_format_t format)
 
 Nan::Persistent<FunctionTemplate> FBDevBackend::constructor;
 
-void FBDevBackend::Initialize(Handle<Object> target)
+void FBDevBackend::Initialize(Local<Object> target)
 {
 	Nan::HandleScope scope;
 
@@ -177,13 +177,15 @@ void FBDevBackend::Initialize(Handle<Object> target)
 	FBDevBackend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(Nan::New<String>("FBDevBackend").ToLocalChecked());
-	target->Set(Nan::New<String>("FBDevBackend").ToLocalChecked(), ctor->GetFunction());
+	Nan::Set(target,
+	         Nan::New<String>("FBDevBackend").ToLocalChecked(),
+	         Nan::GetFunction(ctor).ToLocalChecked()).Check();
 }
 
 NAN_METHOD(FBDevBackend::New)
 {
 	string fbDevice = DEFAULT_DEVICE;
-	if(info[0]->IsString()) fbDevice = *String::Utf8Value(info[0].As<String>());
+	if(info[0]->IsString()) fbDevice = *Nan::Utf8String(info[0]);
 
 	FBDevBackend* backend = new FBDevBackend(fbDevice);
 
