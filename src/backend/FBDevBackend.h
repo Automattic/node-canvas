@@ -7,7 +7,7 @@
 #include <linux/fb.h>
 #include <v8.h>
 
-#include "Backend.h"
+#include "ScreenBackend.h"
 
 
 using namespace std;
@@ -16,7 +16,7 @@ using namespace std;
 const string DEFAULT_DEVICE = "/dev/fb0";
 
 
-class FBDevBackend : public Backend
+class FBDevBackend : public ScreenBackend
 {
   private:
     int fb_fd;

@@ -18,5 +18,7 @@ class ScreenBackend : public Backend
     static NAN_METHOD(waitVSync);
 
   protected:
+    ScreenBackend(std::string name, int width = 0, int height = 0);
+
     static void Initialize(Local<FunctionTemplate> ctor);
 };

@@ -24,6 +24,11 @@ class WaitVSync: public AsyncWorker
 };
 
 
+ScreenBackend::ScreenBackend(std::string name, int width, int height)
+  : Backend(name, width, height)
+{}
+
+
 NAN_METHOD(ScreenBackend::swapBuffers)
 {
   ScreenBackend* backend = Nan::ObjectWrap::Unwrap<ScreenBackend>(info.This());

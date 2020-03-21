@@ -33,7 +33,7 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 
 FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 	bool useDoubleBuffer, bool enableFlipPages)
-	: Backend("fbdev", width, height)
+	: ScreenBackend("fbdev", width, height)
 	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
@@ -54,7 +54,7 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 
 FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer,
 	bool enableFlipPages)
-	: Backend("fbdev")
+	: ScreenBackend("fbdev")
 	, fb_data(NULL)
 	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
@@ -191,7 +191,7 @@ void FBDevBackend::createSurface()
 
 void FBDevBackend::destroySurface()
 {
-	Backend::destroySurface();
+	ScreenBackend::destroySurface();
 
 	if(useInMemoryBackBuffer && back_buffer)
 	{
@@ -221,7 +221,7 @@ void FBDevBackend::setWidth(int width)
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
 
-	Backend::setWidth(width);
+	ScreenBackend::setWidth(width);
 }
 void FBDevBackend::setHeight(int height)
 {
@@ -235,7 +235,7 @@ void FBDevBackend::setHeight(int height)
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
 
-	Backend::setHeight(height);
+	ScreenBackend::setHeight(height);
 }
 void FBDevBackend::setFormat(cairo_format_t format)
 {
@@ -257,7 +257,7 @@ void FBDevBackend::setFormat(cairo_format_t format)
 	this->FbDevIoctlHelper(FBIOPUT_VSCREENINFO, &fb_vinfo,
 		"Error setting variable framebuffer information");
 
-	Backend::setFormat(format);
+	ScreenBackend::setFormat(format);
 }
 
 
@@ -337,7 +337,7 @@ void FBDevBackend::Initialize(Local<Object> target)
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
 	ctor->SetClassName(Nan::New<String>("FBDevBackend").ToLocalChecked());
 
-	Backend::Initialize(ctor);
+	ScreenBackend::Initialize(ctor);
 
 	Nan::Set(target,
 	         Nan::New<String>("FBDevBackend").ToLocalChecked(),
