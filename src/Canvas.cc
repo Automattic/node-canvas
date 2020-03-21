@@ -114,7 +114,7 @@ NAN_METHOD(Canvas::New) {
       else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);
       else
-        backend = new ImageBackend(width, height);
+        return Nan::ThrowRangeError("Unknown canvas type");
     }
     else
       backend = new ImageBackend(width, height);
