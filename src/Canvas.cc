@@ -108,10 +108,10 @@ NAN_METHOD(Canvas::New) {
           if(info[4]->IsBoolean()) {
             if(info[5]->IsBoolean())
               backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
-                info[4]->BooleanValue(), info[5]->BooleanValue());
+                Nan::To<bool>(info[4]).FromMaybe(0), Nan::To<bool>(info[5]).FromMaybe(0));
             else
               backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
-                info[4]->BooleanValue());
+                Nan::To<bool>(info[4]).FromMaybe(0));
           }
           else
             backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));

@@ -350,10 +350,10 @@ NAN_METHOD(FBDevBackend::New)
 	if(info[0]->IsString()) fbDevice = *Nan::Utf8String(info[0]);
 
 	bool useDoubleBuffer = false;
-	if(info[1]->IsBoolean()) useDoubleBuffer = info[1]->BooleanValue();
+	if(info[1]->IsBoolean()) useDoubleBuffer = Nan::To<bool>(info[1]).FromMaybe(0);
 
 	bool enableFlipPages = false;
-	if(info[2]->IsBoolean()) enableFlipPages = info[2]->BooleanValue();
+	if(info[2]->IsBoolean()) enableFlipPages = Nan::To<bool>(info[2]).FromMaybe(0);
 
 	FBDevBackend* backend = new FBDevBackend(fbDevice, useDoubleBuffer,
 		enableFlipPages);
