@@ -34,11 +34,7 @@ cairo_format_t bits2format(__u32 bits_per_pixel)
 FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 	bool useDoubleBuffer, bool enableFlipPages)
 	: ScreenBackend("fbdev", width, height)
-	, fb_data(NULL)
-	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
-	, useInMemoryBackBuffer(false)
-	, useFlipPages(false)
 	, enableFlipPages(enableFlipPages)
 {
 	struct fb_var_screeninfo fb_vinfo;
@@ -55,11 +51,7 @@ FBDevBackend::FBDevBackend(int width, int height, string deviceName,
 FBDevBackend::FBDevBackend(string deviceName, bool useDoubleBuffer,
 	bool enableFlipPages)
 	: ScreenBackend("fbdev")
-	, fb_data(NULL)
-	, back_buffer(NULL)
 	, useDoubleBuffer(useDoubleBuffer)
-	, useInMemoryBackBuffer(false)
-	, useFlipPages(false)
 	, enableFlipPages(enableFlipPages)
 {
 	struct fb_var_screeninfo fb_vinfo;
@@ -123,9 +115,7 @@ void FBDevBackend::createSurface()
 	// Check support for double buffering features
 	if(useDoubleBuffer || fb_vinfo.bits_per_pixel == 24)
 	{
-		useFlipPages = false;
-
-		// Try to use page flipping inside graphic card memory. If FbDev driver
+		// Try to use real double buffer inside graphic card memory. If FbDev driver
 		// don't support to have a virtual framebuffer bigger than the actual one,
 		// then we'll use a buffer in memory. It's not so efficient and could lead
 		// to some tearing, but with VSync this should be minimal and at least we'll
@@ -149,6 +139,8 @@ void FBDevBackend::createSurface()
 
 			useFlipPages = ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == 0;
 		}
+		else
+			useFlipPages = false;
 	}
 
 	// Map the device to memory with new virtual framebuffer dimensions and config
@@ -281,8 +273,6 @@ void FBDevBackend::copyBackBuffer(struct fb_var_screeninfo* fb_vinfo)
 }
 void FBDevBackend::flipPages(struct fb_var_screeninfo* fb_vinfo)
 {
-	if(!this->surface) return;
-
 	// Update display panning
 	fb_vinfo->yoffset = fb_vinfo->yoffset ? 0 : fb_vinfo->yres;
 

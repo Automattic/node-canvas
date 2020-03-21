@@ -21,12 +21,12 @@ class FBDevBackend : public ScreenBackend
   private:
     int fb_fd;
     struct fb_fix_screeninfo fb_finfo;
-    unsigned char* fb_data;
+    unsigned char* fb_data = NULL;
     unsigned char* front_buffer;
-    unsigned char* back_buffer;
+    unsigned char* back_buffer = NULL;
     bool useDoubleBuffer;
-    bool useInMemoryBackBuffer;
-    bool useFlipPages;
+    bool useInMemoryBackBuffer = false;
+    bool useFlipPages = false;
     bool enableFlipPages;
 
     ~FBDevBackend();
