@@ -112,6 +112,8 @@ void FBDevBackend::createSurface()
 	fb_vinfo.yoffset = 0;
 	ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo);
 
+	bool useFlipPages = false;
+
 	// Check support for double buffering features
 	if(useDoubleBuffer || fb_vinfo.bits_per_pixel == 24)
 	{
@@ -139,8 +141,6 @@ void FBDevBackend::createSurface()
 
 			useFlipPages = ioctl(this->fb_fd, FBIOPAN_DISPLAY, &fb_vinfo) == 0;
 		}
-		else
-			useFlipPages = false;
 	}
 
 	// Map the device to memory with new virtual framebuffer dimensions and config
@@ -173,6 +173,9 @@ void FBDevBackend::createSurface()
 			// succesful (so for the graphic card they were already swapped)
 			front_buffer = back_buffer;
 			back_buffer  = this->fb_data;
+
+			this->flip_surface = cairo_image_surface_create_for_data(this->back_buffer,
+				format, fb_vinfo.xres, fb_vinfo.yres, stride);
 		}
 	}
 
@@ -197,6 +200,13 @@ void FBDevBackend::destroySurface()
 		munmap(this->fb_data, fb_finfo.smem_len);
 
 		this->fb_data = NULL;
+	}
+
+	if(this->flip_surface)
+	{
+		cairo_surface_destroy(this->flip_surface);
+
+		this->flip_surface = NULL;
 	}
 }
 
@@ -284,11 +294,10 @@ void FBDevBackend::flipPages(struct fb_var_screeninfo* fb_vinfo)
 	front_buffer = back_buffer;
 	back_buffer  = aux;
 
-	// Destroy Cairo surface and create it in the new back buffer vertical offset
-	cairo_surface_destroy(this->surface);
-
-	this->surface = cairo_image_surface_create_for_data(this->back_buffer,
-		format, fb_vinfo->xres, fb_vinfo->yres, fb_finfo.line_length);
+	// Swap front and back surfaces pointers
+	cairo_surface_t* aux_surface = flip_surface;
+	flip_surface = surface;
+	surface  = aux_surface;
 }
 
 void FBDevBackend::swapBuffers()
@@ -302,7 +311,7 @@ void FBDevBackend::swapBuffers()
 
 	if(!useDoubleBuffer && fb_vinfo.bits_per_pixel != 24) return;
 
-	if(useFlipPages)
+	if(this->flip_surface)
 		flipPages(&fb_vinfo);
 
 	else

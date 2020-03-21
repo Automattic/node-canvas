@@ -26,7 +26,7 @@ class FBDevBackend : public ScreenBackend
     unsigned char* back_buffer = NULL;
     bool useDoubleBuffer;
     bool useInMemoryBackBuffer = false;
-    bool useFlipPages = false;
+    cairo_surface_t* flip_surface = NULL;
     bool enableFlipPages;
 
     ~FBDevBackend();
