@@ -45,6 +45,8 @@ function hasSystemLib (lib) {
   }
 
   // Try checking common library locations
+  const libNameRegex = new RegExp(libName)
+
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
       var dirListing = fs.readdirSync(systemPath)
