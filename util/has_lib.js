@@ -65,10 +65,10 @@ function hasLdconfig () {
   try {
     // Add /sbin to path as ldconfig is located there on some systems -- e.g.
     // Debian (and it can still be used by unprivileged users):
-    childProcess.execSync('export PATH="$PATH:/sbin"')
-    process.env.PATH = '...'
+    execSync('export PATH="$PATH:/sbin"')
+    // process.env.PATH = '...'
     // execSync throws on nonzero exit
-    childProcess.execSync('hash ldconfig 2>/dev/null')
+    execSync('hash ldconfig 2>/dev/null')
     return true
   } catch (err) {
     return false
@@ -96,7 +96,7 @@ function hasPkgconfigLib (lib) {
 function main (query) {
   if (!query) {
     for (var libname of ['gif', 'jpeg', 'cairo', 'pango', 'freetype', 'rsvg']) {
-      if (!main(libname)) return false
+      if (!main(libname)) return libname
     }
 
     return true
