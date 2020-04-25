@@ -2400,7 +2400,7 @@ NAN_METHOD(Context2d::StrokeText) {
 /*
  * Gets the baseline adjustment in device pixels
  */
-inline double getBaselineAdjustment(PangoLayout* layout, short baseline, cairo_t *_context) {
+inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
   PangoRectangle logical_rect;
   PangoLayout* measureLayout = pango_layout_copy(layout);
   pango_layout_set_text(measureLayout, "gjĮ測試ÅÊ", -1);
@@ -2454,7 +2454,7 @@ Context2d::setTextPath(double x, double y) {
       x -= logical_rect.width;
       break;
   }
-  y -= getBaselineAdjustment(_layout, state->textBaseline, _context);
+  y -= getBaselineAdjustment(_layout, state->textBaseline);
 
   cairo_move_to(_context, x, y);
   if (state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -2694,10 +2694,11 @@ NAN_METHOD(Context2d::MeasureText) {
       x_offset = 0.0;
   }
 
+  // are those two line useful?
   cairo_matrix_t matrix;
   cairo_get_matrix(ctx, &matrix);
 
-  double y_offset = getBaselineAdjustment(layout, context->state->textBaseline, ctx);
+  double y_offset = getBaselineAdjustment(layout, context->state->textBaseline);
 
   Nan::Set(obj,
            Nan::New<String>("width").ToLocalChecked(),
