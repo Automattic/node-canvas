@@ -2416,13 +2416,13 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 
   switch (baseline) {
   case TEXT_BASELINE_ALPHABETIC:
-    return ascent; // / current_scale_y;
+    return ascent;
   case TEXT_BASELINE_IDEOGRAPHIC:
     return ascent + correction_factor;
   case TEXT_BASELINE_MIDDLE:
-    return (ascent + descent) / 2.0; // / current_scale_y;
+    return (ascent + descent) / 2.0;
   case TEXT_BASELINE_BOTTOM:
-    return (ascent + descent) - correction_factor; // / current_scale_y;
+    return (ascent + descent) - correction_factor;
   case TEXT_BASELINE_HANGING:
     return correction_factor * 3.0;
   case TEXT_BASELINE_TOP:
