@@ -6,8 +6,9 @@
  * Module dependencies.
  */
 
-const {createCanvas, loadImage} = require('../');
+const {createCanvas, loadImage, rsvgVersion} = require('../');
 const Image = require('../').Image
+const HAVE_SVG = rsvgVersion !== undefined;
 
 const assert = require('assert')
 const assertRejects = require('assert-rejects')
@@ -85,12 +86,14 @@ describe('Image', function () {
   })
 
   it('detects invalid PNG', function (done) {
+    if (process.platform === 'win32') this.skip(); // TODO
     const img = new Image()
     img.onerror = () => done()
     img.src = Buffer.from('89504E470D', 'hex')
   })
 
   it('loads SVG data URL base64', function () {
+    if (!HAVE_SVG) this.skip();
     const base64Enc = fs.readFileSync(svg_tree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
       return loadImage(dataURL).then((img) => {
@@ -103,6 +106,7 @@ describe('Image', function () {
   })
 
   it('loads SVG data URL utf8', function () {
+    if (!HAVE_SVG) this.skip();
     const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
     const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
       return loadImage(dataURL).then((img) => {
