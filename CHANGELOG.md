@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Switch CI to Github Actions. (Adds Windows and macOS builds.)
 ### Added
 * Export `rsvgVersion`.
 ### Fixed
