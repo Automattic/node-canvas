@@ -412,7 +412,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
-    if (canvas->nBytes() > node::Buffer::kMaxLength) {
+    if (static_cast<uint32_t>(canvas->nBytes()) > node::Buffer::kMaxLength) {
       Nan::ThrowError("Data exceeds maximum buffer length.");
       return;
     }
