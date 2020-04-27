@@ -2405,13 +2405,11 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
   PangoLayout* measureLayout = pango_layout_copy(layout);
   pango_layout_set_text(measureLayout, "gjĮ測試ÅÊ", -1);
   pango_layout_line_get_extents(pango_layout_get_line(measureLayout, 0), NULL, &logical_rect);
-
-  // extract the scale value from the current transform so that we know how many pixels we
-  // need for our extra canvas in the drawImage operation.
-
   double scale = 1.0 / PANGO_SCALE;
   double ascent = scale * pango_layout_get_baseline(measureLayout);
   double descent = scale * logical_rect.height - ascent;
+  // 0.072 is a constant that has been chosen comparing the canvas output
+  // if some code change, this constant can be changed too to keep results aligned
   double correction_factor = scale * logical_rect.height * 0.072;
 
   switch (baseline) {

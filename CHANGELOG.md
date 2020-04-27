@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix BMP issues. (#1497)
 * Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)
 * Fix assertion failure when using Visual Studio Code debugger to inspect Image prototype (#1534)
+* Tweak text baseline positioning to be as close as possible to browser canvas (#1562)
 
 2.6.1
 ==================
