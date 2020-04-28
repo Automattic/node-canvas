@@ -35,7 +35,7 @@
   "binary": {
     "module_name": "canvas",
     "module_path": "build/Release",
-    "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
+    "host": "https://github.com/Automattic/node-canvas/releases/download/",
     "remote_path": "v{version}",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },

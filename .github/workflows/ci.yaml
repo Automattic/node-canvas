@@ -1,5 +1,12 @@
 name: Test
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - ".github/workflows/prebuild.yaml"
+  pull_request:
+    paths-ignore:
+      - ".github/workflows/prebuild.yaml"
+    
 
 jobs: 
   Linux:

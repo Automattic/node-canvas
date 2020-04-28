@@ -9,6 +9,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 * Switch CI to Github Actions. (Adds Windows and macOS builds.)
+* Switch prebuilds to GitHub actions in the Automattic/node-canvas repository.
+  Previously these were in the [node-gfx/node-canvas-prebuilt](https://github.com/node-gfx/node-canvas-prebuilt)
+  and triggered manually.
 ### Added
 * Export `rsvgVersion`.
 ### Fixed
