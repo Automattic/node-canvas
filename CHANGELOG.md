@@ -18,6 +18,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix signed/unsigned comparison warning introduced in 2.6.0, and function cast warnings with GCC8+
 * Fix to compile without JPEG support (#1593).
 * Fix compile errors with cairo
+* Fix Image#complete if the image failed to load.
 
 2.6.1
 ==================
