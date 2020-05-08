@@ -22,6 +22,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix benchmark for createPNGStream (#1672)
 * Fix dangling reference in BackendOperationNotAvailable exception (#1740)
 * Fix always-false comparison warning in Canvas.cc.
+* Fix Node.js crash when throwing from an onload or onerror handler.
 
 2.7.0
 ==================
