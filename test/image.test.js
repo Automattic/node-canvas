@@ -88,7 +88,10 @@ describe('Image', function () {
   it('detects invalid PNG', function (done) {
     if (process.platform === 'win32') this.skip(); // TODO
     const img = new Image()
-    img.onerror = () => done()
+    img.onerror = () => {
+      assert.strictEqual(img.complete, true)
+      done()
+    }
     img.src = Buffer.from('89504E470D', 'hex')
   })
 
@@ -156,6 +159,7 @@ describe('Image', function () {
       assert.equal(err.code, 'ENOENT')
       assert.equal(err.path, 'path/to/nothing')
       assert.equal(err.syscall, 'fopen')
+      assert.strictEqual(img.complete, true)
       done()
     }
     img.src = 'path/to/nothing'
@@ -165,6 +169,7 @@ describe('Image', function () {
     const img = new Image()
     img.onerror = err => {
       assert.equal(err.message, "JPEG datastream contains no image")
+      assert.strictEqual(img.complete, true)
       done()
     }
     img.src = `${__dirname}/fixtures/159-crash1.jpg`
@@ -218,6 +223,7 @@ describe('Image', function () {
       img.src = Buffer.alloc(0)
       assert.strictEqual(img.width, 0)
       assert.strictEqual(img.height, 0)
+      assert.strictEqual(img.complete, true)
 
       assert.strictEqual(onerrorCalled, 1)
     })
