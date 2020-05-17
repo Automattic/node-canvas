@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 * Switch CI to Github Actions. (Adds Windows and macOS builds.)
+* Updated dependencies in documentation for ubuntu 18~20.
 ### Added
 * Export `rsvgVersion`.
 ### Fixed
