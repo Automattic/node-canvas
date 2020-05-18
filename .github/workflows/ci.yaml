@@ -16,7 +16,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y libcairo2-dev libjpeg8-dev libpango1.0-dev libgif-dev librsvg2-dev
+          sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
       - name: Install
         run: npm install --build-from-source
       - name: Test
