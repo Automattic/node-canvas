@@ -64,7 +64,7 @@ jobs:
       - name: Install Dependencies
         run: |
           brew update
-          brew install pkg-config cairo pango libpng jpeg giflib librsvg
+          brew install pkg-config cairo pango libpng jpeg giflib librsvg icu4c
       - name: Install
         run: npm install --build-from-source
       - name: Test

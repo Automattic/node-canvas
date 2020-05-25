@@ -85,7 +85,8 @@
             '-l<(GTK_Root)/lib/pango-1.0.lib',
             '-l<(GTK_Root)/lib/freetype.lib',
             '-l<(GTK_Root)/lib/glib-2.0.lib',
-            '-l<(GTK_Root)/lib/gobject-2.0.lib'
+            '-l<(GTK_Root)/lib/gobject-2.0.lib',
+            '-licu'
           ],
           'include_dirs': [
             '<(GTK_Root)/include',
@@ -140,10 +141,24 @@
           'cflags!': ['-fno-exceptions'],
           'cflags_cc!': ['-fno-exceptions']
         }],
+        ['OS=="linux"', {
+          'libraries': [
+            '<!@(pkg-config icu-uc --libs)'
+          ],
+          'include_dirs': [
+            '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)'
+          ]
+        }],
         ['OS=="mac"', {
           'xcode_settings': {
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
-          }
+          },
+          'libraries': [
+            '-L/usr/local/opt/icu4c/lib -licuuc'
+          ],
+          'include_dirs': [
+            '/usr/local/opt/icu4c/include'
+          ]
         }],
         ['with_jpeg=="true"', {
           'defines': [
