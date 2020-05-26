@@ -1,5 +1,7 @@
 #include "closure.h"
 
+#ifdef HAVE_JPEG
+
 void JpegClosure::init_destination(j_compress_ptr cinfo) {
   JpegClosure* closure = (JpegClosure*)cinfo->client_data;
   closure->vec.resize(PAGE_SIZE);
@@ -21,3 +23,5 @@ void JpegClosure::term_destination(j_compress_ptr cinfo) {
   size_t finalSize = closure->vec.size() - closure->jpeg_dest_mgr->free_in_buffer;
   closure->vec.resize(finalSize);
 }
+
+#endif
