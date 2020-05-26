@@ -282,6 +282,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
   }
 }
 
+#ifdef HAVE_JPEG
 static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
   // user agent must use its default quality value, as if the quality argument
@@ -311,6 +312,7 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
     }
   }
 }
+#endif
 
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
