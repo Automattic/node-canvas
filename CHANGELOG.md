@@ -17,6 +17,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix assertion failure when using Visual Studio Code debugger to inspect Image prototype (#1534)
 * Fix signed/unsigned comparison warning introduced in 2.6.0, and function cast warnings with GCC8+
 * Fix to compile without JPEG support (#1593).
+* Fix compile errors with cairo
 
 2.6.1
 ==================
