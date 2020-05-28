@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include "backend/ImageBackend.h"
-#include <cairo/cairo-pdf.h>
+#include <cairo-pdf.h>
 #include "Canvas.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
