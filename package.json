@@ -49,7 +49,7 @@
   "types": "types/index.d.ts",
   "dependencies": {
     "nan": "^2.14.0",
-    "node-pre-gyp": "^0.11.0",
+    "node-pre-gyp": "^0.15.0",
     "simple-get": "^3.0.3"
   },
   "devDependencies": {

@@ -19,6 +19,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix to compile without JPEG support (#1593).
 * Fix compile errors with cairo
 * Fix Image#complete if the image failed to load.
+* Upgrade node-pre-gyp to v0.15.0 to use latest version of needle to fix error when downloading prebuilds.
 
 2.6.1
 ==================
