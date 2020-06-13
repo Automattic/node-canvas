@@ -4,7 +4,7 @@
  * milliseconds to complete.
  */
 
-var createCanvas = require('../').createCanvas
+var { createCanvas, ImageData } = require('../')
 var canvas = createCanvas(200, 200)
 var largeCanvas = createCanvas(1000, 1000)
 var ctx = canvas.getContext('2d')
@@ -63,6 +63,28 @@ function done (benchmark, times, start, isAsync) {
 }
 
 // node-canvas
+
+const id0 = new ImageData(200, 200)
+
+bm('putImageData, all a=0', function () {
+  ctx.putImageData(id0, 0, 0)
+})
+
+const id255 = new ImageData(200, 200)
+id255.data.fill(0xFF)
+
+bm('putImageData, all a=0xFF', function () {
+  ctx.putImageData(id255, 0, 0)
+})
+
+const idRand = new ImageData(200, 200)
+for (let i = 0; i < idRand.data.length; i++) {
+  idRand.data[i] = 255 * Math.random()
+}
+
+bm('putImageData, mixed a', function () {
+  ctx.putImageData(idRand, 0, 0)
+})
 
 bm('fillStyle= name', function () {
   ctx.fillStyle = 'transparent'
