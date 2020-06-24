@@ -20,6 +20,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix compile errors with cairo
 * Fix Image#complete if the image failed to load.
 * Upgrade node-pre-gyp to v0.15.0 to use latest version of needle to fix error when downloading prebuilds.
+* The small-caps variant setting is now honored if included in a font string
 
 2.6.1
 ==================
