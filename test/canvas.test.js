@@ -446,6 +446,26 @@ describe('Canvas', function () {
     assert.equal(ctx.font, '15px Arial, sans-serif')
   });
 
+  it('Context2d#font=small-caps', function () {
+    registerFont('./examples/crimsonFont/Crimson-Bold.ttf', {family: 'Crimson'})
+    let canvas = createCanvas(200,200),
+        ctx = canvas.getContext('2d');
+
+    // here is where the dot will appear above a lower-case 'i' (and be missing for small-caps)
+    let offsetX = 15, offsetY = -115;
+
+    ctx.font = "180px Crimson";
+    ctx.fillText('i', 20, 180);
+    let lcDottedI = ctx.getImageData(20+offsetX, 180+offsetY, 20,20).data;
+    assert.equal(lcDottedI.some(p => p > 0), true);
+
+    ctx.font = "small-caps 180px Crimson";
+    ctx.fillText('i', 80, 180);
+    let scEmptySpace = ctx.getImageData(80+offsetX, 180+offsetY, 20,20).data;
+    assert.equal(scEmptySpace.every(p => p == 0), true);
+  });
+
+
   it('Context2d#lineWidth=', function () {
     var canvas = createCanvas(200, 200)
       , ctx = canvas.getContext('2d');

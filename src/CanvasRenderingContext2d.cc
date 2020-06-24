@@ -2499,6 +2499,7 @@ NAN_GETTER(Context2d::GetFont) {
 
 /*
  * Set font:
+ *   - variant
  *   - weight
  *   - style
  *   - size
@@ -2523,6 +2524,7 @@ NAN_SETTER(Context2d::SetFont) {
   if (mparsed->IsUndefined()) return;
   Local<Object> font = Nan::To<Object>(mparsed).ToLocalChecked();
 
+  Nan::Utf8String variant(Nan::Get(font, Nan::New("variant").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String weight(Nan::Get(font, Nan::New("weight").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String style(Nan::Get(font, Nan::New("style").ToLocalChecked()).ToLocalChecked());
   double size = Nan::To<double>(Nan::Get(font, Nan::New("size").ToLocalChecked()).ToLocalChecked()).FromMaybe(0);
@@ -2546,6 +2548,17 @@ NAN_SETTER(Context2d::SetFont) {
 
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
+
+  PangoAttribute *features;
+  if (strlen(*variant) > 0 && strcmp("small-caps", *variant)==0) {
+    features = pango_attr_font_features_new("smcp 1, onum 1");
+  }else{
+    features = pango_attr_font_features_new("smcp 0, onum 0");
+  }
+  PangoAttrList *attrList = pango_attr_list_new();
+  pango_attr_list_insert(attrList, features);
+  pango_layout_set_attributes(context->_layout, attrList);
+  pango_attr_list_unref(attrList);
 
   context->_font.Reset(value);
 }
