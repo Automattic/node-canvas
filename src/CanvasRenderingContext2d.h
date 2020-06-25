@@ -37,6 +37,7 @@ typedef struct {
   double shadowOffsetY;
   canvas_draw_mode_t textDrawingMode;
   PangoFontDescription *fontDescription;
+  PangoAttrList *textAttributes;
   bool imageSmoothingEnabled;
 } canvas_state_t;
 

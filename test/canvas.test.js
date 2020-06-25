@@ -459,10 +459,18 @@ describe('Canvas', function () {
     let lcDottedI = ctx.getImageData(20+offsetX, 180+offsetY, 20,20).data;
     assert.equal(lcDottedI.some(p => p > 0), true);
 
+    ctx.save()
+
     ctx.font = "small-caps 180px Crimson";
     ctx.fillText('i', 80, 180);
     let scEmptySpace = ctx.getImageData(80+offsetX, 180+offsetY, 20,20).data;
     assert.equal(scEmptySpace.every(p => p == 0), true);
+
+    ctx.restore()
+
+    ctx.fillText('i', 140, 180);
+    let lcDottedAgain = ctx.getImageData(140+offsetX, 180+offsetY, 20,20).data;
+    assert.equal(lcDottedAgain.some(p => p > 0), true);
   });
 
 
