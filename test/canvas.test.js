@@ -447,8 +447,13 @@ describe('Canvas', function () {
   });
 
   it('Context2d#font=small-caps', function () {
+    if (process.platform == 'win32'){
+      // the windows version of pango (< 1.37.1) is too old to support font varients
+      this.skip();
+    }
+
     registerFont('./examples/crimsonFont/Crimson-Bold.ttf', {family: 'Crimson'})
-    let canvas = createCanvas(200,200),
+    let canvas = createCanvas(200, 200),
         ctx = canvas.getContext('2d');
 
     // here is where the dot will appear above a lower-case 'i' (and be missing for small-caps)
@@ -456,20 +461,20 @@ describe('Canvas', function () {
 
     ctx.font = "180px Crimson";
     ctx.fillText('i', 20, 180);
-    let lcDottedI = ctx.getImageData(20+offsetX, 180+offsetY, 20,20).data;
+    let lcDottedI = ctx.getImageData(20 + offsetX, 180 + offsetY, 20, 20).data;
     assert.equal(lcDottedI.some(p => p > 0), true);
 
     ctx.save()
 
     ctx.font = "small-caps 180px Crimson";
     ctx.fillText('i', 80, 180);
-    let scEmptySpace = ctx.getImageData(80+offsetX, 180+offsetY, 20,20).data;
+    let scEmptySpace = ctx.getImageData(80 + offsetX, 180 + offsetY, 20, 20).data;
     assert.equal(scEmptySpace.every(p => p == 0), true);
 
     ctx.restore()
 
     ctx.fillText('i', 140, 180);
-    let lcDottedAgain = ctx.getImageData(140+offsetX, 180+offsetY, 20,20).data;
+    let lcDottedAgain = ctx.getImageData(140 + offsetX, 180 + offsetY, 20, 20).data;
     assert.equal(lcDottedAgain.some(p => p > 0), true);
   });
 
