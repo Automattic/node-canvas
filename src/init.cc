@@ -87,6 +87,10 @@ NAN_MODULE_INIT(init) {
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
   Nan::Set(target, Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked()).Check();
+
+  char pango_version[10];
+  snprintf(pango_version, 10, "%d.%d.%d", PANGO_VERSION_MAJOR, PANGO_VERSION_MINOR, PANGO_VERSION_MICRO);
+  Nan::Set(target, Nan::New<String>("pangoVersion").ToLocalChecked(), Nan::New<String>(pango_version).ToLocalChecked()).Check();
 }
 
 NODE_MODULE(canvas, init);

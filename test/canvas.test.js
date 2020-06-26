@@ -11,10 +11,12 @@ const createImageData = require('../').createImageData
 const loadImage = require('../').loadImage
 const parseFont = require('../').parseFont
 const registerFont = require('../').registerFont
+const pangoVersion = require('../').pangoVersion
 
 const assert = require('assert')
 const os = require('os')
 const Readable = require('stream').Readable
+const semver = require('semver')
 
 describe('Canvas', function () {
   // Run with --expose-gc and uncomment this line to help find memory problems:
@@ -445,6 +447,38 @@ describe('Canvas', function () {
     ctx.font = 'Helvetica, sans' // invalid
     assert.equal(ctx.font, '15px Arial, sans-serif')
   });
+
+  it('Context2d#font=small-caps', function () {
+    if (!semver.satisfies(pangoVersion, '>=1.37.1')){
+      this.skip();
+    }
+
+    registerFont('./examples/crimsonFont/Crimson-Bold.ttf', {family: 'Crimson'})
+    let canvas = createCanvas(200, 200),
+        ctx = canvas.getContext('2d');
+
+    // here is where the dot will appear above a lower-case 'i' (and be missing for small-caps)
+    let offsetX = 15, offsetY = -115;
+
+    ctx.font = "180px Crimson";
+    ctx.fillText('i', 20, 180);
+    let lcDottedI = ctx.getImageData(20 + offsetX, 180 + offsetY, 20, 20).data;
+    assert.equal(lcDottedI.some(p => p > 0), true);
+
+    ctx.save()
+
+    ctx.font = "small-caps 180px Crimson";
+    ctx.fillText('i', 80, 180);
+    let scEmptySpace = ctx.getImageData(80 + offsetX, 180 + offsetY, 20, 20).data;
+    assert.equal(scEmptySpace.every(p => p == 0), true);
+
+    ctx.restore()
+
+    ctx.fillText('i', 140, 180);
+    let lcDottedAgain = ctx.getImageData(140 + offsetX, 180 + offsetY, 20, 20).data;
+    assert.equal(lcDottedAgain.some(p => p > 0), true);
+  });
+
 
   it('Context2d#lineWidth=', function () {
     var canvas = createCanvas(200, 200)

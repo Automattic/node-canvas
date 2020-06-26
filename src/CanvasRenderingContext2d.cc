@@ -199,6 +199,7 @@ Context2d::Context2d(Canvas *canvas) {
 Context2d::~Context2d() {
   while(stateno >= 0) {
     pango_font_description_free(states[stateno]->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
     free(states[stateno--]);
   }
   g_object_unref(_layout);
@@ -213,6 +214,7 @@ Context2d::~Context2d() {
 void Context2d::resetState(bool init) {
   if (!init) {
     pango_font_description_free(state->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
   }
 
   state->shadowBlur = 0;
@@ -235,6 +237,8 @@ void Context2d::resetState(bool init) {
   state->fontDescription = pango_font_description_from_string("sans serif");
   pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
   pango_layout_set_font_description(_layout, state->fontDescription);
+  state->textAttributes = pango_attr_list_new();
+  pango_layout_set_attributes(_layout, state->textAttributes);
 
   _resetPersistentHandles();
 }
@@ -258,6 +262,8 @@ Context2d::save() {
     states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
     memcpy(states[stateno], state, sizeof(canvas_state_t));
     states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
+    states[stateno]->textAttributes = pango_attr_list_copy(states[stateno-1]->textAttributes);
+    pango_layout_set_attributes(_layout, states[stateno]->textAttributes);
     state = states[stateno];
   }
 }
@@ -271,10 +277,12 @@ Context2d::restore() {
   if (stateno > 0) {
     cairo_restore(_context);
     pango_font_description_free(states[stateno]->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
     free(states[stateno]);
     states[stateno] = NULL;
     state = states[--stateno];
     pango_layout_set_font_description(_layout, state->fontDescription);
+    pango_layout_set_attributes(_layout, state->textAttributes);
   }
 }
 
@@ -2499,6 +2507,7 @@ NAN_GETTER(Context2d::GetFont) {
 
 /*
  * Set font:
+ *   - variant
  *   - weight
  *   - style
  *   - size
@@ -2523,6 +2532,7 @@ NAN_SETTER(Context2d::SetFont) {
   if (mparsed->IsUndefined()) return;
   Local<Object> font = Nan::To<Object>(mparsed).ToLocalChecked();
 
+  Nan::Utf8String variant(Nan::Get(font, Nan::New("variant").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String weight(Nan::Get(font, Nan::New("weight").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String style(Nan::Get(font, Nan::New("style").ToLocalChecked()).ToLocalChecked());
   double size = Nan::To<double>(Nan::Get(font, Nan::New("size").ToLocalChecked()).ToLocalChecked()).FromMaybe(0);
@@ -2546,6 +2556,16 @@ NAN_SETTER(Context2d::SetFont) {
 
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
+
+  #if PANGO_VERSION >= PANGO_VERSION_ENCODE(1, 37, 1)
+  PangoAttribute *features;
+  if (strlen(*variant) > 0 && strcmp("small-caps", *variant) == 0) {
+    features = pango_attr_font_features_new("smcp 1, onum 1");
+  } else {
+    features = pango_attr_font_features_new("");
+  }
+  pango_attr_list_change(context->state->textAttributes, features);
+  #endif
 
   context->_font.Reset(value);
 }
