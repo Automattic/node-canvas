@@ -11,10 +11,12 @@ const createImageData = require('../').createImageData
 const loadImage = require('../').loadImage
 const parseFont = require('../').parseFont
 const registerFont = require('../').registerFont
+const pangoVersion = require('../').pangoVersion
 
 const assert = require('assert')
 const os = require('os')
 const Readable = require('stream').Readable
+const semver = require('semver')
 
 describe('Canvas', function () {
   // Run with --expose-gc and uncomment this line to help find memory problems:
@@ -447,8 +449,7 @@ describe('Canvas', function () {
   });
 
   it('Context2d#font=small-caps', function () {
-    if (process.platform == 'win32'){
-      // the windows version of pango (< 1.37.1) is too old to support font varients
+    if (!semver.satisfies(pangoVersion, '>=1.37.1')){
       this.skip();
     }
 
