@@ -2557,6 +2557,7 @@ NAN_SETTER(Context2d::SetFont) {
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
 
+  #if PANGO_VERSION >= PANGO_VERSION_ENCODE(1, 37, 1)
   PangoAttribute *features;
   if (strlen(*variant) > 0 && strcmp("small-caps", *variant) == 0) {
     features = pango_attr_font_features_new("smcp 1, onum 1");
@@ -2564,6 +2565,7 @@ NAN_SETTER(Context2d::SetFont) {
     features = pango_attr_font_features_new("");
   }
   pango_attr_list_change(context->state->textAttributes, features);
+  #endif
 
   context->_font.Reset(value);
 }
