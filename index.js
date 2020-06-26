@@ -81,6 +81,8 @@ module.exports = {
   gifVersion: bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined,
   /** freetype version. */
   freetypeVersion: bindings.freetypeVersion,
+  /** pango version. */
+  pangoVersion: bindings.pangoVersion,
   /** rsvg version. */
   rsvgVersion: bindings.rsvgVersion
 }
