@@ -21,11 +21,28 @@
 
 using namespace v8;
 
-// Windows doesn't support the C99 names for these
 #ifdef _MSC_VER
-#define isnan(x) _isnan(x)
-#define isinf(x) (!_finite(x))
+// Windows doesn't support the C99 names for these. TODO unnecessary,
+// should be using std::isnan.
+# define isnan(x) _isnan(x)
+# define isinf(x) (!_finite(x))
+# include <intrin.h>
+# define bswap32 _byteswap_ulong
+#else
+# ifdef __x86_64__
+#  include <x86intrin.h>
+# endif
+# define bswap32 __builtin_bswap32
 #endif
+
+static inline uint32_t rotr(uint32_t n, unsigned int c) {
+  // GCC has no portable _rotr intrinsic, so rely on idiom recognition. Works
+  // for all supported versions of MSVC, GCC x86, GCC ARM, Clang.
+  // https://stackoverflow.com/a/776523/1218408
+  const unsigned int mask = CHAR_BIT * sizeof(n) - 1;
+  c &= mask;
+  return (n >> c) | (n << ((~c + 1) & mask));
+}
 
 #ifndef isnan
 #define isnan(x) std::isnan(x)
@@ -852,32 +869,70 @@ NAN_METHOD(Context2d::PutImageData) {
     for (int y = 0; y < rows; ++y) {
       uint8_t *dstRow = dst;
       uint8_t *srcRow = src;
-      for (int x = 0; x < cols; ++x) {
-        // rgba
-        uint8_t r = *srcRow++;
-        uint8_t g = *srcRow++;
-        uint8_t b = *srcRow++;
-        uint8_t a = *srcRow++;
+#if defined(__x86_64__) || defined(_M_X64)
+      int x = 0;
+      for (; x < cols - 1; x += 2) { // Two columns at a time
+        // Fast path if both alphas are 0.
+        uint64_t px64;
+        memcpy(&px64, srcRow, 8);
+        const uint64_t aMask = 0xFF000000'FF000000;
+        const uint64_t aOnly = px64 & aMask;
+        if (aOnly == 0) {
+          memset(dstRow, 0, 8);
+          dstRow += 8;
+          srcRow += 8;
+          continue;
+        }
 
-        // argb
-        // performance optimization: fully transparent/opaque pixels can be
-        // processed more efficiently.
+        __m128i px;
+        memcpy(&px, srcRow, 8); // gcc doesn't define _mm_loadu_si64
+        px = _mm_unpacklo_epi8(px, _mm_setzero_si128());
+        // rgba -> bgra
+        px = _mm_shufflelo_epi16(px, 0b11000110);
+        px = _mm_shufflehi_epi16(px, 0b11000110);
+
+        // Fast path if both alphas are 255.
+        if (aOnly != aMask) {
+          // broadcast alpha
+          __m128i av = _mm_shufflelo_epi16(px, 0b11111111);
+                  av = _mm_shufflehi_epi16(av, 0b11111111);
+          // Multiply by alpha.
+          // Set alpha channel multiplier to 255 to undo upcoming division by 255
+          const __m128i a255 = _mm_set_epi16(0xFF, 0, 0, 0, 0xFF, 0, 0, 0);
+          av = _mm_or_si128(av, a255);
+          px = _mm_mullo_epi16(px, av);
+          // divide by 255
+          px = _mm_mulhi_epu16(px, _mm_set1_epi16(0x8081));
+          px = _mm_srli_epi16(px, 7);
+        }
+
+        // pack int16 to int8
+        px = _mm_packus_epi16(px, px);
+        memcpy(dstRow, &px, 8);
+        dstRow += 8;
+        srcRow += 8;
+      }
+      if (cols & 1) {
+#else
+      for (int x = 0; x < cols; x++) {
+#endif
+        uint32_t c;
+        memcpy(&c, srcRow, 4); // rgba (LE)
+        srcRow += 4;
+        uint32_t a = c >> 24;
         if (a == 0) {
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-        } else if (a == 255) {
-          *dstRow++ = b;
-          *dstRow++ = g;
-          *dstRow++ = r;
-          *dstRow++ = a;
+          uint32_t zero = 0;
+          memcpy(dstRow, &zero, 4);
+        } else if (a == 255) { // rgba (LE)
+          c = bswap32(c);      // abgr
+          c = rotr(c, 8);      // bgra
+          memcpy(dstRow, &c, 4);
         } else {
-          float alpha = (float)a / 255;
-          *dstRow++ = b * alpha;
-          *dstRow++ = g * alpha;
-          *dstRow++ = r * alpha;
-          *dstRow++ = a;
+          uint8_t r = (c & 0xFF) * a / 255;
+          uint8_t g = (c >> 8 & 0xFF) * a / 255;
+          uint8_t b = (c >> 16 & 0xFF) * a / 255;
+          uint32_t bgra = (a << 24) | (r << 16) | (g << 8) | b;
+          memcpy(dstRow, &bgra, 4);
         }
       }
       dst += dstStride;
@@ -892,13 +947,13 @@ NAN_METHOD(Context2d::PutImageData) {
       uint8_t *dstRow = dst;
       uint8_t *srcRow = src;
       for (int x = 0; x < cols; ++x) {
-        // rgba
+        // rgb[a]
         uint8_t r = *srcRow++;
         uint8_t g = *srcRow++;
         uint8_t b = *srcRow++;
         srcRow++;
 
-        // argb
+        // bgra
         *dstRow++ = b;
         *dstRow++ = g;
         *dstRow++ = r;
