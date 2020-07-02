@@ -88,6 +88,7 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [Canvas#createJPEGStream()](#canvascreatejpegstream)
 * [Canvas#createPDFStream()](#canvascreatepdfstream)
 * [Canvas#toDataURL()](#canvastodataurl)
+* [CanvasRenderingContext2D#textTracking](#canvasrenderingcontext2dtexttracking)
 * [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
 * [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
 * [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
@@ -391,6 +392,14 @@ canvas.toDataURL('image/jpeg', (err, jpeg) => { }) // sync JPEG is not supported
 canvas.toDataURL('image/jpeg', {...opts}, (err, jpeg) => { }) // see Canvas#createJPEGStream for valid options
 canvas.toDataURL('image/jpeg', quality, (err, jpeg) => { }) // spec-following; quality from 0 to 1
 ```
+
+### CanvasRenderingContext2D#textTracking
+
+> ```ts
+> context.textTracking: Number
+> ```
+
+Defaults to 0. Sets the additional amount of space between characters to be added or subtracted when drawing text to the canvas. The amount of space is measured in integer units of thousandths-of-an-em, meaning a value of 1000 will separate characters by 1 'em' (a.k.a., the current point-size of the font). Positive values will increase the letter-spacing and negative values will tighten it.
 
 ### CanvasRenderingContext2D#patternQuality
 

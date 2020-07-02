@@ -172,6 +172,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle, ctor);
   SetProtoAccessor(proto, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle, ctor);
   SetProtoAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont, ctor);
+  SetProtoAccessor(proto, Nan::New("textTracking").ToLocalChecked(), GetTextTracking, SetTextTracking, ctor);
   SetProtoAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline, ctor);
   SetProtoAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign, ctor);
   Local<Context> ctx = Nan::GetCurrentContext();
@@ -199,6 +200,7 @@ Context2d::Context2d(Canvas *canvas) {
 Context2d::~Context2d() {
   while(stateno >= 0) {
     pango_font_description_free(states[stateno]->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
     free(states[stateno--]);
   }
   g_object_unref(_layout);
@@ -213,6 +215,7 @@ Context2d::~Context2d() {
 void Context2d::resetState(bool init) {
   if (!init) {
     pango_font_description_free(state->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
   }
 
   state->shadowBlur = 0;
@@ -224,6 +227,7 @@ void Context2d::resetState(bool init) {
   state->fillGradient = nullptr;
   state->strokeGradient = nullptr;
   state->textBaseline = TEXT_BASELINE_ALPHABETIC;
+  state->textTracking = 0;
   rgba_t transparent = { 0, 0, 0, 1 };
   rgba_t transparent_black = { 0, 0, 0, 0 };
   state->fill = transparent;
@@ -235,6 +239,8 @@ void Context2d::resetState(bool init) {
   state->fontDescription = pango_font_description_from_string("sans serif");
   pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
   pango_layout_set_font_description(_layout, state->fontDescription);
+  state->textAttributes = pango_attr_list_new();
+  pango_layout_set_attributes(_layout, state->textAttributes);
 
   _resetPersistentHandles();
 }
@@ -244,6 +250,7 @@ void Context2d::_resetPersistentHandles() {
   _strokeStyle.Reset();
   _font.Reset();
   _textBaseline.Reset();
+  _textTracking.Reset();
   _textAlign.Reset();
 }
 
@@ -258,6 +265,8 @@ Context2d::save() {
     states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
     memcpy(states[stateno], state, sizeof(canvas_state_t));
     states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
+    states[stateno]->textAttributes = pango_attr_list_copy(states[stateno-1]->textAttributes);
+    pango_layout_set_attributes(_layout, states[stateno]->textAttributes);
     state = states[stateno];
   }
 }
@@ -271,10 +280,12 @@ Context2d::restore() {
   if (stateno > 0) {
     cairo_restore(_context);
     pango_font_description_free(states[stateno]->fontDescription);
+    pango_attr_list_unref(states[stateno]->textAttributes);
     free(states[stateno]);
     states[stateno] = NULL;
     state = states[--stateno];
     pango_layout_set_font_description(_layout, state->fontDescription);
+    pango_layout_set_attributes(_layout, state->textAttributes);
   }
 }
 
@@ -2499,6 +2510,7 @@ NAN_GETTER(Context2d::GetFont) {
 
 /*
  * Set font:
+ *   - variant
  *   - weight
  *   - style
  *   - size
@@ -2523,6 +2535,7 @@ NAN_SETTER(Context2d::SetFont) {
   if (mparsed->IsUndefined()) return;
   Local<Object> font = Nan::To<Object>(mparsed).ToLocalChecked();
 
+  Nan::Utf8String variant(Nan::Get(font, Nan::New("variant").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String weight(Nan::Get(font, Nan::New("weight").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String style(Nan::Get(font, Nan::New("style").ToLocalChecked()).ToLocalChecked());
   double size = Nan::To<double>(Nan::Get(font, Nan::New("size").ToLocalChecked()).ToLocalChecked()).FromMaybe(0);
@@ -2547,7 +2560,44 @@ NAN_SETTER(Context2d::SetFont) {
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
 
+  #if PANGO_VERSION >= PANGO_VERSION_ENCODE(1, 37, 1)
+  PangoAttribute *features;
+  if (strlen(*variant) > 0 && strcmp("small-caps", *variant) == 0) {
+    features = pango_attr_font_features_new("smcp 1, onum 1");
+  } else {
+    features = pango_attr_font_features_new("");
+  }
+  pango_attr_list_change(context->state->textAttributes, features);
+  #endif
+
+  int oneEm = pango_font_description_get_size(context->state->fontDescription);
+  int perEm = context->state->textTracking;
+  PangoAttribute *tracking = pango_attr_letter_spacing_new(oneEm * perEm / 1000.0);
+  pango_attr_list_change(context->state->textAttributes, tracking);
+
   context->_font.Reset(value);
+}
+
+/*
+ * Get text tracking.
+ */
+
+NAN_GETTER(Context2d::GetTextTracking) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(context->state->textTracking));
+}
+
+/*
+ * Set text tracking.
+ */
+
+NAN_SETTER(Context2d::SetTextTracking) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  int oneEm = pango_font_description_get_size(context->state->fontDescription);
+  int perEm = Nan::To<int>(value).FromMaybe(0);
+  PangoAttribute *tracking = pango_attr_letter_spacing_new(oneEm * perEm / 1000.0);
+  pango_attr_list_change(context->state->textAttributes, tracking);
+  context->state->textTracking = perEm;
 }
 
 /*
