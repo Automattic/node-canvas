@@ -172,6 +172,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle, ctor);
   SetProtoAccessor(proto, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle, ctor);
   SetProtoAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont, ctor);
+  SetProtoAccessor(proto, Nan::New("textTracking").ToLocalChecked(), GetTextTracking, SetTextTracking, ctor);
   SetProtoAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline, ctor);
   SetProtoAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign, ctor);
   Local<Context> ctx = Nan::GetCurrentContext();
@@ -226,6 +227,7 @@ void Context2d::resetState(bool init) {
   state->fillGradient = nullptr;
   state->strokeGradient = nullptr;
   state->textBaseline = TEXT_BASELINE_ALPHABETIC;
+  state->textTracking = 0;
   rgba_t transparent = { 0, 0, 0, 1 };
   rgba_t transparent_black = { 0, 0, 0, 0 };
   state->fill = transparent;
@@ -248,6 +250,7 @@ void Context2d::_resetPersistentHandles() {
   _strokeStyle.Reset();
   _font.Reset();
   _textBaseline.Reset();
+  _textTracking.Reset();
   _textAlign.Reset();
 }
 
@@ -2567,7 +2570,34 @@ NAN_SETTER(Context2d::SetFont) {
   pango_attr_list_change(context->state->textAttributes, features);
   #endif
 
+  int oneEm = pango_font_description_get_size(context->state->fontDescription);
+  int perEm = context->state->textTracking;
+  PangoAttribute *tracking = pango_attr_letter_spacing_new(oneEm * perEm / 1000.0);
+  pango_attr_list_change(context->state->textAttributes, tracking);
+
   context->_font.Reset(value);
+}
+
+/*
+ * Get text tracking.
+ */
+
+NAN_GETTER(Context2d::GetTextTracking) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  info.GetReturnValue().Set(Nan::New<Number>(context->state->textTracking));
+}
+
+/*
+ * Set text tracking.
+ */
+
+NAN_SETTER(Context2d::SetTextTracking) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  int oneEm = pango_font_description_get_size(context->state->fontDescription);
+  int perEm = Nan::To<int>(value).FromMaybe(0);
+  PangoAttribute *tracking = pango_attr_letter_spacing_new(oneEm * perEm / 1000.0);
+  pango_attr_list_change(context->state->textAttributes, tracking);
+  context->state->textTracking = perEm;
 }
 
 /*

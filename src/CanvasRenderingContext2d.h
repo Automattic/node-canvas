@@ -31,6 +31,7 @@ typedef struct {
   float globalAlpha;
   short textAlignment;
   short textBaseline;
+  int textTracking;
   rgba_t shadow;
   int shadowBlur;
   double shadowOffsetX;
@@ -134,6 +135,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_GETTER(GetFillStyle);
     static NAN_GETTER(GetStrokeStyle);
     static NAN_GETTER(GetFont);
+    static NAN_GETTER(GetTextTracking);
     static NAN_GETTER(GetTextBaseline);
     static NAN_GETTER(GetTextAlign);
     static NAN_SETTER(SetPatternQuality);
@@ -156,6 +158,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_SETTER(SetFillStyle);
     static NAN_SETTER(SetStrokeStyle);
     static NAN_SETTER(SetFont);
+    static NAN_SETTER(SetTextTracking);
     static NAN_SETTER(SetTextBaseline);
     static NAN_SETTER(SetTextAlign);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
@@ -194,6 +197,7 @@ class Context2d: public Nan::ObjectWrap {
     Nan::Persistent<v8::Value> _fillStyle;
     Nan::Persistent<v8::Value> _strokeStyle;
     Nan::Persistent<v8::Value> _font;
+    Nan::Persistent<v8::Value> _textTracking;
     Nan::Persistent<v8::Value> _textBaseline;
     Nan::Persistent<v8::Value> _textAlign;
     Canvas *_canvas;

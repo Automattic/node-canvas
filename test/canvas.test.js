@@ -568,6 +568,31 @@ describe('Canvas', function () {
     assert.equal('end', ctx.textAlign);
   });
 
+  it('Context2d#textTracking', function () {
+    var canvas = createCanvas(200,200)
+      , ctx = canvas.getContext('2d')
+      , measureWidth = () => ctx.measureText('MMMMMMMMMMMMM').width;
+
+    let normalWidth = measureWidth();
+    assert.equal(0, ctx.textTracking);
+
+    ctx.save();
+
+    ctx.textTracking = -500;
+    assert.equal(-500, ctx.textTracking);
+    assert.ok(measureWidth() < normalWidth / 2 );
+
+    ctx.textTracking = 1000;
+    assert.equal(1000, ctx.textTracking);
+    assert.ok(measureWidth() > normalWidth * 2 );
+
+    ctx.restore();
+
+    assert.equal(0, ctx.textTracking);
+    assert.equal(measureWidth(), normalWidth );
+  });
+
+
   describe('#toBuffer', function () {
     it('Canvas#toBuffer()', function () {
       var buf = createCanvas(200,200).toBuffer();
