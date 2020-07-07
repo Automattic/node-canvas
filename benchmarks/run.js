@@ -65,7 +65,9 @@ function done (benchmark, times, start, isAsync) {
 // node-canvas
 
 bm('fillStyle= name', function () {
-  ctx.fillStyle = 'transparent'
+  for (let i = 0; i < 10000; i++) {
+    ctx.fillStyle = '#fefefe'
+  }
 })
 
 bm('lineTo()', function () {
