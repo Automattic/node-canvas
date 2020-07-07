@@ -1766,10 +1766,6 @@ describe('Canvas', function () {
       else
         assert.strictEqual(byte, 255);
     });
-
-    assert.throws(function () {
-      ctx.fillStyle = Object.create(null);
-    });
   });
 
 });

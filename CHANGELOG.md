@@ -24,6 +24,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix compile errors with cairo
 * Fix Image#complete if the image failed to load.
 * Upgrade node-pre-gyp to v0.15.0 to use latest version of needle to fix error when downloading prebuilds.
+* Don't throw if `fillStyle` or `strokeStyle` is set to an object, but that object is not a Gradient or Pattern. (This behavior was non-standard: invalid inputs are supposed to be ignored.)
 
 2.6.1
 ==================
