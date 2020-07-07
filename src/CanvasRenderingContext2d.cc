@@ -1844,9 +1844,6 @@ NAN_SETTER(Context2d::SetFillStyle) {
       context->_fillStyle.Reset(value);
       Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
       context->state->fillPattern = pattern->pattern();
-    } else {
-      // TODO this is non-standard
-      Nan::ThrowTypeError("Gradient or Pattern expected");
     }
   }
 }
@@ -1890,9 +1887,6 @@ NAN_SETTER(Context2d::SetStrokeStyle) {
       context->_strokeStyle.Reset(value);
       Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
       context->state->strokePattern = pattern->pattern();
-    } else {
-      // TODO this is non-standard
-      return Nan::ThrowTypeError("Gradient or Pattern expected");
     }
   }
 }
