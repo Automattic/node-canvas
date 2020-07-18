@@ -8,12 +8,24 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Switch CI to Github Actions. (Adds Windows and macOS builds.)
+* Switch prebuilds to GitHub actions in the Automattic/node-canvas repository.
+  Previously these were in the [node-gfx/node-canvas-prebuilt](https://github.com/node-gfx/node-canvas-prebuilt)
+  and triggered manually.
+* Speed up `fillStyle=` and `strokeStyle=`
 ### Added
+* Export `rsvgVersion`.
 ### Fixed
 * Fix BMP issues. (#1497)
 * Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)
 * Fix assertion failure when using Visual Studio Code debugger to inspect Image prototype (#1534)
 * Tweak text baseline positioning to be as close as possible to browser canvas (#1562)
+* Fix signed/unsigned comparison warning introduced in 2.6.0, and function cast warnings with GCC8+
+* Fix to compile without JPEG support (#1593).
+* Fix compile errors with cairo
+* Fix Image#complete if the image failed to load.
+* Upgrade node-pre-gyp to v0.15.0 to use latest version of needle to fix error when downloading prebuilds.
+* Don't throw if `fillStyle` or `strokeStyle` is set to an object, but that object is not a Gradient or Pattern. (This behavior was non-standard: invalid inputs are supposed to be ignored.)
 
 2.6.1
 ==================

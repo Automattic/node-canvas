@@ -100,8 +100,7 @@ NAN_METHOD(Image::New) {
  */
 
 NAN_GETTER(Image::GetComplete) {
-  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-  info.GetReturnValue().Set(Nan::New<Boolean>(Image::COMPLETE == img->state));
+  info.GetReturnValue().Set(Nan::New<Boolean>(true));
 }
 
 /*
