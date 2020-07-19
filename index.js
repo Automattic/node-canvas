@@ -54,7 +54,7 @@ module.exports = {
   Context2d: CanvasRenderingContext2D, // Legacy/compat export
   CanvasRenderingContext2D,
   CanvasGradient: bindings.CanvasGradient,
-  CanvasPattern: bindings.CanvasPattern,
+  CanvasPattern,
   Image,
   ImageData: bindings.ImageData,
   PNGStream,
