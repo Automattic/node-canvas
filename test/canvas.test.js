@@ -1254,6 +1254,8 @@ describe('Canvas', function () {
   });
 
   it('Context2d#createPattern(Canvas).setTransform()', function () {
+    const DOMMatrix = require('../').DOMMatrix;
+
     // call func with an ImageData-offset and pixel color value appropriate for a 4-quadrant pattern within
     // the width and height that's white in the upper-left & lower-right and black in the other corners
     function eachPixel(bmp, func){
@@ -1288,7 +1290,7 @@ describe('Canvas', function () {
 
     let w = 160, h = 160,
         canvas = createCanvas(w, h),
-        ctx = canvas.getContext('2d');
+        ctx = canvas.getContext('2d'),
         pat = ctx.createPattern(makeCheckerboard(w, h), 'repeat'),
         mat = new DOMMatrix();
 
