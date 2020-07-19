@@ -443,6 +443,7 @@ Context2d::stroke(bool preserve) {
       cairo_set_source(_context, new_pattern);
       cairo_pattern_destroy(new_pattern);
     } else {
+      cairo_pattern_set_filter(state->strokePattern, state->patternQuality);
       cairo_set_source(_context, state->strokePattern);
     }
     repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->strokePattern);
