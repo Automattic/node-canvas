@@ -10,6 +10,7 @@ using namespace v8;
 const cairo_user_data_key_t *pattern_repeat_key;
 
 Nan::Persistent<FunctionTemplate> Pattern::constructor;
+Nan::Persistent<Function> Pattern::_DOMMatrix;
 
 /*
  * Initialize CanvasPattern.
@@ -27,9 +28,16 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target,
-           Nan::New("CanvasPattern").ToLocalChecked(),
-           ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
+}
+
+/*
+ * Save some external modules as private references.
+ */
+
+NAN_METHOD(Pattern::SaveExternalModules) {
+  _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*

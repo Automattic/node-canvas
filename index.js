@@ -1,6 +1,7 @@
 const Canvas = require('./lib/canvas')
 const Image = require('./lib/image')
 const CanvasRenderingContext2D = require('./lib/context2d')
+const CanvasPattern = require('./lib/pattern')
 const parseFont = require('./lib/parse-font')
 const packageJson = require('./package.json')
 const bindings = require('./lib/bindings')
