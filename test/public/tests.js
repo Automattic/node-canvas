@@ -489,16 +489,16 @@ tests['createPattern() then setTransform and fill'] = function (ctx, done) {
     ctx.fillStyle = pattern
     ctx.scale(0.125, 0.125)
 
-    ctx.fillRect(0,0, 800,800)
+    ctx.fillRect(0, 0, 800, 800)
 
-    pattern.setTransform(new DOMMatrix().translate(100,100))
-    ctx.fillRect(0,800, 800,800)
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.fillRect(0, 800, 800, 800)
 
     pattern.setTransform(new DOMMatrix().rotate(45))
-    ctx.fillRect(800,0, 800,800)
+    ctx.fillRect(800, 0, 800, 800)
 
     pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
-    ctx.fillRect(800,800, 800,800)
+    ctx.fillRect(800, 800, 800, 800)
     done()
   }
   img.src = imageSrc('quadrants.png')
@@ -512,16 +512,16 @@ tests['createPattern() then setTransform and stroke'] = function (ctx, done) {
     ctx.strokeStyle = pattern
     ctx.scale(0.125, 0.125)
 
-    ctx.strokeRect(100,100, 500,500)
+    ctx.strokeRect(100, 100, 500, 500)
 
-    pattern.setTransform(new DOMMatrix().translate(101,101))
-    ctx.strokeRect(100,900, 500,500)
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.strokeRect(100, 900, 500, 500)
 
     pattern.setTransform(new DOMMatrix().rotate(45))
-    ctx.strokeRect(900,100, 500,500)
+    ctx.strokeRect(900, 100, 500, 500)
 
     pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
-    ctx.strokeRect(900,900, 500,500)
+    ctx.strokeRect(900, 900, 500, 500)
     done()
   }
   img.src = imageSrc('quadrants.png')
@@ -534,16 +534,16 @@ tests['createPattern() then setTransform with no-repeat'] = function (ctx, done)
     ctx.fillStyle = pattern
     ctx.scale(0.125, 0.125)
 
-    ctx.fillRect(0,0, 800,800)
+    ctx.fillRect(0, 0, 800, 800)
 
-    pattern.setTransform(new DOMMatrix().translate(100,900))
-    ctx.fillRect(0,800, 800,800)
+    pattern.setTransform(new DOMMatrix().translate(100, 900))
+    ctx.fillRect(0, 800, 800, 800)
 
-    pattern.setTransform(new DOMMatrix().translate(800,0).rotate(45))
-    ctx.fillRect(800,0, 800,800)
+    pattern.setTransform(new DOMMatrix().translate(800, 0).rotate(45))
+    ctx.fillRect(800, 0, 800, 800)
 
-    pattern.setTransform(new DOMMatrix().translate(800,800).rotate(45).scale(4))
-    ctx.fillRect(800,800, 800,800)
+    pattern.setTransform(new DOMMatrix().translate(800, 800).rotate(45).scale(4))
+    ctx.fillRect(800, 800, 800, 800)
     done()
   }
   img.src = imageSrc('quadrants.png')
