@@ -1263,7 +1263,7 @@ describe('Canvas', function () {
       for (let x=0; x<width; x++){
         for (let y=0; y<height; y++){
           let i = y*4*width + x*4,
-              clr = (x<width/2 && y<height/2 || x>=width/2 && y>=height/2) ? 255 : 0
+              clr = (x<width/2 && y<height/2 || x>=width/2 && y>=height/2) ? 255 : 0;
           func(i, clr);
         }
       }
