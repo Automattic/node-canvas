@@ -50,6 +50,7 @@ struct PngClosure : Closure {
   uint32_t resolution = 0; // 0 = unspecified
   // Indexed PNGs:
   uint32_t nPaletteColors = 0;
+  bool alpha = true;
   uint8_t* palette = nullptr;
   uint8_t backgroundIndex = 0;
 
