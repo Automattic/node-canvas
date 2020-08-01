@@ -1,15 +1,28 @@
-# Triggering prebuilds:
-# 1. Create a draft release manually using the GitHub UI.
-# 2. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
+# Release procedure:
+# 1. Update the changelog and stage it in git.
+# 2. Run `yarn version --[major|minor|patch]`. (This tags the commit.)
+# 3. Push both the commit and tags to GitHub (`git push --tags Automattic` and
+#    `git push Automattic HEAD:master`, where "Automattic" is the remote name
+#    for git@github.com:Automattic/node-canvas.git).
+# 4. Create a draft release manually using the GitHub UI for the new tag.
+# 5. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
 #    to build for.
-# 3. Set the `jobs.*.strategy.matrix.canvas_tag` arrays to the set of Canvas
+# 6. Set the `jobs.*.strategy.matrix.canvas_tag` arrays to the set of Canvas
 #    tags to build. (Usually this is a single tag, but can be an array when a
 #    new version of Node.js is released and older versions of Canvas need to be
 #    built.)
-# 4. Commit and push this file to master.
-# 5. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
-#    "Run workflow".
-# 6. Once the builds succeed, promote the draft release to a full release.
+# 7. Commit this file and push to the `prebuilds` branch.
+# 8. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
+#    "Run workflow". Select the `prebuilds` branch so that that branch's
+#    prebuild.yaml file is used.
+# 9. Once the builds succeed, promote the draft release to a full release and
+#    run npm publish.
+
+# Note that the files in the prebuild/ directory will be used from the commit
+# that was used to trigger the prebuild workflow. They will not be from the
+# commit/tag that you are building. Because of differences in the provided
+# versions of git, this is achieved in a different way on Linux than on Mac and
+# Win.
 
 name: Make Prebuilds
 on: workflow_dispatch
@@ -20,16 +33,18 @@ on: workflow_dispatch
 # env:
 #   UPLOAD_TO: "v0.0.1"
 
+# If/when node-canvas moves to Node.js 10+, the latest node-gyp can be used.
+
 jobs:
   Linux:
     strategy:
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14]
-        canvas_tag: [] # e.g. "v2.6.1"
+        node: [15]
+        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
-      image: chearon/canvas-prebuilt:7
+      image: chearon/canvas-prebuilt:8
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -37,13 +52,35 @@ jobs:
         with:
           ref: ${{ matrix.canvas_tag }}
 
+      # Use the files in the prebuild/ directory from the commit that was used
+      # to trigger the prebuild workflow. The version of git that's installed on
+      # this Linux here doesn't support the method used on Mac and Win, so we
+      # checkout the prebuild branch and copy the files from the prebuild/
+      # directory in the Build step.
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.GITHUB_SHA }}
+          path: prebuild-branch
+
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Reinstall libjpeg in /usr/local
+        run: |
+          set -ex
+          cd /root/libjpeg-*
+          cd b
+          cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local ..
+          make
+          make install
+
       - name: Build
         run: |
-          npm install -g node-gyp
+          set -ex
+          mkdir prebuild
+          cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
+          npm install -g node-gyp@6.1
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
@@ -52,20 +89,25 @@ jobs:
 
       - name: Test binary
         run: |
+          set -ex
           cd /root/harfbuzz-* && make uninstall
           cd /root/cairo-* && make uninstall
-          cd /root/pango-* && make uninstall
+          cd /root/pango-* && cd _build && ninja uninstall
           cd /root/libpng-* && make uninstall
-          cd /root/libjpeg-* && make uninstall
+          cd /root/libjpeg-* && cd b && make uninstall
           cd /root/giflib-* && make uninstall
-          cd $GITHUB_WORKSPACE && npm test
+
+          cd $GITHUB_WORKSPACE
+          ls build/Release
+          ldd build/Release/canvas.node
+          npx mocha test/*.test.js
 
       - name: Make bundle
         id: make_bundle
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
@@ -97,8 +139,8 @@ jobs:
   macOS:
     strategy:
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14]
-        canvas_tag: [] # e.g. "v2.6.1"
+        node: [15]
+        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -114,7 +156,9 @@ jobs:
 
       - name: Build
         run: |
-          npm install -g node-gyp
+          git checkout ${{ matrix.canvas_tag }}
+          git checkout $GITHUB_SHA -- prebuild/
+          npm install -g node-gyp@6.1
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
@@ -123,7 +167,7 @@ jobs:
 
       - name: Test binary
         run: |
-          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
           npm test
 
       - name: Make bundle
@@ -131,7 +175,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
@@ -163,15 +207,18 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14]
-        canvas_tag: [] # e.g. "v2.6.1"
+        node: [15]
+        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
-      # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
-      - uses: numworks/setup-msys2@v1
+      # GitHub runners now have msys2 installed, but msys is not on the path and
+      # is apparently slow to start.
+      # https://github.com/msys2/setup-msys2#setup-msys2
+      # https://github.com/actions/virtual-environments/pull/632
+      - uses: msys2/setup-msys2@v2
         with:
           update: true
           path-type: inherit
@@ -186,15 +233,31 @@ jobs:
 
       - name: Build
         run: |
-          npm install -g node-gyp
+          git checkout ${{ matrix.canvas_tag }}
+          git checkout $env:GITHUB_SHA -- prebuild/
+          npm install -g node-gyp@6.1
           npm install --ignore-scripts
-          msys2do . prebuild/Windows/preinstall.sh
-          msys2do cp prebuild/Windows/binding.gyp binding.gyp
-          msys2do node-gyp configure
-          msys2do node-gyp rebuild -j 2
+          msys2 -c ". prebuild/Windows/preinstall.sh"
+          msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
+          msys2 -c "node-gyp rebuild -j 2"
 
-      - name: Bundle
-        run: msys2do . prebuild/Windows/bundle.sh
+      - name: Install Depends
+        run: |
+          Invoke-WebRequest "http://www.dependencywalker.com/depends22_x64.zip" -OutFile depends22_x64.zip
+          7z e depends22_x64.zip
+      - name: Bundle pt 2
+        shell: msys2 {0}
+        run: |
+          ./depends.exe -c -oc depends.csv build\\Release\\canvas.node || true
+          [ -f depends.csv ] || { echo "error invoking depends.exe"; exit 1; }
+
+          copies=$(comm -12 \
+            <(cat depends.csv | cut -d ',' -f2 | sed 's/"//g' | tr '[:upper:]' '[:lower:]' | sort) \
+            <(find /mingw64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
+
+          for dll in $copies; do
+            cp /mingw64/bin/$dll build/Release
+          done;
 
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
@@ -203,10 +266,10 @@ jobs:
       - name: Make asset
         id: make_bundle
         # I can't figure out why this isn't an env var already. It shows up with `env`.
-        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
+        run: msys2 -c "UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh"
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
