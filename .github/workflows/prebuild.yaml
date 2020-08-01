@@ -7,15 +7,13 @@
 #    new version of Node.js is released and older versions of Canvas need to be
 #    built.)
 # 4. Commit and push this file to master.
-# 5. Once the builds succeed, promote the draft release to a full release.
+# 5. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
+#    "Run workflow".
+# 6. Once the builds succeed, promote the draft release to a full release.
 
 name: Make Prebuilds
-on:
-  push:
-    branches:
-      - 'master'
-    paths:
-      - '.github/workflows/prebuild.yaml'
+on: workflow_dispatch
+
 # UPLOAD_TO can be specified to upload the release assets under a different tag
 # name (e.g. for testing). If omitted, the assets are published under the same
 # release tag as the canvas version being built.
