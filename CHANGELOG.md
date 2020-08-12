@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix Pango logging "expect ugly output" on Windows (#1643)
 
 2.7.0
 ==================
