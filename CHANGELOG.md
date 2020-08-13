@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
 ### Fixed
 
 2.7.0

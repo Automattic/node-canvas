@@ -374,7 +374,7 @@ describe('DOMMatrix', function () {
   })
 
   describe('skewYSelf', function () {})
-  
+
   describe('flipX', function () {
     it('works', function () {
       var x = new DOMMatrix()
@@ -403,8 +403,67 @@ describe('DOMMatrix', function () {
     })
   })
 
-  describe('inverse', function () {})
-  describe('invertSelf', function () {})
+  describe('invertSelf', function () {
+    it('works', function() {
+      var d = new DOMMatrix(Avals)
+      d.invertSelf()
+      assertApprox(d.m11, 0.9152542372881356)
+      assertApprox(d.m12, -0.01694915254237288)
+      assertApprox(d.m13, -0.7966101694915254)
+      assertApprox(d.m14, -0.13559322033898305)
+      assertApprox(d.m21, -1.8305084745762712)
+      assertApprox(d.m22, -0.9661016949152542)
+      assertApprox(d.m23, 1.5932203389830508)
+      assertApprox(d.m24, 1.271186440677966)
+      assertApprox(d.m31, 0.7966101694915254)
+      assertApprox(d.m32, 0.559322033898305)
+      assertApprox(d.m33, -0.711864406779661)
+      assertApprox(d.m34, -0.5254237288135594)
+      assertApprox(d.m41, 0.711864406779661)
+      assertApprox(d.m42, 0.5423728813559322)
+      assertApprox(d.m43, -0.5084745762711864)
+      assertApprox(d.m44, -0.6610169491525424)
+    })
+  })
+
+  describe('inverse', function () {
+    it('preserves the original DOMMatrix', function() {
+      var d = new DOMMatrix(Avals)
+      var d2 = d.inverse()
+      assert.strictEqual(d.m11, Avals[0])
+      assert.strictEqual(d.m12, Avals[1])
+      assert.strictEqual(d.m13, Avals[2])
+      assert.strictEqual(d.m14, Avals[3])
+      assert.strictEqual(d.m21, Avals[4])
+      assert.strictEqual(d.m22, Avals[5])
+      assert.strictEqual(d.m23, Avals[6])
+      assert.strictEqual(d.m24, Avals[7])
+      assert.strictEqual(d.m31, Avals[8])
+      assert.strictEqual(d.m32, Avals[9])
+      assert.strictEqual(d.m33, Avals[10])
+      assert.strictEqual(d.m34, Avals[11])
+      assert.strictEqual(d.m41, Avals[12])
+      assert.strictEqual(d.m42, Avals[13])
+      assert.strictEqual(d.m43, Avals[14])
+      assert.strictEqual(d.m44, Avals[15])
+      assertApprox(d2.m11, 0.9152542372881356)
+      assertApprox(d2.m12, -0.01694915254237288)
+      assertApprox(d2.m13, -0.7966101694915254)
+      assertApprox(d2.m14, -0.13559322033898305)
+      assertApprox(d2.m21, -1.8305084745762712)
+      assertApprox(d2.m22, -0.9661016949152542)
+      assertApprox(d2.m23, 1.5932203389830508)
+      assertApprox(d2.m24, 1.271186440677966)
+      assertApprox(d2.m31, 0.7966101694915254)
+      assertApprox(d2.m32, 0.559322033898305)
+      assertApprox(d2.m33, -0.711864406779661)
+      assertApprox(d2.m34, -0.5254237288135594)
+      assertApprox(d2.m41, 0.711864406779661)
+      assertApprox(d2.m42, 0.5423728813559322)
+      assertApprox(d2.m43, -0.5084745762711864)
+      assertApprox(d2.m44, -0.6610169491525424)
+    })
+  })
 
   describe('transformPoint', function () {
     it('works', function () {
@@ -437,7 +496,7 @@ describe('DOMMatrix', function () {
       ]))
     })
   })
-  
+
   describe('toFloat64Array', function () {
     it('works', function () {
       var x = new DOMMatrix()
