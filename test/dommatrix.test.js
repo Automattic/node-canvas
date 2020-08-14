@@ -23,6 +23,7 @@ function assertApproxDeep(actual, expected, tolerance) {
 describe('DOMMatrix', function () {
   var Avals = [4,5,1,8, 0,3,6,1, 3,5,0,9, 2,4,6,1]
   var Bvals = [1,5,1,0, 0,3,6,1, 3,5,7,2, 2,0,6,1]
+  var Xvals = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0]
   var AxB   = new Float64Array([7,25,31,22, 20,43,24,58, 37,73,45,94, 28,44,8,71])
   var BxA   = new Float64Array([23,40,89,15, 20,39,66,16, 21,30,87,14, 22,52,74,17])
 
@@ -404,7 +405,7 @@ describe('DOMMatrix', function () {
   })
 
   describe('invertSelf', function () {
-    it('works', function() {
+    it('works for invertible matrices', function() {
       var d = new DOMMatrix(Avals)
       d.invertSelf()
       assertApprox(d.m11, 0.9152542372881356)
@@ -423,6 +424,28 @@ describe('DOMMatrix', function () {
       assertApprox(d.m42, 0.5423728813559322)
       assertApprox(d.m43, -0.5084745762711864)
       assertApprox(d.m44, -0.6610169491525424)
+    })
+
+    it('works for non-invertible matrices', function() {
+      var d = new DOMMatrix(Xvals)
+      d.invertSelf()
+      assert.strictEqual(isNaN(d.m11), true)
+      assert.strictEqual(isNaN(d.m12), true)
+      assert.strictEqual(isNaN(d.m13), true)
+      assert.strictEqual(isNaN(d.m14), true)
+      assert.strictEqual(isNaN(d.m21), true)
+      assert.strictEqual(isNaN(d.m22), true)
+      assert.strictEqual(isNaN(d.m23), true)
+      assert.strictEqual(isNaN(d.m24), true)
+      assert.strictEqual(isNaN(d.m31), true)
+      assert.strictEqual(isNaN(d.m32), true)
+      assert.strictEqual(isNaN(d.m33), true)
+      assert.strictEqual(isNaN(d.m34), true)
+      assert.strictEqual(isNaN(d.m41), true)
+      assert.strictEqual(isNaN(d.m42), true)
+      assert.strictEqual(isNaN(d.m43), true)
+      assert.strictEqual(isNaN(d.m44), true)
+      assert.strictEqual(d.is2D, false)
     })
   })
 
