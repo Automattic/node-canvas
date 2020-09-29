@@ -157,7 +157,7 @@ bm('getImageData(0,0,100,100)', function () {
 })
 
 bm('PNGStream 200x200', function (done) {
-  var stream = canvas.createSyncPNGStream()
+  var stream = canvas.createPNGStream()
   stream.on('data', function (chunk) {
     // whatever
   })
