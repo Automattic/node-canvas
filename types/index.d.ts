@@ -60,8 +60,8 @@ export class Canvas {
 	/** _Non standard._ The type of the canvas. */
 	readonly type: 'image'|'pdf'|'svg'
 
-	// This is a getter, but it's non-standard and I don't know why we export it.
-	// readonly stride: number;
+	/** _Non standard._ Getter. The stride used by the canvas. */
+	readonly stride: number;
 
 	/** Constant used in PNG encoding methods. */
 	readonly PNG_NO_FILTERS: number
