@@ -13,7 +13,7 @@
           'cflags!': ['-fno-exceptions'],
           'cflags_cc!': ['-fno-exceptions']
         }],
-        ['has_FBDev=="true"',
+        ['OS=="linux" and has_FBDev=="true"',
         {
             'defines': ['HAS_FBDEV'],
             'sources': ['src/backend/FBDevBackend.cc']
