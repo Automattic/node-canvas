@@ -26,10 +26,13 @@
 #include "JPEGStream.h"
 #endif
 
-#include "backend/FBDevBackend.h"
 #include "backend/ImageBackend.h"
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
+
+#ifdef HAS_FBDEV
+#include "backend/FBDevBackend.h"
+#endif
 
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
@@ -103,7 +106,12 @@ NAN_METHOD(Canvas::New) {
     if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
     if (info[2]->IsString()) {
-      if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
+      if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
+        backend = new PdfBackend(width, height);
+      else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
+        backend = new SvgBackend(width, height);
+#ifdef HAS_FBDEV
+      else if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
         if (info[3]->IsString()) {
           if(info[4]->IsBoolean()) {
             if(info[5]->IsBoolean())
@@ -119,10 +127,7 @@ NAN_METHOD(Canvas::New) {
         else
           backend = new FBDevBackend(width, height);
       }
-      else if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
-        backend = new PdfBackend(width, height);
-      else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
-        backend = new SvgBackend(width, height);
+#endif
       else
         return Nan::ThrowRangeError("Unknown canvas type");
     }
@@ -130,10 +135,13 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    if (Nan::New(FBDevBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
+    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])
+#ifdef HAS_FBDEV
+    || Nan::New(FBDevBackend::constructor)->HasInstance(info[0])
+#endif
+    ) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
