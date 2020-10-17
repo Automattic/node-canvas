@@ -1756,7 +1756,7 @@ describe('Canvas', function () {
     var canvas = createCanvas(2, 2);
     var ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = ['#808080'];
+    ctx.fillStyle = '#808080';
     ctx.fillRect(0, 0, 2, 2);
     var data = ctx.getImageData(0, 0, 2, 2).data;
 
@@ -1765,10 +1765,6 @@ describe('Canvas', function () {
         assert.strictEqual(byte, 128);
       else
         assert.strictEqual(byte, 255);
-    });
-
-    assert.throws(function () {
-      ctx.fillStyle = Object.create(null);
     });
   });
 
