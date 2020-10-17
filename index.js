@@ -80,5 +80,7 @@ module.exports = {
   /** gif_lib version. */
   gifVersion: bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined,
   /** freetype version. */
-  freetypeVersion: bindings.freetypeVersion
+  freetypeVersion: bindings.freetypeVersion,
+  /** rsvg version. */
+  rsvgVersion: bindings.rsvgVersion
 }

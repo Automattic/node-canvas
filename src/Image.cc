@@ -100,8 +100,7 @@ NAN_METHOD(Image::New) {
  */
 
 NAN_GETTER(Image::GetComplete) {
-  Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
-  info.GetReturnValue().Set(Nan::New<Boolean>(Image::COMPLETE == img->state));
+  info.GetReturnValue().Set(Nan::New<Boolean>(true));
 }
 
 /*
@@ -187,6 +186,11 @@ NAN_SETTER(Image::SetHeight) {
  */
 
 NAN_METHOD(Image::GetSource){
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    // #1534
+    Nan::ThrowTypeError("Method Image.GetSource called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(img->filename ? img->filename : "").ToLocalChecked());
 }
@@ -227,6 +231,11 @@ Image::clearData() {
  */
 
 NAN_METHOD(Image::SetSource){
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    // #1534
+    Nan::ThrowTypeError("Method Image.SetSource called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 

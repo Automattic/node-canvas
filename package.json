@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -25,7 +25,7 @@
   "scripts": {
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
-    "pretest": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js && node-gyp build",
+    "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js",
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
@@ -35,7 +35,7 @@
   "binary": {
     "module_name": "canvas",
     "module_path": "build/Release",
-    "host": "https://github.com/node-gfx/node-canvas-prebuilt/releases/download/",
+    "host": "https://github.com/Automattic/node-canvas/releases/download/",
     "remote_path": "v{version}",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
@@ -49,7 +49,7 @@
   "types": "types/index.d.ts",
   "dependencies": {
     "nan": "^2.14.0",
-    "node-pre-gyp": "^0.11.0",
+    "node-pre-gyp": "^0.15.0",
     "simple-get": "^3.0.3"
   },
   "devDependencies": {
