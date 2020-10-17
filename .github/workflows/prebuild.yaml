@@ -1,0 +1,236 @@
+# Triggering prebuilds:
+# 1. Create a draft release manually using the GitHub UI.
+# 2. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
+#    to build for.
+# 3. Set the `jobs.*.strategy.matrix.canvas_tag` arrays to the set of Canvas
+#    tags to build. (Usually this is a single tag, but can be an array when a
+#    new version of Node.js is released and older versions of Canvas need to be
+#    built.)
+# 4. Commit and push this file to master.
+# 5. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
+#    "Run workflow".
+# 6. Once the builds succeed, promote the draft release to a full release.
+
+name: Make Prebuilds
+on: workflow_dispatch
+
+# UPLOAD_TO can be specified to upload the release assets under a different tag
+# name (e.g. for testing). If omitted, the assets are published under the same
+# release tag as the canvas version being built.
+# env:
+#   UPLOAD_TO: "v0.0.1"
+
+jobs:
+  Linux:
+    strategy:
+      matrix:
+        node: [8, 9, 10, 11, 12, 13, 14]
+        canvas_tag: [] # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
+    runs-on: ubuntu-latest
+    container:
+      image: chearon/canvas-prebuilt:7
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          . prebuild/Linux/preinstall.sh
+          cp prebuild/Linux/binding.gyp binding.gyp
+          node-gyp rebuild -j 2
+          . prebuild/Linux/bundle.sh
+
+      - name: Test binary
+        run: |
+          cd /root/harfbuzz-* && make uninstall
+          cd /root/cairo-* && make uninstall
+          cd /root/pango-* && make uninstall
+          cd /root/libpng-* && make uninstall
+          cd /root/libjpeg-* && make uninstall
+          cd /root/giflib-* && make uninstall
+          cd $GITHUB_WORKSPACE && npm test
+
+      - name: Make bundle
+        id: make_bundle
+        run: . prebuild/tarball.sh
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
+            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({owner, repo});
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release)
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset)
+              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
+            // (This is equivalent to actions/upload-release-asset. We're
+            // already in a script, so might as well do it here.)
+            const r = await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetName)
+            });
+
+  macOS:
+    strategy:
+      matrix:
+        node: [8, 9, 10, 11, 12, 13, 14]
+        canvas_tag: [] # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
+    runs-on: macos-latest
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          . prebuild/macOS/preinstall.sh
+          cp prebuild/macOS/binding.gyp binding.gyp
+          node-gyp rebuild -j 2
+          . prebuild/macOS/bundle.sh
+
+      - name: Test binary
+        run: |
+          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          npm test
+
+      - name: Make bundle
+        id: make_bundle
+        run: . prebuild/tarball.sh
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
+            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({owner, repo});
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release)
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset)
+              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
+            // (This is equivalent to actions/upload-release-asset. We're
+            // already in a script, so might as well do it here.)
+            const r = await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetName)
+            });
+
+  Win:
+    strategy:
+      matrix:
+        node: [8, 9, 10, 11, 12, 13, 14]
+        canvas_tag: [] # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-latest
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
+      - uses: numworks/setup-msys2@v1
+        with:
+          update: true
+          path-type: inherit
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          msys2do . prebuild/Windows/preinstall.sh
+          msys2do cp prebuild/Windows/binding.gyp binding.gyp
+          msys2do node-gyp configure
+          msys2do node-gyp rebuild -j 2
+
+      - name: Bundle
+        run: msys2do . prebuild/Windows/bundle.sh
+
+      - name: Test binary
+        # By not running in msys2, this doesn't have access to the msys2 libs
+        run: npm test
+
+      - name: Make asset
+        id: make_bundle
+        # I can't figure out why this isn't an env var already. It shows up with `env`.
+        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
+            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({owner, repo});
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release)
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset)
+              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
+            // (This is equivalent to actions/upload-release-asset. We're
+            // already in a script, so might as well do it here.)
+            const r = await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetName)
+            });

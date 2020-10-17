@@ -3,7 +3,11 @@
 #pragma once
 
 #include "Canvas.h"
+
+#ifdef HAVE_JPEG
 #include <jpeglib.h>
+#endif
+
 #include <nan.h>
 #include <png.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
@@ -52,6 +56,7 @@ struct PngClosure : Closure {
   PngClosure(Canvas* canvas) : Closure(canvas) {};
 };
 
+#ifdef HAVE_JPEG
 struct JpegClosure : Closure {
   uint32_t quality = 75;
   uint32_t chromaSubsampling = 2;
@@ -73,3 +78,4 @@ struct JpegClosure : Closure {
     delete jpeg_dest_mgr;
   }
 };
+#endif

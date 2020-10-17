@@ -300,6 +300,7 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
   }
 }
 
+#ifdef HAVE_JPEG
 static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
   // user agent must use its default quality value, as if the quality argument
@@ -329,12 +330,7 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
     }
   }
 }
-
-static uint32_t getSafeBufSize(Canvas* canvas) {
-  // Don't allow the buffer size to exceed the size of the canvas (#674)
-  // TODO not sure if this is really correct, but it fixed #674
-  return (std::min)(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
-}
+#endif
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
 
@@ -430,7 +426,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
-    if (canvas->nBytes() > node::Buffer::kMaxLength) {
+    if (static_cast<uint32_t>(canvas->nBytes()) > node::Buffer::kMaxLength) {
       Nan::ThrowError("Data exceeds maximum buffer length.");
       return;
     }
@@ -702,6 +698,11 @@ NAN_METHOD(Canvas::StreamPDFSync) {
  */
 
 #ifdef HAVE_JPEG
+static uint32_t getSafeBufSize(Canvas* canvas) {
+  // Don't allow the buffer size to exceed the size of the canvas (#674)
+  // TODO not sure if this is really correct, but it fixed #674
+  return (std::min)(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
+}
 
 NAN_METHOD(Canvas::StreamJPEGSync) {
   if (!info[1]->IsFunction())
@@ -721,7 +722,6 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
   }
   return;
 }
-
 #endif
 
 char *
@@ -860,12 +860,6 @@ Canvas::GetWeightFromCSSString(const char *weight) {
   }
 
   return w;
-}
-
-bool streq_casein(std::string& str1, std::string& str2) {
-  return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(), [](char& c1, char& c2) {
-    return c1 == c2 || std::toupper(c1) == std::toupper(c2);
-  });
 }
 
 /*
