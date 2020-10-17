@@ -1,8 +1,8 @@
-#include <sys/time.h>
+#include <string>
+
 #include <nan.h>
 
 #include "Backend.h"
-#include <string>
 
 
 Backend::Backend(std::string name, int width, int height)
