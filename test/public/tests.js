@@ -585,7 +585,7 @@ tests['createRadialGradient()'] = function (ctx) {
   ctx.fillRect(0, 0, 150, 150)
 }
 
-tests['globalAlpha'] = function (ctx) {
+tests.globalAlpha = function (ctx) {
   ctx.globalAlpha = 0.5
   ctx.fillStyle = 'rgba(0,0,0,0.5)'
   ctx.strokeRect(0, 0, 50, 50)
@@ -618,7 +618,7 @@ tests['globalAlpha 2'] = function (ctx) {
   }
 }
 
-tests['fillStyle'] = function (ctx) {
+tests.fillStyle = function (ctx) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
@@ -627,7 +627,7 @@ tests['fillStyle'] = function (ctx) {
   }
 }
 
-tests['strokeStyle'] = function (ctx) {
+tests.strokeStyle = function (ctx) {
   for (var i = 0; i < 6; i++) {
     for (var j = 0; j < 6; j++) {
       ctx.strokeStyle = 'rgb(0,' + Math.floor(255 - 42.5 * i) + ',' +
@@ -662,7 +662,7 @@ tests['floating point coordinates'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineWidth'] = function (ctx) {
+tests.lineWidth = function (ctx) {
   for (var i = 0; i < 10; i++) {
     ctx.lineWidth = 1 + i
     ctx.beginPath()
@@ -718,7 +718,7 @@ tests['lineCap default'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineCap'] = function (ctx) {
+tests.lineCap = function (ctx) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineCap = 'round'
@@ -728,7 +728,7 @@ tests['lineCap'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineJoin'] = function (ctx) {
+tests.lineJoin = function (ctx) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineJoin = 'round'
@@ -738,7 +738,7 @@ tests['lineJoin'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['states'] = function (ctx) {
+tests.states = function (ctx) {
   ctx.save()
   ctx.rect(50, 50, 100, 100)
   ctx.stroke()
@@ -1325,7 +1325,7 @@ tests['known bug #416'] = function (ctx, done) {
   img1.src = imageSrc('existing.png')
 }
 
-tests['shadowBlur'] = function (ctx) {
+tests.shadowBlur = function (ctx) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1351,7 +1351,7 @@ tests['shadowBlur'] = function (ctx) {
   ctx.fillRect(150, 150, 20, 20)
 }
 
-tests['shadowColor'] = function (ctx) {
+tests.shadowColor = function (ctx) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -2249,7 +2249,7 @@ tests['putImageData() png data 3'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
-tests['setLineDash'] = function (ctx) {
+tests.setLineDash = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 14
 
@@ -2283,7 +2283,7 @@ tests['setLineDash'] = function (ctx) {
   line([0, 3, 0, 0], 'green') // should be empty
 }
 
-tests['lineDashOffset'] = function (ctx) {
+tests.lineDashOffset = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 4
 
@@ -2310,7 +2310,7 @@ tests['lineDashOffset'] = function (ctx) {
   line(60, 'orange')
   line(-Infinity)
   line(70, 'purple')
-  line(void 0)
+  line()
   line(80, 'black')
   line(ctx.lineDashOffset + 10)
 
