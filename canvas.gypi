@@ -1,8 +1,7 @@
 {
     'variables':
     {
-        'has_FBDev%': 'true',
-        'has_X11%': '<!(node ./util/has_lib.js X11)'
+        'has_FBDev%': 'true'
     },
     'conditions':
     [
@@ -11,18 +10,25 @@
             'sources': ['src/backend/Win32Backend.cc']
         }, {  # 'OS!="win"'
           'cflags!': ['-fno-exceptions'],
-          'cflags_cc!': ['-fno-exceptions']
+          'cflags_cc!': ['-fno-exceptions'],
+          'variables':
+          {
+            'has_X11%': '<!(node ./util/has_lib.js X11)'
+          },
+          'conditions':
+          [
+            ['has_X11=="true"',
+            {
+                'defines': ['HAS_X11'],
+                'sources': ['src/backend/X11Backend.cc'],
+                'libraries': ['-lX11', '-lXrender', '-lXext']
+            }]
+          ],
         }],
         ['OS=="linux" and has_FBDev=="true"',
         {
             'defines': ['HAS_FBDEV'],
             'sources': ['src/backend/FBDevBackend.cc']
-        }],
-        ['has_X11=="true"',
-        {
-            'defines': ['HAS_X11'],
-            'sources': ['src/backend/X11Backend.cc'],
-            'libraries': ['-lX11', '-lXrender', '-lXext']
         }]
     ],
     'target_name': 'canvas',
