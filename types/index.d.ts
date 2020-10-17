@@ -337,3 +337,5 @@ export const jpegVersion: string | undefined
 export const gifVersion: string | undefined
 /** freetype version. */
 export const freetypeVersion: string
+/** rsvg version. */
+export const rsvgVersion: string | undefined
