@@ -143,6 +143,7 @@
                         '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
                         '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
                     ],
+                    'cflags':     ['-Wno-cast-function-type'],
                     'cflags!':    ['-fno-exceptions'],
                     'cflags_cc!': ['-fno-exceptions']
                 }],
