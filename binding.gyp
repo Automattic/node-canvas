@@ -1,14 +1,21 @@
 {
-    'variables':
-    {
-        'shared%': '<!(node ./util/has_lib.js)'
-    },
     'conditions':
     [
-        ['shared=="true" or OS=="win"', {
+        ['OS=="win"', {
             'includes': ['shared.gypi']
         }, {
-            'includes': ['static.gypi']
+            'variables':
+            {
+                'shared%': '<!(node ./util/has_lib.js)'
+            },
+            'conditions':
+            [
+                ['shared=="true"', {
+                    'includes': ['shared.gypi']
+                }, {
+                    'includes': ['static.gypi']
+                }]
+            ]
         }]
     ]
 }
