@@ -145,7 +145,7 @@
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
           }
         }],
-        ['has_FBDev=="true"',
+        ['OS=="linux" and has_FBDev=="true"',
         {
             'defines': ['HAS_FBDEV'],
             'sources': ['src/backend/FBDevBackend.cc']
