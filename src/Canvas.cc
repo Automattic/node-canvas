@@ -111,21 +111,9 @@ NAN_METHOD(Canvas::New) {
       else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);
 #ifdef HAS_FBDEV
-      else if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
-        if (info[3]->IsString()) {
-          if(info[4]->IsBoolean()) {
-            if(info[5]->IsBoolean())
-              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
-                Nan::To<bool>(info[4]).FromMaybe(0), Nan::To<bool>(info[5]).FromMaybe(0));
-            else
-              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
-                Nan::To<bool>(info[4]).FromMaybe(0));
-          }
-          else
-            backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
-        }
-        else
-          backend = new FBDevBackend(width, height);
+      else if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))
+      && info[3]->IsString()) {
+        backend = new FBDevBackend(*Nan::Utf8String(info[3]));
       }
 #endif
       else
