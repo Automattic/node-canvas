@@ -51,12 +51,12 @@
                             '<(GTK_Root)/bin/libfontconfig-1.dll',
                             '<(GTK_Root)/bin/libfreetype-6.dll',
                             '<(GTK_Root)/bin/libglib-2.0-0.dll',
-                            '<(GTK_Root)/bin/libgobject-2.0-0.dll',
                             '<(GTK_Root)/bin/libgmodule-2.0-0.dll',
+                            '<(GTK_Root)/bin/libgobject-2.0-0.dll',
                             '<(GTK_Root)/bin/libgthread-2.0-0.dll',
                             '<(GTK_Root)/bin/libintl-8.dll',
-                            '<(GTK_Root)/bin/libpangocairo-1.0-0.dll',
                             '<(GTK_Root)/bin/libpango-1.0-0.dll',
+                            '<(GTK_Root)/bin/libpangocairo-1.0-0.dll',
                             '<(GTK_Root)/bin/libpangoft2-1.0-0.dll',
                             '<(GTK_Root)/bin/libpangowin32-1.0-0.dll',
                             '<(GTK_Root)/bin/libpng14-14.dll',
@@ -78,16 +78,16 @@
                         '-l<(GTK_Root)/lib/glib-2.0.lib',
                         '-l<(GTK_Root)/lib/gobject-2.0.lib',
                         '-l<(GTK_Root)/lib/libpng.lib',
-                        '-l<(GTK_Root)/lib/pangocairo-1.0.lib',
-                        '-l<(GTK_Root)/lib/pango-1.0.lib'
+                        '-l<(GTK_Root)/lib/pango-1.0.lib',
+                        '-l<(GTK_Root)/lib/pangocairo-1.0.lib'
                     ],
                     'include_dirs':
                     [
                         '<(GTK_Root)/include',
                         '<(GTK_Root)/include/cairo',
-                        '<(GTK_Root)/include/pango-1.0',
-                        '<(GTK_Root)/include/glib-2.0',
                         '<(GTK_Root)/include/freetype2',
+                        '<(GTK_Root)/include/glib-2.0',
+                        '<(GTK_Root)/include/pango-1.0',
                         '<(GTK_Root)/lib/glib-2.0/include'
                     ],
                     'defines':
@@ -130,11 +130,11 @@
                 }, {  # OS!="win"'
                     'libraries':
                     [
-                        '<!@(pkg-config pixman-1 --libs)',
                         '<!@(pkg-config cairo --libs)',
                         '<!@(pkg-config freetype2 --libs)',
                         '<!@(pkg-config libpng --libs)',
-                        '<!@(pkg-config pangocairo --libs)'
+                        '<!@(pkg-config pangocairo --libs)',
+                        '<!@(pkg-config pixman-1 --libs)'
                     ],
                     'include_dirs':
                     [

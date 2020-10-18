@@ -5,12 +5,56 @@
         ['OS!="win"', {
             'variables':
             {
-                'cairo_src%': "<(cairo_root)cairo/"
+                'cairo_src%': "<(cairo_root)cairo/",
+                'has_X11%': '<!(node ../util/has_lib.js X11)'
             },
         }]
     ],
     'targets':
     [{
+        'conditions':
+        [
+            ['OS=="mac"',
+            {
+                'sources':
+                [
+                    "<(cairo_src)cairo-quartz-font.c",
+                    "<(cairo_src)cairo-quartz-image-surface.c",
+                    "<(cairo_src)cairo-quartz-surface.c"
+                ]
+            }],
+            ['OS=="win"',
+            {
+                'sources':
+                [
+                    "<(cairo_src)win32/cairo-win32-debug.c",
+                    "<(cairo_src)win32/cairo-win32-device.c",
+                    "<(cairo_src)win32/cairo-win32-display-surface.c",
+                    "<(cairo_src)win32/cairo-win32-font.c",
+                    "<(cairo_src)win32/cairo-win32-gdi-compositor.c",
+                    "<(cairo_src)win32/cairo-win32-printing-surface.c",
+                    "<(cairo_src)win32/cairo-win32-surface.c",
+                    "<(cairo_src)win32/cairo-win32-system.c",
+                ]
+            }],
+            ['has_X11=="true"',
+            {
+                'sources':
+                [
+                    "<(cairo_src)cairo-xlib-core-compositor.c",
+                    "<(cairo_src)cairo-xlib-display.c",
+                    "<(cairo_src)cairo-xlib-fallback-compositor.c",
+                    "<(cairo_src)cairo-xlib-render-compositor.c",
+                    "<(cairo_src)cairo-xlib-screen.c",
+                    "<(cairo_src)cairo-xlib-source.c",
+                    "<(cairo_src)cairo-xlib-surface.c",
+                    "<(cairo_src)cairo-xlib-surface-shm.c",
+                    "<(cairo_src)cairo-xlib-visual.c",
+                    "<(cairo_src)cairo-xlib-xcb-surface.c"
+                ],
+                'libraries': ['-lX11']
+            }]
+        ],
         'target_name': 'cairo',
         'type': 'static_library',
         'include_dirs':
@@ -25,6 +69,11 @@
             '<(pixman_root)',
             '<(pixman_root)pixman',
             '<(zlib_root)',
+
+            #'<!@(pkg-config --cflags-only-I  pixman-1 | sed s/-I//g)'
+        ],
+        'libraries': [
+            #'<!@(pkg-config pixman-1 --libs)'
         ],
         'dependencies':
         [
