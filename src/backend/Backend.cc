@@ -1,14 +1,13 @@
-#include "Backend.h"
 #include <string>
 
+#include <nan.h>
 
-Backend::Backend(std::string name)
-	: name(name)
-	, width(0)
-	, height(0)
-{}
+#include "Backend.h"
+
+
 Backend::Backend(std::string name, int width, int height)
   : name(name)
+	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
 {}
@@ -81,6 +80,16 @@ void Backend::setHeight(int height)
 {
   this->height = height;
   this->recreateSurface();
+}
+
+cairo_format_t Backend::getFormat()
+{
+	return this->format;
+}
+void Backend::setFormat(cairo_format_t format)
+{
+	this->format = format;
+	this->recreateSurface();
 }
 
 bool Backend::isSurfaceValid(){

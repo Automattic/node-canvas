@@ -11,7 +11,7 @@ const { backends: { FBDevBackend }, Canvas } = require('..')
 
 const squareSize = 100
 
-var device = process.argv[2] || '/dev/fb0'
+var device = process.argv[2]
 
 var backend = new FBDevBackend(device)
 var canvas = new Canvas(backend)
@@ -32,7 +32,8 @@ ctx.fillRect(0, offsetY, squareSize, squareSize)
 ctx.fillStyle = '#FFFFFF'
 ctx.fillRect(offsetX, offsetY, squareSize, squareSize)
 
-console.log('Width: ' + canvas.width + ', Height: ' + canvas.height)
+console.log('Width: ' + canvas.width + ', Height: ' + canvas.height +
+            'Pixel format: ' + ctx.pixelFormat)
 
 var outPath = join(__dirname, 'rectangle.png')
 
