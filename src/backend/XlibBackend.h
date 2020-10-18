@@ -1,5 +1,5 @@
-#ifndef __X11_BACKEND_H__
-#define __X11_BACKEND_H__
+#ifndef __XLIB_BACKEND_H__
+#define __XLIB_BACKEND_H__
 
 #include <nan.h>
 
@@ -11,13 +11,13 @@
 using namespace std;
 
 
-class X11Backend : public Backend
+class XlibBackend : public Backend
 {
   private:
     Display* display;
     Window window;
 
-    ~X11Backend();
+    ~XlibBackend();
 
     cairo_surface_t* createSurface();
     void             destroySurface();
@@ -26,7 +26,7 @@ class X11Backend : public Backend
     void setHeight(int height);
 
   public:
-    X11Backend(int width, int height);
+    XlibBackend(int width, int height);
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
@@ -34,13 +34,13 @@ class X11Backend : public Backend
 };
 
 
-class X11BackendException : public std::exception {
+class XlibBackendException : public std::exception {
   private:
     string err_msg;
 
   public:
-    X11BackendException(const string msg) : err_msg(msg) {};
-    ~X11BackendException() throw() {};
+    XlibBackendException(const string msg) : err_msg(msg) {};
+    ~XlibBackendException() throw() {};
     const char *what() const throw() { return this->err_msg.c_str(); };
 };
 

@@ -1,7 +1,7 @@
 var Canvas = require('..')
 
 // var backend = new Canvas.backends.FBDevBackend("/dev/fb0");
-var backend = new Canvas.backends.X11Backend(800, 600)
+var backend = new Canvas.backends.XlibBackend(800, 600)
 
 var canvas = new Canvas(backend)
 var ctx = canvas.getContext('2d')

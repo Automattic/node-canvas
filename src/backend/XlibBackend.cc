@@ -1,13 +1,13 @@
-#include "X11Backend.h"
+#include "XlibBackend.h"
 
 using namespace v8;
 
-X11Backend::X11Backend(int width, int height)
+XlibBackend::XlibBackend(int width, int height)
 	: Backend("x11", width, height)
 {
 	display = XOpenDisplay(NULL);
 	if(!display)
-		throw X11BackendException("Can't open display. Is DISPLAY set?\n");
+		throw XlibBackendException("Can't open display. Is DISPLAY set?\n");
 
 	this->window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
 		this->width, this->height, 0, 0, BlackPixel(display, 0));
@@ -16,7 +16,7 @@ X11Backend::X11Backend(int width, int height)
 	XMapWindow(display, this->window);
 }
 
-X11Backend::~X11Backend()
+XlibBackend::~XlibBackend()
 {
 	this->destroySurface();
 
@@ -24,7 +24,7 @@ X11Backend::~X11Backend()
 }
 
 
-cairo_surface_t* X11Backend::createSurface()
+cairo_surface_t* XlibBackend::createSurface()
 {
   this->surface = cairo_xlib_surface_create(display, this->window,
 		DefaultVisual(display, 0), this->width, this->height);
@@ -33,13 +33,13 @@ cairo_surface_t* X11Backend::createSurface()
 }
 
 
-void X11Backend::setWidth(int width)
+void XlibBackend::setWidth(int width)
 {
 	XResizeWindow(this->display, this->window, width, this->height);
 
 	Backend::setWidth(width);
 }
-void X11Backend::setHeight(int height)
+void XlibBackend::setHeight(int height)
 {
 	XResizeWindow(this->display, this->window, this->width, height);
 
@@ -47,27 +47,27 @@ void X11Backend::setHeight(int height)
 }
 
 
-Nan::Persistent<FunctionTemplate> X11Backend::constructor;
+Nan::Persistent<FunctionTemplate> XlibBackend::constructor;
 
-void X11Backend::Initialize(Handle<Object> target)
+void XlibBackend::Initialize(Handle<Object> target)
 {
 	Nan::HandleScope scope;
 
-	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(X11Backend::New);
-	X11Backend::constructor.Reset(ctor);
+	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(XlibBackend::New);
+	XlibBackend::constructor.Reset(ctor);
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	ctor->SetClassName(Nan::New<String>("X11Backend").ToLocalChecked());
-	target->Set(Nan::New<String>("X11Backend").ToLocalChecked(), ctor->GetFunction());
+	ctor->SetClassName(Nan::New<String>("XlibBackend").ToLocalChecked());
+	target->Set(Nan::New<String>("XlibBackend").ToLocalChecked(), ctor->GetFunction());
 }
 
-NAN_METHOD(X11Backend::New)
+NAN_METHOD(XlibBackend::New)
 {
 	int width  = 0;
 	int height = 0;
 	if(info[0]->IsNumber()) width  = info[0]->Uint32Value();
 	if(info[1]->IsNumber()) height = info[1]->Uint32Value();
 
-	X11Backend *backend = new X11Backend(width, height);
+	XlibBackend *backend = new XlibBackend(width, height);
 
 	backend->Wrap(info.This());
 	info.GetReturnValue().Set(info.This());

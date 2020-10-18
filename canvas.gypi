@@ -20,7 +20,7 @@
             ['has_X11=="true"',
             {
                 'defines': ['HAS_X11'],
-                'sources': ['src/backend/X11Backend.cc'],
+                'sources': ['src/backend/XlibBackend.cc'],
                 'libraries': ['-lX11', '-lXrender', '-lXext']
             }]
           ],

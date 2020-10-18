@@ -8,7 +8,7 @@
 #include "backend/FBDevBackend.h"
 #endif
 #ifdef HAS_X11
-#include "backend/X11Backend.h"
+#include "backend/XlibBackend.h"
 #endif
 
 using namespace v8;
@@ -25,7 +25,7 @@ void Backends::Initialize(Local<Object> target) {
     FBDevBackend::Initialize(obj);
   #endif
   #ifdef HAS_X11
-    X11Backend::Initialize(obj);
+    XlibBackend::Initialize(obj);
   #endif
 
   Nan::Set(target, Nan::New<String>("Backends").ToLocalChecked(), obj).Check();
