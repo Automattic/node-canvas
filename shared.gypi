@@ -143,8 +143,8 @@
                         '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
                         '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)'
                     ],
-                    'cflags': ['-Wno-cast-function-type'],
-                    'cflags!': ['-fno-exceptions'],
+                    'cflags':     ['-Wno-cast-function-type'],
+                    'cflags!':    ['-fno-exceptions'],
                     'cflags_cc!': ['-fno-exceptions']
                 }],
                 ['OS=="mac"', {
@@ -214,17 +214,17 @@
                     'conditions':
                     [
                         ['OS=="win"', {
-                          'copies': [{
-                            'destination': '<(PRODUCT_DIR)',
-                            'files': [
-                              '<(GTK_Root)/bin/librsvg-2-2.dll',
-                              '<(GTK_Root)/bin/libgdk_pixbuf-2.0-0.dll',
-                              '<(GTK_Root)/bin/libgio-2.0-0.dll',
-                              '<(GTK_Root)/bin/libcroco-0.6-3.dll',
-                              '<(GTK_Root)/bin/libgsf-1-114.dll',
-                              '<(GTK_Root)/bin/libxml2-2.dll'
-                            ]
-                          }],
+                            'copies': [{
+                                'destination': '<(PRODUCT_DIR)',
+                                'files': [
+                                '<(GTK_Root)/bin/librsvg-2-2.dll',
+                                '<(GTK_Root)/bin/libgdk_pixbuf-2.0-0.dll',
+                                '<(GTK_Root)/bin/libgio-2.0-0.dll',
+                                '<(GTK_Root)/bin/libcroco-0.6-3.dll',
+                                '<(GTK_Root)/bin/libgsf-1-114.dll',
+                                '<(GTK_Root)/bin/libxml2-2.dll'
+                                ]
+                            }],
                             'libraries': ['-l<(GTK_Root)/lib/librsvg-2-2.lib']
                         }, {
                             'include_dirs':

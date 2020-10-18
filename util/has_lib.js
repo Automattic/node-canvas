@@ -34,12 +34,18 @@ function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
 
   // Try using ldconfig on linux systems
-  if (_hasQuery('ldconfig -p 2>/dev/null | grep -E "' + libName + '"')) {
-    return true
+  if (hasLdconfig()) {
+    try {
+      if (execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
+        return true
+      }
+    } catch (err) {
+      // noop -- proceed to other search methods
+    }
   }
 
   // Try checking common library locations
-  var libNameRegex = new RegExp(libName)
+  const libNameRegex = new RegExp(libName)
 
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
@@ -51,6 +57,24 @@ function hasSystemLib (lib) {
       return false
     }
   })
+}
+
+/**
+ * Checks for ldconfig on the path and /sbin
+ * @return {boolean} exists
+ */
+function hasLdconfig () {
+  try {
+    // Add /sbin to path as ldconfig is located there on some systems -- e.g.
+    // Debian (and it can still be used by unprivileged users):
+    execSync('export PATH="$PATH:/sbin"')
+    // process.env.PATH = '...'
+    // execSync throws on nonzero exit
+    execSync('hash ldconfig 2>/dev/null')
+    return true
+  } catch (err) {
+    return false
+  }
 }
 
 /**
@@ -74,7 +98,7 @@ function hasPkgconfigLib (lib) {
 function main (query) {
   if (!query) {
     for (var libname of ['gif', 'jpeg', 'cairo', 'pango', 'freetype', 'rsvg']) {
-      if (!main(libname)) return false
+      if (!main(libname)) return libname
     }
 
     return true
