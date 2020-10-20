@@ -33,6 +33,9 @@
 #ifdef HAS_FBDEV
 #include "backend/FBDevBackend.h"
 #endif
+#ifdef HAS_X11
+#include "backend/XlibBackend.h"
+#endif
 
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
@@ -128,6 +131,11 @@ NAN_METHOD(Canvas::New) {
           backend = new FBDevBackend(width, height);
       }
 #endif
+#ifdef HAS_X11
+      else if (0 == strcmp("xlib", *Nan::Utf8String(info[2]))) {
+        backend = new XlibBackend(width, height);
+      }
+#endif
       else
         return Nan::ThrowRangeError("Unknown canvas type");
     }
@@ -140,6 +148,9 @@ NAN_METHOD(Canvas::New) {
         Nan::New(SvgBackend::constructor)->HasInstance(info[0])
 #ifdef HAS_FBDEV
     || Nan::New(FBDevBackend::constructor)->HasInstance(info[0])
+#endif
+#ifdef HAS_X11
+    || Nan::New(XlibBackend::constructor)->HasInstance(info[0])
 #endif
     ) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
