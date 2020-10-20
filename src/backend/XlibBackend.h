@@ -1,26 +1,24 @@
 #ifndef __XLIB_BACKEND_H__
 #define __XLIB_BACKEND_H__
 
+#include "ScreenBackend.h"
+
 #include <nan.h>
 
-#include <cairo-xlib.h>
-
-#include "Backend.h"
+#include "XlibBackendPriv.h"
 
 
 using namespace std;
 
 
-class XlibBackend : public Backend
+class XlibBackend : public ScreenBackend
 {
   private:
-    Display* display;
-    Window window;
+    XlibBackendPriv xlibBackendPriv;
 
     ~XlibBackend();
 
-    cairo_surface_t* createSurface();
-    void             destroySurface();
+    void createSurface();
 
     void setWidth(int width);
     void setHeight(int height);
@@ -29,7 +27,7 @@ class XlibBackend : public Backend
     XlibBackend(int width, int height);
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Handle<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target);
     static NAN_METHOD(New);
 };
 
@@ -41,6 +39,7 @@ class XlibBackendException : public std::exception {
   public:
     XlibBackendException(const string msg) : err_msg(msg) {};
     ~XlibBackendException() throw() {};
+
     const char *what() const throw() { return this->err_msg.c_str(); };
 };
 
