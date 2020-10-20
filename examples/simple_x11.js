@@ -4,9 +4,9 @@
 * Module dependencies.
 */
 
-var Canvas = require('..')
+const { backends: { XlibBackend }, Canvas } = require('..')
 
-var backend = new Canvas.backends.XlibBackend(800, 600)
+var backend = new XlibBackend(800, 600)
 var canvas = new Canvas(backend)
 var ctx = canvas.getContext('2d')
 

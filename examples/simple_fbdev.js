@@ -32,7 +32,7 @@ ctx.fillRect(0, offsetY, squareSize, squareSize)
 ctx.fillStyle = '#FFFFFF'
 ctx.fillRect(offsetX, offsetY, squareSize, squareSize)
 
-console.log('Width: ' + canvas.width + ', Height: ' + canvas.height +
+console.log('Width: ' + canvas.width + ', Height: ' + canvas.height + ', ' +
             'Pixel format: ' + ctx.pixelFormat)
 
 var outPath = join(__dirname, 'rectangle.png')

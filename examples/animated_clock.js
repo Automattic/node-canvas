@@ -1,7 +1,9 @@
-var Canvas = require('..')
+#!/usr/bin/env node
 
-// var backend = new Canvas.backends.FBDevBackend("/dev/fb0");
-var backend = new Canvas.backends.XlibBackend(800, 600)
+const { backends: { FBDevBackend, XlibBackend }, Canvas } = require('..')
+
+// var backend = new FBDevBackend("/dev/fb0");
+var backend = new XlibBackend(800, 600)
 
 var canvas = new Canvas(backend)
 var ctx = canvas.getContext('2d')
