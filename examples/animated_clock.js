@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { backends: { FBDevBackend, XlibBackend }, Canvas } = require('..')
+const { backends: { /* FBDevBackend, */ XlibBackend }, Canvas } = require('..')
 
 // var backend = new FBDevBackend("/dev/fb0");
 var backend = new XlibBackend(800, 600)
