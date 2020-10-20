@@ -7,9 +7,9 @@
 
 Backend::Backend(std::string name, int width, int height)
   : name(name)
-	, format(CAIRO_FORMAT_INVALID)
   , width(width)
   , height(height)
+	, format(CAIRO_FORMAT_INVALID)
 {}
 
 Backend::~Backend()
