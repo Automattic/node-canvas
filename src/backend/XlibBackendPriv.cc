@@ -3,47 +3,34 @@
 #include <cairo-xlib.h>
 
 
-cairo_surface_t* XlibBackendPriv::cairo_surface_create(int width, int height)
+XlibBackendPriv::XlibBackendPriv(int width, int height, char *display_name)
 {
-	return cairo_xlib_surface_create(this->display, this->window,
-    DefaultVisual(display, 0), width, height);
+	this->display = XOpenDisplay(display_name);
+
+	if(!this->display)
+		throw XlibBackendException("Can't open display. Is DISPLAY set?\n");
+
+	this->window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
+    width, height, 0, 0, BlackPixel(display, 0));
+
+	XSelectInput(this->display, this->window, StructureNotifyMask | ExposureMask);
+	XMapWindow(this->display, this->window);
 }
 
-
-void XlibBackendPriv::CloseDisplay()
+void XlibBackendPriv::~XlibBackendPriv()
 {
 	XCloseDisplay(this->display);
 }
 
-void XlibBackendPriv::CreateSimpleWindow(int width, int height)
+
+cairo_surface_t* XlibBackendPriv::cairo_surface_create(int width, int height)
 {
-	this->window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
-    width, height, 0, 0, BlackPixel(display, 0));
+  return cairo_xlib_surface_create(this->display, this->window,
+    DefaultVisual(display, 0), width, height);
 }
 
-void XlibBackendPriv::DestroyWindow()
-{
-	XDestroyWindow(this->display, this->window);
-}
-
-void XlibBackendPriv::MapWindow()
-{
-	XMapWindow(this->display, this->window);
-}
-
-void* XlibBackendPriv::OpenDisplay()
-{
-	this->display = XOpenDisplay(NULL);
-
-  return this->display;
-}
 
 void XlibBackendPriv::ResizeWindow(int width, int height)
 {
 	XResizeWindow(this->display, this->window, width, height);
-}
-
-void XlibBackendPriv::SelectInput()
-{
-	XSelectInput(this->display, this->window, StructureNotifyMask | ExposureMask);
 }

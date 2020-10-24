@@ -1,26 +1,10 @@
 #include "XlibBackend.h"
 
 
-XlibBackend::XlibBackend(int width, int height)
+XlibBackend::XlibBackend(int width, int height, char *display_name)
 	: ScreenBackend("xlib", width, height)
-{
-	printf("XlibBackend::XlibBackend %i %i\n", width, height);
-	if(!xlibBackendPriv.OpenDisplay())
-		throw XlibBackendException("Can't open display. Is DISPLAY set?\n");
-
-	xlibBackendPriv.CreateSimpleWindow(this->width, this->height);
-
-	xlibBackendPriv.SelectInput();
-	xlibBackendPriv.MapWindow();
-}
-
-XlibBackend::~XlibBackend()
-{
-	this->destroySurface();
-
-	xlibBackendPriv.DestroyWindow();
-	xlibBackendPriv.CloseDisplay();
-}
+	, xlibBackendPriv(width, height, display_name)
+{}
 
 
 void XlibBackend::createSurface()
@@ -66,21 +50,16 @@ void XlibBackend::Initialize(Local<Object> target)
 
 NAN_METHOD(XlibBackend::New)
 {
-	// TODO use Backend::init() instead of having duplicated code. Problem is with
-	//      `construct` static function, that use the defalt one instead of ours.
-  // init(info);
-
   int width  = 0;
   int height = 0;
   if (info[0]->IsNumber()) width  = Nan::To<uint32_t>(info[0]).FromMaybe(0);
   if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
-  XlibBackend *backend = new XlibBackend(width, height);
+  char *display_name = NULL;
+  if (info[2]->IsString()) display_name = (*Nan::Utf8String(info[2])).c_str();
 
-	printf("XlibBackend::New 1 %i %i %i\n", width, height,backend);
+  XlibBackend *backend = new XlibBackend(width, height, display_name);
+
   backend->Wrap(info.This());
-	printf("XlibBackend::New 2 %i %i\n", width, height);
-
   info.GetReturnValue().Set(info.This());
-	printf("XlibBackend::New 3 %i %i\n", width, height);
 }
