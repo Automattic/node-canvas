@@ -23,12 +23,13 @@
   "homepage": "https://github.com/Automattic/node-canvas",
   "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
-    "prebenchmark": "node-gyp build",
+    "build": "node-pre-gyp build",
+    "prebenchmark": "npm run build",
     "benchmark": "node benchmarks/run.js",
     "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js",
-    "pretest": "npm run lint && node-gyp build",
+    "pretest": "npm run lint && npm run build",
     "test": "mocha test/*.test.js",
-    "pretest-server": "node-gyp build",
+    "pretest-server": "npm run build",
     "test-server": "node test/server.js",
     "install": "node-pre-gyp install --fallback-to-build",
     "dtslint": "dtslint types"
