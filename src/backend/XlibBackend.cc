@@ -55,8 +55,8 @@ NAN_METHOD(XlibBackend::New)
   if (info[0]->IsNumber()) width  = Nan::To<uint32_t>(info[0]).FromMaybe(0);
   if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
 
-  char *display_name = NULL;
-  if (info[2]->IsString()) display_name = (*Nan::Utf8String(info[2])).c_str();
+  char *display_name = nullptr;
+  if (info[2]->IsString()) display_name = *Nan::Utf8String(info[2]);
 
   XlibBackend *backend = new XlibBackend(width, height, display_name);
 
