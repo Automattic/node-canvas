@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <string>
+
 #include <cairo.h>
 #include <X11/X.h>
 
@@ -24,10 +26,10 @@ class XlibBackendPriv
   friend class XlibBackend;
 
   private:
-    Display* display = NULL;
+    Display* display = nullptr;
     Window window;
 
-    XlibBackendPriv(int width, int height, char *display_name = NULL);
+    XlibBackendPriv(int width, int height, char *display_name = nullptr);
     ~XlibBackendPriv();
 
     cairo_surface_t* cairo_surface_create(int width, int height);
