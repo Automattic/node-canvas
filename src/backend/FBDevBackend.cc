@@ -99,7 +99,7 @@ void FBDevBackend::FbDevIoctlHelper(unsigned long request, void* data,
 
 void FBDevBackend::createSurface()
 {
-	destroySurface();
+  assert(!surface);
 
 	struct fb_var_screeninfo fb_vinfo;
 

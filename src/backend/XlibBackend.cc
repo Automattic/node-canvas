@@ -9,7 +9,7 @@ XlibBackend::XlibBackend(int width, int height, char *display_name)
 
 void XlibBackend::createSurface()
 {
-	destroySurface();
+  assert(!surface);
 
   this->surface = xlibBackendPriv.cairo_surface_create(width, height);
 }
