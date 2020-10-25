@@ -17,7 +17,7 @@ XlibBackendPriv::XlibBackendPriv(int width, int height, char *display_name)
 	XMapWindow(this->display, this->window);
 }
 
-void XlibBackendPriv::~XlibBackendPriv()
+XlibBackendPriv::~XlibBackendPriv()
 {
 	XCloseDisplay(this->display);
 }
