@@ -30,6 +30,10 @@
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
 
+#ifdef HAS_FBDEV
+#include "backend/FBDevBackend.h"
+#endif
+
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
   "with at least a family (string) and optionally weight (string/number) " \
@@ -106,8 +110,26 @@ NAN_METHOD(Canvas::New) {
         backend = new PdfBackend(width, height);
       else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);
+#ifdef HAS_FBDEV
+      else if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
+        if (info[3]->IsString()) {
+          if(info[4]->IsBoolean()) {
+            if(info[5]->IsBoolean())
+              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
+                Nan::To<bool>(info[4]).FromMaybe(0), Nan::To<bool>(info[5]).FromMaybe(0));
+            else
+              backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]),
+                Nan::To<bool>(info[4]).FromMaybe(0));
+          }
+          else
+            backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
+        }
+        else
+          backend = new FBDevBackend(width, height);
+      }
+#endif
       else
-        backend = new ImageBackend(width, height);
+        return Nan::ThrowRangeError("Unknown canvas type");
     }
     else
       backend = new ImageBackend(width, height);
@@ -115,7 +137,11 @@ NAN_METHOD(Canvas::New) {
   else if (info[0]->IsObject()) {
     if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])
+#ifdef HAS_FBDEV
+    || Nan::New(FBDevBackend::constructor)->HasInstance(info[0])
+#endif
+    ) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
@@ -503,7 +529,14 @@ NAN_METHOD(Canvas::ToBuffer) {
 
   // Async JPEG
   if (info[0]->IsFunction() && info[1]->StrictEquals(jpegStr)) {
-    JpegClosure* closure = new JpegClosure(canvas);
+    JpegClosure* closure;
+    try {
+      closure = new JpegClosure(canvas);
+    } catch (cairo_status_t ex) {
+      Nan::ThrowError(Canvas::Error(ex));
+      return;
+    }
+
     parseJPEGArgs(info[2], *closure);
 
     canvas->Ref();
@@ -894,8 +927,6 @@ void
 Canvas::resurface(Local<Object> canvas) {
   Nan::HandleScope scope;
   Local<Value> context;
-
-  backend()->recreateSurface();
 
   // Reset context
 	context = Nan::Get(canvas, Nan::New<String>("context").ToLocalChecked()).ToLocalChecked();

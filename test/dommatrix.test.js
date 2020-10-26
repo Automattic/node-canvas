@@ -9,12 +9,12 @@ const assert = require('assert')
 // This doesn't need to be precise; we're not testing the engine's trig
 // implementations.
 const TOLERANCE = 0.001
-function assertApprox(actual, expected, tolerance) {
+function assertApprox (actual, expected, tolerance) {
   if (typeof tolerance !== 'number') tolerance = TOLERANCE
   assert.ok(expected > actual - tolerance && expected < actual + tolerance,
     `Expected ${expected} to equal ${actual} +/- ${tolerance}`)
 }
-function assertApproxDeep(actual, expected, tolerance) {
+function assertApproxDeep (actual, expected, tolerance) {
   expected.forEach(function (value, index) {
     assertApprox(actual[index], value)
   })
@@ -529,14 +529,14 @@ describe('DOMMatrix', function () {
   describe('transformPoint', function () {
     it('works', function () {
       var x = new DOMMatrix()
-      var r = x.transformPoint({x: 1, y: 2, z: 3})
+      var r = x.transformPoint({ x: 1, y: 2, z: 3 })
       assert.strictEqual(r.x, 1)
       assert.strictEqual(r.y, 2)
       assert.strictEqual(r.z, 3)
       assert.strictEqual(r.w, 1)
 
       x.rotateSelf(70)
-      r = x.transformPoint({x: 2, y: 3, z: 4})
+      r = x.transformPoint({ x: 2, y: 3, z: 4 })
       assertApprox(r.x, -2.13503)
       assertApprox(r.y, 2.905445)
       assert.strictEqual(r.z, 4)
