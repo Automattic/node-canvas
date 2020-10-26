@@ -30,6 +30,10 @@
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
 
+#ifdef HAS_FBDEV
+#include "backend/FBDevBackend.h"
+#endif
+
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
   "with at least a family (string) and optionally weight (string/number) " \
@@ -106,8 +110,16 @@ NAN_METHOD(Canvas::New) {
         backend = new PdfBackend(width, height);
       else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
         backend = new SvgBackend(width, height);
+#ifdef HAS_FBDEV
+      else if (0 == strcmp("fbdev", *Nan::Utf8String(info[2]))) {
+        if (info[3]->IsString())
+          backend = new FBDevBackend(width, height, *Nan::Utf8String(info[3]));
+        else
+          backend = new FBDevBackend(width, height);
+      }
+#endif
       else
-        backend = new ImageBackend(width, height);
+        return Nan::ThrowRangeError("Unknown canvas type");
     }
     else
       backend = new ImageBackend(width, height);
@@ -115,7 +127,11 @@ NAN_METHOD(Canvas::New) {
   else if (info[0]->IsObject()) {
     if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
         Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+        Nan::New(SvgBackend::constructor)->HasInstance(info[0])
+#ifdef HAS_FBDEV
+    || Nan::New(FBDevBackend::constructor)->HasInstance(info[0])
+#endif
+    ) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
