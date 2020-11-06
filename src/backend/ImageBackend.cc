@@ -31,20 +31,25 @@ int32_t ImageBackend::approxBytesPerPixel() {
   }
 }
 
-cairo_surface_t* ImageBackend::createSurface() {
+void ImageBackend::createSurface()
+{
   assert(!surface);
   surface = cairo_image_surface_create(format, width, height);
   assert(surface);
   Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
-  return surface;
 }
 
-void ImageBackend::destroySurface() {
-  if (surface) {
-    cairo_surface_destroy(surface);
-    surface = nullptr;
-    Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
-  }
+void ImageBackend::recreateSurface()
+{
+	// Re-surface
+	if (this->surface) {
+		int old_width = cairo_image_surface_get_width(this->surface);
+		int old_height = cairo_image_surface_get_height(this->surface);
+		this->destroySurface();
+		Nan::AdjustExternalMemory(-approxBytesPerPixel() * old_width * old_height);
+	}
+
+	createSurface();
 }
 
 cairo_format_t ImageBackend::getFormat() {

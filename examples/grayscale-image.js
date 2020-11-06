@@ -1,3 +1,7 @@
+/**
+ * Passing grayscale image through canvas.  Image should remain a gray square.
+ * If image is distorted with lines, then grayscale images are being distorted.
+ */
 const fs = require('fs')
 const path = require('path')
 const Canvas = require('..')

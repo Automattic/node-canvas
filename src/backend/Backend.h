@@ -18,10 +18,16 @@ class Backend : public Nan::ObjectWrap
   protected:
     int width;
     int height;
+    cairo_format_t format;
     cairo_surface_t* surface = nullptr;
     Canvas* canvas = nullptr;
 
-    Backend(std::string name, int width, int height);
+    Backend(std::string name, int width = 0, int height = 0);
+
+    virtual void createSurface() = 0;
+    virtual void destroySurface();
+    virtual void recreateSurface();
+
     static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Backend *construct(int width, int height){ return nullptr; }
 
@@ -30,12 +36,7 @@ class Backend : public Nan::ObjectWrap
 
     void setCanvas(Canvas* canvas);
 
-    virtual cairo_surface_t* createSurface() = 0;
-    virtual cairo_surface_t* recreateSurface();
-
     DLL_PUBLIC cairo_surface_t* getSurface();
-    virtual void destroySurface();
-
     DLL_PUBLIC std::string getName();
 
     DLL_PUBLIC int getWidth();
@@ -45,12 +46,13 @@ class Backend : public Nan::ObjectWrap
     virtual void setHeight(int height);
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
-    virtual cairo_format_t getFormat() {
-      return CAIRO_FORMAT_INVALID;
-    }
+    virtual cairo_format_t getFormat();
+    virtual void setFormat(cairo_format_t format);
 
     bool isSurfaceValid();
     inline const char* getError(){ return error; }
+
+    virtual void onPaint(){};
 };
 
 

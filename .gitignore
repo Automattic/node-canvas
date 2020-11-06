@@ -10,9 +10,12 @@ out.pdf
 out.svg
 .pomo
 node_modules
+deps/
+npm-debug.log
 package-lock.json
 
 # Vim cruft
 *.swp
 *.un~
+deps/
 npm-debug.log

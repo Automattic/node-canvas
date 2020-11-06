@@ -1,10 +1,15 @@
-#include "Backend.h"
 #include <string>
+
+#include <nan.h>
+
+#include "Backend.h"
+
 
 Backend::Backend(std::string name, int width, int height)
   : name(name)
   , width(width)
   , height(height)
+	, format(CAIRO_FORMAT_INVALID)
 {}
 
 Backend::~Backend()
@@ -30,11 +35,11 @@ void Backend::setCanvas(Canvas* _canvas)
 }
 
 
-cairo_surface_t* Backend::recreateSurface()
+void Backend::recreateSurface()
 {
   this->destroySurface();
 
-  return this->createSurface();
+  this->createSurface();
 }
 
 DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
@@ -61,20 +66,30 @@ int Backend::getWidth()
 {
   return this->width;
 }
-void Backend::setWidth(int width_)
+void Backend::setWidth(int width)
 {
-  this->width = width_;
-  this->recreateSurface();
+	this->width = width;
+	this->recreateSurface();
 }
 
 int Backend::getHeight()
 {
   return this->height;
 }
-void Backend::setHeight(int height_)
+void Backend::setHeight(int height)
 {
-  this->height = height_;
+  this->height = height;
   this->recreateSurface();
+}
+
+cairo_format_t Backend::getFormat()
+{
+	return this->format;
+}
+void Backend::setFormat(cairo_format_t format)
+{
+	this->format = format;
+	this->recreateSurface();
 }
 
 bool Backend::isSurfaceValid(){
