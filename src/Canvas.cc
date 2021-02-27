@@ -408,7 +408,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
-    if (static_cast<uint32_t>(canvas->nBytes()) > node::Buffer::kMaxLength) {
+    if (canvas->nBytes() > node::Buffer::kMaxLength) {
       Nan::ThrowError("Data exceeds maximum buffer length.");
       return;
     }
@@ -597,6 +597,9 @@ streamPDF(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
   Nan::AsyncResource async("canvas:StreamPDF");
   PdfStreamInfo* streaminfo = static_cast<PdfStreamInfo*>(c);
+  // TODO this is technically wrong, we're returning a pointer to the data in a
+  // vector in a class with automatic storage duration. If the canvas goes out
+  // of scope while we're in the handler, a use-after-free could happen.
   Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
