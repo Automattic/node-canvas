@@ -44,7 +44,7 @@ jobs:
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
-      image: chearon/canvas-prebuilt:8
+      image: chearon/canvas-prebuilt:9
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -65,15 +65,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Reinstall libjpeg in /usr/local
-        run: |
-          set -ex
-          cd /root/libjpeg-*
-          cd b
-          cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local ..
-          make
-          make install
 
       - name: Build
         run: |
