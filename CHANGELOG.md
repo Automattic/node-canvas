@@ -10,12 +10,15 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Upgrade dtslint
 * Add Node.js v15 to CI.
+* The C++ class method `nBytes()` now returns a size_t. (Because this is a C++
+  method only, this is not considered a breaking change.)
 ### Added
 * Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
 ### Fixed
 * Fix Pango logging "expect ugly output" on Windows (#1643)
 * Fix benchmark for createPNGStream (#1672)
 * Fix dangling reference in BackendOperationNotAvailable exception (#1740)
+* Fix always-false comparison warning in Canvas.cc.
 
 2.7.0
 ==================
