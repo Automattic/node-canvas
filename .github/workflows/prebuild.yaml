@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         node: [15]
-        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
@@ -78,7 +78,7 @@ jobs:
       - name: Build
         run: |
           set -ex
-          mkdir prebuild
+          mkdir -p prebuild
           cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
           npm install -g node-gyp@6.1
           npm install --ignore-scripts
@@ -140,7 +140,7 @@ jobs:
     strategy:
       matrix:
         node: [15]
-        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -149,6 +149,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
 
       - uses: actions/setup-node@v1
         with:
@@ -208,7 +211,7 @@ jobs:
     strategy:
       matrix:
         node: [15]
-        canvas_tag: ["v2.6.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
@@ -230,6 +233,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
 
       - name: Build
         run: |
