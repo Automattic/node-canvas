@@ -9,6 +9,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 * Upgrade dtslint
+* Upgrade node-pre-gyp to 1.0.0. Note that if you are using special node-pre-gyp
+  features like `node_pre_gyp_accessKeyId`, you may need to make changes to your
+  installation procedure. See https://github.com/mapbox/node-pre-gyp/blob/master/CHANGELOG.md#100.
 * Add Node.js v15 to CI.
 * The C++ class method `nBytes()` now returns a size_t. (Because this is a C++
   method only, this is not considered a breaking change.)
