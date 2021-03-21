@@ -992,6 +992,12 @@ describe('Canvas', function () {
     assert.equal(mat3.d, 0.3);
 
     assert.deepEqual(ctx.currentTransform, ctx.getTransform());
+
+    ctx.setTransform(ctx.getTransform());
+    assert.deepEqual(mat3, ctx.getTransform());
+
+    ctx.setTransform(mat3.a, mat3.b, mat3.c, mat3.d, mat3.e, mat3.f);
+    assert.deepEqual(mat3, ctx.getTransform());
   });
 
   it('Context2d#createImageData(ImageData)', function () {

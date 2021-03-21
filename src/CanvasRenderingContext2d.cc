@@ -1776,6 +1776,22 @@ get_current_transform(Context2d *context) {
 }
 
 /*
+ * Helper for get/set transform.
+ */
+
+void parse_matrix_from_object(cairo_matrix_t &matrix, Local<Object> mat) {
+  cairo_matrix_init(&matrix,
+    Nan::To<double>(Nan::Get(mat, Nan::New("a").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("b").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("c").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("d").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("e").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("f").ToLocalChecked()).ToLocalChecked()).FromMaybe(0)
+  );
+}
+
+
+/*
  * Get current transform.
  */
 
@@ -1802,14 +1818,7 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
 #endif
 
   cairo_matrix_t matrix;
-  cairo_matrix_init(&matrix,
-    Nan::To<double>(Nan::Get(mat, Nan::New("a").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("b").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("c").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("d").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("e").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("f").ToLocalChecked()).ToLocalChecked()).FromMaybe(0)
-  );
+  parse_matrix_from_object(matrix, mat);
 
   cairo_transform(context->context(), &matrix);
 }
@@ -2279,8 +2288,24 @@ NAN_METHOD(Context2d::ResetTransform) {
 
 NAN_METHOD(Context2d::SetTransform) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_identity_matrix(context->context());
-  Context2d::Transform(info);
+  if (info.Length() == 1) {
+    Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
+
+    #if NODE_MAJOR_VERSION >= 8
+      Local<Context> ctx = Nan::GetCurrentContext();
+      if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+        return Nan::ThrowTypeError("Expected DOMMatrix");
+      }
+    #endif
+
+    cairo_matrix_t matrix;
+    parse_matrix_from_object(matrix, mat);
+
+    cairo_set_matrix(context->context(), &matrix);
+  } else {
+    cairo_identity_matrix(context->context());
+    Context2d::Transform(info);
+  }
 }
 
 /*
