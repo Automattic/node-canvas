@@ -123,6 +123,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "rotate", Rotate);
   Nan::SetPrototypeMethod(ctor, "translate", Translate);
   Nan::SetPrototypeMethod(ctor, "transform", Transform);
+  Nan::SetPrototypeMethod(ctor, "getTransform", GetTransform);
   Nan::SetPrototypeMethod(ctor, "resetTransform", ResetTransform);
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
   Nan::SetPrototypeMethod(ctor, "isPointInPath", IsPointInPath);
@@ -1751,11 +1752,11 @@ NAN_SETTER(Context2d::SetQuality) {
 }
 
 /*
- * Get current transform.
+ * Helper for get current transform matrix
  */
 
-NAN_GETTER(Context2d::GetCurrentTransform) {
-  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+Local<Object>
+get_current_transform(Context2d *context) {
   Isolate *iso = Isolate::GetCurrent();
 
   Local<Float64Array> arr = Float64Array::New(ArrayBuffer::New(iso, 48), 0, 6);
@@ -1771,7 +1772,16 @@ NAN_GETTER(Context2d::GetCurrentTransform) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { arr };
-  Local<Object> instance = Nan::NewInstance(_DOMMatrix.Get(iso), argc, argv).ToLocalChecked();
+  return Nan::NewInstance(context->_DOMMatrix.Get(iso), argc, argv).ToLocalChecked();
+}
+
+/*
+ * Get current transform.
+ */
+
+NAN_GETTER(Context2d::GetCurrentTransform) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  Local<Object> instance = get_current_transform(context);
 
   info.GetReturnValue().Set(instance);
 }
@@ -2241,6 +2251,17 @@ NAN_METHOD(Context2d::Transform) {
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_transform(context->context(), &matrix);
+}
+
+/*
+ * Get the CTM
+ */
+
+NAN_METHOD(Context2d::GetTransform) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  Local<Object> instance = get_current_transform(context);
+
+  info.GetReturnValue().Set(instance);
 }
 
 /*

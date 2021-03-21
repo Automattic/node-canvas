@@ -990,6 +990,8 @@ describe('Canvas', function () {
     var mat3 = ctx.currentTransform;
     assert.equal(mat3.a, 0.1);
     assert.equal(mat3.d, 0.3);
+
+    assert.deepEqual(ctx.currentTransform, ctx.getTransform());
   });
 
   it('Context2d#createImageData(ImageData)', function () {
