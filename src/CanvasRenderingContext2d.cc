@@ -2698,10 +2698,10 @@ NAN_METHOD(Context2d::MeasureText) {
            Nan::New<Number>(logical_rect.width)).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
-           Nan::New<Number>(x_offset - PANGO_LBEARING(logical_rect))).Check();
+           Nan::New<Number>(x_offset - PANGO_LBEARING(ink_rect))).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
-           Nan::New<Number>(x_offset + PANGO_RBEARING(logical_rect))).Check();
+           Nan::New<Number>(x_offset + PANGO_RBEARING(ink_rect))).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
            Nan::New<Number>(y_offset + PANGO_ASCENT(ink_rect))).Check();
