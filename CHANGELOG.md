@@ -15,6 +15,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Add Node.js v15 to CI.
 * The C++ class method `nBytes()` now returns a size_t. (Because this is a C++
   method only, this is not considered a breaking change.)
+* Export type NodeCanvasRenderingContext2D so you can pass the current context
+  to functions (TypeScript).
 ### Added
 * Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
 ### Fixed
