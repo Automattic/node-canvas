@@ -18,6 +18,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
 ### Fixed
+* Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` returned by `measureText` to be the ink rect ([#1776](https://github.com/Automattic/node-canvas/pull/1776), fixes [#1703](https://github.com/Automattic/node-canvas/issues/1703)).
 * Fix Pango logging "expect ugly output" on Windows (#1643)
 * Fix benchmark for createPNGStream (#1672)
 * Fix dangling reference in BackendOperationNotAvailable exception (#1740)
