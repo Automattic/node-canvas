@@ -18,7 +18,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Export type NodeCanvasRenderingContext2D so you can pass the current context
   to functions (TypeScript).
 ### Added
-* Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
+* Add support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
+* Add support for `context.getTransform()` ([#1769](https://github.com/Automattic/node-canvas/pull/1769))
+* Add support for `context.setTransform(dommatrix)` ([#1769](https://github.com/Automattic/node-canvas/pull/1769))
 ### Fixed
 * Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` returned by `measureText` to be the ink rect ([#1776](https://github.com/Automattic/node-canvas/pull/1776), fixes [#1703](https://github.com/Automattic/node-canvas/issues/1703)).
 * Fix Pango logging "expect ugly output" on Windows (#1643)
