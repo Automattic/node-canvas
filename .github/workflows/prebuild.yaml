@@ -243,9 +243,20 @@ jobs:
         run: |
           Invoke-WebRequest "http://www.dependencywalker.com/depends22_x64.zip" -OutFile depends22_x64.zip
           7z e depends22_x64.zip
+      - name: Bundle pt 2
+        shell: msys2 {0}
+        run: |
+          ./depends.exe -c -oc depends.csv build\\Release\\canvas.node || true
+          [ -f depends.csv ] || { echo "error invoking depends.exe"; exit 1; }
 
-      - name: Bundle
-        run: msys2 -c ". prebuild/Windows/bundle.sh"
+          copies=$(comm -12 \
+            <(cat depends.csv | cut -d ',' -f2 | sed 's/"//g' | tr '[:upper:]' '[:lower:]' | sort) \
+            <(find /mingw64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
+          )
+
+          for dll in $copies; do
+            cp /mingw64/bin/$dll build/Release
+          done;
 
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
