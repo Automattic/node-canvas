@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 15]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 15]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -55,7 +55,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 15]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
       - uses: actions/checkout@v2
       - name: Install
         run: npm install --ignore-scripts
