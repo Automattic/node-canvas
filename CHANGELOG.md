@@ -8,6 +8,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+### Added
+### Fixed
+
+2.8.0
+==================
+### Changed
 * Upgrade dtslint
 * Upgrade node-pre-gyp to 1.0.0. Note that if you are using special node-pre-gyp
   features like `node_pre_gyp_accessKeyId`, you may need to make changes to your
