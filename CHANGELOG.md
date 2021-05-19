@@ -14,6 +14,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 2.8.0
 ==================
 ### Changed
+* Remove prebuilds for Node versions that have reached end-of-life. Prebuilds are now
+  available for Node v12 and higher.
 * Upgrade dtslint
 * Upgrade node-pre-gyp to 1.0.0. Note that if you are using special node-pre-gyp
   features like `node_pre_gyp_accessKeyId`, you may need to make changes to your
