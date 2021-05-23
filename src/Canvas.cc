@@ -79,6 +79,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Class methods
   Nan::SetMethod(ctor, "_registerFont", RegisterFont);
+  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts);
 
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
@@ -753,6 +754,7 @@ NAN_METHOD(Canvas::RegisterFont) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
+	  face.file_path = (unsigned char *) *filePath;
       font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
@@ -766,6 +768,14 @@ NAN_METHOD(Canvas::RegisterFont) {
   g_free(family);
   g_free(weight);
   g_free(style);
+}
+
+NAN_METHOD(Canvas::DeregisterAllFonts) {
+	// Unload all fonts from pango to free up memory
+	std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+      deregister_font( f.file_path );
+    });
+	font_face_list.clear();
 }
 
 /*

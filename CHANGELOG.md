@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
 ### Fixed
 
 2.8.0
