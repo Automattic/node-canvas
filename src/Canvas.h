@@ -28,7 +28,7 @@ class FontFace {
   public:
     PangoFontDescription *sys_desc = nullptr;
     PangoFontDescription *user_desc = nullptr;
-	unsigned char *file_path;
+	unsigned char file_path[1024];
 };
 
 /*
