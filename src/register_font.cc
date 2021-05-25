@@ -282,7 +282,7 @@ deregister_font(unsigned char *filepath) {
   if (!success) return false;
 
   // Tell Pango to throw away the current FontMap and create a new one. This
-  // has the effect of registering the new font in Pango by re-looking up all
+  // has the effect of deregistering the font in Pango by re-looking up all
   // font families.
   pango_cairo_font_map_set_default(NULL);
 
