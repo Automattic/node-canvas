@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 Changed `DOMPoint()` constructor to check for parameter nullability.
+
+Changed `/lib/DOMMatrix.js` to have a more strict number checking.
 ### Added
 ### Fixed
 
