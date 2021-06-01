@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+Changed `DOMPoint()` constructor to check for parameter nullability.
 ### Added
 ### Fixed
 
