@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 Changed `DOMPoint()` constructor to check for parameter nullability.
+
+Changed `DOMMatrix.js` to use string literals for non-special cases.
 ### Added
 ### Fixed
 
