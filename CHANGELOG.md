@@ -9,7 +9,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 Changed `DOMPoint()` constructor to check for parameter nullability.
-Got rid of semicolons as they weren't consistant with the code base
+
+Got rid of semicolons as they weren't consistant with the code base.
 ### Added
 ### Fixed
 
