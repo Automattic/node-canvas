@@ -941,7 +941,9 @@ tests['textAlign right'] = function (ctx) {
 
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'right'
-  ctx.fillText('right', 100, 100)
+  ctx.fillText('right ltr', 100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('right rtl', 100, 130)
 }
 
 tests['textAlign left'] = function (ctx) {
@@ -958,7 +960,47 @@ tests['textAlign left'] = function (ctx) {
 
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'left'
-  ctx.fillText('left', 100, 100)
+  ctx.fillText('left ltr', 100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('left rtl', 100, 130)
+}
+
+tests['textAlign start'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 100)
+  ctx.lineTo(200, 100)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.lineTo(100, 0)
+  ctx.lineTo(100, 200)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.textAlign = 'start'
+  ctx.fillText('start ltr', 100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('start rtl', 100, 130)
+}
+
+tests['textAlign end'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 100)
+  ctx.lineTo(200, 100)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.lineTo(100, 0)
+  ctx.lineTo(100, 200)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.textAlign = 'end'
+  ctx.fillText('end ltr', 100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('end rtl', 100, 130)
 }
 
 tests['textAlign center'] = function (ctx) {
