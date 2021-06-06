@@ -175,6 +175,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   SetProtoAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont, ctor);
   SetProtoAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline, ctor);
   SetProtoAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign, ctor);
+  // SetProtoAccessor(proto, Nan::New("direction").ToLocalChecked(), GetDirection, SetDirection, ctor);
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
   Nan::Set(target, Nan::New("CanvasRenderingContext2dInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
@@ -2681,6 +2682,36 @@ NAN_SETTER(Context2d::SetTextAlign) {
   context->state->textAlignment = op->second;
   context->_textAlign.Reset(value);
 }
+
+// /*
+//  * Set text direction.
+//  */
+//
+// NAN_SETTER(Context2d::SetDirection) {
+//   if (!value->IsString()) return;
+//   cairo_fill_rule_t rule = CAIRO_FILL_RULE_WINDING;
+//   Nan::Utf8String str(value);
+//   if (std::strcmp(*str, "evenodd") == 0) {
+//     rule = CAIRO_FILL_RULE_EVEN_ODD;
+//   }
+// }
+//
+// /*
+//  * Get text direction.
+//  */
+//
+// NAN_GETTER(Context2d::GetDirection) {
+//   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+//   Isolate *iso = Isolate::GetCurrent();
+//   Local<Value> direction;
+//
+//   if (context->_direction.IsEmpty())
+//     font = Nan::New("start").ToLocalChecked();
+//   else
+//     font = context->_textAlign.Get(iso);
+//
+//   info.GetReturnValue().Set(font);
+// }
 
 /*
  * Return the given text extents.

@@ -938,12 +938,17 @@ tests['textAlign right'] = function (ctx) {
   ctx.lineTo(100, 0)
   ctx.lineTo(100, 200)
   ctx.stroke()
-
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'right'
-  ctx.fillText('right ltr', 100, 100)
+  ctx.fillText('right ltr', 100, 70)
+  ctx.fillText(
+    'الحق ltr',
+    100, 100)
   ctx.direction = 'rtl'
   ctx.fillText('right rtl', 100, 130)
+  ctx.fillText(
+    'rtl الحق',
+    100, 160)
 }
 
 tests['textAlign left'] = function (ctx) {
@@ -960,9 +965,15 @@ tests['textAlign left'] = function (ctx) {
 
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'left'
-  ctx.fillText('left ltr', 100, 100)
+  ctx.fillText('left ltr', 100, 70)
+  ctx.fillText(
+    'تركت ltr',
+    100, 100)
   ctx.direction = 'rtl'
   ctx.fillText('left rtl', 100, 130)
+  ctx.fillText(
+    'rtl تركت',
+    100, 160)
 }
 
 tests['textAlign start'] = function (ctx) {
@@ -979,9 +990,15 @@ tests['textAlign start'] = function (ctx) {
 
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'start'
-  ctx.fillText('start ltr', 100, 100)
+  ctx.fillText('start ltr', 100, 70)
+  ctx.fillText(
+    'بداية ltr',
+    100, 100)
   ctx.direction = 'rtl'
   ctx.fillText('start rtl', 100, 130)
+  ctx.fillText(
+    'rtl بداية',
+    100, 160)
 }
 
 tests['textAlign end'] = function (ctx) {
@@ -998,9 +1015,15 @@ tests['textAlign end'] = function (ctx) {
 
   ctx.font = 'normal 20px Arial'
   ctx.textAlign = 'end'
-  ctx.fillText('end ltr', 100, 100)
+  ctx.fillText('end ltr', 100, 70)
+  ctx.fillText(
+    'نهاية ltr',
+    100, 100)
   ctx.direction = 'rtl'
-  ctx.fillText('end rtl', 100, 130)
+  ctx.fillText('start rtl', 100, 130)
+  ctx.fillText(
+    'rtl نهاية',
+    100, 160)
 }
 
 tests['textAlign center'] = function (ctx) {
