@@ -51,8 +51,8 @@ function registerFont (src, fontFace) {
 /**
  * Unload all fonts from pango to free up memory
  */
-function deregisterAllFonts() {
-  return Canvas._deregisterAllFonts();
+function deregisterAllFonts () {
+  return Canvas._deregisterAllFonts()
 }
 
 module.exports = {
