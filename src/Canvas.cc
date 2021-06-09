@@ -754,7 +754,7 @@ NAN_METHOD(Canvas::RegisterFont) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
-      strcpy( (char *)face.file_path, (char *) *filePath );
+      strncpy((char *)face.file_path, (char *) *filePath, 1023);
       font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
