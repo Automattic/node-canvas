@@ -48,6 +48,13 @@ function registerFont (src, fontFace) {
   return Canvas._registerFont(fs.realpathSync(src), fontFace)
 }
 
+/**
+ * Unload all fonts from pango to free up memory
+ */
+function deregisterAllFonts () {
+  return Canvas._deregisterAllFonts()
+}
+
 module.exports = {
   Canvas,
   Context2d: CanvasRenderingContext2D, // Legacy/compat export
@@ -63,6 +70,7 @@ module.exports = {
   DOMPoint,
 
   registerFont,
+  deregisterAllFonts,
   parseFont,
 
   createCanvas,

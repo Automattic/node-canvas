@@ -28,6 +28,7 @@ class FontFace {
   public:
     PangoFontDescription *sys_desc = nullptr;
     PangoFontDescription *user_desc = nullptr;
+    unsigned char file_path[1024];
 };
 
 /*
@@ -50,6 +51,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
+    static NAN_METHOD(DeregisterAllFonts);
     static v8::Local<v8::Value> Error(cairo_status_t status);
     static void ToPngBufferAsync(uv_work_t *req);
     static void ToJpegBufferAsync(uv_work_t *req);
