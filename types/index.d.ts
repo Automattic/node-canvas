@@ -16,8 +16,12 @@ export interface PngConfig {
 	 */
 	filters?: number
 	/**
+	 * _For creating indexed PNGs._ Decide to include alpha channel. Defaults to true.
+	 */
+	alpha?: boolean
+	/**
 	 * _For creating indexed PNGs._ The palette of colors. Entries should be in
-	 * RGBA order.
+	 * RGBA order (with alpha) or RGB (without alpha).
 	 */
 	palette?: Uint8ClampedArray
 	/**

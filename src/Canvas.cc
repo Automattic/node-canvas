@@ -264,14 +264,17 @@ static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
     Local<Value> filters = Nan::Get(obj, Nan::New("filters").ToLocalChecked()).ToLocalChecked();
     if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
 
+    Local<Value> alpha = Nan::Get(obj, Nan::New("alpha").ToLocalChecked()).ToLocalChecked();
+    pngargs.alpha = Nan::To<bool>(alpha).FromMaybe(true);
     Local<Value> palette = Nan::Get(obj, Nan::New("palette").ToLocalChecked()).ToLocalChecked();
     if (palette->IsUint8ClampedArray()) {
       Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
       pngargs.nPaletteColors = palette_ta->Length();
-      if (pngargs.nPaletteColors % 4 != 0) {
-        throw "Palette length must be a multiple of 4.";
+      uint8_t divider = pngargs.alpha ? 4 : 3;
+      if (pngargs.nPaletteColors % divider != 0) {
+        throw "Palette length must be a multiple of 4 (with alpha) or 3 (without alpha).";
       }
-      pngargs.nPaletteColors /= 4;
+      pngargs.nPaletteColors /= divider;
       Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
       pngargs.palette = *_paletteColors;
       // Optional background color index:
@@ -425,8 +428,13 @@ NAN_METHOD(Canvas::ToBuffer) {
     try {
       PngClosure closure(canvas);
       parsePNGArgs(info[1], closure);
-      if (closure.nPaletteColors == 0xFFFFFFFF) {
+
+      if (closure.alpha && closure.nPaletteColors == 0xFFFFFFFF) {
         Nan::ThrowError("Palette length must be a multiple of 4.");
+        return;
+      }
+      if (!closure.alpha && closure.nPaletteColors == 0xFFFFFF) {
+        Nan::ThrowError("Palette length must be a multiple of 3.");
         return;
       }
 

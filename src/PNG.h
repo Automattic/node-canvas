@@ -213,20 +213,24 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 
     png_set_IHDR(png, info, width, height, bpc, png_color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
+    uint8_t backgroundIndex = closure->closure->backgroundIndex;
     if (png_color_type == PNG_COLOR_TYPE_PALETTE) {
       size_t nColors = closure->closure->nPaletteColors;
+      bool alpha = closure->closure->alpha;
       uint8_t* colors = closure->closure->palette;
-      uint8_t backgroundIndex = closure->closure->backgroundIndex;
       png_colorp pngPalette = (png_colorp)png_malloc(png, nColors * sizeof(png_colorp));
       png_bytep transparency = (png_bytep)png_malloc(png, nColors * sizeof(png_bytep));
+      uint8_t divider = alpha ? 4 : 3;
       for (i = 0; i < nColors; i++) {
-        pngPalette[i].red = colors[4 * i];
-        pngPalette[i].green = colors[4 * i + 1];
-        pngPalette[i].blue = colors[4 * i + 2];
-        transparency[i] = colors[4 * i + 3];
+        pngPalette[i].red = colors[divider * i];
+        pngPalette[i].green = colors[divider * i + 1];
+        pngPalette[i].blue = colors[divider * i + 2];
+        if (alpha) transparency[i] = colors[4 * i + 3];
       }
       png_set_PLTE(png, info, pngPalette, nColors);
-      png_set_tRNS(png, info, transparency, nColors, NULL);
+      if (alpha) {
+        png_set_tRNS(png, info, transparency, nColors, NULL);
+      }
       png_set_packing(png); // pack pixels
       // have libpng free palette and trans:
       png_data_freer(png, info, PNG_DESTROY_WILL_FREE_DATA, PNG_FREE_PLTE | PNG_FREE_TRNS);

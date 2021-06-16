@@ -49,6 +49,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Speed up `fillStyle=` and `strokeStyle=`
 ### Added
 * Export `rsvgVersion`.
+* Control over tRNS chunk generation.
 ### Fixed
 * Fix BMP issues. (#1497)
 * Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)

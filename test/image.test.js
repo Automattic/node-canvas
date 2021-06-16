@@ -341,6 +341,27 @@ describe('Image', function () {
     assert.ok(!keys.includes('setSource'));
   });
 
+  it('does not create chunks tRNS and bKGD if they are irrelevant', function() {
+    var bKGD = "624b4744";
+    var PLTE = "504c5445";
+    var tRNS = "74524e53";
+    var palette = new Uint8ClampedArray([0, 0, 0, 0, 0, 100, 0, 0, 200]);
+
+    var canvas = createCanvas(10, 10);
+    var ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
+    var idata = ctx.getImageData(0, 0, 10, 10);
+    idata[0] = 0;
+    idata[1] = 1;
+    idata[2] = 2;
+    ctx.putImageData(idata, 0, 0);
+
+    // getting backgroundIndex out of palette to make bKGD to not appear
+    var bufferRGBNoBg = canvas.toBuffer('image/png', {compressionLevel: 0, filters: undefined, palette: palette, backgroundIndex: 3});
+    assert.strictEqual(bufferRGBNoBg.includes(PLTE, 0, "hex"), true);
+    assert.strictEqual(bufferRGBNoBg.includes(tRNS, 0, "hex"), false);
+    assert.strictEqual(bufferRGBNoBg.includes(bKGD, 0, "hex"), false);
+  });
+
   describe('supports BMP', function () {
     it('parses 1-bit image', function (done) {
       let img = new Image();
@@ -408,7 +429,7 @@ describe('Image', function () {
           255, 0, 0, 127,
           255, 255, 255, 127,
         ]);
-        
+
         done();
       };
 
@@ -426,7 +447,7 @@ describe('Image', function () {
         testImgd(img, [
           255, 0, 0, 255,
         ]);
-        
+
         done();
       };
 
@@ -445,7 +466,7 @@ describe('Image', function () {
           255, 0, 0, 255,
           0, 255, 0, 255,
         ]);
-        
+
         done();
       };
 
