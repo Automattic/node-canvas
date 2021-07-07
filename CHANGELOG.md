@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Refactor functions to classes.
 * Changed `DOMPoint()` constructor to check for parameter nullability.
 * Changed `DOMMatrix.js` to use string literals for non-special cases.
 * Remove semicolons from Dommatrix.js.
