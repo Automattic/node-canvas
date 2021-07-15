@@ -149,11 +149,14 @@ describe('Image', function () {
 
       img.onload = () => { onloadCalled += 1 }
 
+      // it's should be png_clock, because when you change the img.src, it doesn't load the image immediately.
       img.src = png_checkers
       assert.strictEqual(img.src, png_checkers)
       assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 2)
-      assert.strictEqual(img.height, 2)
+
+      // it's still png_clock
+      assert.strictEqual(img.width, 320)
+      assert.strictEqual(img.height, 320)
 
       img.src = png_clock
       assert.strictEqual(img.src, png_clock)
@@ -161,13 +164,22 @@ describe('Image', function () {
       assert.strictEqual(320, img.width)
       assert.strictEqual(320, img.height)
 
-      assert.strictEqual(onloadCalled, 2)
+      // called in nextTick
+      assert.strictEqual(onloadCalled, 0)
 
       onloadCalled = 0
       img.onload = () => { onloadCalled += 1 }
 
+      // reset src will clear the old src changes.
       img.src = png_clock
-      assert.strictEqual(onloadCalled, 1)
+      assert.strictEqual(onloadCalled, 0)
+
+      return new Promise(resolve => {
+        setTimeout(() => {
+          assert.strictEqual(onloadCalled, 1)
+          resolve();
+        }, 0)
+      });
     })
   })
 
@@ -211,7 +223,8 @@ describe('Image', function () {
       img.src = `${png_clock}s2`
       assert.strictEqual(img.src, `${png_clock}s2`)
 
-      assert.strictEqual(onerrorCalled, 2)
+      // it's not synchronized call, onerror will be invoked in async steps.
+      assert.strictEqual(onerrorCalled, 0)
 
       onerrorCalled = 0
       img.onerror = () => { onerrorCalled += 1 }
@@ -219,20 +232,38 @@ describe('Image', function () {
       img.src = `${png_clock}s3`
       assert.strictEqual(img.src, `${png_clock}s3`)
 
-      assert.strictEqual(onerrorCalled, 1)
+      assert.strictEqual(onerrorCalled, 0)
       assert.strictEqual(onloadCalled, 0)
+
+      return new Promise(resolve => {
+        setTimeout(() => {
+          assert.strictEqual(onerrorCalled, 1)
+          assert.strictEqual(onloadCalled, 0)
+          resolve();
+        });
+      });
     })
   })
 
   it('Image#{width,height}', function () {
     return loadImage(png_clock).then((img) => {
       img.src = ''
-      assert.strictEqual(img.width, 0)
-      assert.strictEqual(img.height, 0)
-
-      img.src = png_clock
-      assert.strictEqual(img.width, 320)
-      assert.strictEqual(img.height, 320)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          assert.strictEqual(img.width, 0)
+          assert.strictEqual(img.height, 0)
+          resolve();
+        })
+      }).then(() => {
+        img.src = png_clock
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            assert.strictEqual(img.width, 320)
+            assert.strictEqual(img.height, 320)
+            resolve()
+          })
+        })
+      })
     })
   })
 
@@ -243,11 +274,17 @@ describe('Image', function () {
       img.onerror = () => { onerrorCalled += 1 }
 
       img.src = Buffer.alloc(0)
-      assert.strictEqual(img.width, 0)
-      assert.strictEqual(img.height, 0)
-      assert.strictEqual(img.complete, true)
 
-      assert.strictEqual(onerrorCalled, 1)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          assert.strictEqual(img.width, 0)
+          assert.strictEqual(img.height, 0)
+          assert.strictEqual(img.complete, true)
+
+          assert.strictEqual(onerrorCalled, 1)
+          resolve()
+        })
+      })
     })
   })
 
@@ -258,23 +295,34 @@ describe('Image', function () {
       img.onload = () => { onloadCalled += 1 }
 
       img.src = png_checkers
-      assert.strictEqual(img.src, png_checkers)
-      assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 2)
-      assert.strictEqual(img.height, 2)
 
-      assert.strictEqual(onloadCalled, 1)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          assert.strictEqual(img.src, png_checkers)
+          assert.strictEqual(img.complete, true)
+          assert.strictEqual(img.width, 2)
+          assert.strictEqual(img.height, 2)
 
-      onloadCalled = 0
-      img.onload = null
+          assert.strictEqual(onloadCalled, 1)
 
-      img.src = png_clock
-      assert.strictEqual(img.src, png_clock)
-      assert.strictEqual(img.complete, true)
-      assert.strictEqual(img.width, 320)
-      assert.strictEqual(img.height, 320)
+          onloadCalled = 0
+          img.onload = null
+          img.src = png_clock
+          resolve()
+        })
+      }).then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            assert.strictEqual(img.src, png_clock)
+            assert.strictEqual(img.complete, true)
+            assert.strictEqual(img.width, 320)
+            assert.strictEqual(img.height, 320)
 
-      assert.strictEqual(onloadCalled, 0)
+            assert.strictEqual(onloadCalled, 0)
+            resolve()
+          })
+        })
+      })
     })
   })
 
@@ -287,21 +335,31 @@ describe('Image', function () {
       img.onerror = () => { onerrorCalled += 1 }
 
       img.src = `${png_clock}s1`
+
       assert.strictEqual(img.src, `${png_clock}s1`)
 
       img.src = `${png_clock}s2`
       assert.strictEqual(img.src, `${png_clock}s2`)
 
-      assert.strictEqual(onerrorCalled, 2)
 
-      onerrorCalled = 0
-      img.onerror = null
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          assert.strictEqual(onerrorCalled, 1)
+          resolve()
+        })
+      }).then(() => new Promise(resolve => {
+        onerrorCalled = 0
+        img.onerror = null
 
-      img.src = `${png_clock}s3`
-      assert.strictEqual(img.src, `${png_clock}s3`)
+        img.src = `${png_clock}s3`
+        assert.strictEqual(img.src, `${png_clock}s3`)
 
-      assert.strictEqual(onloadCalled, 0)
-      assert.strictEqual(onerrorCalled, 0)
+        setTimeout(() => {
+          assert.strictEqual(onloadCalled, 0)
+          assert.strictEqual(onerrorCalled, 0)
+          resolve()
+        })
+      }))
     })
   })
 
@@ -408,7 +466,7 @@ describe('Image', function () {
           255, 0, 0, 127,
           255, 255, 255, 127,
         ]);
-        
+
         done();
       };
 
@@ -426,7 +484,7 @@ describe('Image', function () {
         testImgd(img, [
           255, 0, 0, 255,
         ]);
-        
+
         done();
       };
 
@@ -445,7 +503,7 @@ describe('Image', function () {
           255, 0, 0, 255,
           0, 255, 0, 255,
         ]);
-        
+
         done();
       };
 
