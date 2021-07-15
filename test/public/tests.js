@@ -1,3 +1,4 @@
+var DOMMatrix
 var Image
 var imageSrc
 var tests = {}
@@ -5,10 +6,12 @@ var tests = {}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = tests
   Image = require('../../').Image
+  DOMMatrix = require('../../').DOMMatrix
   imageSrc = function (filename) { return require('path').join(__dirname, '..', 'fixtures', filename) }
 } else {
   window.tests = tests
   Image = window.Image
+  DOMMatrix = window.DOMMatrix
   imageSrc = function (filename) { return filename }
 }
 
@@ -477,6 +480,73 @@ tests['createPattern() no-repeat'] = function (ctx, done) {
     done()
   }
   img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() then setTransform and fill'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.fillStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.fillRect(0, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.fillRect(0, 800, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().rotate(45))
+    ctx.fillRect(800, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
+    ctx.fillRect(800, 800, 800, 800)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
+}
+
+tests['createPattern() then setTransform and stroke'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.lineWidth = 150
+    ctx.strokeStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.strokeRect(100, 100, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.strokeRect(100, 900, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().rotate(45))
+    ctx.strokeRect(900, 100, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
+    ctx.strokeRect(900, 900, 500, 500)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
+}
+
+tests['createPattern() then setTransform with no-repeat'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'no-repeat')
+    ctx.fillStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.fillRect(0, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 900))
+    ctx.fillRect(0, 800, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(800, 0).rotate(45))
+    ctx.fillRect(800, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(800, 800).rotate(45).scale(4))
+    ctx.fillRect(800, 800, 800, 800)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
 }
 
 tests['createLinearGradient()'] = function (ctx) {
