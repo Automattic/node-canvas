@@ -1,5 +1,5 @@
 #include "register_font.h"
-
+#include <memory>
 #include <pango/pangocairo.h>
 #include <pango/pango-fontmap.h>
 #include <pango/pango.h>
@@ -192,45 +192,120 @@ get_pango_style(FT_Long flags) {
     return PANGO_STYLE_NORMAL;
   }
 }
-
+struct FT_Face_Deleter
+{
+  void operator()( FT_Face face ) const
+  {
+    FT_Done_Face(face);
+  }
+};
+struct FT_Library_Deleter
+{
+  void operator()( FT_Library lib ) const
+  {
+    FT_Done_FreeType(lib);
+  }
+};
+#ifdef _WIN32
+struct Handle_Deleter
+{
+    void operator()( HANDLE p ) const
+    {
+        CloseHandle( p );
+    }
+};
+std::unique_ptr<wchar_t[]> u8ToWide(const char * str) {
+  int iBufferSize = MultiByteToWideChar(CP_UTF8, 0, str, -1, (wchar_t *)NULL, 0);
+ 
+  std::unique_ptr<wchar_t[]> wpBufWString = std::make_unique<wchar_t[]>(iBufferSize);
+ 
+  MultiByteToWideChar(CP_UTF8, 0, str, -1, wpBufWString.get(), iBufferSize);
+  return std::move(wpBufWString);
+}
+#endif
 /*
  * Return a PangoFontDescription that will resolve to the font file
  */
-
 PangoFontDescription *
 get_pango_font_description(unsigned char* filepath) {
-  FT_Library library;
-  FT_Face face;
-  PangoFontDescription *desc = pango_font_description_new();
-
-  if (!FT_Init_FreeType(&library) && !FT_New_Face(library, (const char*)filepath, 0, &face)) {
-    TT_OS2 *table = (TT_OS2*)FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
-    if (table) {
-      char *family = get_family_name(face);
-
-      if (!family) {
-        pango_font_description_free(desc);
-        FT_Done_Face(face);
-        FT_Done_FreeType(library);
-
-        return NULL;
-      }
-
-      pango_font_description_set_family_static(desc, family);
-      pango_font_description_set_weight(desc, get_pango_weight(table->usWeightClass));
-      pango_font_description_set_stretch(desc, get_pango_stretch(table->usWidthClass));
-      pango_font_description_set_style(desc, get_pango_style(face->style_flags));
-
-      FT_Done_Face(face);
-      FT_Done_FreeType(library);
-
-      return desc;
+  bool success;
+  std::unique_ptr<PangoFontDescription,decltype(&pango_font_description_free)> desc(pango_font_description_new(),pango_font_description_free);
+  std::unique_ptr<std::remove_pointer_t<FT_Library>,FT_Library_Deleter> library;
+  {
+    FT_Library library_temp;
+    success = !FT_Init_FreeType(&library_temp);
+    if(success){
+      library.reset(library_temp);
+    }
+  }
+  // FT_New_Face use fopen. 
+  // Unable to find the file when supplied the multibyte string path on the Windows platform and throw error "Could not parse font file".
+  // This workaround fixes this by reading the font file uses win32 wide character API.
+  #if defined(_WIN32)
+  std::unique_ptr<std::remove_pointer_t<HANDLE>,Handle_Deleter> hFile;
+  std::unique_ptr<std::remove_pointer_t<HANDLE>,Handle_Deleter> hMap;
+  LARGE_INTEGER liSize;
+  std::unique_ptr<const unsigned char,decltype(&UnmapViewOfFile)> buffer(nullptr,UnmapViewOfFile);
+  std::unique_ptr<wchar_t[]> wFilePath = u8ToWide((char*)filepath);
+  if(success){
+     hFile.reset(CreateFileW(
+        wFilePath.get(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        NULL,
+        NULL
+    ));
+    success = bool(hFile);
+  }
+  if(success){
+    hMap.reset(CreateFileMappingW(hFile.get(),NULL, PAGE_READONLY, 0, 0, NULL));
+    success = bool(hMap);
+  }
+  if(success){
+    buffer.reset((const unsigned char *)MapViewOfFile(hMap.get(),FILE_MAP_READ, 0, 0, 0));
+    success = bool(buffer);
+  }
+  if(success){
+    success = GetFileSizeEx(hFile.get(), &liSize) != NULL;
+  }
+  #endif
+  std::unique_ptr<std::remove_pointer_t<FT_Face>,FT_Face_Deleter> face;
+  if(success) {
+    FT_Face face_temp;
+    #if defined(_WIN32)
+    success = !FT_New_Memory_Face(library.get(), buffer.get(), liSize.QuadPart, 0, &face_temp);
+    #else
+    success = !FT_New_Face(library.get(), (const char*)filepath, 0, &face_temp);
+    #endif
+    if(success){
+      face.reset(face_temp);
     }
   }
 
-  pango_font_description_free(desc);
+  TT_OS2 *table;
+  if (success) {
+    table = (TT_OS2*)FT_Get_Sfnt_Table(face.get(), FT_SFNT_OS2);
+    success = table != nullptr;
+  }
+  char *family = nullptr;
+  if (success) {
+    family = get_family_name(face.get());
+    success = bool(family);
+  }
+  if(success){
+    pango_font_description_set_family_static(desc.get(), family);
+    pango_font_description_set_weight(desc.get(), get_pango_weight(table->usWeightClass));
+    pango_font_description_set_stretch(desc.get(), get_pango_stretch(table->usWidthClass));
+    pango_font_description_set_style(desc.get(), get_pango_style(face->style_flags));
+  }
 
-  return NULL;
+  if(success){
+    return desc.release();
+  }else{
+    return NULL;
+  }
 }
 
 /*
@@ -245,7 +320,8 @@ register_font(unsigned char *filepath) {
   CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
   success = CTFontManagerRegisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
   #elif defined(_WIN32)
-  success = AddFontResourceEx((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  std::unique_ptr<wchar_t[]> wFilePath = u8ToWide((char*)filepath);
+  success = AddFontResourceExW(wFilePath.get(), FR_PRIVATE, 0) != 0;
   #else
   success = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(filepath));
   #endif

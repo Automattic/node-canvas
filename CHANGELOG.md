@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Remove semicolons from Dommatrix.js.
 ### Added
 * Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
+* Added multi-byte font path support on Windows.
 ### Fixed
 
 2.8.0

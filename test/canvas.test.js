@@ -103,6 +103,9 @@ describe('Canvas', function () {
     // Minimal test to make sure nothing is thrown
     registerFont('./examples/pfennigFont/Pfennig.ttf', {family: 'Pfennig'})
     registerFont('./examples/pfennigFont/PfennigBold.ttf', {family: 'Pfennig', weight: 'bold'})
+    // Test to multi byte file path support
+    registerFont('./test/pfennigFont/multiByte🚀/Pfennig.ttf', {family: 'Pfennig'})
+    registerFont('./test/pfennigFont/multiByte🚀/PfennigBold.ttf', {family: 'Pfennig', weight: 'bold'})
   });
 
   it('color serialization', function () {
