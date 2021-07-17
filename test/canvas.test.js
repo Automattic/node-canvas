@@ -948,7 +948,7 @@ describe('Canvas', function () {
       assert.ok(metrics.alphabeticBaseline > 0) // ~4-5
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // On the baseline or slightly above
-      assert.ok(metrics.actualBoundingBoxDescent <= 0)
+      assert.ok(metrics.actualBoundingBoxDescent <= 1)
     });
   });
 

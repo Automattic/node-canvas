@@ -2446,21 +2446,30 @@ NAN_METHOD(Context2d::StrokeText) {
  */
 inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
   PangoRectangle logical_rect;
-  pango_layout_line_get_extents(pango_layout_get_line(layout, 0), NULL, &logical_rect);
-
+  PangoLayout* measureLayout = pango_layout_copy(layout);
+  pango_layout_set_text(measureLayout, "gjĮ測試ÅÊ", -1);
+  pango_layout_line_get_extents(pango_layout_get_line(measureLayout, 0), NULL, &logical_rect);
   double scale = 1.0 / PANGO_SCALE;
-  double ascent = scale * pango_layout_get_baseline(layout);
+  double ascent = scale * pango_layout_get_baseline(measureLayout);
   double descent = scale * logical_rect.height - ascent;
+  // 0.072 is a constant that has been chosen comparing the canvas output
+  // if some code change, this constant can be changed too to keep results aligned
+  double correction_factor = scale * logical_rect.height * 0.072;
 
   switch (baseline) {
   case TEXT_BASELINE_ALPHABETIC:
     return ascent;
+  case TEXT_BASELINE_IDEOGRAPHIC:
+    return ascent + correction_factor;
   case TEXT_BASELINE_MIDDLE:
     return (ascent + descent) / 2.0;
   case TEXT_BASELINE_BOTTOM:
-    return ascent + descent;
+    return (ascent + descent) - correction_factor;
+  case TEXT_BASELINE_HANGING:
+    return correction_factor * 3.0;
+  case TEXT_BASELINE_TOP:
   default:
-    return 0;
+    return correction_factor;
   }
 }
 
@@ -2487,7 +2496,6 @@ Context2d::setTextPath(double x, double y) {
       x -= logical_rect.width;
       break;
   }
-
   y -= getBaselineAdjustment(_layout, state->textBaseline);
 
   cairo_move_to(_context, x, y);
@@ -2737,8 +2745,10 @@ NAN_METHOD(Context2d::MeasureText) {
       x_offset = 0.0;
   }
 
+  // are those two line useful?
   cairo_matrix_t matrix;
   cairo_get_matrix(ctx, &matrix);
+
   double y_offset = getBaselineAdjustment(layout, context->state->textBaseline);
 
   Nan::Set(obj,

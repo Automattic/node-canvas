@@ -1120,79 +1120,217 @@ tests['textAlign center'] = function (ctx) {
 tests['textBaseline alphabetic'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'alphabetic'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('alphabetic', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('alphabetic', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('alphabetic', 100, 150)
 }
 
 tests['textBaseline top'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'top'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('top', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('top', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('top', 100, 150)
 }
 
 tests['textBaseline hanging'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'hanging'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('hanging', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('hanging', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('hanging', 100, 150)
 }
 
 tests['textBaseline middle'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('middle', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('middle', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('middle', 100, 150)
 }
 
 tests['textBaseline ideographic'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'ideographic'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('ideographic', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('ideographic', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('ideographic', 100, 150)
 }
 
 tests['textBaseline bottom'] = function (ctx) {
   ctx.strokeStyle = '#666'
   ctx.strokeRect(0, 0, 200, 200)
-  ctx.lineTo(0, 100)
+  ctx.moveTo(0, 50)
+  ctx.lineTo(200, 50)
+  ctx.moveTo(0, 100)
   ctx.lineTo(200, 100)
+  ctx.moveTo(0, 150)
+  ctx.lineTo(200, 150)
   ctx.stroke()
 
-  ctx.font = 'normal 20px Arial'
   ctx.textBaseline = 'bottom'
   ctx.textAlign = 'center'
+  ctx.font = 'normal 30px Arial'
+  ctx.fillText('bottom', 100, 50)
+  ctx.font = 'normal 30px Verdana'
   ctx.fillText('bottom', 100, 100)
+  ctx.font = 'normal 30px "Courier New"'
+  ctx.fillText('bottom', 100, 150)
+}
+
+tests['textBaseline alphabetic with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'alphabetic'
+  ctx.textAlign = 'center'
+  ctx.fillText('alphabetic', 100, 25)
+}
+
+tests['textBaseline top with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'top'
+  ctx.textAlign = 'center'
+  ctx.fillText('top', 100, 25)
+}
+
+tests['textBaseline hanging with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'hanging'
+  ctx.textAlign = 'center'
+  ctx.fillText('hanging', 100, 25)
+}
+
+tests['textBaseline middle with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'middle'
+  ctx.textAlign = 'center'
+  ctx.fillText('middle', 100, 25)
+}
+
+tests['textBaseline ideographic with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'ideographic'
+  ctx.textAlign = 'center'
+  ctx.fillText('ideographic', 100, 25)
+}
+
+tests['textBaseline bottom with scale'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.scale(1, 4)
+  ctx.lineWidth = 0.25
+  ctx.strokeRect(0, 0, 200, 50)
+  ctx.lineTo(0, 25)
+  ctx.lineTo(200, 25)
+  ctx.stroke()
+
+  ctx.font = 'normal 30px Arial'
+  ctx.textBaseline = 'bottom'
+  ctx.textAlign = 'center'
+  ctx.fillText('bottom', 100, 25)
 }
 
 tests['font size px'] = function (ctx) {
@@ -2644,4 +2782,13 @@ tests['transformed drawimage'] = function (ctx) {
   ctx.fillRect(5, 5, 50, 50)
   ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
   ctx.drawImage(ctx.canvas, 0, 0)
+}
+
+tests['#1544 text scaling issue'] = function (ctx) {
+  ctx.font = '24px Verdana'
+  ctx.fillStyle = 'red'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'top'
+  ctx.scale(1, 4)
+  ctx.fillText('2020', 20, 20)
 }
