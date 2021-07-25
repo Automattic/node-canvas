@@ -128,6 +128,8 @@ export class Canvas {
 	toDataURL(mimeType: 'image/jpeg', quality: number, cb: (err: Error|null, result: string) => void): void
 }
 
+export class Context2d extends NodeCanvasRenderingContext2D {};	
+	
 export class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
 	/**
 	 * _Non-standard_. Defaults to 'good'. Affects pattern (gradient, image,
