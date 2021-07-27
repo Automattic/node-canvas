@@ -80,7 +80,7 @@ export class Canvas {
 
 	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 
-	getContext(contextId: '2d', contextAttributes?: NodeCanvasRenderingContext2DSettings): NodeCanvasRenderingContext2D
+	getContext(contextId: '2d', contextAttributes?: NodeCanvasRenderingContext2DSettings): Context2d
 
 	/**
 	 * For image canvases, encodes the canvas as a PNG. For PDF canvases,
@@ -128,9 +128,7 @@ export class Canvas {
 	toDataURL(mimeType: 'image/jpeg', quality: number, cb: (err: Error|null, result: string) => void): void
 }
 
-export class Context2d extends NodeCanvasRenderingContext2D {};	
-	
-export class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
+export class Context2d extends CanvasRenderingContext2D {
 	/**
 	 * _Non-standard_. Defaults to 'good'. Affects pattern (gradient, image,
 	 * etc.) rendering quality.
@@ -215,7 +213,7 @@ export class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
 	 */
 	addPage(width?: number, height?: number): void
 }
-export { NodeCanvasRenderingContext2D as CanvasRenderingContext2D }
+export { Context2d as CanvasRenderingContext2D }
 
 declare class NodeCanvasCanvasGradient extends CanvasGradient {}
 export { NodeCanvasCanvasGradient as CanvasGradient }
