@@ -8,6 +8,7 @@ var SYSTEM_PATHS = [
   '/usr/lib64',
   '/usr/local/lib',
   '/opt/local/lib',
+  '/opt/homebrew/lib',
   '/usr/lib/x86_64-linux-gnu',
   '/usr/lib/i386-linux-gnu',
   '/usr/lib/arm-linux-gnueabihf',
