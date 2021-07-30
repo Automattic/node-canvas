@@ -14,6 +14,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
 ### Fixed
+* Support Apple M1 Homebrew install that puts canvas install library files in `/opt/homebrew/lib`
 
 2.8.0
 ==================
