@@ -1,9 +1,9 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
-var canvas = Canvas.createCanvas(400, 100)
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(400, 100)
+const ctx = canvas.getContext('2d')
 
 ctx.globalAlpha = 1
 ctx.font = 'normal 16px Impact'

@@ -1,12 +1,12 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
-var Image = Canvas.Image
-var canvas = Canvas.createCanvas(400, 267)
-var ctx = canvas.getContext('2d')
+const Image = Canvas.Image
+const canvas = Canvas.createCanvas(400, 267)
+const ctx = canvas.getContext('2d')
 
-var img = new Image()
+const img = new Image()
 
 img.onload = function () {
   ctx.drawImage(img, 0, 0)
@@ -16,13 +16,13 @@ img.onerror = err => { throw err }
 
 img.src = path.join(__dirname, 'images', 'squid.png')
 
-var sigma = 10 // radius
-var kernel, kernelSize, kernelSum
+const sigma = 10 // radius
+let kernel, kernelSize, kernelSum
 
 function buildKernel () {
-  var i, j, g
-  var ss = sigma * sigma
-  var factor = 2 * Math.PI * ss
+  let i, j, g
+  const ss = sigma * sigma
+  const factor = 2 * Math.PI * ss
 
   kernel = [[]]
 
@@ -52,17 +52,17 @@ function buildKernel () {
 }
 
 function blurTest () {
-  var x, y, i, j
-  var r, g, b, a
+  let x, y, i, j
+  let r, g, b, a
 
   console.log('... running')
 
-  var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  var data = imgData.data
-  var width = imgData.width
-  var height = imgData.height
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imgData.data
+  const width = imgData.width
+  const height = imgData.height
 
-  var startTime = (new Date()).getTime()
+  const startTime = (new Date()).getTime()
 
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {
@@ -91,7 +91,7 @@ function blurTest () {
     }
   }
 
-  var finishTime = Date.now() - startTime
+  const finishTime = Date.now() - startTime
   for (i = 0; i < data.length; i++) {
     imgData.data[i] = data[i]
   }

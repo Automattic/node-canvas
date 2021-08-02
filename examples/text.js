@@ -1,9 +1,9 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
-var canvas = Canvas.createCanvas(200, 200)
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(200, 200)
+const ctx = canvas.getContext('2d')
 
 ctx.globalAlpha = 0.2
 
@@ -30,7 +30,7 @@ ctx.strokeText('Wahoo', 50, 100)
 ctx.fillStyle = '#000'
 ctx.fillText('Wahoo', 49, 99)
 
-var m = ctx.measureText('Wahoo')
+const m = ctx.measureText('Wahoo')
 
 ctx.strokeStyle = '#f00'
 

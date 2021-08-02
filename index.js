@@ -9,8 +9,7 @@ const fs = require('fs')
 const PNGStream = require('./lib/pngstream')
 const PDFStream = require('./lib/pdfstream')
 const JPEGStream = require('./lib/jpegstream')
-const DOMMatrix = require('./lib/DOMMatrix').DOMMatrix
-const DOMPoint = require('./lib/DOMMatrix').DOMPoint
+const { DOMPoint, DOMMatrix } = require('./lib/DOMMatrix')
 
 function createCanvas (width, height, type) {
   return new Canvas(width, height, type)

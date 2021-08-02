@@ -1,7 +1,7 @@
-var DOMMatrix
-var Image
-var imageSrc
-var tests = {}
+let DOMMatrix
+let Image
+let imageSrc
+const tests = {}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = tests
@@ -35,7 +35,7 @@ tests['fillRect()'] = function (ctx) {
   }
 
   function renderLevel (minimumLevel, level, y) {
-    var x
+    let x
     for (x = 0; x < 243 / level; ++x) {
       drawBlock(x, y, level)
     }
@@ -72,17 +72,17 @@ tests['fillRect()'] = function (ctx) {
   function getPointColour (x, y) {
     x = x / 121.5 - 1
     y = -y / 121.5 + 1
-    var x2y2 = x * x + y * y
+    const x2y2 = x * x + y * y
 
     if (x2y2 > 1) {
       return '#000'
     }
 
-    var root = Math.sqrt(1 - x2y2)
-    var x3d = x * 0.7071067812 + root / 2 - y / 2
-    var y3d = x * 0.7071067812 - root / 2 + y / 2
-    var z3d = 0.7071067812 * root + 0.7071067812 * y
-    var brightness = -x / 2 + root * 0.7071067812 + y / 2
+    const root = Math.sqrt(1 - x2y2)
+    const x3d = x * 0.7071067812 + root / 2 - y / 2
+    const y3d = x * 0.7071067812 - root / 2 + y / 2
+    const z3d = 0.7071067812 * root + 0.7071067812 * y
+    let brightness = -x / 2 + root * 0.7071067812 + y / 2
     if (brightness < 0) brightness = 0
     return (
       'rgb(' + Math.round(brightness * 127.5 * (1 - y3d)) +
@@ -125,15 +125,15 @@ tests['arc()'] = function (ctx) {
 }
 
 tests['arc() 2'] = function (ctx) {
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j < 3; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 3; j++) {
       ctx.beginPath()
-      var x = 25 + j * 50 // x coordinate
-      var y = 25 + i * 50 // y coordinate
-      var radius = 20 // Arc radius
-      var startAngle = 0 // Starting point on circle
-      var endAngle = Math.PI + (Math.PI * j) / 2 // End point on circle
-      var anticlockwise = (i % 2) === 1 // clockwise or anticlockwise
+      const x = 25 + j * 50 // x coordinate
+      const y = 25 + i * 50 // y coordinate
+      const radius = 20 // Arc radius
+      const startAngle = 0 // Starting point on circle
+      const endAngle = Math.PI + (Math.PI * j) / 2 // End point on circle
+      const anticlockwise = (i % 2) === 1 // clockwise or anticlockwise
 
       ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise)
 
@@ -166,48 +166,48 @@ tests['arcTo()'] = function (ctx) {
 }
 
 tests['ellipse() 1'] = function (ctx) {
-  var n = 8
-  for (var i = 0; i < n; i++) {
+  const n = 8
+  for (let i = 0; i < n; i++) {
     ctx.beginPath()
-    var a = i * 2 * Math.PI / n
-    var x = 100 + 50 * Math.cos(a)
-    var y = 100 + 50 * Math.sin(a)
+    const a = i * 2 * Math.PI / n
+    const x = 100 + 50 * Math.cos(a)
+    const y = 100 + 50 * Math.sin(a)
     ctx.ellipse(x, y, 10, 15, a, 0, 2 * Math.PI)
     ctx.stroke()
   }
 }
 
 tests['ellipse() 2'] = function (ctx) {
-  var n = 8
-  for (var i = 0; i < n; i++) {
+  const n = 8
+  for (let i = 0; i < n; i++) {
     ctx.beginPath()
-    var a = i * 2 * Math.PI / n
-    var x = 100 + 50 * Math.cos(a)
-    var y = 100 + 50 * Math.sin(a)
+    const a = i * 2 * Math.PI / n
+    const x = 100 + 50 * Math.cos(a)
+    const y = 100 + 50 * Math.sin(a)
     ctx.ellipse(x, y, 10, 15, a, 0, a)
     ctx.stroke()
   }
 }
 
 tests['ellipse() 3'] = function (ctx) {
-  var n = 8
-  for (var i = 0; i < n; i++) {
+  const n = 8
+  for (let i = 0; i < n; i++) {
     ctx.beginPath()
-    var a = i * 2 * Math.PI / n
-    var x = 100 + 50 * Math.cos(a)
-    var y = 100 + 50 * Math.sin(a)
+    const a = i * 2 * Math.PI / n
+    const x = 100 + 50 * Math.cos(a)
+    const y = 100 + 50 * Math.sin(a)
     ctx.ellipse(x, y, 10, 15, a, 0, a, true)
     ctx.stroke()
   }
 }
 
 tests['ellipse() 4'] = function (ctx) {
-  var n = 8
-  for (var i = 0; i < n; i++) {
+  const n = 8
+  for (let i = 0; i < n; i++) {
     ctx.beginPath()
-    var a = i * 2 * Math.PI / n
-    var x = 100 + 50 * Math.cos(a)
-    var y = 100 + 50 * Math.sin(a)
+    const a = i * 2 * Math.PI / n
+    const x = 100 + 50 * Math.cos(a)
+    const y = 100 + 50 * Math.sin(a)
     ctx.ellipse(x, y, 10, 15, a, a, 0, true)
     ctx.stroke()
   }
@@ -238,12 +238,12 @@ tests['quadraticCurveTo()'] = function (ctx) {
 }
 
 tests['transform()'] = function (ctx) {
-  var sin = Math.sin(Math.PI / 6)
-  var cos = Math.cos(Math.PI / 6)
+  const sin = Math.sin(Math.PI / 6)
+  const cos = Math.cos(Math.PI / 6)
   ctx.translate(100, 100)
   ctx.scale(0.5, 0.5)
-  var c = 0
-  for (var i = 0; i <= 12; i++) {
+  let c = 0
+  for (let i = 0; i <= 12; i++) {
     c = Math.floor(255 / 12 * i)
     ctx.fillStyle = 'rgb(' + c + ',' + c + ',' + c + ')'
     ctx.fillRect(0, 0, 100, 10)
@@ -261,11 +261,11 @@ tests['rotate()'] = function (ctx) {
 tests['rotate() 2'] = function (ctx) {
   ctx.translate(75, 75)
 
-  for (var i = 1; i < 6; i++) { // Loop through rings (from inside to out)
+  for (let i = 1; i < 6; i++) { // Loop through rings (from inside to out)
     ctx.save()
     ctx.fillStyle = 'rgb(' + (51 * i) + ',' + (255 - 51 * i) + ',255)'
 
-    for (var j = 0; j < i * 6; j++) { // draw individual dots
+    for (let j = 0; j < i * 6; j++) { // draw individual dots
       ctx.rotate(Math.PI * 2 / (i * 6))
       ctx.beginPath()
       ctx.arc(0, i * 12.5, 5, 0, Math.PI * 2, true)
@@ -278,8 +278,8 @@ tests['rotate() 2'] = function (ctx) {
 
 tests['translate()'] = function (ctx) {
   ctx.fillRect(0, 0, 300, 300)
-  for (var i = 0; i < 3; i++) {
-    for (var j = 0; j < 3; j++) {
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
       ctx.save()
       ctx.strokeStyle = '#9CFF00'
       ctx.translate(50 + j * 100, 50 + i * 100)
@@ -288,15 +288,18 @@ tests['translate()'] = function (ctx) {
     }
   }
   function drawSpirograph (ctx, R, r, O) {
-    var x1 = R - O
-    var y1 = 0
-    var i = 1
+    let x1 = R - O
+    let y1 = 0
+    let i = 1
+    let x2
+    let y2
+
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     do {
       if (i > 20000) break
-      var x2 = (R + r) * Math.cos(i * Math.PI / 72) - (r + O) * Math.cos(((R + r) / r) * (i * Math.PI / 72))
-      var y2 = (R + r) * Math.sin(i * Math.PI / 72) - (r + O) * Math.sin(((R + r) / r) * (i * Math.PI / 72))
+      x2 = (R + r) * Math.cos(i * Math.PI / 72) - (r + O) * Math.cos(((R + r) / r) * (i * Math.PI / 72))
+      y2 = (R + r) * Math.sin(i * Math.PI / 72) - (r + O) * Math.sin(((R + r) / r) * (i * Math.PI / 72))
       ctx.lineTo(x2, y2)
       x1 = x2
       y1 = y2
@@ -357,15 +360,18 @@ tests['scale()'] = function (ctx) {
   drawSpirograph(ctx, 22, 6, 5)
   ctx.restore()
   function drawSpirograph (ctx, R, r, O) {
-    var x1 = R - O
-    var y1 = 0
-    var i = 1
+    let x1 = R - O
+    let y1 = 0
+    let i = 1
+    let x2
+    let y2
+
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     do {
       if (i > 20000) break
-      var x2 = (R + r) * Math.cos(i * Math.PI / 72) - (r + O) * Math.cos(((R + r) / r) * (i * Math.PI / 72))
-      var y2 = (R + r) * Math.sin(i * Math.PI / 72) - (r + O) * Math.sin(((R + r) / r) * (i * Math.PI / 72))
+      x2 = (R + r) * Math.cos(i * Math.PI / 72) - (r + O) * Math.cos(((R + r) / r) * (i * Math.PI / 72))
+      y2 = (R + r) * Math.sin(i * Math.PI / 72) - (r + O) * Math.sin(((R + r) / r) * (i * Math.PI / 72))
       ctx.lineTo(x2, y2)
       x1 = x2
       y1 = y2
@@ -400,7 +406,7 @@ tests['clip() 2'] = function (ctx) {
   ctx.clip()
 
   // draw background
-  var lingrad = ctx.createLinearGradient(0, -75, 0, 75)
+  const lingrad = ctx.createLinearGradient(0, -75, 0, 75)
   lingrad.addColorStop(0, '#232256')
   lingrad.addColorStop(1, '#143778')
 
@@ -408,7 +414,7 @@ tests['clip() 2'] = function (ctx) {
   ctx.fillRect(-75, -75, 150, 150)
 
   // draw stars
-  for (var j = 1; j < 50; j++) {
+  for (let j = 1; j < 50; j++) {
     ctx.save()
     ctx.fillStyle = '#fff'
     ctx.translate(75 - Math.floor(Math.random() * 150), 75 - Math.floor(Math.random() * 150))
@@ -419,7 +425,7 @@ tests['clip() 2'] = function (ctx) {
     ctx.save()
     ctx.beginPath()
     ctx.moveTo(r, 0)
-    for (var i = 0; i < 9; i++) {
+    for (let i = 0; i < 9; i++) {
       ctx.rotate(Math.PI / 5)
       if ((i % 2) === 0) {
         ctx.lineTo((r / 0.525731) * 0.200811, 0)
@@ -434,9 +440,9 @@ tests['clip() 2'] = function (ctx) {
 }
 
 tests['createPattern()'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.scale(0.1, 0.1)
     ctx.fillStyle = pattern
     ctx.fillRect(100, 100, 800, 800)
@@ -449,9 +455,9 @@ tests['createPattern()'] = function (ctx, done) {
 }
 
 tests['createPattern() with globalAlpha'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.scale(0.1, 0.1)
     ctx.globalAlpha = 0.6
     ctx.fillStyle = pattern
@@ -466,7 +472,7 @@ tests['createPattern() with globalAlpha'] = function (ctx, done) {
 }
 
 tests['createPattern() no-repeat'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.scale(0.1, 0.1)
     ctx.lineStyle = 'black'
@@ -550,13 +556,13 @@ tests['createPattern() then setTransform with no-repeat'] = function (ctx, done)
 }
 
 tests['createLinearGradient()'] = function (ctx) {
-  var lingrad = ctx.createLinearGradient(0, 0, 0, 150)
+  const lingrad = ctx.createLinearGradient(0, 0, 0, 150)
   lingrad.addColorStop(0, '#00ABEB')
   lingrad.addColorStop(0.5, '#fff')
   lingrad.addColorStop(0.5, '#26C000')
   lingrad.addColorStop(1, '#fff')
 
-  var lingrad2 = ctx.createLinearGradient(0, 50, 0, 95)
+  const lingrad2 = ctx.createLinearGradient(0, 50, 0, 95)
   lingrad2.addColorStop(0.5, '#000')
   lingrad2.addColorStop(1, 'rgba(0,0,0,0)')
 
@@ -571,7 +577,7 @@ tests['createLinearGradient()'] = function (ctx) {
   ctx.fillStyle = ctx.fillStyle // eslint-disable-line no-self-assign
   ctx.fillRect(65, 65, 20, 20)
 
-  var lingrad3 = ctx.createLinearGradient(0, 0, 200, 0)
+  const lingrad3 = ctx.createLinearGradient(0, 0, 200, 0)
   lingrad3.addColorStop(0, 'rgba(0,255,0,0.5)')
   lingrad3.addColorStop(0.33, 'rgba(255,255,0,0.5)')
   lingrad3.addColorStop(0.66, 'rgba(0,255,255,0.5)')
@@ -581,7 +587,7 @@ tests['createLinearGradient()'] = function (ctx) {
 }
 
 tests['createLinearGradient() with opacity'] = function (ctx) {
-  var lingrad = ctx.createLinearGradient(0, 0, 0, 200)
+  const lingrad = ctx.createLinearGradient(0, 0, 0, 200)
   lingrad.addColorStop(0, '#00FF00')
   lingrad.addColorStop(0.33, '#FF0000')
   lingrad.addColorStop(0.66, '#0000FF')
@@ -603,7 +609,7 @@ tests['createLinearGradient() with opacity'] = function (ctx) {
 }
 
 tests['createLinearGradient() and transforms'] = function (ctx) {
-  var lingrad = ctx.createLinearGradient(0, -100, 0, 100)
+  const lingrad = ctx.createLinearGradient(0, -100, 0, 100)
   lingrad.addColorStop(0, '#00FF00')
   lingrad.addColorStop(0.33, '#FF0000')
   lingrad.addColorStop(0.66, '#0000FF')
@@ -624,22 +630,22 @@ tests['createLinearGradient() and transforms'] = function (ctx) {
 
 tests['createRadialGradient()'] = function (ctx) {
   // Create gradients
-  var radgrad = ctx.createRadialGradient(45, 45, 10, 52, 50, 30)
+  const radgrad = ctx.createRadialGradient(45, 45, 10, 52, 50, 30)
   radgrad.addColorStop(0, '#A7D30C')
   radgrad.addColorStop(0.9, '#019F62')
   radgrad.addColorStop(1, 'rgba(1,159,98,0)')
 
-  var radgrad2 = ctx.createRadialGradient(105, 105, 20, 112, 120, 50)
+  const radgrad2 = ctx.createRadialGradient(105, 105, 20, 112, 120, 50)
   radgrad2.addColorStop(0, '#FF5F98')
   radgrad2.addColorStop(0.75, '#FF0188')
   radgrad2.addColorStop(1, 'rgba(255,1,136,0)')
 
-  var radgrad3 = ctx.createRadialGradient(95, 15, 15, 102, 20, 40)
+  const radgrad3 = ctx.createRadialGradient(95, 15, 15, 102, 20, 40)
   radgrad3.addColorStop(0, '#00C9FF')
   radgrad3.addColorStop(0.8, '#00B5E2')
   radgrad3.addColorStop(1, 'rgba(0,201,255,0)')
 
-  var radgrad4 = ctx.createRadialGradient(0, 150, 50, 0, 140, 90)
+  const radgrad4 = ctx.createRadialGradient(0, 150, 50, 0, 140, 90)
   radgrad4.addColorStop(0, '#F4F201')
   radgrad4.addColorStop(0.8, '#E4C700')
   radgrad4.addColorStop(1, 'rgba(228,199,0,0)')
@@ -655,7 +661,7 @@ tests['createRadialGradient()'] = function (ctx) {
   ctx.fillRect(0, 0, 150, 150)
 }
 
-tests['globalAlpha'] = function (ctx) {
+tests.globalAlpha = function (ctx) {
   ctx.globalAlpha = 0.5
   ctx.fillStyle = 'rgba(0,0,0,0.5)'
   ctx.strokeRect(0, 0, 50, 50)
@@ -681,25 +687,25 @@ tests['globalAlpha 2'] = function (ctx) {
 
   ctx.globalAlpha = 0.2
 
-  for (var i = 0; i < 7; i++) {
+  for (let i = 0; i < 7; i++) {
     ctx.beginPath()
     ctx.arc(75, 75, 10 + 10 * i, 0, Math.PI * 2, true)
     ctx.fill()
   }
 }
 
-tests['fillStyle'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+tests.fillStyle = function (ctx) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
 }
 
-tests['strokeStyle'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+tests.strokeStyle = function (ctx) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.strokeStyle = 'rgb(0,' + Math.floor(255 - 42.5 * i) + ',' +
                        Math.floor(255 - 42.5 * j) + ')'
       ctx.beginPath()
@@ -724,7 +730,7 @@ tests['fill with stroke'] = function (ctx) {
 
 tests['floating point coordinates'] = function (ctx) {
   ctx.lineCap = 'square'
-  for (var i = 0; i < 70; i += 3.05) {
+  for (let i = 0; i < 70; i += 3.05) {
     ctx.rect(i + 3, 10.5, 0, 130)
     ctx.moveTo(i + 77, 10.5)
     ctx.lineTo(i + 77, 140.5)
@@ -732,8 +738,8 @@ tests['floating point coordinates'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineWidth'] = function (ctx) {
-  for (var i = 0; i < 10; i++) {
+tests.lineWidth = function (ctx) {
+  for (let i = 0; i < 10; i++) {
     ctx.lineWidth = 1 + i
     ctx.beginPath()
     ctx.moveTo(5 + i * 14, 5)
@@ -743,7 +749,7 @@ tests['lineWidth'] = function (ctx) {
 }
 
 tests['line caps'] = function (ctx) {
-  var lineCap = ['butt', 'round', 'square']
+  const lineCap = ['butt', 'round', 'square']
 
   ctx.strokeStyle = '#09f'
   ctx.beginPath()
@@ -754,7 +760,7 @@ tests['line caps'] = function (ctx) {
   ctx.stroke()
 
   ctx.strokeStyle = 'black'
-  for (var i = 0; i < lineCap.length; i++) {
+  for (let i = 0; i < lineCap.length; i++) {
     ctx.lineWidth = 15
     ctx.lineCap = lineCap[i]
     ctx.beginPath()
@@ -765,9 +771,9 @@ tests['line caps'] = function (ctx) {
 }
 
 tests['line join'] = function (ctx) {
-  var lineJoin = ['round', 'bevel', 'miter']
+  const lineJoin = ['round', 'bevel', 'miter']
   ctx.lineWidth = 10
-  for (var i = 0; i < lineJoin.length; i++) {
+  for (let i = 0; i < lineJoin.length; i++) {
     ctx.lineJoin = lineJoin[i]
     ctx.beginPath()
     ctx.moveTo(-5, 5 + i * 40)
@@ -788,7 +794,7 @@ tests['lineCap default'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineCap'] = function (ctx) {
+tests.lineCap = function (ctx) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineCap = 'round'
@@ -798,7 +804,7 @@ tests['lineCap'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['lineJoin'] = function (ctx) {
+tests.lineJoin = function (ctx) {
   ctx.beginPath()
   ctx.lineWidth = 10.0
   ctx.lineJoin = 'round'
@@ -808,7 +814,7 @@ tests['lineJoin'] = function (ctx) {
   ctx.stroke()
 }
 
-tests['states'] = function (ctx) {
+tests.states = function (ctx) {
   ctx.save()
   ctx.rect(50, 50, 100, 100)
   ctx.stroke()
@@ -890,7 +896,7 @@ tests['fillText()'] = function (ctx) {
   ctx.lineTo(10, 10)
   ctx.fillText('Awesome!', 50, 100)
 
-  var te = ctx.measureText('Awesome!')
+  const te = ctx.measureText('Awesome!')
 
   ctx.strokeStyle = 'rgba(0,0,0,0.5)'
   ctx.lineTo(50, 102)
@@ -922,7 +928,7 @@ tests['fillText() maxWidth argument'] = function (ctx) {
   ctx.font = 'Helvetica, sans'
   ctx.fillText('Drawing text can be fun!', 0, 20)
 
-  for (var i = 1; i < 6; i++) {
+  for (let i = 1; i < 6; i++) {
     ctx.fillText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
   }
 
@@ -950,7 +956,7 @@ tests['fillText() maxWidth argument + textAlign center (#1253)'] = function (ctx
   ctx.textAlign = 'center'
   ctx.fillText('Drawing text can be fun!', 100, 20)
 
-  for (var i = 1; i < 6; i++) {
+  for (let i = 1; i < 6; i++) {
     ctx.fillText('Drawing text can be fun!', 100, 20 * (7 - i), i * 20)
   }
 
@@ -962,7 +968,7 @@ tests['fillText() maxWidth argument + textAlign right'] = function (ctx) {
   ctx.textAlign = 'right'
   ctx.fillText('Drawing text can be fun!', 200, 20)
 
-  for (var i = 1; i < 6; i++) {
+  for (let i = 1; i < 6; i++) {
     ctx.fillText('Drawing text can be fun!', 200, 20 * (7 - i), i * 20)
   }
 
@@ -990,7 +996,7 @@ tests['strokeText() maxWidth argument'] = function (ctx) {
   ctx.font = 'Helvetica, sans'
   ctx.strokeText('Drawing text can be fun!', 0, 20)
 
-  for (var i = 1; i < 6; i++) {
+  for (let i = 1; i < 6; i++) {
     ctx.strokeText('Drawing text can be fun!', 0, 20 * (7 - i), i * 20)
   }
 
@@ -1374,8 +1380,8 @@ const gco = [
 
 gco.forEach(op => {
   tests['globalCompositeOperator ' + op] = function (ctx, done) {
-    var img1 = new Image()
-    var img2 = new Image()
+    const img1 = new Image()
+    const img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
         ctx.globalAlpha = 0.7
@@ -1392,8 +1398,8 @@ gco.forEach(op => {
 
 gco.forEach(op => {
   tests['9 args, transform, globalCompositeOperator ' + op] = function (ctx, done) {
-    var img1 = new Image()
-    var img2 = new Image()
+    const img1 = new Image()
+    const img2 = new Image()
     img1.onload = function () {
       img2.onload = function () {
         ctx.globalAlpha = 0.7
@@ -1412,8 +1418,8 @@ gco.forEach(op => {
 })
 
 tests['drawImage issue #1249'] = function (ctx, done) {
-  var img1 = new Image()
-  var img2 = new Image()
+  const img1 = new Image()
+  const img2 = new Image()
   img1.onload = function () {
     img2.onload = function () {
       ctx.drawImage(img1, 0, 0, 200, 200)
@@ -1427,7 +1433,7 @@ tests['drawImage issue #1249'] = function (ctx, done) {
 }
 
 tests['drawImage 9 arguments big numbers'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   ctx.imageSmoothingEnabled = false
   img.onload = function () {
     // we use big numbers because is over the max canvas allowed
@@ -1444,8 +1450,8 @@ tests['drawImage 9 arguments big numbers'] = function (ctx, done) {
 }
 
 tests['known bug #416'] = function (ctx, done) {
-  var img1 = new Image()
-  var img2 = new Image()
+  const img1 = new Image()
+  const img2 = new Image()
   img1.onload = function () {
     img2.onload = function () {
       ctx.drawImage(img1, 0, 0)
@@ -1464,7 +1470,7 @@ tests['known bug #416'] = function (ctx, done) {
   img1.src = imageSrc('existing.png')
 }
 
-tests['shadowBlur'] = function (ctx) {
+tests.shadowBlur = function (ctx) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1490,7 +1496,7 @@ tests['shadowBlur'] = function (ctx) {
   ctx.fillRect(150, 150, 20, 20)
 }
 
-tests['shadowColor'] = function (ctx) {
+tests.shadowColor = function (ctx) {
   ctx.fillRect(150, 10, 20, 20)
 
   ctx.lineTo(20, 5)
@@ -1797,7 +1803,7 @@ tests['shadow transform text'] = function (ctx) {
 }
 
 tests['shadow image'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#f3ac22'
     ctx.shadowBlur = 2
@@ -1811,7 +1817,7 @@ tests['shadow image'] = function (ctx, done) {
 }
 
 tests['shadow image with crop'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
     ctx.shadowBlur = 4
@@ -1829,7 +1835,7 @@ tests['shadow image with crop'] = function (ctx, done) {
 }
 
 tests['shadow image with crop and zoom'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#000'
     ctx.shadowBlur = 4
@@ -1856,7 +1862,7 @@ tests['drawImage canvas over canvas'] = function (ctx) {
 }
 
 tests['scaled shadow image'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.shadowColor = '#f3ac22'
     ctx.shadowBlur = 2
@@ -1870,7 +1876,7 @@ tests['scaled shadow image'] = function (ctx, done) {
 }
 
 tests['smoothing disabled image'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.imageSmoothingEnabled = false
     ctx.patternQuality = 'good'
@@ -1885,11 +1891,11 @@ tests['smoothing disabled image'] = function (ctx, done) {
 }
 
 tests['createPattern() with globalAlpha and smoothing off scaling down'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.imageSmoothingEnabled = false
     ctx.patternQuality = 'good'
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.scale(0.1, 0.1)
     ctx.globalAlpha = 0.95
     ctx.fillStyle = pattern
@@ -1904,11 +1910,11 @@ tests['createPattern() with globalAlpha and smoothing off scaling down'] = funct
 }
 
 tests['createPattern() with globalAlpha and smoothing off scaling up'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.imageSmoothingEnabled = false
     ctx.patternQuality = 'good'
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.scale(20, 20)
     ctx.globalAlpha = 0.95
     ctx.fillStyle = pattern
@@ -1923,7 +1929,7 @@ tests['createPattern() with globalAlpha and smoothing off scaling up'] = functio
 }
 
 tests['smoothing and gradients (gradients are not influenced by patternQuality)'] = function (ctx) {
-  var grad1 = ctx.createLinearGradient(0, 0, 10, 10)
+  const grad1 = ctx.createLinearGradient(0, 0, 10, 10)
   grad1.addColorStop(0, 'yellow')
   grad1.addColorStop(0.25, 'red')
   grad1.addColorStop(0.75, 'blue')
@@ -1949,13 +1955,13 @@ tests['shadow integration'] = function (ctx) {
   ctx.shadowColor = '#eee'
   ctx.lineWidth = 3
 
-  var grad1 = ctx.createLinearGradient(105, 0, 200, 100)
+  const grad1 = ctx.createLinearGradient(105, 0, 200, 100)
   grad1.addColorStop(0, 'yellow')
   grad1.addColorStop(0.25, 'red')
   grad1.addColorStop(0.75, 'blue')
   grad1.addColorStop(1, 'limegreen')
 
-  var grad2 = ctx.createRadialGradient(50, 50, 10, 50, 50, 50)
+  const grad2 = ctx.createRadialGradient(50, 50, 10, 50, 50, 50)
   grad2.addColorStop(0, 'yellow')
   grad2.addColorStop(0.25, 'red')
   grad2.addColorStop(0.75, 'blue')
@@ -1999,7 +2005,7 @@ tests['font state'] = function (ctx) {
 }
 
 tests['drawImage(img,0,0)'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0)
     done(null)
@@ -2009,7 +2015,7 @@ tests['drawImage(img,0,0)'] = function (ctx, done) {
 }
 
 tests['drawImage(img) jpeg'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
@@ -2020,7 +2026,7 @@ tests['drawImage(img) jpeg'] = function (ctx, done) {
 
 tests['drawImage(img) YCCK JPEG (#425)'] = function (ctx, done) {
   // This also provides coverage for CMYK JPEGs
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
@@ -2030,7 +2036,7 @@ tests['drawImage(img) YCCK JPEG (#425)'] = function (ctx, done) {
 }
 
 tests['drawImage(img) grayscale JPEG'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
@@ -2040,7 +2046,7 @@ tests['drawImage(img) grayscale JPEG'] = function (ctx, done) {
 }
 
 tests['drawImage(img) svg'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 100, 100)
     done(null)
@@ -2050,7 +2056,7 @@ tests['drawImage(img) svg'] = function (ctx, done) {
 }
 
 tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, -800, -800, 1000, 1000)
     done(null)
@@ -2060,7 +2066,7 @@ tests['drawImage(img) svg with scaling from drawImage'] = function (ctx, done) {
 }
 
 tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.scale(100, 100)
     ctx.drawImage(img, -8, -8, 10, 10)
@@ -2071,7 +2077,7 @@ tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
 }
 
 tests['drawImage(img,x,y)'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 5, 25)
     done(null)
@@ -2081,7 +2087,7 @@ tests['drawImage(img,x,y)'] = function (ctx, done) {
 }
 
 tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 25, 25, 10, 10)
     done(null)
@@ -2091,7 +2097,7 @@ tests['drawImage(img,x,y,w,h) scale down'] = function (ctx, done) {
 }
 
 tests['drawImage(img,x,y,w,h) scale down in a scaled up context'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.scale(20, 20)
     ctx.drawImage(img, 0, 0, 10, 10)
@@ -2102,7 +2108,7 @@ tests['drawImage(img,x,y,w,h) scale down in a scaled up context'] = function (ct
 }
 
 tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 200, 200)
     done(null)
@@ -2112,7 +2118,7 @@ tests['drawImage(img,x,y,w,h) scale up'] = function (ctx, done) {
 }
 
 tests['drawImage(img,x,y,w,h) scale vertical'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 0, 0, img.width, 200)
     done(null)
@@ -2122,7 +2128,7 @@ tests['drawImage(img,x,y,w,h) scale vertical'] = function (ctx, done) {
 }
 
 tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
     ctx.drawImage(img, 13, 13, 45, 45, 25, 25, img.width / 2, img.height / 2)
     done(null)
@@ -2132,7 +2138,7 @@ tests['drawImage(img,sx,sy,sw,sh,x,y,w,h)'] = function (ctx, done) {
 }
 
 tests['drawImage(img,0,0) globalAlpha'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   ctx.fillRect(50, 50, 30, 30)
   ctx.globalAlpha = 0.5
   img.onload = function () {
@@ -2147,7 +2153,7 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
   ctx.arc(50, 50, 50, 0, Math.PI * 2, false)
   ctx.stroke()
   ctx.clip()
-  var img = new Image()
+  const img = new Image()
   ctx.fillRect(50, 50, 30, 30)
   ctx.globalAlpha = 0.5
   img.onload = function () {
@@ -2159,120 +2165,120 @@ tests['drawImage(img,0,0) clip'] = function (ctx, done) {
 }
 
 tests['putImageData()'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 10, 10)
 }
 
 tests['putImageData() 1'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10)
 }
 
 tests['putImageData() 2'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
-  var data = ctx.getImageData(25, 25, 50, 50)
+  const data = ctx.getImageData(25, 25, 50, 50)
   ctx.putImageData(data, 10, 10)
 }
 
 tests['putImageData() 3'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
-  var data = ctx.getImageData(10, 25, 10, 50)
+  const data = ctx.getImageData(10, 25, 10, 50)
   ctx.putImageData(data, 50, 10)
 }
 
 tests['putImageData() 4'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' +
                        Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.strokeRect(30, 30, 30, 30)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 30, 30, 10, 10, 30, 30)
 }
 
 tests['putImageData() 5'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.strokeRect(60, 60, 50, 30)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 0, 0, 50, 30)
 }
 
 tests['putImageData() 6'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.strokeRect(60, 60, 50, 30)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 10, 0, 35, 30)
 }
 
 tests['putImageData() 7'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.strokeRect(60, 60, 50, 30)
   ctx.translate(20, 20)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, 60, 60, 10, 20, 35, -10)
 }
 
 tests['putImageData() 8'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.translate(20, 20)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10, 0, 20, 35, 30)
 }
 
 tests['putImageData() 9'] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
   }
   ctx.translate(20, 20)
-  var data = ctx.getImageData(0, 0, 50, 50)
+  const data = ctx.getImageData(0, 0, 50, 50)
   ctx.putImageData(data, -10, -10, 0, 20, 500, 500)
 }
 
@@ -2284,7 +2290,7 @@ tests['putImageData() 10'] = function (ctx) {
   ctx.fillStyle = 'rgba(0,0,255,1)'
   ctx.fillRect(100, 0, 50, 100)
 
-  var data = ctx.getImageData(0, 0, 120, 20)
+  const data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
 }
 
@@ -2296,7 +2302,7 @@ tests['putImageData() alpha'] = function (ctx) {
   ctx.fillStyle = 'rgba(0,0,255,0.5)'
   ctx.fillRect(100, 0, 50, 100)
 
-  var data = ctx.getImageData(0, 0, 120, 20)
+  const data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
 }
 
@@ -2308,7 +2314,7 @@ tests['putImageData() alpha 2'] = function (ctx) {
   ctx.fillStyle = 'rgba(0,0,255,0.75)'
   ctx.fillRect(100, 0, 50, 100)
 
-  var data = ctx.getImageData(0, 0, 120, 20)
+  const data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
 }
 
@@ -2321,19 +2327,19 @@ tests['putImageData() globalAlpha'] = function (ctx) {
   ctx.fillStyle = '#00f'
   ctx.fillRect(100, 0, 50, 100)
 
-  var data = ctx.getImageData(0, 0, 120, 20)
+  const data = ctx.getImageData(0, 0, 120, 20)
   ctx.putImageData(data, 20, 120)
 }
 
 tests['putImageData() png data'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   ctx.fillRect(50, 50, 30, 30)
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 200, 200)
-    var imageData = ctx.getImageData(0, 0, 50, 50)
-    var data = imageData.data
+    const imageData = ctx.getImageData(0, 0, 50, 50)
+    const data = imageData.data
     if (data instanceof Uint8ClampedArray) {
-      for (var i = 0, len = data.length; i < len; i += 4) {
+      for (let i = 0, len = data.length; i < len; i += 4) {
         data[i + 3] = 80
       }
     }
@@ -2347,14 +2353,14 @@ tests['putImageData() png data'] = function (ctx, done) {
 }
 
 tests['putImageData() png data 2'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   ctx.fillRect(50, 50, 30, 30)
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 200, 200)
-    var imageData = ctx.getImageData(0, 0, 50, 50)
-    var data = imageData.data
+    const imageData = ctx.getImageData(0, 0, 50, 50)
+    const data = imageData.data
     if (data instanceof Uint8ClampedArray) {
-      for (var i = 0, len = data.length; i < len; i += 4) {
+      for (let i = 0, len = data.length; i < len; i += 4) {
         data[i + 3] = 80
       }
     }
@@ -2368,14 +2374,14 @@ tests['putImageData() png data 2'] = function (ctx, done) {
 }
 
 tests['putImageData() png data 3'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   ctx.fillRect(50, 50, 30, 30)
   img.onload = function () {
     ctx.drawImage(img, 0, 0, 200, 200)
-    var imageData = ctx.getImageData(0, 0, 50, 50)
-    var data = imageData.data
+    const imageData = ctx.getImageData(0, 0, 50, 50)
+    const data = imageData.data
     if (data instanceof Uint8ClampedArray) {
-      for (var i = 0, len = data.length; i < len; i += 4) {
+      for (let i = 0, len = data.length; i < len; i += 4) {
         data[i + 0] = data[i + 0] * 0.2
         data[i + 1] = data[i + 1] * 0.2
         data[i + 2] = data[i + 2] * 0.2
@@ -2388,12 +2394,12 @@ tests['putImageData() png data 3'] = function (ctx, done) {
   img.src = imageSrc('state.png')
 }
 
-tests['setLineDash'] = function (ctx) {
+tests.setLineDash = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 14
 
-  var y = 5
-  var line = function (lineDash, color) {
+  let y = 5
+  const line = function (lineDash, color) {
     ctx.setLineDash(lineDash)
     if (color) ctx.strokeStyle = color
     ctx.beginPath()
@@ -2412,7 +2418,7 @@ tests['setLineDash'] = function (ctx) {
   line([10, 10, NaN])
   line((function () {
     ctx.setLineDash([8])
-    var a = ctx.getLineDash()
+    const a = ctx.getLineDash()
     a[0] -= 3
     a.push(20)
     return a
@@ -2422,12 +2428,12 @@ tests['setLineDash'] = function (ctx) {
   line([0, 3, 0, 0], 'green') // should be empty
 }
 
-tests['lineDashOffset'] = function (ctx) {
+tests.lineDashOffset = function (ctx) {
   ctx.setLineDash([10, 5, 25, 15])
   ctx.lineWidth = 4
 
-  var y = 5
-  var line = function (lineDashOffset, color) {
+  let y = 5
+  const line = function (lineDashOffset, color) {
     ctx.lineDashOffset = lineDashOffset
     if (color) ctx.strokeStyle = color
     ctx.beginPath()
@@ -2449,18 +2455,18 @@ tests['lineDashOffset'] = function (ctx) {
   line(60, 'orange')
   line(-Infinity)
   line(70, 'purple')
-  line(void 0)
+  line(undefined)
   line(80, 'black')
   line(ctx.lineDashOffset + 10)
 
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     line(90 + i / 5, 'red')
   }
 }
 
 tests['fillStyle=\'hsl(...)\''] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'hsl(' + (360 - 60 * i) + ',' + (100 - 16.66 * j) + '%,' + (50 + (i + j) * (50 / 12)) + '%)'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
@@ -2468,8 +2474,8 @@ tests['fillStyle=\'hsl(...)\''] = function (ctx) {
 }
 
 tests['fillStyle=\'hsla(...)\''] = function (ctx) {
-  for (var i = 0; i < 6; i++) {
-    for (var j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       ctx.fillStyle = 'hsla(' + (360 - 60 * i) + ',' + (100 - 16.66 * j) + '%,50%,' + (1 - 0.16 * j) + ')'
       ctx.fillRect(j * 25, i * 25, 25, 25)
     }
@@ -2506,7 +2512,7 @@ tests['rotated baseline'] = function (ctx) {
   ctx.textBaseline = 'bottom'
   ctx.translate(100, 100)
 
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     ctx.fillText('Hello world!', -50, -50)
     ctx.rotate(-Math.PI / 8)
   }
@@ -2520,7 +2526,7 @@ tests['rotated and scaled baseline'] = function (ctx) {
   ctx.translate(100, 100)
   ctx.scale(0.1, 0.2)
 
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
     ctx.rotate(-Math.PI / 8)
   }
@@ -2534,7 +2540,7 @@ tests['rotated and skewed baseline'] = function (ctx) {
   ctx.translate(100, 100)
   ctx.transform(1, 1, 0, 1, 1, 1)
 
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     ctx.fillText('Hello world!', -50, -50)
     ctx.rotate(-Math.PI / 8)
   }
@@ -2551,7 +2557,7 @@ tests['rotated, scaled and skewed baseline'] = function (ctx) {
   ctx.scale(0.1, 0.2)
   ctx.transform(1, 1, 0, 1, 1, 1)
 
-  for (var i = 0; i < 16; i++) {
+  for (let i = 0; i < 16; i++) {
     ctx.fillText('Hello world!', -50 / 0.1, -50 / 0.2)
     ctx.rotate(-Math.PI / 8)
   }
@@ -2565,7 +2571,7 @@ tests['measureText()'] = function (ctx) {
     ctx.fillText(text, x, y)
     ctx.strokeStyle = 'red'
     ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(200, y + 0.5); ctx.stroke()
-    var metrics = ctx.measureText(text)
+    const metrics = ctx.measureText(text)
     ctx.strokeStyle = 'blue'
     ctx.strokeRect(
       x - metrics.actualBoundingBoxLeft + 0.5,
@@ -2617,7 +2623,7 @@ tests['image sampling (#1084)'] = function (ctx, done) {
 }
 
 tests['drawImage reflection bug'] = function (ctx, done) {
-  var img1 = new Image()
+  const img1 = new Image()
   img1.onload = function () {
     ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)
     done()
@@ -2626,7 +2632,7 @@ tests['drawImage reflection bug'] = function (ctx, done) {
 }
 
 tests['drawImage reflection bug with skewing'] = function (ctx, done) {
-  var img1 = new Image()
+  const img1 = new Image()
   img1.onload = function () {
     ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
     ctx.drawImage(img1, 60, 30, 150, 150, 0, 0, 200, 200)

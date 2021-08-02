@@ -1,6 +1,6 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
 function getX (angle) {
   return -Math.sin(angle + Math.PI)
@@ -11,8 +11,8 @@ function getY (angle) {
 }
 
 function clock (ctx) {
-  var x, y, i
-  var now = new Date()
+  let x, y, i
+  const now = new Date()
 
   ctx.clearRect(0, 0, 320, 320)
 
@@ -53,9 +53,9 @@ function clock (ctx) {
     }
   }
 
-  var sec = now.getSeconds()
-  var min = now.getMinutes()
-  var hr = now.getHours() % 12
+  const sec = now.getSeconds()
+  const min = now.getMinutes()
+  const hr = now.getHours() % 12
 
   ctx.fillStyle = 'black'
 
@@ -104,8 +104,8 @@ function clock (ctx) {
 module.exports = clock
 
 if (require.main === module) {
-  var canvas = Canvas.createCanvas(320, 320)
-  var ctx = canvas.getContext('2d')
+  const canvas = Canvas.createCanvas(320, 320)
+  const ctx = canvas.getContext('2d')
 
   clock(ctx)
 
