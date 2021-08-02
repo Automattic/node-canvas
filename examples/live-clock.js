@@ -1,10 +1,10 @@
-var http = require('http')
-var Canvas = require('..')
+const http = require('http')
+const Canvas = require('..')
 
-var clock = require('./clock')
+const clock = require('./clock')
 
-var canvas = Canvas.createCanvas(320, 320)
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(320, 320)
+const ctx = canvas.getContext('2d')
 
 http.createServer(function (req, res) {
   clock(ctx)

@@ -1,23 +1,23 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('canvas')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('canvas')
 
-var img = new Canvas.Image()
+const img = new Canvas.Image()
 
 img.onerror = function (err) {
   throw err
 }
 
 img.onload = function () {
-  var w = img.width / 2
-  var h = img.height / 2
-  var canvas = Canvas.createCanvas(w, h)
-  var ctx = canvas.getContext('2d')
+  const w = img.width / 2
+  const h = img.height / 2
+  const canvas = Canvas.createCanvas(w, h)
+  const ctx = canvas.getContext('2d')
 
   ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h)
 
-  var out = fs.createWriteStream(path.join(__dirname, 'crop.jpg'))
-  var stream = canvas.createJPEGStream({
+  const out = fs.createWriteStream(path.join(__dirname, 'crop.jpg'))
+  const stream = canvas.createJPEGStream({
     bufsize: 2048,
     quality: 80
   })

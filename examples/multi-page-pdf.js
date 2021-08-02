@@ -1,10 +1,10 @@
-var fs = require('fs')
-var Canvas = require('..')
+const fs = require('fs')
+const Canvas = require('..')
 
-var canvas = Canvas.createCanvas(500, 500, 'pdf')
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(500, 500, 'pdf')
+const ctx = canvas.getContext('2d')
 
-var x, y
+let x, y
 
 function reset () {
   x = 50

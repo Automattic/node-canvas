@@ -1,6 +1,6 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
 function fontFile (name) {
   return path.join(__dirname, '/pfennigFont/', name)
@@ -15,8 +15,8 @@ Canvas.registerFont(fontFile('PfennigBold.ttf'), { family: 'pfennigFont', weight
 Canvas.registerFont(fontFile('PfennigItalic.ttf'), { family: 'pfennigFont', style: 'italic' })
 Canvas.registerFont(fontFile('PfennigBoldItalic.ttf'), { family: 'pfennigFont', weight: 'bold', style: 'italic' })
 
-var canvas = Canvas.createCanvas(320, 320)
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(320, 320)
+const ctx = canvas.getContext('2d')
 
 ctx.font = 'normal normal 50px Helvetica'
 

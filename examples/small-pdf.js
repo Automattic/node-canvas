@@ -1,11 +1,11 @@
-var fs = require('fs')
-var Canvas = require('..')
+const fs = require('fs')
+const Canvas = require('..')
 
-var canvas = Canvas.createCanvas(400, 200, 'pdf')
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(400, 200, 'pdf')
+const ctx = canvas.getContext('2d')
 
-var y = 80
-var x = 50
+let y = 80
+let x = 50
 
 ctx.font = '22px Helvetica'
 ctx.fillText('node-canvas pdf', x, y)
