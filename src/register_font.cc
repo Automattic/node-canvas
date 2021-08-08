@@ -9,6 +9,7 @@
 #include <CoreText/CoreText.h>
 #elif defined(_WIN32)
 #include <windows.h>
+#include <memory>
 #else
 #include <fontconfig/fontconfig.h>
 #include <pango/pangofc-fontmap.h>
@@ -205,6 +206,41 @@ get_pango_style(FT_Long flags) {
   }
 }
 
+#ifdef _WIN32
+std::unique_ptr<wchar_t[]>
+u8ToWide(const char* str) {
+  int iBufferSize = MultiByteToWideChar(CP_UTF8, 0, str, -1, (wchar_t*)NULL, 0);
+  if(!iBufferSize){
+    return nullptr;
+  }
+  std::unique_ptr<wchar_t[]> wpBufWString = std::unique_ptr<wchar_t[]>{ new wchar_t[static_cast<size_t>(iBufferSize)] };
+  if(!MultiByteToWideChar(CP_UTF8, 0, str, -1, wpBufWString.get(), iBufferSize)){
+    return nullptr;
+  }
+  return wpBufWString;
+}
+
+static unsigned long 
+stream_read_func(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count){
+  HANDLE hFile = reinterpret_cast<HANDLE>(stream->descriptor.pointer);
+  DWORD numberOfBytesRead;
+  OVERLAPPED overlapped;
+  overlapped.Offset = offset;
+  overlapped.OffsetHigh = 0;
+  overlapped.hEvent = NULL;
+  if(!ReadFile(hFile, buffer, count, &numberOfBytesRead, &overlapped)){
+    return 0;
+  }
+  return numberOfBytesRead;
+};
+
+static void 
+stream_close_func(FT_Stream stream){
+  HANDLE hFile = reinterpret_cast<HANDLE>(stream->descriptor.pointer);
+  CloseHandle(hFile);
+}
+#endif
+
 /*
  * Return a PangoFontDescription that will resolve to the font file
  */
@@ -214,8 +250,47 @@ get_pango_font_description(unsigned char* filepath) {
   FT_Library library;
   FT_Face face;
   PangoFontDescription *desc = pango_font_description_new();
-
+#ifdef _WIN32
+  // FT_New_Face use fopen. 
+  // Unable to find the file when supplied the multibyte string path on the Windows platform and throw error "Could not parse font file".
+  // This workaround fixes this by reading the font file uses win32 wide character API.
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(!wFilepath){
+    return NULL;
+  }
+  HANDLE hFile = CreateFileW(
+        wFilepath.get(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        NULL,
+        NULL
+  );
+  if(!hFile){
+    return NULL;
+  }
+  LARGE_INTEGER liSize;
+  if(!GetFileSizeEx(hFile, &liSize)) {
+    CloseHandle(hFile);
+    return NULL;
+  }
+  FT_Open_Args args;
+  args.flags = FT_OPEN_STREAM;
+  FT_StreamRec stream;
+  stream.base = NULL;
+  stream.size = liSize.QuadPart;
+  stream.pos = 0;
+  stream.descriptor.pointer = hFile;
+  stream.read = stream_read_func;
+  stream.close = stream_close_func;
+  args.stream = &stream;
+  if (
+    !FT_Init_FreeType(&library) && 
+    !FT_Open_Face(library, &args, 0, &face)) {
+#else
   if (!FT_Init_FreeType(&library) && !FT_New_Face(library, (const char*)filepath, 0, &face)) {
+#endif
     TT_OS2 *table = (TT_OS2*)FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
     if (table) {
       char *family = get_family_name(face);
@@ -239,7 +314,6 @@ get_pango_font_description(unsigned char* filepath) {
       return desc;
     }
   }
-
   pango_font_description_free(desc);
 
   return NULL;
@@ -272,7 +346,13 @@ register_font(unsigned char *filepath) {
   CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
   success = CTFontManagerRegisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
   #elif defined(_WIN32)
-  success = AddFontResourceEx((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(wFilepath){
+    success = AddFontResourceExW(wFilepath.get(), FR_PRIVATE, 0) != 0;
+  }else{
+    success = false;
+  }
+
   #else
   success = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(filepath));
   #endif
@@ -306,7 +386,12 @@ deregister_font(unsigned char *filepath) {
   CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
   success = CTFontManagerUnregisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
   #elif defined(_WIN32)
-  success = RemoveFontResourceExA((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(wFilepath){
+    success = RemoveFontResourceExW(wFilepath.get(), FR_PRIVATE, 0) != 0;
+  }else{
+    success = false;
+  }
   #else
   FcConfigAppFontClear(FcConfigGetCurrent());
   success = true;
