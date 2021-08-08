@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Throw an error instead of crashing the process if `getImageData` or `putImageData` is called on a PDF or SVG canvas (#1853)
 * Compatibility with Typescript 4.6
 * Near-perfect font matching on Linux (#1572)
+* Fix multi-byte font path support on Windows.
 
 2.9.0
 ==================
