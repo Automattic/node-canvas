@@ -1,6 +1,7 @@
 const Canvas = require('./lib/canvas')
 const Image = require('./lib/image')
 const CanvasRenderingContext2D = require('./lib/context2d')
+const CanvasPattern = require('./lib/pattern')
 const parseFont = require('./lib/parse-font')
 const packageJson = require('./package.json')
 const bindings = require('./lib/bindings')
@@ -48,12 +49,19 @@ function registerFont (src, fontFace) {
   return Canvas._registerFont(fs.realpathSync(src), fontFace)
 }
 
+/**
+ * Unload all fonts from pango to free up memory
+ */
+function deregisterAllFonts () {
+  return Canvas._deregisterAllFonts()
+}
+
 module.exports = {
   Canvas,
   Context2d: CanvasRenderingContext2D, // Legacy/compat export
   CanvasRenderingContext2D,
   CanvasGradient: bindings.CanvasGradient,
-  CanvasPattern: bindings.CanvasPattern,
+  CanvasPattern,
   Image,
   ImageData: bindings.ImageData,
   PNGStream,
@@ -63,6 +71,7 @@ module.exports = {
   DOMPoint,
 
   registerFont,
+  deregisterAllFonts,
   parseFont,
 
   createCanvas,

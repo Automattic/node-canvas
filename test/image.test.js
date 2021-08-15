@@ -95,6 +95,28 @@ describe('Image', function () {
     img.src = Buffer.from('89504E470D', 'hex')
   })
 
+  it('propagates exceptions thrown by onload', function () {
+    class MyError extends Error {}
+    const img = new Image()
+    img.onload = () => {
+      throw new MyError()
+    }
+    assert.throws(() => {
+      img.src = jpg_face
+    }, MyError);
+  })
+
+  it('propagates exceptions thrown by onerror', function () {
+    class MyError extends Error {}
+    const img = new Image()
+    img.onerror = () => {
+      throw new MyError()
+    }
+    assert.throws(() => {
+      img.src = Buffer.from('', 'hex')
+    }, MyError);
+  })
+
   it('loads SVG data URL base64', function () {
     if (!HAVE_SVG) this.skip();
     const base64Enc = fs.readFileSync(svg_tree, 'base64')

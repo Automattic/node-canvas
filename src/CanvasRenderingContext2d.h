@@ -76,6 +76,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(Translate);
     static NAN_METHOD(Scale);
     static NAN_METHOD(Transform);
+    static NAN_METHOD(GetTransform);
     static NAN_METHOD(ResetTransform);
     static NAN_METHOD(SetTransform);
     static NAN_METHOD(IsPointInPath);

@@ -6,7 +6,6 @@ on:
   pull_request:
     paths-ignore:
       - ".github/workflows/prebuild.yaml"
-    
 
 jobs: 
   Linux:
@@ -14,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -34,7 +33,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        node: [10, 12, 14]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -42,7 +41,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install Dependencies
         run: |
-          Invoke-WebRequest "http://ftp.gnome.org/pub/GNOME/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -OutFile "gtk.zip"
+          Invoke-WebRequest "https://ftp-osl.osuosl.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -OutFile "gtk.zip"
           Expand-Archive gtk.zip -DestinationPath "C:\GTK"
           Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
           .\libjpeg.exe /S
@@ -56,7 +55,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        node: [10, 12, 14]
+        node: [10, 12, 14, 16]
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -77,7 +76,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
       - uses: actions/checkout@v2
       - name: Install
         run: npm install --ignore-scripts
