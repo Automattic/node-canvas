@@ -1,7 +1,9 @@
 var path = require('path')
+
 var express = require('express')
 
-var Canvas = require('../')
+var Canvas = require('..')
+
 var tests = require('./public/tests')
 
 var app = express()

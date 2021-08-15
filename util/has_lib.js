@@ -1,6 +1,5 @@
-var query = process.argv[2]
+var execSync = require('child_process').execSync
 var fs = require('fs')
-var childProcess = require('child_process')
 
 var SYSTEM_PATHS = [
   '/lib',
@@ -16,6 +15,16 @@ var SYSTEM_PATHS = [
   '/usr/lib/aarch64-linux-gnu'
 ]
 
+function _hasQuery (query) {
+  try {
+    // execSync throws on nonzero exit
+    execSync(query)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
 /**
  * Checks for lib using ldconfig if present, or searching SYSTEM_PATHS
  * otherwise.
@@ -24,12 +33,11 @@ var SYSTEM_PATHS = [
  */
 function hasSystemLib (lib) {
   var libName = 'lib' + lib + '.+(so|dylib)'
-  var libNameRegex = new RegExp(libName)
 
   // Try using ldconfig on linux systems
   if (hasLdconfig()) {
     try {
-      if (childProcess.execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
+      if (execSync('ldconfig -p 2>/dev/null | grep -E "' + libName + '"').length) {
         return true
       }
     } catch (err) {
@@ -38,6 +46,8 @@ function hasSystemLib (lib) {
   }
 
   // Try checking common library locations
+  const libNameRegex = new RegExp(libName)
+
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
       var dirListing = fs.readdirSync(systemPath)
@@ -58,10 +68,10 @@ function hasLdconfig () {
   try {
     // Add /sbin to path as ldconfig is located there on some systems -- e.g.
     // Debian (and it can still be used by unprivileged users):
-    childProcess.execSync('export PATH="$PATH:/sbin"')
-    process.env.PATH = '...'
+    execSync('export PATH="$PATH:/sbin"')
+    // process.env.PATH = '...'
     // execSync throws on nonzero exit
-    childProcess.execSync('hash ldconfig 2>/dev/null')
+    execSync('hash ldconfig 2>/dev/null')
     return true
   } catch (err) {
     return false
@@ -73,14 +83,8 @@ function hasLdconfig () {
  * @return Boolean exists
  */
 function hasFreetype () {
-  try {
-    if (childProcess.execSync('pkg-config cairo --cflags-only-I 2>/dev/null | grep freetype2').length) {
-      return true
-    }
-  } catch (err) {
-    // noop
-  }
-  return false
+  return _hasQuery('pkg-config cairo --cflags-only-I 2>/dev/null | ' +
+                   'grep freetype2')
 }
 
 /**
@@ -89,16 +93,18 @@ function hasFreetype () {
  * @return {boolean} exists
  */
 function hasPkgconfigLib (lib) {
-  try {
-    // execSync throws on nonzero exit
-    childProcess.execSync('pkg-config --exists "' + lib + '" 2>/dev/null')
-    return true
-  } catch (err) {
-    return false
-  }
+  return _hasQuery('pkg-config --exists "' + lib + '" 2>/dev/null')
 }
 
 function main (query) {
+  if (!query) {
+    for (var libname of ['gif', 'jpeg', 'cairo', 'pango', 'freetype', 'rsvg']) {
+      if (!main(libname)) return libname
+    }
+
+    return true
+  }
+
   switch (query) {
     case 'gif':
     case 'jpeg':
@@ -115,4 +121,4 @@ function main (query) {
   }
 }
 
-process.stdout.write(main(query).toString())
+process.stdout.write(main(process.argv[2]).toString())

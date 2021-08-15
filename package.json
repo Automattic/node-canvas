@@ -53,7 +53,7 @@
     "simple-get": "^3.0.3"
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
+    "@types/node": "^14.11.10",
     "assert-rejects": "^1.0.0",
     "dtslint": "^4.0.7",
     "express": "^4.16.3",
