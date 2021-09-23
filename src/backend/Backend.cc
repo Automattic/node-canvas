@@ -99,14 +99,14 @@ BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
   std::string operation_name)
   : backend(backend)
   , operation_name(operation_name)
-{};
+{
+  msg = "operation " + operation_name +
+    " not supported by backend " + backend->getName();
+};
 
 BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {};
 
 const char* BackendOperationNotAvailable::what() const throw()
 {
-  std::string msg = "operation " + this->operation_name +
-    " not supported by backend " + backend->getName();
-
   return msg.c_str();
 };

@@ -60,6 +60,7 @@ class BackendOperationNotAvailable: public std::exception
   private:
     Backend* backend;
     std::string operation_name;
+    std::string msg;
 
   public:
     BackendOperationNotAvailable(Backend* backend, std::string operation_name);
