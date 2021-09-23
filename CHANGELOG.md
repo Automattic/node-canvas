@@ -8,11 +8,35 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Changed `DOMPoint()` constructor to check for parameter nullability.
+* Changed `DOMMatrix.js` to use string literals for non-special cases.
+* Remove semicolons from Dommatrix.js.
 ### Added
-* Added support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
+* Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
 ### Fixed
+* Support Apple M1 Homebrew install that puts canvas install library files in `/opt/homebrew/lib`
+
+2.8.0
+==================
+### Changed
+* Upgrade dtslint
+* Upgrade node-pre-gyp to 1.0.0. Note that if you are using special node-pre-gyp
+  features like `node_pre_gyp_accessKeyId`, you may need to make changes to your
+  installation procedure. See https://github.com/mapbox/node-pre-gyp/blob/master/CHANGELOG.md#100.
+* Add Node.js v16 to CI.
+* The C++ class method `nBytes()` now returns a size_t. (Because this is a C++
+  method only, this is not considered a breaking change.)
+### Added
+* Add support for  `inverse()` and `invertSelf()` to `DOMMatrix` (#1648)
+* Add support for `context.getTransform()` ([#1769](https://github.com/Automattic/node-canvas/pull/1769))
+* Add support for `context.setTransform(dommatrix)` ([#1769](https://github.com/Automattic/node-canvas/pull/1769))
+### Fixed
+* Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` returned by `measureText` to be the ink rect ([#1776](https://github.com/Automattic/node-canvas/pull/1776), fixes [#1703](https://github.com/Automattic/node-canvas/issues/1703)).
 * Fix Pango logging "expect ugly output" on Windows (#1643)
 * Fix benchmark for createPNGStream (#1672)
+* Fix dangling reference in BackendOperationNotAvailable exception (#1740)
+* Fix always-false comparison warning in Canvas.cc.
+* Fix Node.js crash when throwing from an onload or onerror handler.
 
 2.7.0
 ==================
@@ -24,6 +48,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Speed up `fillStyle=` and `strokeStyle=`
 ### Added
 * Export `rsvgVersion`.
+* CanvasPattern’s `setTransform` method is no longer missing
 ### Fixed
 * Fix BMP issues. (#1497)
 * Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)

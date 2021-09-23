@@ -260,3 +260,31 @@ register_font(unsigned char *filepath) {
   return true;
 }
 
+/*
+ * Deregister font from the OS
+ * Note that Linux (FontConfig) can only dereregister ALL fonts at once.
+ */
+
+bool
+deregister_font(unsigned char *filepath) {
+  bool success;
+  
+  #ifdef __APPLE__
+  CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
+  success = CTFontManagerUnregisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
+  #elif defined(_WIN32)
+  success = RemoveFontResourceExA((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  #else
+  FcConfigAppFontClear(FcConfigGetCurrent());
+  success = true;
+  #endif
+
+  if (!success) return false;
+
+  // Tell Pango to throw away the current FontMap and create a new one. This
+  // has the effect of deregistering the font in Pango by re-looking up all
+  // font families.
+  pango_cairo_font_map_set_default(NULL);
+
+  return true;
+}
