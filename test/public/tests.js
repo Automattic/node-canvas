@@ -1,3 +1,4 @@
+var DOMMatrix
 var Image
 var imageSrc
 var tests = {}
@@ -5,10 +6,12 @@ var tests = {}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = tests
   Image = require('../../').Image
+  DOMMatrix = require('../../').DOMMatrix
   imageSrc = function (filename) { return require('path').join(__dirname, '..', 'fixtures', filename) }
 } else {
   window.tests = tests
   Image = window.Image
+  DOMMatrix = window.DOMMatrix
   imageSrc = function (filename) { return filename }
 }
 
@@ -479,6 +482,73 @@ tests['createPattern() no-repeat'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
+tests['createPattern() then setTransform and fill'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.fillStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.fillRect(0, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.fillRect(0, 800, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().rotate(45))
+    ctx.fillRect(800, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
+    ctx.fillRect(800, 800, 800, 800)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
+}
+
+tests['createPattern() then setTransform and stroke'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'repeat')
+    ctx.lineWidth = 150
+    ctx.strokeStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.strokeRect(100, 100, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 100))
+    ctx.strokeRect(100, 900, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().rotate(45))
+    ctx.strokeRect(900, 100, 500, 500)
+
+    pattern.setTransform(new DOMMatrix().rotate(45).scale(4))
+    ctx.strokeRect(900, 900, 500, 500)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
+}
+
+tests['createPattern() then setTransform with no-repeat'] = function (ctx, done) {
+  var img = new Image()
+  img.onload = function () {
+    var pattern = ctx.createPattern(img, 'no-repeat')
+    ctx.fillStyle = pattern
+    ctx.scale(0.125, 0.125)
+
+    ctx.fillRect(0, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(100, 900))
+    ctx.fillRect(0, 800, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(800, 0).rotate(45))
+    ctx.fillRect(800, 0, 800, 800)
+
+    pattern.setTransform(new DOMMatrix().translate(800, 800).rotate(45).scale(4))
+    ctx.fillRect(800, 800, 800, 800)
+    done()
+  }
+  img.src = imageSrc('quadrants.png')
+}
+
 tests['createLinearGradient()'] = function (ctx) {
   var lingrad = ctx.createLinearGradient(0, 0, 0, 150)
   lingrad.addColorStop(0, '#00ABEB')
@@ -938,10 +1008,18 @@ tests['textAlign right'] = function (ctx) {
   ctx.lineTo(100, 0)
   ctx.lineTo(100, 200)
   ctx.stroke()
-
   ctx.font = 'normal 20px Arial'
+  ctx.direction = 'ltr'
   ctx.textAlign = 'right'
-  ctx.fillText('right', 100, 100)
+  ctx.fillText('right ltr', 100, 70)
+  ctx.fillText(
+    'الحق ltr',
+    100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('right rtl', 100, 130)
+  ctx.fillText(
+    'rtl الحق',
+    100, 160)
 }
 
 tests['textAlign left'] = function (ctx) {
@@ -957,8 +1035,69 @@ tests['textAlign left'] = function (ctx) {
   ctx.stroke()
 
   ctx.font = 'normal 20px Arial'
+  ctx.direction = 'ltr'
   ctx.textAlign = 'left'
-  ctx.fillText('left', 100, 100)
+  ctx.fillText('left ltr', 100, 70)
+  ctx.fillText(
+    'تركت ltr',
+    100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('left rtl', 100, 130)
+  ctx.fillText(
+    'rtl تركت',
+    100, 160)
+}
+
+tests['textAlign start'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 100)
+  ctx.lineTo(200, 100)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.lineTo(100, 0)
+  ctx.lineTo(100, 200)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.direction = 'ltr'
+  ctx.textAlign = 'start'
+  ctx.fillText('start ltr', 100, 70)
+  ctx.fillText(
+    'بداية ltr',
+    100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('start rtl', 100, 130)
+  ctx.fillText(
+    'rtl بداية',
+    100, 160)
+}
+
+tests['textAlign end'] = function (ctx) {
+  ctx.strokeStyle = '#666'
+  ctx.strokeRect(0, 0, 200, 200)
+  ctx.lineTo(0, 100)
+  ctx.lineTo(200, 100)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.lineTo(100, 0)
+  ctx.lineTo(100, 200)
+  ctx.stroke()
+
+  ctx.font = 'normal 20px Arial'
+  ctx.direction = 'ltr'
+  ctx.textAlign = 'end'
+  ctx.fillText('end ltr', 100, 70)
+  ctx.fillText(
+    'نهاية ltr',
+    100, 100)
+  ctx.direction = 'rtl'
+  ctx.fillText('start rtl', 100, 130)
+  ctx.fillText(
+    'rtl نهاية',
+    100, 160)
 }
 
 tests['textAlign center'] = function (ctx) {

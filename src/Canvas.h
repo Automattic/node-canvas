@@ -9,6 +9,7 @@
 #include <pango/pangocairo.h>
 #include <v8.h>
 #include <vector>
+#include <cstddef>
 
 /*
  * Maxmimum states per context.
@@ -27,6 +28,7 @@ class FontFace {
   public:
     PangoFontDescription *sys_desc = nullptr;
     PangoFontDescription *user_desc = nullptr;
+    unsigned char file_path[1024];
 };
 
 /*
@@ -49,6 +51,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
+    static NAN_METHOD(DeregisterAllFonts);
     static v8::Local<v8::Value> Error(cairo_status_t status);
     static void ToPngBufferAsync(uv_work_t *req);
     static void ToJpegBufferAsync(uv_work_t *req);
@@ -63,7 +66,9 @@ class Canvas: public Nan::ObjectWrap {
 
     DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    DLL_PUBLIC inline int nBytes(){ return getHeight() * stride(); }
+    DLL_PUBLIC inline std::size_t nBytes(){
+      return static_cast<std::size_t>(getHeight()) * stride();
+    }
 
     DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
     DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }

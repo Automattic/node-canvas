@@ -123,6 +123,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "rotate", Rotate);
   Nan::SetPrototypeMethod(ctor, "translate", Translate);
   Nan::SetPrototypeMethod(ctor, "transform", Transform);
+  Nan::SetPrototypeMethod(ctor, "getTransform", GetTransform);
   Nan::SetPrototypeMethod(ctor, "resetTransform", ResetTransform);
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
   Nan::SetPrototypeMethod(ctor, "isPointInPath", IsPointInPath);
@@ -389,6 +390,7 @@ Context2d::fill(bool preserve) {
       cairo_set_source(_context, new_pattern);
       cairo_pattern_destroy(new_pattern);
     } else {
+      cairo_pattern_set_filter(state->fillPattern, state->patternQuality);
       cairo_set_source(_context, state->fillPattern);
     }
     repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->fillPattern);
@@ -445,6 +447,7 @@ Context2d::stroke(bool preserve) {
       cairo_set_source(_context, new_pattern);
       cairo_pattern_destroy(new_pattern);
     } else {
+      cairo_pattern_set_filter(state->strokePattern, state->patternQuality);
       cairo_set_source(_context, state->strokePattern);
     }
     repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->strokePattern);
@@ -1766,11 +1769,11 @@ NAN_SETTER(Context2d::SetQuality) {
 }
 
 /*
- * Get current transform.
+ * Helper for get current transform matrix
  */
 
-NAN_GETTER(Context2d::GetCurrentTransform) {
-  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+Local<Object>
+get_current_transform(Context2d *context) {
   Isolate *iso = Isolate::GetCurrent();
 
   Local<Float64Array> arr = Float64Array::New(ArrayBuffer::New(iso, 48), 0, 6);
@@ -1786,7 +1789,32 @@ NAN_GETTER(Context2d::GetCurrentTransform) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { arr };
-  Local<Object> instance = Nan::NewInstance(_DOMMatrix.Get(iso), argc, argv).ToLocalChecked();
+  return Nan::NewInstance(context->_DOMMatrix.Get(iso), argc, argv).ToLocalChecked();
+}
+
+/*
+ * Helper for get/set transform.
+ */
+
+void parse_matrix_from_object(cairo_matrix_t &matrix, Local<Object> mat) {
+  cairo_matrix_init(&matrix,
+    Nan::To<double>(Nan::Get(mat, Nan::New("a").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("b").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("c").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("d").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("e").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("f").ToLocalChecked()).ToLocalChecked()).FromMaybe(0)
+  );
+}
+
+
+/*
+ * Get current transform.
+ */
+
+NAN_GETTER(Context2d::GetCurrentTransform) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  Local<Object> instance = get_current_transform(context);
 
   info.GetReturnValue().Set(instance);
 }
@@ -1807,14 +1835,7 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
 #endif
 
   cairo_matrix_t matrix;
-  cairo_matrix_init(&matrix,
-    Nan::To<double>(Nan::Get(mat, Nan::New("a").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("b").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("c").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("d").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("e").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
-    Nan::To<double>(Nan::Get(mat, Nan::New("f").ToLocalChecked()).ToLocalChecked()).FromMaybe(0)
-  );
+  parse_matrix_from_object(matrix, mat);
 
   cairo_transform(context->context(), &matrix);
 }
@@ -2259,6 +2280,17 @@ NAN_METHOD(Context2d::Transform) {
 }
 
 /*
+ * Get the CTM
+ */
+
+NAN_METHOD(Context2d::GetTransform) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  Local<Object> instance = get_current_transform(context);
+
+  info.GetReturnValue().Set(instance);
+}
+
+/*
  * Reset the CTM, used internally by setTransform().
  */
 
@@ -2273,8 +2305,24 @@ NAN_METHOD(Context2d::ResetTransform) {
 
 NAN_METHOD(Context2d::SetTransform) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  cairo_identity_matrix(context->context());
-  Context2d::Transform(info);
+  if (info.Length() == 1) {
+    Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
+
+    #if NODE_MAJOR_VERSION >= 8
+      Local<Context> ctx = Nan::GetCurrentContext();
+      if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+        return Nan::ThrowTypeError("Expected DOMMatrix");
+      }
+    #endif
+
+    cairo_matrix_t matrix;
+    parse_matrix_from_object(matrix, mat);
+
+    cairo_set_matrix(context->context(), &matrix);
+  } else {
+    cairo_identity_matrix(context->context());
+    Context2d::Transform(info);
+  }
 }
 
 /*
@@ -2713,10 +2761,10 @@ NAN_METHOD(Context2d::MeasureText) {
            Nan::New<Number>(logical_rect.width)).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
-           Nan::New<Number>(x_offset - PANGO_LBEARING(logical_rect))).Check();
+           Nan::New<Number>(x_offset - PANGO_LBEARING(ink_rect))).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
-           Nan::New<Number>(x_offset + PANGO_RBEARING(logical_rect))).Check();
+           Nan::New<Number>(x_offset + PANGO_RBEARING(ink_rect))).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
            Nan::New<Number>(y_offset + PANGO_ASCENT(ink_rect))).Check();

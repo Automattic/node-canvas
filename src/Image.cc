@@ -271,14 +271,14 @@ NAN_METHOD(Image::SetSource){
         argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
       }
       Local<Context> ctx = Nan::GetCurrentContext();
-      Nan::Call(onerrorFn.As<Function>(), ctx->Global(), 1, argv).ToLocalChecked();
+      Nan::Call(onerrorFn.As<Function>(), ctx->Global(), 1, argv);
     }
   } else {
     img->loaded();
     Local<Value> onloadFn = Nan::Get(info.This(), Nan::New("onload").ToLocalChecked()).ToLocalChecked();
     if (onloadFn->IsFunction()) {
       Local<Context> ctx = Nan::GetCurrentContext();
-      Nan::Call(onloadFn.As<Function>(), ctx->Global(), 0, NULL).ToLocalChecked();
+      Nan::Call(onloadFn.As<Function>(), ctx->Global(), 0, NULL);
     }
   }
 }

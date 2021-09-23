@@ -10,6 +10,7 @@ using namespace v8;
 const cairo_user_data_key_t *pattern_repeat_key;
 
 Nan::Persistent<FunctionTemplate> Pattern::constructor;
+Nan::Persistent<Function> Pattern::_DOMMatrix;
 
 /*
  * Initialize CanvasPattern.
@@ -24,15 +25,20 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
-
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
+  Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
 
   // Prototype
   Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target,
-           Nan::New("CanvasPattern").ToLocalChecked(),
-           ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
+}
+
+/*
+ * Save some external modules as private references.
+ */
+
+NAN_METHOD(Pattern::SaveExternalModules) {
+  _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*
@@ -76,6 +82,35 @@ NAN_METHOD(Pattern::New) {
   pattern->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
 }
+
+/*
+ * Set the pattern-space to user-space transform.
+ */
+NAN_METHOD(Pattern::SetTransform) {
+  Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(info.This());
+  Local<Context> ctx = Nan::GetCurrentContext();
+  Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
+
+#if NODE_MAJOR_VERSION >= 8
+  if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+    return Nan::ThrowTypeError("Expected DOMMatrix");
+  }
+#endif
+
+  cairo_matrix_t matrix;
+  cairo_matrix_init(&matrix,
+    Nan::To<double>(Nan::Get(mat, Nan::New("a").ToLocalChecked()).ToLocalChecked()).FromMaybe(1),
+    Nan::To<double>(Nan::Get(mat, Nan::New("b").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("c").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("d").ToLocalChecked()).ToLocalChecked()).FromMaybe(1),
+    Nan::To<double>(Nan::Get(mat, Nan::New("e").ToLocalChecked()).ToLocalChecked()).FromMaybe(0),
+    Nan::To<double>(Nan::Get(mat, Nan::New("f").ToLocalChecked()).ToLocalChecked()).FromMaybe(0)
+  );
+
+  cairo_matrix_invert(&matrix);
+  cairo_pattern_set_matrix(pattern->_pattern, &matrix);
+}
+
 
 /*
  * Initialize pattern.

@@ -83,6 +83,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Class methods
   Nan::SetMethod(ctor, "_registerFont", RegisterFont);
+  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts);
 
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
@@ -434,7 +435,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
     cairo_surface_t *surface = canvas->surface();
     cairo_surface_flush(surface);
-    if (static_cast<uint32_t>(canvas->nBytes()) > node::Buffer::kMaxLength) {
+    if (canvas->nBytes() > node::Buffer::kMaxLength) {
       Nan::ThrowError("Data exceeds maximum buffer length.");
       return;
     }
@@ -630,6 +631,9 @@ streamPDF(void *c, const uint8_t *data, unsigned len) {
   Nan::HandleScope scope;
   Nan::AsyncResource async("canvas:StreamPDF");
   PdfStreamInfo* streaminfo = static_cast<PdfStreamInfo*>(c);
+  // TODO this is technically wrong, we're returning a pointer to the data in a
+  // vector in a class with automatic storage duration. If the canvas goes out
+  // of scope while we're in the handler, a use-after-free could happen.
   Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
   Local<Value> argv[3] = {
       Nan::Null()
@@ -783,6 +787,7 @@ NAN_METHOD(Canvas::RegisterFont) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
+      strncpy((char *)face.file_path, (char *) *filePath, 1023);
       font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
@@ -796,6 +801,20 @@ NAN_METHOD(Canvas::RegisterFont) {
   g_free(family);
   g_free(weight);
   g_free(style);
+}
+
+NAN_METHOD(Canvas::DeregisterAllFonts) {
+  // Unload all fonts from pango to free up memory
+  bool success = true;
+  
+  std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+    if (!deregister_font( (unsigned char *)f.file_path )) success = false;
+    pango_font_description_free(f.user_desc);
+    pango_font_description_free(f.sys_desc);
+  });
+  
+  font_face_list.clear();
+  if (!success) Nan::ThrowError("Could not deregister one or more fonts");
 }
 
 /*

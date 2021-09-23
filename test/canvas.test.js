@@ -953,10 +953,11 @@ describe('Canvas', function () {
       var ctx = canvas.getContext('2d')
       ctx.font = '20px Arial'
 
-      ctx.textBaseline = 'alphabetic'
-      var metrics = ctx.measureText('Alphabet')
-      // Zero if the given baseline is the alphabetic baseline
-      assert.equal(metrics.alphabeticBaseline, 0)
+      ctx.textBaseline = "alphabetic"
+      var metrics = ctx.measureText("Alphabet")
+      // Actual value depends on font library version. Have observed values
+      // between 0 and 0.769.
+      assert.ok(metrics.alphabeticBaseline >= 0 && metrics.alphabeticBaseline <= 1);
       // Positive = going up from the baseline
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // Positive = going down from the baseline
@@ -1011,6 +1012,14 @@ describe('Canvas', function () {
     var mat3 = ctx.currentTransform;
     assert.equal(mat3.a, 0.1);
     assert.equal(mat3.d, 0.3);
+
+    assert.deepEqual(ctx.currentTransform, ctx.getTransform());
+
+    ctx.setTransform(ctx.getTransform());
+    assert.deepEqual(mat3, ctx.getTransform());
+
+    ctx.setTransform(mat3.a, mat3.b, mat3.c, mat3.d, mat3.e, mat3.f);
+    assert.deepEqual(mat3, ctx.getTransform());
   });
 
   it('Context2d#createImageData(ImageData)', function () {
@@ -1277,6 +1286,60 @@ describe('Canvas', function () {
       b = i % (imageData.width * 4) == 0 ? b : !b
     }
   })
+
+  it('Context2d#createPattern(Canvas).setTransform()', function () {
+    const DOMMatrix = require('../').DOMMatrix;
+
+    // call func with an ImageData-offset and pixel color value appropriate for a 4-quadrant pattern within
+    // the width and height that's white in the upper-left & lower-right and black in the other corners
+    function eachPixel(bmp, func){
+      let {width, height} = bmp;
+      for (let x=0; x<width; x++){
+        for (let y=0; y<height; y++){
+          let i = y*4*width + x*4,
+              clr = (x<width/2 && y<height/2 || x>=width/2 && y>=height/2) ? 255 : 0;
+          func(i, clr);
+        }
+      }
+    }
+
+    // create a canvas with a single repeat of the pattern within its dims
+    function makeCheckerboard(w, h){
+      let check = createCanvas(w, h),
+          ctx = check.getContext('2d'),
+          bmp = ctx.createImageData(w, h);
+      eachPixel(bmp, (i, clr) => bmp.data.set([clr,clr,clr, 255], i));
+      ctx.putImageData(bmp, 0, 0);
+      return check;
+    }
+
+    // verify that the region looks like a single 4-quadrant checkerboard cell
+    function isCheckerboard(ctx, w, h){
+      let bmp = ctx.getImageData(0, 0, w, h);
+      eachPixel(bmp, (i, clr) => {
+        let [r, g, b, a] = bmp.data.slice(i, i+4);
+        assert.ok(r==clr && g==clr && b==clr && a==255);
+      })
+    }
+
+    let w = 160, h = 160,
+        canvas = createCanvas(w, h),
+        ctx = canvas.getContext('2d'),
+        pat = ctx.createPattern(makeCheckerboard(w, h), 'repeat'),
+        mat = new DOMMatrix();
+
+    ctx.patternQuality='nearest';
+    ctx.fillStyle = pat;
+
+    // draw a single repeat of the pattern at each scale and then confirm that
+    // the transformation succeeded
+    [1, .5, .25, .125, 0.0625].forEach(mag => {
+      mat = new DOMMatrix().scale(mag);
+      pat.setTransform(mat);
+      ctx.fillRect(0,0, w*mag, h*mag);
+      isCheckerboard(ctx, w*mag, h*mag);
+    })
+  });
 
   it('Context2d#createPattern(Image)', function () {
     return loadImage(`${__dirname}/fixtures/checkers.png`).then((img) => {
