@@ -101,13 +101,14 @@ function hasPkgconfigLib (lib) {
 function main (query) {
   switch (query) {
     case 'gif':
-    case 'jpeg':
     case 'cairo':
       return hasSystemLib(query)
     case 'pango':
       return hasPkgconfigLib(query)
     case 'freetype':
       return hasFreetype()
+    case 'jpeg':
+      return hasPkgconfigLib('libjpeg')
     case 'rsvg':
       return hasPkgconfigLib('librsvg-2.0')
     default:
