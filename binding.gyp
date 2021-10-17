@@ -164,8 +164,11 @@
                 '-l<(jpeg_root)/lib/jpeg.lib',
               ]
             }, {
+              'include_dirs': [
+                '<!@(pkg-config libjpeg --cflags-only-I | sed s/-I//g)'
+              ],
               'libraries': [
-                '-ljpeg'
+                '<!@(pkg-config libjpeg --libs)'
               ]
             }]
           ]
@@ -180,7 +183,11 @@
                 '-l<(GTK_Root)/lib/gif.lib'
               ]
             }, {
+              'include_dirs': [
+                '/opt/homebrew/include'
+              ],
               'libraries': [
+                '-L/opt/homebrew/lib',
                 '-lgif'
               ]
             }]
