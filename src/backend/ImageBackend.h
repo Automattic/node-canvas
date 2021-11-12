@@ -6,8 +6,8 @@
 class ImageBackend : public Backend
 {
   private:
-    cairo_surface_t* createSurface();
-    void destroySurface();
+    void createSurface();
+    void recreateSurface();
     cairo_format_t format = DEFAULT_FORMAT;
 
   public:

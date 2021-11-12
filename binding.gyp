@@ -62,6 +62,7 @@
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
         'src/backend/PdfBackend.cc',
+        'src/backend/ScreenBackend.cc',
         'src/backend/SvgBackend.cc',
         'src/bmp/BMPParser.cc',
         'src/Backends.cc',
@@ -145,6 +146,11 @@
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
           }
         }],
+        ['OS=="linux" and has_FBDev=="true"',
+        {
+            'defines': ['HAS_FBDEV'],
+            'sources': ['src/backend/FBDevBackend.cc']
+        }],
         ['with_jpeg=="true"', {
           'defines': [
             'HAVE_JPEG'
@@ -223,7 +229,10 @@
             }]
           ]
         }]
-      ]
+      ],
+      'variables': {
+        'has_FBDev%': 'true',
+      }
     }
   ]
 }

@@ -6,7 +6,7 @@
  * Module dependencies.
  */
 
-const {createCanvas, loadImage, rsvgVersion} = require('../');
+const { createCanvas, loadImage, rsvgVersion } = require('../');
 const Image = require('../').Image
 const HAVE_SVG = rsvgVersion !== undefined;
 
@@ -24,12 +24,12 @@ const bmp_dir = `${__dirname}/fixtures/bmp`
 
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
-    var img = new Image();
-    assert.throws(function () { Image.prototype.width; }, /incompatible receiver/);
-    assert(!img.hasOwnProperty('width'));
-    assert('width' in img);
-    assert(Image.prototype.hasOwnProperty('width'));
-  });
+    var img = new Image()
+    assert.throws(function () { Image.prototype.width }, /incompatible receiver/)
+    assert(!img.hasOwnProperty('width'))
+    assert('width' in img)
+    assert(Image.prototype.hasOwnProperty('width'))
+  })
 
   it('loads JPEG image', function () {
     return loadImage(jpg_face).then((img) => {
@@ -121,7 +121,7 @@ describe('Image', function () {
     if (!HAVE_SVG) this.skip();
     const base64Enc = fs.readFileSync(svg_tree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
-      return loadImage(dataURL).then((img) => {
+    return loadImage(dataURL).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
       assert.strictEqual(img.width, 200)
@@ -134,7 +134,7 @@ describe('Image', function () {
     if (!HAVE_SVG) this.skip();
     const utf8Encoded = fs.readFileSync(svg_tree, 'utf8')
     const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
-      return loadImage(dataURL).then((img) => {
+    return loadImage(dataURL).then((img) => {
       assert.strictEqual(img.onerror, null)
       assert.strictEqual(img.onload, null)
       assert.strictEqual(img.width, 200)
@@ -190,7 +190,7 @@ describe('Image', function () {
   it('captures errors from libjpeg', function (done) {
     const img = new Image()
     img.onerror = err => {
-      assert.equal(err.message, "JPEG datastream contains no image")
+      assert.equal(err.message, 'JPEG datastream contains no image')
       assert.strictEqual(img.complete, true)
       done()
     }
@@ -251,7 +251,7 @@ describe('Image', function () {
     })
   })
 
-  it('should unbind Image#onload', function() {
+  it('should unbind Image#onload', function () {
     return loadImage(png_clock).then((img) => {
       let onloadCalled = 0
 
@@ -278,7 +278,7 @@ describe('Image', function () {
     })
   })
 
-  it('should unbind Image#onerror', function() {
+  it('should unbind Image#onerror', function () {
     return loadImage(png_clock).then((img) => {
       let onloadCalled = 0
       let onerrorCalled = 0
@@ -335,25 +335,25 @@ describe('Image', function () {
   })
 
   it('does not contain `source` property', function () {
-    var keys = Reflect.ownKeys(Image.prototype);
-    assert.ok(!keys.includes('source'));
-    assert.ok(!keys.includes('getSource'));
-    assert.ok(!keys.includes('setSource'));
-  });
+    var keys = Reflect.ownKeys(Image.prototype)
+    assert.ok(!keys.includes('source'))
+    assert.ok(!keys.includes('getSource'))
+    assert.ok(!keys.includes('setSource'))
+  })
 
   describe('supports BMP', function () {
     it('parses 1-bit image', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        assert.strictEqual(img.width, 111);
-        assert.strictEqual(img.height, 72);
-        done();
-      };
+        assert.strictEqual(img.width, 111)
+        assert.strictEqual(img.height, 72)
+        done()
+      }
 
-      img.onerror = err => { throw err; };
-      img.src = path.join(bmp_dir, '1-bit.bmp');
-    });
+      img.onerror = err => { throw err }
+      img.src = path.join(bmp_dir, '1-bit.bmp')
+    })
 
     it('parses 4-bit image', function (done) {
       let img = new Image();
@@ -371,32 +371,32 @@ describe('Image', function () {
     it('parses 8-bit image');
 
     it('parses 24-bit image', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        assert.strictEqual(img.width, 2);
-        assert.strictEqual(img.height, 2);
+        assert.strictEqual(img.width, 2)
+        assert.strictEqual(img.height, 2)
 
         testImgd(img, [
           0, 0, 255, 255,
           0, 255, 0, 255,
           255, 0, 0, 255,
-          255, 255, 255, 255,
-        ]);
+          255, 255, 255, 255
+        ])
 
-        done();
-      };
+        done()
+      }
 
-      img.onerror = err => { throw err; };
-      img.src = path.join(bmp_dir, '24-bit.bmp');
-    });
+      img.onerror = err => { throw err }
+      img.src = path.join(bmp_dir, '24-bit.bmp')
+    })
 
     it('parses 32-bit image', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        assert.strictEqual(img.width, 4);
-        assert.strictEqual(img.height, 2);
+        assert.strictEqual(img.width, 4)
+        assert.strictEqual(img.height, 2)
 
         testImgd(img, [
           0, 0, 255, 255,
@@ -406,52 +406,52 @@ describe('Image', function () {
           0, 0, 255, 127,
           0, 255, 0, 127,
           255, 0, 0, 127,
-          255, 255, 255, 127,
-        ]);
-        
-        done();
-      };
+          255, 255, 255, 127
+        ])
 
-      img.onerror = err => { throw err; };
-      img.src = fs.readFileSync(path.join(bmp_dir, '32-bit.bmp')); // Also tests loading from buffer
-    });
+        done()
+      }
+
+      img.onerror = err => { throw err }
+      img.src = fs.readFileSync(path.join(bmp_dir, '32-bit.bmp')) // Also tests loading from buffer
+    })
 
     it('parses minimal BMP', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        assert.strictEqual(img.width, 1);
-        assert.strictEqual(img.height, 1);
+        assert.strictEqual(img.width, 1)
+        assert.strictEqual(img.height, 1)
 
         testImgd(img, [
-          255, 0, 0, 255,
-        ]);
-        
-        done();
-      };
+          255, 0, 0, 255
+        ])
 
-      img.onerror = err => { throw err; };
-      img.src = path.join(bmp_dir, 'min.bmp');
-    });
+        done()
+      }
+
+      img.onerror = err => { throw err }
+      img.src = path.join(bmp_dir, 'min.bmp')
+    })
 
     it('properly handles negative height', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        assert.strictEqual(img.width, 1);
-        assert.strictEqual(img.height, 2);
+        assert.strictEqual(img.width, 1)
+        assert.strictEqual(img.height, 2)
 
         testImgd(img, [
           255, 0, 0, 255,
-          0, 255, 0, 255,
-        ]);
-        
-        done();
-      };
+          0, 255, 0, 255
+        ])
 
-      img.onerror = err => { throw err; };
-      img.src = path.join(bmp_dir, 'negative-height.bmp');
-    });
+        done()
+      }
+
+      img.onerror = err => { throw err }
+      img.src = path.join(bmp_dir, 'negative-height.bmp')
+    })
 
     it('color palette', function (done) {
       let img = new Image();
@@ -482,40 +482,40 @@ describe('Image', function () {
     it('V5 header');
 
     it('catches BMP errors', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        throw new Error('Invalid image should not be loaded properly');
-      };
+        throw new Error('Invalid image should not be loaded properly')
+      }
 
       img.onerror = err => {
-        let msg = 'Error while processing file header - unexpected end of file';
-        assert.strictEqual(err.message, msg);
-        done();
-      };
+        let msg = 'Error while processing file header - unexpected end of file'
+        assert.strictEqual(err.message, msg)
+        done()
+      }
 
-      img.src = Buffer.from('BM');
-    });
+      img.src = Buffer.from('BM')
+    })
 
     it('BMP bomb', function (done) {
-      let img = new Image();
+      let img = new Image()
 
       img.onload = () => {
-        throw new Error('Invalid image should not be loaded properly');
-      };
+        throw new Error('Invalid image should not be loaded properly')
+      }
 
       img.onerror = err => {
-        done();
-      };
+        done()
+      }
 
-      img.src = path.join(bmp_dir, 'bomb.bmp');
-    });
+      img.src = path.join(bmp_dir, 'bomb.bmp')
+    })
 
-    function testImgd(img, data){
-      let ctx = createCanvas(img.width, img.height).getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      var actualData = ctx.getImageData(0, 0, img.width, img.height).data;
-      assert.strictEqual(String(actualData), String(data));
+    function testImgd (img, data) {
+      let ctx = createCanvas(img.width, img.height).getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      var actualData = ctx.getImageData(0, 0, img.width, img.height).data
+      assert.strictEqual(String(actualData), String(data))
     }
-  });
+  })
 })
