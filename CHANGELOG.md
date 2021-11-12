@@ -53,6 +53,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix BMP issues. (#1497)
 * Update typings to support jpg and addPage on NodeCanvasRenderingContext2D (#1509)
 * Fix assertion failure when using Visual Studio Code debugger to inspect Image prototype (#1534)
+* Tweak text baseline positioning to be as close as possible to browser canvas (#1562)
 * Fix signed/unsigned comparison warning introduced in 2.6.0, and function cast warnings with GCC8+
 * Fix to compile without JPEG support (#1593).
 * Fix compile errors with cairo
