@@ -48,8 +48,8 @@
   ],
   "types": "types/index.d.ts",
   "dependencies": {
-    "nan": "^2.14.0",
     "@mapbox/node-pre-gyp": "^1.0.0",
+    "nan": "^2.15.0",
     "simple-get": "^3.0.3"
   },
   "devDependencies": {

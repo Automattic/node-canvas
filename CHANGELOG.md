@@ -12,6 +12,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Changed `DOMPoint()` constructor to check for parameter nullability.
 * Changed `DOMMatrix.js` to use string literals for non-special cases.
 * Remove semicolons from Dommatrix.js.
+* Update nan to v2.15.0 to ensure Node.js v14+ support.
 ### Added
 * Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
 ### Fixed
