@@ -21,17 +21,6 @@
 
 using namespace v8;
 
-// Windows doesn't support the C99 names for these
-#ifdef _MSC_VER
-#define isnan(x) _isnan(x)
-#define isinf(x) (!_finite(x))
-#endif
-
-#ifndef isnan
-#define isnan(x) std::isnan(x)
-#define isinf(x) std::isinf(x)
-#endif
-
 Nan::Persistent<FunctionTemplate> Context2d::constructor;
 
 /*
@@ -77,9 +66,7 @@ inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, doubl
     double val = Nan::To<double>(info[i]).FromMaybe(0);
 
     if (areArgsValid) {
-      if (val != val ||
-        val == std::numeric_limits<double>::infinity() ||
-        val == -std::numeric_limits<double>::infinity()) {
+      if (!std::isfinite(val)) {
         // We should continue the loop instead of returning immediately
         // See https://html.spec.whatwg.org/multipage/canvas.html
 
@@ -2787,7 +2774,7 @@ NAN_METHOD(Context2d::SetLineDash) {
     if (!d->IsNumber()) return;
     a[i] = Nan::To<double>(d).FromMaybe(0);
     if (a[i] == 0) zero_dashes++;
-    if (a[i] < 0 || isnan(a[i]) || isinf(a[i])) return;
+    if (a[i] < 0 || !std::isfinite(a[i])) return;
   }
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2827,7 +2814,7 @@ NAN_METHOD(Context2d::GetLineDash) {
  */
 NAN_SETTER(Context2d::SetLineDashOffset) {
   double offset = Nan::To<double>(value).FromMaybe(0);
-  if (isnan(offset) || isinf(offset)) return;
+  if (!std::isfinite(offset)) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();

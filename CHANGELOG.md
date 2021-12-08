@@ -12,6 +12,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Changed `DOMPoint()` constructor to check for parameter nullability.
 * Changed `DOMMatrix.js` to use string literals for non-special cases.
 * Remove semicolons from Dommatrix.js.
+* Clean up inf/nan macros and slightly speed up argument checking.
 ### Added
 * Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
 ### Fixed
