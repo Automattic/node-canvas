@@ -64,14 +64,12 @@ function done (benchmark, times, start, isAsync) {
 
 // node-canvas
 
-bm('fillStyle= name', function () {
-  for (let i = 0; i < 10000; i++) {
-    ctx.fillStyle = '#fefefe'
-  }
-})
 
 bm('lineTo()', function () {
   ctx.lineTo(0, 50)
+  ctx.lineTo(10, 10)
+  ctx.lineTo(20, 75)
+  ctx.lineTo(30, 50)
 })
 
 bm('arc()', function () {

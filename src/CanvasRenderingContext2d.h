@@ -99,6 +99,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(BezierCurveTo);
     static NAN_METHOD(QuadraticCurveTo);
     static NAN_METHOD(LineTo);
+    static NAN_METHOD(LinesTo);
     static NAN_METHOD(MoveTo);
     static NAN_METHOD(FillRect);
     static NAN_METHOD(StrokeRect);

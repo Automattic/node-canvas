@@ -77,9 +77,7 @@ inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, doubl
     double val = Nan::To<double>(info[i]).FromMaybe(0);
 
     if (areArgsValid) {
-      if (val != val ||
-        val == std::numeric_limits<double>::infinity() ||
-        val == -std::numeric_limits<double>::infinity()) {
+      if (!std::isfinite(val)) {
         // We should continue the loop instead of returning immediately
         // See https://html.spec.whatwg.org/multipage/canvas.html
 
@@ -140,6 +138,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "measureText", MeasureText);
   Nan::SetPrototypeMethod(ctor, "moveTo", MoveTo);
   Nan::SetPrototypeMethod(ctor, "lineTo", LineTo);
+  Nan::SetPrototypeMethod(ctor, "linesTo", LinesTo);
   Nan::SetPrototypeMethod(ctor, "bezierCurveTo", BezierCurveTo);
   Nan::SetPrototypeMethod(ctor, "quadraticCurveTo", QuadraticCurveTo);
   Nan::SetPrototypeMethod(ctor, "beginPath", BeginPath);
@@ -723,6 +722,15 @@ NAN_METHOD(Context2d::New) {
   Context2d *context = new Context2d(canvas);
 
   context->Wrap(info.This());
+
+  Nan::Set(info.This(),
+           Nan::New<String>("_ptidx").ToLocalChecked(),
+           Nan::New<Number>(0)).Check();
+  Local<Float64Array> pts = Float64Array::New(ArrayBuffer::New(Isolate::GetCurrent(), 8 * 10 * 2), 0, 10 * 2);
+  Nan::Set(info.This(),
+           Nan::New<String>("_pts").ToLocalChecked(),
+           pts).Check();
+
   info.GetReturnValue().Set(info.This());
 }
 
@@ -2363,6 +2371,20 @@ NAN_METHOD(Context2d::Fill) {
 
 NAN_METHOD(Context2d::Stroke) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+
+  uint32_t ptidx = Nan::To<uint32_t>(Nan::Get(info.This(), Nan::New<String>("_ptidx").ToLocalChecked()).ToLocalChecked()).FromJust();
+  if (ptidx > 0) {
+    Local<Float64Array> pointsArray = Nan::Get(info.This(), Nan::New<String>("_pts").ToLocalChecked()).ToLocalChecked().As<Float64Array>();
+    Nan::TypedArrayContents<double> typedArrayContents(pointsArray);
+    double* points = *typedArrayContents;
+    for (uint32_t i = 0; i < ptidx; i += 2) {
+      cairo_line_to(context->context(), points[i], points[i + 1]);
+    }
+    Nan::Set(info.This(),
+            Nan::New<String>("_ptidx").ToLocalChecked(),
+            Nan::New<Number>(0)).Check();
+  }
+
   context->stroke(true);
 }
 
@@ -2511,6 +2533,17 @@ NAN_METHOD(Context2d::LineTo) {
   cairo_line_to(context->context(), args[0], args[1]);
 }
 
+NAN_METHOD(Context2d::LinesTo) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+
+  Local<Float64Array> pointsArray = info[0].As<Float64Array>();
+  Nan::TypedArrayContents<double> typedArrayContents(pointsArray);
+  double* points = *typedArrayContents;
+  for (uint32_t i = 0; i < 20; i += 2) {
+    cairo_line_to(context->context(), points[i], points[i + 1]);
+  }
+}
+
 /*
  * Creates a new subpath at the given point.
  */
@@ -2521,6 +2554,20 @@ NAN_METHOD(Context2d::MoveTo) {
     return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+
+  uint32_t ptidx = Nan::To<uint32_t>(Nan::Get(info.This(), Nan::New<String>("_ptidx").ToLocalChecked()).ToLocalChecked()).FromJust();
+  if (ptidx > 0) {
+    Local<Float64Array> pointsArray = Nan::Get(info.This(), Nan::New<String>("_pts").ToLocalChecked()).ToLocalChecked().As<Float64Array>();
+    Nan::TypedArrayContents<double> typedArrayContents(pointsArray);
+    double* points = *typedArrayContents;
+    for (uint32_t i = 0; i < ptidx; i += 2) {
+      cairo_line_to(context->context(), points[i], points[i + 1]);
+    }
+    Nan::Set(info.This(),
+            Nan::New<String>("_ptidx").ToLocalChecked(),
+            Nan::New<Number>(0)).Check();
+  }
+
   cairo_move_to(context->context(), args[0], args[1]);
 }
 
