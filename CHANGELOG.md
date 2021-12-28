@@ -16,6 +16,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Clean up inf/nan macros and slightly speed up argument checking.
 ### Added
 * Added `deregisterAllFonts` method to free up memory and reduce font conflicts.
+* Added prebuild configuration for Windows ARM64
 ### Fixed
 * Support Apple M1 Homebrew install that puts canvas install library files in `/opt/homebrew/lib`
 
