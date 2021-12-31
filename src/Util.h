@@ -2,6 +2,7 @@
 
 #include <nan.h>
 #include <v8.h>
+#include <cctype>
 
 // Wrapper around Nan::SetAccessor that makes it easier to change the last
 // argument (signature). Getters/setters must be accessed only when there is

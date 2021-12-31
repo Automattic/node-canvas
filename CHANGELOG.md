@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Stringify CanvasGradient, CanvasPattern and ImageData like browsers do. (#1639, #1646)
+* Add missing include for `toupper`.
 
 2.9.0
 ==================
