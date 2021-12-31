@@ -1189,6 +1189,14 @@ describe('Canvas', function () {
       const ctx = createTestCanvas()
       assert.throws(function () { ctx.getImageData(0, 0, 0, 0) }, /IndexSizeError/)
     })
+
+    it('throws if canvas is a PDF canvas (#1853)', function () {
+      const canvas = createCanvas(3, 6, 'pdf')
+      const ctx = canvas.getContext('2d')
+      assert.throws(() => {
+        ctx.getImageData(0, 0, 3, 6)
+      })
+    })
   })
 
   it('Context2d#createPattern(Canvas)', function () {
@@ -1400,6 +1408,18 @@ describe('Canvas', function () {
       const ctx = canvas.getContext('2d')
       assert.throws(function () { ctx.putImageData({}, 0, 0) }, TypeError)
       assert.throws(function () { ctx.putImageData(undefined, 0, 0) }, TypeError)
+    })
+
+    it('throws if canvas is a PDF canvas (#1853)', function () {
+      const canvas = createCanvas(3, 6, 'pdf')
+      const ctx = canvas.getContext('2d')
+      const srcImageData = createImageData(new Uint8ClampedArray([
+        1, 2, 3, 255, 5, 6, 7, 255,
+        0, 1, 2, 255, 4, 5, 6, 255
+      ]), 2)
+      assert.throws(() => {
+        ctx.putImageData(srcImageData, -1, -1)
+      })
     })
 
     it('works for negative source values', function () {

@@ -937,8 +937,8 @@ NAN_METHOD(Context2d::PutImageData) {
   }
 #endif
   default: {
-    Nan::ThrowError("Invalid pixel format");
-    break;
+    Nan::ThrowError("Invalid pixel format or not an image canvas");
+    return;
   }
   }
 
@@ -1111,8 +1111,8 @@ NAN_METHOD(Context2d::GetImageData) {
 #endif
   default: {
     // Unlikely
-    Nan::ThrowError("Invalid pixel format");
-    break;
+    Nan::ThrowError("Invalid pixel format or not an image canvas");
+    return;
   }
   }
 
