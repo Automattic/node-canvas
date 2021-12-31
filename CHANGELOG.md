@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Stringify CanvasGradient, CanvasPattern and ImageData like browsers do. (#1639, #1646)
 
 2.9.0
 ==================

@@ -1317,37 +1317,44 @@ describe('Canvas', function () {
     })
   });
 
-  it('Context2d#createPattern(Image)', function () {
-    return loadImage(path.join(__dirname, '/fixtures/checkers.png')).then((img) => {
-      const canvas = createCanvas(20, 20)
-      const ctx = canvas.getContext('2d')
-      const pattern = ctx.createPattern(img)
+  it('Context2d#createPattern(Image)', async function () {
+    const img = await loadImage(path.join(__dirname, '/fixtures/checkers.png'));
+    const canvas = createCanvas(20, 20)
+    const ctx = canvas.getContext('2d')
+    const pattern = ctx.createPattern(img)
 
-      ctx.fillStyle = pattern
-      ctx.fillRect(0, 0, 20, 20)
+    ctx.fillStyle = pattern
+    ctx.fillRect(0, 0, 20, 20)
 
-      const imageData = ctx.getImageData(0, 0, 20, 20)
-      assert.equal(20, imageData.width)
-      assert.equal(20, imageData.height)
-      assert.equal(1600, imageData.data.length)
+    const imageData = ctx.getImageData(0, 0, 20, 20)
+    assert.equal(20, imageData.width)
+    assert.equal(20, imageData.height)
+    assert.equal(1600, imageData.data.length)
 
-      let i = 0; let b = true
-      while (i < imageData.data.length) {
-        if (b) {
-          assert.equal(0, imageData.data[i++])
-          assert.equal(0, imageData.data[i++])
-          assert.equal(0, imageData.data[i++])
-          assert.equal(255, imageData.data[i++])
-        } else {
-          assert.equal(255, imageData.data[i++])
-          assert.equal(255, imageData.data[i++])
-          assert.equal(255, imageData.data[i++])
-          assert.equal(255, imageData.data[i++])
-        }
-        // alternate b, except when moving to a new row
-        b = i % (imageData.width * 4) === 0 ? b : !b
+    let i = 0; let b = true
+    while (i < imageData.data.length) {
+      if (b) {
+        assert.equal(0, imageData.data[i++])
+        assert.equal(0, imageData.data[i++])
+        assert.equal(0, imageData.data[i++])
+        assert.equal(255, imageData.data[i++])
+      } else {
+        assert.equal(255, imageData.data[i++])
+        assert.equal(255, imageData.data[i++])
+        assert.equal(255, imageData.data[i++])
+        assert.equal(255, imageData.data[i++])
       }
-    })
+      // alternate b, except when moving to a new row
+      b = i % (imageData.width * 4) === 0 ? b : !b
+    }
+  })
+
+  it('CanvasPattern stringifies as [object CanvasPattern]', async function () {
+    const img = await loadImage(path.join(__dirname, '/fixtures/checkers.png'));
+    const canvas = createCanvas(20, 20)
+    const ctx = canvas.getContext('2d')
+    const pattern = ctx.createPattern(img)
+    assert.strictEqual(pattern.toString(), '[object CanvasPattern]')
   })
 
   it('Context2d#createLinearGradient()', function () {
@@ -1378,6 +1385,13 @@ describe('Canvas', function () {
     assert.equal(0, imageData.data[i + 1])
     assert.equal(0, imageData.data[i + 2])
     assert.equal(255, imageData.data[i + 3])
+  })
+
+  it('CanvasGradient stringifies as [object CanvasGradient]', function () {
+    const canvas = createCanvas(20, 1)
+    const ctx = canvas.getContext('2d')
+    const gradient = ctx.createLinearGradient(1, 1, 19, 1)
+    assert.strictEqual(gradient.toString(), '[object CanvasGradient]')
   })
 
   describe('Context2d#putImageData()', function () {
