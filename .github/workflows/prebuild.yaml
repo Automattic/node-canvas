@@ -24,6 +24,9 @@
 # versions of git, this is achieved in a different way on Linux than on Mac and
 # Win.
 
+# Tip: If uploads are inexplicably failing, open the release in GitHub, click
+# "edit" and delete any assets that are in purgatory (have a /!\ next to them).
+
 name: Make Prebuilds
 on: workflow_dispatch
 
@@ -39,8 +42,8 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [17]
-        canvas_tag: ["v2.8.0"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 12, 13, 14, 15, 17]
+        canvas_tag: ["v2.9.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
@@ -131,8 +134,8 @@ jobs:
   macOS:
     strategy:
       matrix:
-        node: [17]
-        canvas_tag: ["v2.8.0"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 13, 15]
+        canvas_tag: ["v2.9.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -202,8 +205,8 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [17]
-        canvas_tag: ["v2.8.0"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 13, 15]
+        canvas_tag: ["v2.9.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
