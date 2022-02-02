@@ -39,7 +39,6 @@ class Image: public Nan::ObjectWrap {
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetComplete);

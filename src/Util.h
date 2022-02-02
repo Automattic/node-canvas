@@ -32,3 +32,13 @@ inline bool streq_casein(std::string& str1, std::string& str2) {
     return c1 == c2 || std::toupper(c1) == std::toupper(c2);
   });
 }
+
+inline v8::Local<v8::Value> getFromExports(const char* key)
+{
+	v8::Local<v8::Object> exports = Nan::Get(
+			Nan::GetCurrentContext()->Global(), 
+			Nan::New<v8::String>("__node_canvas").ToLocalChecked())
+		.ToLocalChecked().As<v8::Object>();
+		
+	return Nan::Get(exports, Nan::New<v8::String>(key).ToLocalChecked()).ToLocalChecked();
+}

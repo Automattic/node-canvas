@@ -89,4 +89,11 @@ NAN_MODULE_INIT(init) {
   Nan::Set(target, Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked()).Check();
 }
 
-NODE_MODULE(canvas, init);
+NODE_MODULE_INIT()
+{
+  Local<Object> js_global = context->Global();
+
+  Nan::Set(js_global, Nan::New<String>("__node_canvas").ToLocalChecked(), exports).Check();
+  
+  init(exports);
+}

@@ -7,8 +7,6 @@
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> Gradient::constructor;
-
 /*
  * Initialize CanvasGradient.
  */
@@ -19,7 +17,6 @@ Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Gradient::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("CanvasGradient").ToLocalChecked());
 

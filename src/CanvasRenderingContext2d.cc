@@ -21,8 +21,6 @@
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> Context2d::constructor;
-
 /*
  * Rectangle arg assertions.
  */
@@ -81,9 +79,6 @@ inline static bool checkArgs(const Nan::FunctionCallbackInfo<Value> &info, doubl
   return areArgsValid;
 }
 
-Nan::Persistent<Function> Context2d::_DOMMatrix;
-Nan::Persistent<Function> Context2d::_parseFont;
-
 /*
  * Initialize Context2d.
  */
@@ -94,7 +89,6 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Context2d::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("CanvasRenderingContext2D").ToLocalChecked());
 
@@ -675,7 +669,8 @@ NAN_METHOD(Context2d::New) {
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("Canvas expected");
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
-  if (!Nan::New(Canvas::constructor)->HasInstance(obj))
+  Local<Function> canvas_ctor = getFromExports("Canvas").As<Function>();
+  if (!obj->InstanceOf(Nan::GetCurrentContext(), canvas_ctor).FromJust())
     return Nan::ThrowTypeError("Canvas expected");
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
 
@@ -718,8 +713,13 @@ NAN_METHOD(Context2d::New) {
  */
 
 NAN_METHOD(Context2d::SaveExternalModules) {
-  _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
-  _parseFont.Reset(Nan::To<Function>(info[1]).ToLocalChecked());
+  Local<Object> exports = Nan::Get(Nan::GetCurrentContext()->Global(), Nan::New<String>("__node_canvas").ToLocalChecked())
+    .ToLocalChecked()
+    .As<Object>();
+  Local<String> DOMMatrixName = Nan::New<String>("CanvasRenderingContext2D_DOMMatrix").ToLocalChecked();
+  Local<String> parseFontName = Nan::New<String>("CanvasRenderingContext2D_parseFont").ToLocalChecked();
+  Nan::Set(exports, DOMMatrixName, Nan::To<Function>(info[0]).ToLocalChecked());
+  Nan::Set(exports, parseFontName, Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*
@@ -773,7 +773,8 @@ NAN_METHOD(Context2d::PutImageData) {
   if (!info[0]->IsObject())
     return Nan::ThrowTypeError("ImageData expected");
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
-  if (!Nan::New(ImageData::constructor)->HasInstance(obj))
+  Local<Function> image_data_ctor = getFromExports("ImageData").As<Function>();
+  if (!obj->InstanceOf(Nan::GetCurrentContext(), image_data_ctor).FromJust())
     return Nan::ThrowTypeError("ImageData expected");
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1121,7 +1122,7 @@ NAN_METHOD(Context2d::GetImageData) {
   Local<Int32> shHandle = Nan::New(sh);
   Local<Value> argv[argc] = { dataArray, swHandle, shHandle };
 
-  Local<Function> ctor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
+  Local<Function> ctor = getFromExports("ImageData").As<Function>();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
@@ -1162,7 +1163,7 @@ NAN_METHOD(Context2d::CreateImageData){
   const int argc = 3;
   Local<Value> argv[argc] = { arr, Nan::New(width), Nan::New(height) };
 
-  Local<Function> ctor = Nan::GetFunction(Nan::New(ImageData::constructor)).ToLocalChecked();
+  Local<Function> ctor = getFromExports("ImageData").As<Function>();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
@@ -1217,9 +1218,11 @@ NAN_METHOD(Context2d::DrawImage) {
   cairo_surface_t *surface;
 
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
+  Local<Function> canvas_ctor = getFromExports("Canvas").As<Function>();
+  Local<Function> image_ctor = getFromExports("Image").As<Function>();
 
   // Image
-  if (Nan::New(Image::constructor)->HasInstance(obj)) {
+  if (obj->InstanceOf(Nan::GetCurrentContext(), image_ctor).FromJust()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
@@ -1229,7 +1232,7 @@ NAN_METHOD(Context2d::DrawImage) {
     surface = img->surface();
 
   // Canvas
-  } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
+  } else if (obj->InstanceOf(Nan::GetCurrentContext(), canvas_ctor).FromJust()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
     source_w = sw = canvas->getWidth();
     source_h = sh = canvas->getHeight();
@@ -1761,7 +1764,8 @@ get_current_transform(Context2d *context) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { arr };
-  return Nan::NewInstance(context->_DOMMatrix.Get(iso), argc, argv).ToLocalChecked();
+  Local<Function> _DOMMatrix = getFromExports("CanvasRenderingContext2D_DOMMatrix").As<Function>();
+  return Nan::NewInstance(_DOMMatrix, argc, argv).ToLocalChecked();
 }
 
 /*
@@ -1799,9 +1803,10 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
   Local<Object> mat = Nan::To<Object>(value).ToLocalChecked();
+  Local<Function> _DOMMatrix = getFromExports("CanvasRenderingContext2D_DOMMatrix").As<Function>();
 
 #if NODE_MAJOR_VERSION >= 8
-  if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+  if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
     return Nan::ThrowTypeError("Expected DOMMatrix");
   }
 #endif
@@ -1843,12 +1848,14 @@ NAN_SETTER(Context2d::SetFillStyle) {
     context->_fillStyle.Reset();
     context->_setFillColor(str);
   } else if (value->IsObject()) {
+    Local<Function> canvas_ctor = getFromExports("Canvas").As<Function>();
+    Local<Function> pattern_ctor = getFromExports("CanvasPattern").As<Function>();
     Local<Object> obj = Nan::To<Object>(value).ToLocalChecked();
-    if (Nan::New(Gradient::constructor)->HasInstance(obj)) {
+    if (obj->InstanceOf(Nan::GetCurrentContext(), canvas_ctor).FromJust()) {
       context->_fillStyle.Reset(value);
       Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
       context->state->fillGradient = grad->pattern();
-    } else if (Nan::New(Pattern::constructor)->HasInstance(obj)) {
+    } else if (obj->InstanceOf(Nan::GetCurrentContext(), pattern_ctor).FromJust()) {
       context->_fillStyle.Reset(value);
       Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
       context->state->fillPattern = pattern->pattern();
@@ -1887,11 +1894,13 @@ NAN_SETTER(Context2d::SetStrokeStyle) {
     context->_setStrokeColor(str);
   } else if (value->IsObject()) {
     Local<Object> obj = Nan::To<Object>(value).ToLocalChecked();
-    if (Nan::New(Gradient::constructor)->HasInstance(obj)) {
+    Local<Function> pattern_ctor = getFromExports("CanvasPattern").As<Function>();
+    Local<Function> gradient_ctor = getFromExports("CanvasGradient").As<Function>();
+    if (obj->InstanceOf(Nan::GetCurrentContext(), gradient_ctor).FromJust()) {
       context->_strokeStyle.Reset(value);
       Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
       context->state->strokeGradient = grad->pattern();
-    } else if (Nan::New(Pattern::constructor)->HasInstance(obj)) {
+    } else if (obj->InstanceOf(Nan::GetCurrentContext(), pattern_ctor).FromJust()) {
       context->_strokeStyle.Reset(value);
       Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(obj);
       context->state->strokePattern = pattern->pattern();
@@ -2103,7 +2112,7 @@ NAN_METHOD(Context2d::CreatePattern) {
   const int argc = 2;
   Local<Value> argv[argc] = { image, repetition };
 
-  Local<Function> ctor = Nan::GetFunction(Nan::New(Pattern::constructor)).ToLocalChecked();
+  Local<Function> ctor = getFromExports("CanvasPattern").As<Function>();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
@@ -2112,8 +2121,8 @@ NAN_METHOD(Context2d::CreatePattern) {
 NAN_METHOD(Context2d::CreateLinearGradient) {
   const int argc = 4;
   Local<Value> argv[argc] = { info[0], info[1], info[2], info[3] };
+  Local<Function> ctor = getFromExports("CanvasGradient").As<Function>();
 
-  Local<Function> ctor = Nan::GetFunction(Nan::New(Gradient::constructor)).ToLocalChecked();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
@@ -2123,7 +2132,7 @@ NAN_METHOD(Context2d::CreateRadialGradient) {
   const int argc = 6;
   Local<Value> argv[argc] = { info[0], info[1], info[2], info[3], info[4], info[5] };
 
-  Local<Function> ctor = Nan::GetFunction(Nan::New(Gradient::constructor)).ToLocalChecked();
+  Local<Function> ctor = getFromExports("CanvasGradient").As<Function>();
   Local<Object> instance = Nan::NewInstance(ctor, argc, argv).ToLocalChecked();
 
   info.GetReturnValue().Set(instance);
@@ -2282,7 +2291,8 @@ NAN_METHOD(Context2d::SetTransform) {
 
     #if NODE_MAJOR_VERSION >= 8
       Local<Context> ctx = Nan::GetCurrentContext();
-      if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+      Local<Function> _DOMMatrix = getFromExports("CanvasRenderingContext2D_DOMMatrix").As<Function>();
+      if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
         return Nan::ThrowTypeError("Expected DOMMatrix");
       }
     #endif
@@ -2540,7 +2550,6 @@ NAN_GETTER(Context2d::GetFont) {
 NAN_SETTER(Context2d::SetFont) {
   if (!value->IsString()) return;
 
-  Isolate *iso = Isolate::GetCurrent();
   Local<Context> ctx = Nan::GetCurrentContext();
 
   Local<String> str = Nan::To<String>(value).ToLocalChecked();
@@ -2548,8 +2557,9 @@ NAN_SETTER(Context2d::SetFont) {
 
   const int argc = 1;
   Local<Value> argv[argc] = { value };
+  Local<Function> _parseFont = getFromExports("CanvasRenderingContext2D_parseFont").As<Function>();
 
-  Local<Value> mparsed = Nan::Call(_parseFont.Get(iso), ctx->Global(), argc, argv).ToLocalChecked();
+  Local<Value> mparsed = Nan::Call(_parseFont, ctx->Global(), argc, argv).ToLocalChecked();
   // parseFont returns undefined for invalid CSS font strings
   if (mparsed->IsUndefined()) return;
   Local<Object> font = Nan::To<Object>(mparsed).ToLocalChecked();

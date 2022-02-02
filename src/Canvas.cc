@@ -38,8 +38,6 @@
 using namespace v8;
 using namespace std;
 
-Nan::Persistent<FunctionTemplate> Canvas::constructor;
-
 std::vector<FontFace> font_face_list;
 
 /*
@@ -52,7 +50,6 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Canvas").ToLocalChecked());
 

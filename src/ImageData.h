@@ -8,7 +8,6 @@
 
 class ImageData: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetWidth);

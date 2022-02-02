@@ -2,15 +2,13 @@
 
 #include "CanvasPattern.h"
 
+#include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
 
 using namespace v8;
 
 const cairo_user_data_key_t *pattern_repeat_key;
-
-Nan::Persistent<FunctionTemplate> Pattern::constructor;
-Nan::Persistent<Function> Pattern::_DOMMatrix;
 
 /*
  * Initialize CanvasPattern.
@@ -22,7 +20,6 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
@@ -38,7 +35,13 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Pattern::SaveExternalModules) {
-  _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
+  Local<String> DOMMatrixName = Nan::New<String>("CanvasPattern_DOMMatrix").ToLocalChecked();
+  Local<Object> exports = Nan::Get(Nan::GetCurrentContext()->Global(), Nan::New<String>("__node_canvas").ToLocalChecked())
+    .ToLocalChecked()
+    .As<Object>();
+
+  Nan::Set(exports, DOMMatrixName, Nan::To<Function>(info[0]).ToLocalChecked());
+  // _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*
@@ -53,9 +56,11 @@ NAN_METHOD(Pattern::New) {
   cairo_surface_t *surface;
 
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
+  Local<Function> canvas_ctor = getFromExports("Canvas").As<Function>();
+  Local<Function> image_ctor = getFromExports("Image").As<Function>();
 
   // Image
-  if (Nan::New(Image::constructor)->HasInstance(obj)) {
+  if (obj->InstanceOf(Nan::GetCurrentContext(), image_ctor).FromJust()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
@@ -63,7 +68,7 @@ NAN_METHOD(Pattern::New) {
     surface = img->surface();
 
   // Canvas
-  } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
+  } else if (obj->InstanceOf(Nan::GetCurrentContext(), canvas_ctor).FromJust()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
     surface = canvas->surface();
   // Invalid
@@ -92,7 +97,8 @@ NAN_METHOD(Pattern::SetTransform) {
   Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
 
 #if NODE_MAJOR_VERSION >= 8
-  if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+  Local<Function> _DOMMatrix = getFromExports("CanvasPattern_DOMMatrix").As<Function>();
+  if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
     return Nan::ThrowTypeError("Expected DOMMatrix");
   }
 #endif

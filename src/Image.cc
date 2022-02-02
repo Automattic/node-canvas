@@ -43,8 +43,6 @@ typedef struct {
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> Image::constructor;
-
 /*
  * Initialize Image.
  */
@@ -54,7 +52,6 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::HandleScope scope;
 
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Image::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
@@ -186,7 +183,8 @@ NAN_SETTER(Image::SetHeight) {
  */
 
 NAN_METHOD(Image::GetSource){
-  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+  Local<Function> ctor = getFromExports("Image").As<Function>();
+  if (!info.This()->InstanceOf(Nan::GetCurrentContext(), ctor).FromJust()) {
     // #1534
     Nan::ThrowTypeError("Method Image.GetSource called on incompatible receiver");
     return;
@@ -231,7 +229,8 @@ Image::clearData() {
  */
 
 NAN_METHOD(Image::SetSource){
-  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+  Local<Function> ctor = getFromExports("Image").As<Function>();
+  if (!info.This()->InstanceOf(Nan::GetCurrentContext(), ctor).FromJust()) {
     // #1534
     Nan::ThrowTypeError("Method Image.SetSource called on incompatible receiver");
     return;

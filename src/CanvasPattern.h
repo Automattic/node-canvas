@@ -21,8 +21,6 @@ extern const cairo_user_data_key_t *pattern_repeat_key;
 
 class Pattern: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static Nan::Persistent<v8::Function> _DOMMatrix;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_METHOD(SaveExternalModules);

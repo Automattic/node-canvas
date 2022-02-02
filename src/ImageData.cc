@@ -6,8 +6,6 @@
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> ImageData::constructor;
-
 /*
  * Initialize ImageData.
  */
@@ -18,7 +16,6 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New);
-  constructor.Reset(ctor);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("ImageData").ToLocalChecked());
 
