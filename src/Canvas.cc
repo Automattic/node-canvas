@@ -113,9 +113,19 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+    Local<Object> backends_obj = getFromExports("Backends").As<Object>();
+    Local<Function> image_backend = Nan::Get(Nan::GetCurrentContext(), Nan::New<String>(ImageBackend::ctor_name).ToLocalChecked())
+      .ToLocalChecked()
+      .As<Object>();
+    Local<Function> pdf_backend = Nan::Get(Nan::GetCurrentContext(), Nan::New<String>(PdfBackend::ctor_name).ToLocalChecked())
+      .ToLocalChecked()
+      .As<Function>();
+    Local<Function> svg_backend = Nan::Get(Nan::GetCurrentContext(), Nan::New<String>(SvgBackend::ctor_name).ToLocalChecked())
+      .ToLocalChecked()
+      .As<Function>();
+    if (info[0]->InstanceOf(Nan::GetCurrentContext(), image_backend).FromJust() ||
+        info[0]->InstanceOf(Nan::GetCurrentContext(), pdf_backend).FromJust() ||
+        info[0]->InstanceOf(Nan::GetCurrentContext(), svg_backend).FromJust()) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");

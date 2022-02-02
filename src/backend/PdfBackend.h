@@ -18,7 +18,7 @@ class PdfBackend : public Backend
     ~PdfBackend();
     static Backend *construct(int width, int height);
 
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
+    static const char* ctor_name;
     static void Initialize(v8::Local<v8::Object> target);
     static NAN_METHOD(New);
 };

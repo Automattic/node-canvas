@@ -19,7 +19,7 @@ class ImageBackend : public Backend
 
     int32_t approxBytesPerPixel();
 
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
+    static const char *ctor_name;
     static void Initialize(v8::Local<v8::Object> target);
     static NAN_METHOD(New);
     const static cairo_format_t DEFAULT_FORMAT = CAIRO_FORMAT_ARGB32;

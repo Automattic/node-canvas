@@ -55,17 +55,17 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 	this->format = _format;
 }
 
-Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
+const char *ImageBackend::ctor_name = "ImageBackend";
 
 void ImageBackend::Initialize(Local<Object> target) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);
-	ImageBackend::constructor.Reset(ctor);
+
 	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	ctor->SetClassName(Nan::New<String>("ImageBackend").ToLocalChecked());
+	ctor->SetClassName(Nan::New<String>(ctor_name).ToLocalChecked());
   Nan::Set(target,
-           Nan::New<String>("ImageBackend").ToLocalChecked(),
+           Nan::New<String>(ctor_name).ToLocalChecked(),
            Nan::GetFunction(ctor).ToLocalChecked()).Check();
 }
 
