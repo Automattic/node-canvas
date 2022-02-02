@@ -9,6 +9,8 @@
 using namespace v8;
 
 const cairo_user_data_key_t *pattern_repeat_key;
+const char *Pattern::ctor_name = "CanvasPattern";
+const char *Pattern::dom_matrix_name = "CanvasPattern_DOMMatrix";
 
 /*
  * Initialize CanvasPattern.
@@ -21,12 +23,12 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
 
   // Prototype
   Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New(ctor_name).ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
   Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
 }
 
@@ -56,8 +58,8 @@ NAN_METHOD(Pattern::New) {
   cairo_surface_t *surface;
 
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
-  Local<Function> canvas_ctor = getFromExports("Canvas").As<Function>();
-  Local<Function> image_ctor = getFromExports("Image").As<Function>();
+  Local<Function> canvas_ctor = getFromExports(Canvas::ctor_name).As<Function>();
+  Local<Function> image_ctor = getFromExports(Image::ctor_name).As<Function>();
 
   // Image
   if (obj->InstanceOf(Nan::GetCurrentContext(), image_ctor).FromJust()) {
@@ -97,7 +99,7 @@ NAN_METHOD(Pattern::SetTransform) {
   Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
 
 #if NODE_MAJOR_VERSION >= 8
-  Local<Function> _DOMMatrix = getFromExports("CanvasPattern_DOMMatrix").As<Function>();
+  Local<Function> _DOMMatrix = getFromExports(dom_matrix_name).As<Function>();
   if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
     return Nan::ThrowTypeError("Expected DOMMatrix");
   }

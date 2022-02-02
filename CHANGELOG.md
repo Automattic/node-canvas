@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* support nodejs worker
 ### Fixed
 * Stringify CanvasGradient, CanvasPattern and ImageData like browsers do. (#1639, #1646)
 * Add missing include for `toupper`.

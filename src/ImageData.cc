@@ -6,6 +6,8 @@
 
 using namespace v8;
 
+const char *ImageData::ctor_name = "ImageData";
+
 /*
  * Initialize ImageData.
  */
@@ -17,14 +19,14 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("ImageData").ToLocalChecked());
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
   SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
   Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New(ctor_name).ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 }
 
 /*

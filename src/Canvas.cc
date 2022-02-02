@@ -38,6 +38,8 @@
 using namespace v8;
 using namespace std;
 
+const char *Canvas::ctor_name = "Canvas";
+
 std::vector<FontFace> font_face_list;
 
 /*
@@ -51,7 +53,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Canvas").ToLocalChecked());
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -80,7 +82,7 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
-           Nan::New("Canvas").ToLocalChecked(),
+           Nan::New(ctor_name).ToLocalChecked(),
            ctor->GetFunction(ctx).ToLocalChecked());
 }
 

@@ -8,6 +8,7 @@
 
 class ImageData: public Nan::ObjectWrap {
   public:
+    static const char *ctor_name;
     static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
     static NAN_METHOD(New);
     static NAN_GETTER(GetWidth);

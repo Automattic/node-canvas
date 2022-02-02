@@ -7,6 +7,8 @@
 
 using namespace v8;
 
+const char *Gradient::ctor_name = "CanvasGradient";
+
 /*
  * Initialize CanvasGradient.
  */
@@ -18,13 +20,13 @@ Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   // Constructor
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Gradient::New);
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasGradient").ToLocalChecked());
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
 
   // Prototype
   Nan::SetPrototypeMethod(ctor, "addColorStop", AddColorStop);
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
-           Nan::New("CanvasGradient").ToLocalChecked(),
+           Nan::New(ctor_name).ToLocalChecked(),
            ctor->GetFunction(ctx).ToLocalChecked());
 }
 
