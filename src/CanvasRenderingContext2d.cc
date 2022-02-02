@@ -719,7 +719,7 @@ NAN_METHOD(Context2d::SaveExternalModules) {
   Local<String> DOMMatrixName = Nan::New<String>("CanvasRenderingContext2D_DOMMatrix").ToLocalChecked();
   Local<String> parseFontName = Nan::New<String>("CanvasRenderingContext2D_parseFont").ToLocalChecked();
   Nan::Set(exports, DOMMatrixName, Nan::To<Function>(info[0]).ToLocalChecked());
-  Nan::Set(exports, parseFontName, Nan::To<Function>(info[0]).ToLocalChecked());
+  Nan::Set(exports, parseFontName, Nan::To<Function>(info[1]).ToLocalChecked());
 }
 
 /*
