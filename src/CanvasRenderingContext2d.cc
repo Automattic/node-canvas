@@ -1855,10 +1855,10 @@ NAN_SETTER(Context2d::SetFillStyle) {
     context->_fillStyle.Reset();
     context->_setFillColor(str);
   } else if (value->IsObject()) {
-    Local<FunctionTemplate> canvas_ctor_tpl = Nan::New(addon_data->canvas_ctor_tpl);
+    Local<FunctionTemplate> gradient_ctor_tpl = Nan::New(addon_data->gradient_ctor_tpl);
     Local<FunctionTemplate> pattern_ctor_tpl = Nan::New(addon_data->pattern_ctor_tpl);
     Local<Object> obj = Nan::To<Object>(value).ToLocalChecked();
-    if (canvas_ctor_tpl->HasInstance(obj)) {
+    if (gradient_ctor_tpl->HasInstance(obj)) {
       context->_fillStyle.Reset(value);
       Gradient *grad = Nan::ObjectWrap::Unwrap<Gradient>(obj);
       context->state->fillGradient = grad->pattern();
