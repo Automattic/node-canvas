@@ -14,13 +14,15 @@ const char *Gradient::ctor_name = "CanvasGradient";
  */
 
 void
-Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Gradient::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Gradient::New);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Gradient::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
   ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->gradient_ctor_tpl.Reset(ctor);
 
   // Prototype
   Nan::SetPrototypeMethod(ctor, "addColorStop", AddColorStop);
@@ -39,6 +41,7 @@ NAN_METHOD(Gradient::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
+  info.This()->SetInternalField(1, info.Data());
   // Linear
   if (4 == info.Length()) {
     Gradient *grad = new Gradient(

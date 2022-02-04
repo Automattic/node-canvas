@@ -7,6 +7,7 @@
 #include "color.h"
 #include "nan.h"
 #include <pango/pangocairo.h>
+#include "AddonData.h"
 
 typedef enum {
   TEXT_DRAW_PATHS,
@@ -62,12 +63,7 @@ class Context2d: public Nan::ObjectWrap {
     canvas_state_t *states[CANVAS_MAX_STATES];
     canvas_state_t *state;
     Context2d(Canvas *canvas);
-    static const char *ctor_name;
-    static const char *dom_matrix_name;
-    static const char *parse_font_name;
-    // static Nan::Persistent<v8::Function> _DOMMatrix;
-    // static Nan::Persistent<v8::Function> _parseFont;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_METHOD(SaveExternalModules);
     static NAN_METHOD(DrawImage);

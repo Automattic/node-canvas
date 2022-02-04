@@ -3,6 +3,7 @@
 #include <nan.h>
 #include <v8.h>
 #include <cctype>
+#include "AddonData.h"
 
 // Wrapper around Nan::SetAccessor that makes it easier to change the last
 // argument (signature). Getters/setters must be accessed only when there is
@@ -33,12 +34,12 @@ inline bool streq_casein(std::string& str1, std::string& str2) {
   });
 }
 
-inline v8::Local<v8::Value> getFromExports(const char* key)
+inline AddonData* get_data_from_if1(v8::Local<v8::Object> obj)
 {
-	v8::Local<v8::Object> exports = Nan::Get(
-			Nan::GetCurrentContext()->Global(), 
-			Nan::New<v8::String>("__node_canvas").ToLocalChecked())
-		.ToLocalChecked().As<v8::Object>();
-		
-	return Nan::Get(exports, Nan::New<v8::String>(key).ToLocalChecked()).ToLocalChecked();
+	if (obj->InternalFieldCount() < 2)
+		return nullptr;
+	if (!obj->GetInternalField(1)->IsExternal())
+		return nullptr;
+
+	return reinterpret_cast<AddonData*>(obj->GetInternalField(1).As<v8::External>()->Value());
 }

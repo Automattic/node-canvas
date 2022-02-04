@@ -13,13 +13,15 @@ const char *ImageData::ctor_name = "ImageData";
  */
 
 void
-ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageData::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
   ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->image_data_ctor_tpl.Reset(ctor);
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -116,6 +118,7 @@ NAN_METHOD(ImageData::New) {
 
   ImageData *imageData = new ImageData(reinterpret_cast<uint8_t*>(*dataPtr), width, height);
   imageData->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
   Nan::Set(info.This(), Nan::New("data").ToLocalChecked(), dataArray).Check();
   info.GetReturnValue().Set(info.This());
 }

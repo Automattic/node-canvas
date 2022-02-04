@@ -2,6 +2,7 @@
 
 #include "Backend.h"
 #include "../closure.h"
+#include "../AddonData.h"
 #include <v8.h>
 
 class SvgBackend : public Backend
@@ -19,6 +20,6 @@ class SvgBackend : public Backend
     static Backend *construct(int width, int height);
 
     static const char *ctor_name;
-    static void Initialize(v8::Local<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target, AddonData*);
     static NAN_METHOD(New);
 };

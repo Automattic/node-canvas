@@ -59,6 +59,7 @@
       'target_name': 'canvas',
       'include_dirs': ["<!(node -e \"require('nan')\")"],
       'sources': [
+        'src/AddonData.cc',
         'src/backend/Backend.cc',
         'src/backend/ImageBackend.cc',
         'src/backend/PdfBackend.cc',

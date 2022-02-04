@@ -17,19 +17,21 @@ const char *Pattern::dom_matrix_name = "CanvasPattern_DOMMatrix";
  */
 
 void
-Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
   ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->pattern_ctor_tpl.Reset(ctor);
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
 
   // Prototype
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New(ctor_name).ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
-  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
+  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules, data_holder));
 }
 
 /*
@@ -37,13 +39,9 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Pattern::SaveExternalModules) {
-  Local<String> DOMMatrixName = Nan::New<String>("CanvasPattern_DOMMatrix").ToLocalChecked();
-  Local<Object> exports = Nan::Get(Nan::GetCurrentContext()->Global(), Nan::New<String>("__node_canvas").ToLocalChecked())
-    .ToLocalChecked()
-    .As<Object>();
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
 
-  Nan::Set(exports, DOMMatrixName, Nan::To<Function>(info[0]).ToLocalChecked());
-  // _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
+  addon_data->pattern_dom_matrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*
@@ -56,13 +54,14 @@ NAN_METHOD(Pattern::New) {
   }
 
   cairo_surface_t *surface;
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
 
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
-  Local<Function> canvas_ctor = getFromExports(Canvas::ctor_name).As<Function>();
-  Local<Function> image_ctor = getFromExports(Image::ctor_name).As<Function>();
+  Local<FunctionTemplate> canvas_ctor_tpl = Nan::New(addon_data->canvas_ctor_tpl);
+  Local<FunctionTemplate> image_ctor_tpl = Nan::New(addon_data->image_ctor_tpl);
 
   // Image
-  if (obj->InstanceOf(Nan::GetCurrentContext(), image_ctor).FromJust()) {
+  if (image_ctor_tpl->HasInstance(obj)) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
@@ -70,7 +69,7 @@ NAN_METHOD(Pattern::New) {
     surface = img->surface();
 
   // Canvas
-  } else if (obj->InstanceOf(Nan::GetCurrentContext(), canvas_ctor).FromJust()) {
+  } else if (canvas_ctor_tpl->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
     surface = canvas->surface();
   // Invalid
@@ -87,6 +86,7 @@ NAN_METHOD(Pattern::New) {
   }
   Pattern *pattern = new Pattern(surface, repeat);
   pattern->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
   info.GetReturnValue().Set(info.This());
 }
 
@@ -94,12 +94,13 @@ NAN_METHOD(Pattern::New) {
  * Set the pattern-space to user-space transform.
  */
 NAN_METHOD(Pattern::SetTransform) {
+  AddonData *addon_data = get_data_from_if1(info.This());
   Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
   Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
 
 #if NODE_MAJOR_VERSION >= 8
-  Local<Function> _DOMMatrix = getFromExports(dom_matrix_name).As<Function>();
+  Local<Function> _DOMMatrix = Nan::New(addon_data->context2d_dom_matrix);
   if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
     return Nan::ThrowTypeError("Expected DOMMatrix");
   }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Backend.h"
+#include "../AddonData.h"
 #include <v8.h>
 
 class ImageBackend : public Backend
@@ -20,7 +21,7 @@ class ImageBackend : public Backend
     int32_t approxBytesPerPixel();
 
     static const char *ctor_name;
-    static void Initialize(v8::Local<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target, AddonData*);
     static NAN_METHOD(New);
     const static cairo_format_t DEFAULT_FORMAT = CAIRO_FORMAT_ARGB32;
 };

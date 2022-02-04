@@ -40,20 +40,20 @@ using namespace std;
 
 const char *Canvas::ctor_name = "Canvas";
 
-std::vector<FontFace> font_face_list;
-
 /*
  * Initialize Canvas.
  */
 
 void
-Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData* addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
   ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->canvas_ctor_tpl.Reset(ctor);
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -95,6 +95,7 @@ NAN_METHOD(Canvas::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   Backend* backend = NULL;
   if (info[0]->IsNumber()) {
     int width = Nan::To<uint32_t>(info[0]).FromMaybe(0), height = 0;
@@ -113,19 +114,12 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    Local<Object> backends_obj = getFromExports("Backends").As<Object>();
-    Local<Function> image_backend = Nan::Get(backends_obj, Nan::New<String>(ImageBackend::ctor_name).ToLocalChecked())
-      .ToLocalChecked()
-      .As<Function>();
-    Local<Function> pdf_backend = Nan::Get(backends_obj, Nan::New<String>(PdfBackend::ctor_name).ToLocalChecked())
-      .ToLocalChecked()
-      .As<Function>();
-    Local<Function> svg_backend = Nan::Get(backends_obj, Nan::New<String>(SvgBackend::ctor_name).ToLocalChecked())
-      .ToLocalChecked()
-      .As<Function>();
-    if (info[0]->InstanceOf(Nan::GetCurrentContext(), image_backend).FromJust() ||
-        info[0]->InstanceOf(Nan::GetCurrentContext(), pdf_backend).FromJust() ||
-        info[0]->InstanceOf(Nan::GetCurrentContext(), svg_backend).FromJust()) {
+    Local<FunctionTemplate> image_backend = Nan::New(addon_data->image_backend_ctor_tpl);
+    Local<FunctionTemplate> pdf_backend = Nan::New(addon_data->pdf_backend_ctor_tpl);
+    Local<FunctionTemplate> svg_backend = Nan::New(addon_data->svg_backend_ctor_tpl);
+    if (image_backend->HasInstance(info[0]) ||
+        pdf_backend->HasInstance(info[0]) ||
+        svg_backend->HasInstance(info[0])) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
@@ -142,6 +136,7 @@ NAN_METHOD(Canvas::New) {
 
   Canvas* canvas = new Canvas(backend);
   canvas->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
 
   backend->setCanvas(canvas);
 
@@ -724,6 +719,7 @@ str_value(Local<Value> val, const char *fallback, bool can_be_number) {
 }
 
 NAN_METHOD(Canvas::RegisterFont) {
+  AddonData *addon_data = get_data_from_if1(info.This());
   if (!info[0]->IsString()) {
     return Nan::ThrowError("Wrong argument type");
   } else if (!info[1]->IsObject()) {
@@ -752,11 +748,11 @@ NAN_METHOD(Canvas::RegisterFont) {
     pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
     pango_font_description_set_family(user_desc, family);
 
-    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+    auto found = std::find_if(addon_data->font_face_list.begin(), addon_data->font_face_list.end(), [&](FontFace& f) {
       return pango_font_description_equal(f.sys_desc, sys_desc);
     });
 
-    if (found != font_face_list.end()) {
+    if (found != addon_data->font_face_list.end()) {
       pango_font_description_free(found->user_desc);
       found->user_desc = user_desc;
     } else if (register_font((unsigned char *) *filePath)) {
@@ -764,7 +760,7 @@ NAN_METHOD(Canvas::RegisterFont) {
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
       strncpy((char *)face.file_path, (char *) *filePath, 1023);
-      font_face_list.push_back(face);
+      addon_data->font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
       Nan::ThrowError("Could not load font to the system's font host");
@@ -782,14 +778,15 @@ NAN_METHOD(Canvas::RegisterFont) {
 NAN_METHOD(Canvas::DeregisterAllFonts) {
   // Unload all fonts from pango to free up memory
   bool success = true;
+  AddonData* addon_data = get_data_from_if1(info.This());
   
-  std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+  std::for_each(addon_data->font_face_list.begin(), addon_data->font_face_list.end(), [&](FontFace& f) {
     if (!deregister_font( (unsigned char *)f.file_path )) success = false;
     pango_font_description_free(f.user_desc);
     pango_font_description_free(f.sys_desc);
   });
   
-  font_face_list.clear();
+  addon_data->font_face_list.clear();
   if (!success) Nan::ThrowError("Could not deregister one or more fonts");
 }
 
@@ -871,7 +868,7 @@ Canvas::GetWeightFromCSSString(const char *weight) {
  */
 
 PangoFontDescription *
-Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
+Canvas::ResolveFontDescription(const PangoFontDescription *desc, AddonData *addon_data) {
   // One of the user-specified families could map to multiple SFNT family names
   // if someone registered two different fonts under the same family name.
   // https://drafts.csswg.org/css-fonts-3/#font-style-matching
@@ -883,7 +880,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
 
   for (string family; getline(families, family, ','); ) {
     string renamed_families;
-    for (auto& ff : font_face_list) {
+    for (auto& ff : addon_data->font_face_list) {
       string pangofamily = string(pango_font_description_get_family(ff.user_desc));
       if (streq_casein(family, pangofamily)) {
         const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);

@@ -33,13 +33,14 @@ using namespace v8;
 #endif
 
 NAN_MODULE_INIT(init) {
-  Backends::Initialize(target);
-  Canvas::Initialize(target);
-  Image::Initialize(target);
-  ImageData::Initialize(target);
-  Context2d::Initialize(target);
-  Gradient::Initialize(target);
-  Pattern::Initialize(target);
+  AddonData *data = new AddonData();
+  Backends::Initialize(target, data);
+  Canvas::Initialize(target, data);
+  Image::Initialize(target, data);
+  ImageData::Initialize(target, data);
+  Context2d::Initialize(target, data);
+  Gradient::Initialize(target, data);
+  Pattern::Initialize(target, data);
 
   Nan::Set(target, Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked()).Check();
 #ifdef HAVE_JPEG
@@ -90,10 +91,6 @@ NAN_MODULE_INIT(init) {
 }
 
 NODE_MODULE_INIT()
-{
-  Local<Object> js_global = context->Global();
-
-  Nan::Set(js_global, Nan::New<String>("__node_canvas").ToLocalChecked(), exports).Check();
-  
+{ 
   init(exports);
 }

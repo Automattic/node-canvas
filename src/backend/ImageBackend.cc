@@ -57,12 +57,13 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 
 const char *ImageBackend::ctor_name = "ImageBackend";
 
-void ImageBackend::Initialize(Local<Object> target) {
+void ImageBackend::Initialize(Local<Object> target, AddonData *addon_data) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);
 
-	ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  addon_data->image_backend_ctor_tpl.Reset(ctor);
+	ctor->InstanceTemplate()->SetInternalFieldCount(2);
 	ctor->SetClassName(Nan::New<String>(ctor_name).ToLocalChecked());
   Nan::Set(target,
            Nan::New<String>(ctor_name).ToLocalChecked(),

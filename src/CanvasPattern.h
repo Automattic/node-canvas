@@ -5,6 +5,7 @@
 #include <cairo.h>
 #include <nan.h>
 #include <v8.h>
+#include "AddonData.h"
 
 /*
  * Canvas types.
@@ -23,7 +24,7 @@ class Pattern: public Nan::ObjectWrap {
   public:
     static const char *ctor_name;
     static const char *dom_matrix_name;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_METHOD(SaveExternalModules);
     static NAN_METHOD(SetTransform);

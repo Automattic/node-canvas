@@ -10,6 +10,7 @@
 #include <v8.h>
 #include <vector>
 #include <cstddef>
+#include "AddonData.h"
 
 /*
  * Maxmimum states per context.
@@ -20,16 +21,6 @@
 #define CANVAS_MAX_STATES 64
 #endif
 
-/*
- * FontFace describes a font file in terms of one PangoFontDescription that
- * will resolve to it and one that the user describes it as (like @font-face)
- */
-class FontFace {
-  public:
-    PangoFontDescription *sys_desc = nullptr;
-    PangoFontDescription *user_desc = nullptr;
-    unsigned char file_path[1024];
-};
 
 /*
  * Canvas.
@@ -38,7 +29,7 @@ class FontFace {
 class Canvas: public Nan::ObjectWrap {
   public:
     static const char *ctor_name;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_METHOD(ToBuffer);
     static NAN_GETTER(GetType);
@@ -58,7 +49,7 @@ class Canvas: public Nan::ObjectWrap {
     static void ToBufferAsyncAfter(uv_work_t *req);
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
-    static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
+    static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc, AddonData*);
 
     DLL_PUBLIC inline Backend* backend() { return _backend; }
     DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->getSurface(); }

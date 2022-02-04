@@ -44,12 +44,13 @@ cairo_surface_t* SvgBackend::recreateSurface() {
 
 const char *SvgBackend::ctor_name = "SvgBackend";
 
-void SvgBackend::Initialize(Local<Object> target) {
+void SvgBackend::Initialize(Local<Object> target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
   Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(SvgBackend::New);
 
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
+  addon_data->svg_backend_ctor_tpl.Reset(ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
   ctor->SetClassName(Nan::New<String>(ctor_name).ToLocalChecked());
   Nan::Set(target,
            Nan::New<String>(ctor_name).ToLocalChecked(),
