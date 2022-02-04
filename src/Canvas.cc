@@ -77,8 +77,8 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData* add
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
 
   // Class methods
-  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
-  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts);
+  Nan::SetMethod(ctor, "_registerFont", RegisterFont, data_holder);
+  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts, data_holder);
 
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
@@ -719,7 +719,7 @@ str_value(Local<Value> val, const char *fallback, bool can_be_number) {
 }
 
 NAN_METHOD(Canvas::RegisterFont) {
-  AddonData *addon_data = get_data_from_if1(info.This());
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   if (!info[0]->IsString()) {
     return Nan::ThrowError("Wrong argument type");
   } else if (!info[1]->IsObject()) {
@@ -778,7 +778,7 @@ NAN_METHOD(Canvas::RegisterFont) {
 NAN_METHOD(Canvas::DeregisterAllFonts) {
   // Unload all fonts from pango to free up memory
   bool success = true;
-  AddonData* addon_data = get_data_from_if1(info.This());
+  AddonData* addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   
   std::for_each(addon_data->font_face_list.begin(), addon_data->font_face_list.end(), [&](FontFace& f) {
     if (!deregister_font( (unsigned char *)f.file_path )) success = false;
