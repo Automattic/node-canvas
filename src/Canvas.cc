@@ -719,7 +719,6 @@ str_value(Local<Value> val, const char *fallback, bool can_be_number) {
 }
 
 NAN_METHOD(Canvas::RegisterFont) {
-  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   if (!info[0]->IsString()) {
     return Nan::ThrowError("Wrong argument type");
   } else if (!info[1]->IsObject()) {
@@ -731,6 +730,7 @@ NAN_METHOD(Canvas::RegisterFont) {
 
   if (!sys_desc) return Nan::ThrowError("Could not parse font file");
 
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   PangoFontDescription *user_desc = pango_font_description_new();
 
   // now check the attrs, there are many ways to be wrong
