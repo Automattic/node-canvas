@@ -21,6 +21,7 @@
 #include "Util.h"
 #include <vector>
 #include "node_buffer.h"
+#include "lock.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -39,6 +40,10 @@ using namespace v8;
 using namespace std;
 
 const char *Canvas::ctor_name = "Canvas";
+
+// these variables are protected by uv_rwlock;
+UVLockHandle rwlock_handle;
+std::vector<FontFace> font_face_list;
 
 /*
  * Initialize Canvas.
@@ -730,7 +735,6 @@ NAN_METHOD(Canvas::RegisterFont) {
 
   if (!sys_desc) return Nan::ThrowError("Could not parse font file");
 
-  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   PangoFontDescription *user_desc = pango_font_description_new();
 
   // now check the attrs, there are many ways to be wrong
@@ -748,11 +752,13 @@ NAN_METHOD(Canvas::RegisterFont) {
     pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
     pango_font_description_set_family(user_desc, family);
 
-    auto found = std::find_if(addon_data->font_face_list.begin(), addon_data->font_face_list.end(), [&](FontFace& f) {
+    UVLocker locker(rwlock_handle, UVLocker::LockerType::mutex);
+
+    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
       return pango_font_description_equal(f.sys_desc, sys_desc);
     });
 
-    if (found != addon_data->font_face_list.end()) {
+    if (found != font_face_list.end()) {
       pango_font_description_free(found->user_desc);
       found->user_desc = user_desc;
     } else if (register_font((unsigned char *) *filePath)) {
@@ -760,11 +766,13 @@ NAN_METHOD(Canvas::RegisterFont) {
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
       strncpy((char *)face.file_path, (char *) *filePath, 1023);
-      addon_data->font_face_list.push_back(face);
+      font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
       Nan::ThrowError("Could not load font to the system's font host");
     }
+
+    locker.clean();
   } else {
     pango_font_description_free(user_desc);
     Nan::ThrowError(GENERIC_FACE_ERROR);
@@ -778,15 +786,21 @@ NAN_METHOD(Canvas::RegisterFont) {
 NAN_METHOD(Canvas::DeregisterAllFonts) {
   // Unload all fonts from pango to free up memory
   bool success = true;
-  AddonData* addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
+
+  UVLocker locker(rwlock_handle, UVLocker::LockerType::rd);
+  auto begin = font_face_list.begin();
+  auto end = font_face_list.end();
+  locker.clean();
   
-  std::for_each(addon_data->font_face_list.begin(), addon_data->font_face_list.end(), [&](FontFace& f) {
+  std::for_each(begin, end, [&](FontFace& f) {
     if (!deregister_font( (unsigned char *)f.file_path )) success = false;
     pango_font_description_free(f.user_desc);
     pango_font_description_free(f.sys_desc);
   });
-  
-  addon_data->font_face_list.clear();
+
+  locker = UVLocker(rwlock_handle, UVLocker::LockerType::wr);
+  font_face_list.clear();
+  locker.clean();
   if (!success) Nan::ThrowError("Could not deregister one or more fonts");
 }
 
@@ -880,7 +894,8 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc, AddonData *addo
 
   for (string family; getline(families, family, ','); ) {
     string renamed_families;
-    for (auto& ff : addon_data->font_face_list) {
+    UVLocker locker(rwlock_handle, UVLocker::LockerType::rd);
+    for (auto& ff : font_face_list) {
       string pangofamily = string(pango_font_description_get_family(ff.user_desc));
       if (streq_casein(family, pangofamily)) {
         const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
@@ -899,6 +914,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc, AddonData *addo
         }
       }
     }
+    locker.clean();
 
     if (resolved_families.size()) resolved_families += ',';
     resolved_families += renamed_families.size() ? renamed_families : family;

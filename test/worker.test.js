@@ -64,7 +64,7 @@ describe("worker:Canvas", () => {
     );
     pool.run(
       {
-        path: resolve(__dirname, "../examples/pfennigFont/PfennigItalic.sfd"),
+        path: resolve(__dirname, "../examples/pfennigFont/PfennigItalic.ttf"),
         fontFamily: "pfenning_italic",
       },
       { name: "registerFont" }

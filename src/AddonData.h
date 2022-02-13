@@ -29,7 +29,6 @@ class AddonData {
     Nan::Persistent<v8::Function> context2d_dom_matrix;
     Nan::Persistent<v8::Function> context2d_parse_font;
     Nan::Persistent<v8::Function> pattern_dom_matrix;
-    std::vector<FontFace> font_face_list;
   
     AddonData();
 
