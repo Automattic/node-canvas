@@ -166,12 +166,6 @@ declare class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
 	 */
 	textDrawingMode: 'path' | 'glyph'
 
-	/** _'saturate' is non-standard._ */
-	globalCompositeOperation: 'saturate' | 'clear' | 'copy' | 'destination' | 'source-over' | 'destination-over' |
-		'source-in' | 'destination-in' | 'source-out' | 'destination-out' | 'source-atop' | 'destination-atop' |
-		'xor' | 'lighter' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge' | 'color-burn' |
-		'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity'
-
 	/** _Non-standard_. Sets the antialiasing mode. */
 	antialias: 'default' | 'gray' | 'none' | 'subpixel'
 
