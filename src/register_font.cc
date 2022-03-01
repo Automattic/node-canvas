@@ -1,5 +1,6 @@
 #include "register_font.h"
 
+#include <string>
 #include <pango/pangocairo.h>
 #include <pango/pango-fontmap.h>
 #include <pango/pango.h>
@@ -8,8 +9,10 @@
 #include <CoreText/CoreText.h>
 #elif defined(_WIN32)
 #include <windows.h>
+#include <memory>
 #else
 #include <fontconfig/fontconfig.h>
+#include <pango/pangofc-fontmap.h>
 #endif
 
 #include <ft2build.h>
@@ -32,11 +35,29 @@
 #define PREFERRED_ENCODING_ID TT_MS_ID_UNICODE_CS
 #endif
 
+// With PangoFcFontMaps (the pango font module on Linux) we're able to add a
+// hook that lets us get perfect matching. Tie the conditions for enabling that
+// feature to one variable
+#if !defined(__APPLE__) && !defined(_WIN32) && PANGO_VERSION_CHECK(1, 47, 0)
+#define PERFECT_MATCHES_ENABLED
+#endif
+
 #define IS_PREFERRED_ENC(X) \
   X.platform_id == PREFERRED_PLATFORM_ID && X.encoding_id == PREFERRED_ENCODING_ID
 
+#ifdef PERFECT_MATCHES_ENABLED
+// On Linux-like OSes using FontConfig, the PostScript name ranks higher than
+// preferred family and family name since we'll use it to get perfect font
+// matching (see fc_font_map_substitute_hook)
 #define GET_NAME_RANK(X) \
-  (IS_PREFERRED_ENC(X) ? 1 : 0) + (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
+  ((IS_PREFERRED_ENC(X) ? 1 : 0) << 2) | \
+  ((X.name_id == TT_NAME_ID_PS_NAME ? 1 : 0) << 1) | \
+  (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
+#else
+#define GET_NAME_RANK(X) \
+  ((IS_PREFERRED_ENC(X) ? 1 : 0) << 1) | \
+  (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
+#endif
 
 /*
  * Return a UTF-8 encoded string given a TrueType name buf+len
@@ -94,57 +115,49 @@ to_utf8(FT_Byte* buf, FT_UInt len, FT_UShort pid, FT_UShort eid) {
  * system, fall back to the other
  */
 
-typedef struct _NameDef {
-  const char *buf;
-  int rank; // the higher the more desirable
-} NameDef;
-
-gint
-_name_def_compare(gconstpointer a, gconstpointer b) {
-  return ((NameDef*)a)->rank > ((NameDef*)b)->rank ? -1 : 1;
-}
-
-// Some versions of GTK+ do not have this, particualrly the one we
-// currently link to in node-canvas's wiki
-void
-_free_g_list_item(gpointer data, gpointer user_data) {
-  NameDef *d = (NameDef *)data;
-  free((void *)(d->buf));
-}
-
-void
-_g_list_free_full(GList *list) {
-  g_list_foreach(list, _free_g_list_item, NULL);
-  g_list_free(list);
-}
-
 char *
 get_family_name(FT_Face face) {
   FT_SfntName name;
-  GList *list = NULL;
-  char *utf8name = NULL;
+
+  int best_rank = -1;
+  char* best_buf = NULL;
 
   for (unsigned i = 0; i < FT_Get_Sfnt_Name_Count(face); ++i) {
     FT_Get_Sfnt_Name(face, i, &name);
 
-    if (name.name_id == TT_NAME_ID_FONT_FAMILY || name.name_id == TT_NAME_ID_PREFERRED_FAMILY) {
-      char *buf = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
+    if (
+      name.name_id == TT_NAME_ID_FONT_FAMILY ||
+#ifdef PERFECT_MATCHES_ENABLED
+      name.name_id == TT_NAME_ID_PS_NAME ||
+#endif
+      name.name_id == TT_NAME_ID_PREFERRED_FAMILY
+    ) {
+      int rank = GET_NAME_RANK(name);
 
-      if (buf) {
-        NameDef *d = (NameDef*)malloc(sizeof(NameDef));
-        d->buf = (const char*)buf;
-        d->rank = GET_NAME_RANK(name);
+      if (rank > best_rank) {
+        char *buf = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
+        if (buf) {
+          best_rank = rank;
+          if (best_buf) free(best_buf);
+          best_buf = buf;
 
-        list = g_list_insert_sorted(list, (gpointer)d, _name_def_compare);
+#ifdef PERFECT_MATCHES_ENABLED
+          // Prepend an '@' to the postscript name
+          if (name.name_id == TT_NAME_ID_PS_NAME) {
+            std::string best_buf_modified = "@";
+            best_buf_modified += best_buf;
+            free(best_buf);
+            best_buf = strdup(best_buf_modified.c_str());
+          }
+#endif
+        } else {
+          free(buf);
+        }
       }
     }
   }
 
-  GList *best_def = g_list_first(list);
-  if (best_def) utf8name = (char*) strdup(((NameDef*)best_def->data)->buf);
-  if (list) _g_list_free_full(list);
-
-  return utf8name;
+  return best_buf;
 }
 
 PangoWeight
@@ -193,6 +206,41 @@ get_pango_style(FT_Long flags) {
   }
 }
 
+#ifdef _WIN32
+std::unique_ptr<wchar_t[]>
+u8ToWide(const char* str) {
+  int iBufferSize = MultiByteToWideChar(CP_UTF8, 0, str, -1, (wchar_t*)NULL, 0);
+  if(!iBufferSize){
+    return nullptr;
+  }
+  std::unique_ptr<wchar_t[]> wpBufWString = std::unique_ptr<wchar_t[]>{ new wchar_t[static_cast<size_t>(iBufferSize)] };
+  if(!MultiByteToWideChar(CP_UTF8, 0, str, -1, wpBufWString.get(), iBufferSize)){
+    return nullptr;
+  }
+  return wpBufWString;
+}
+
+static unsigned long 
+stream_read_func(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count){
+  HANDLE hFile = reinterpret_cast<HANDLE>(stream->descriptor.pointer);
+  DWORD numberOfBytesRead;
+  OVERLAPPED overlapped;
+  overlapped.Offset = offset;
+  overlapped.OffsetHigh = 0;
+  overlapped.hEvent = NULL;
+  if(!ReadFile(hFile, buffer, count, &numberOfBytesRead, &overlapped)){
+    return 0;
+  }
+  return numberOfBytesRead;
+};
+
+static void 
+stream_close_func(FT_Stream stream){
+  HANDLE hFile = reinterpret_cast<HANDLE>(stream->descriptor.pointer);
+  CloseHandle(hFile);
+}
+#endif
+
 /*
  * Return a PangoFontDescription that will resolve to the font file
  */
@@ -202,8 +250,47 @@ get_pango_font_description(unsigned char* filepath) {
   FT_Library library;
   FT_Face face;
   PangoFontDescription *desc = pango_font_description_new();
-
+#ifdef _WIN32
+  // FT_New_Face use fopen. 
+  // Unable to find the file when supplied the multibyte string path on the Windows platform and throw error "Could not parse font file".
+  // This workaround fixes this by reading the font file uses win32 wide character API.
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(!wFilepath){
+    return NULL;
+  }
+  HANDLE hFile = CreateFileW(
+        wFilepath.get(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        NULL,
+        NULL
+  );
+  if(!hFile){
+    return NULL;
+  }
+  LARGE_INTEGER liSize;
+  if(!GetFileSizeEx(hFile, &liSize)) {
+    CloseHandle(hFile);
+    return NULL;
+  }
+  FT_Open_Args args;
+  args.flags = FT_OPEN_STREAM;
+  FT_StreamRec stream;
+  stream.base = NULL;
+  stream.size = liSize.QuadPart;
+  stream.pos = 0;
+  stream.descriptor.pointer = hFile;
+  stream.read = stream_read_func;
+  stream.close = stream_close_func;
+  args.stream = &stream;
+  if (
+    !FT_Init_FreeType(&library) && 
+    !FT_Open_Face(library, &args, 0, &face)) {
+#else
   if (!FT_Init_FreeType(&library) && !FT_New_Face(library, (const char*)filepath, 0, &face)) {
+#endif
     TT_OS2 *table = (TT_OS2*)FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
     if (table) {
       char *family = get_family_name(face);
@@ -227,11 +314,25 @@ get_pango_font_description(unsigned char* filepath) {
       return desc;
     }
   }
-
   pango_font_description_free(desc);
 
   return NULL;
 }
+
+#ifdef PERFECT_MATCHES_ENABLED
+static void
+fc_font_map_substitute_hook(FcPattern *pat, gpointer data) {
+  FcChar8 *family;
+
+  for (int i = 0; FcPatternGetString(pat, FC_FAMILY, i, &family) == FcResultMatch; i++) {
+    if (family[0] == '@') {
+      FcPatternAddString(pat, FC_POSTSCRIPT_NAME, (FcChar8 *)family + 1);
+      FcPatternRemove(pat, FC_FAMILY, i);
+      i -= 1;
+    }
+  }
+}
+#endif
 
 /*
  * Register font with the OS
@@ -245,7 +346,13 @@ register_font(unsigned char *filepath) {
   CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
   success = CTFontManagerRegisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
   #elif defined(_WIN32)
-  success = AddFontResourceEx((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(wFilepath){
+    success = AddFontResourceExW(wFilepath.get(), FR_PRIVATE, 0) != 0;
+  }else{
+    success = false;
+  }
+
   #else
   success = FcConfigAppFontAddFile(FcConfigGetCurrent(), (FcChar8 *)(filepath));
   #endif
@@ -256,6 +363,12 @@ register_font(unsigned char *filepath) {
   // has the effect of registering the new font in Pango by re-looking up all
   // font families.
   pango_cairo_font_map_set_default(NULL);
+
+#ifdef PERFECT_MATCHES_ENABLED
+  PangoFontMap* map = pango_cairo_font_map_get_default();
+  PangoFcFontMap* fc_map = PANGO_FC_FONT_MAP(map);
+  pango_fc_font_map_set_default_substitute(fc_map, fc_font_map_substitute_hook, NULL, NULL);
+#endif
 
   return true;
 }
@@ -273,7 +386,12 @@ deregister_font(unsigned char *filepath) {
   CFURLRef filepathUrl = CFURLCreateFromFileSystemRepresentation(NULL, filepath, strlen((char*)filepath), false);
   success = CTFontManagerUnregisterFontsForURL(filepathUrl, kCTFontManagerScopeProcess, NULL);
   #elif defined(_WIN32)
-  success = RemoveFontResourceExA((LPCSTR)filepath, FR_PRIVATE, 0) != 0;
+  std::unique_ptr<wchar_t[]> wFilepath = u8ToWide((char*)filepath);
+  if(wFilepath){
+    success = RemoveFontResourceExW(wFilepath.get(), FR_PRIVATE, 0) != 0;
+  }else{
+    success = false;
+  }
   #else
   FcConfigAppFontClear(FcConfigGetCurrent());
   success = true;

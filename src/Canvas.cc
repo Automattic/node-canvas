@@ -706,9 +706,9 @@ NAN_METHOD(Canvas::StreamJPEGSync) {
 char *
 str_value(Local<Value> val, const char *fallback, bool can_be_number) {
   if (val->IsString() || (can_be_number && val->IsNumber())) {
-    return g_strdup(*Nan::Utf8String(val));
+    return strdup(*Nan::Utf8String(val));
   } else if (fallback) {
-    return g_strdup(fallback);
+    return strdup(fallback);
   } else {
     return NULL;
   }
@@ -765,9 +765,9 @@ NAN_METHOD(Canvas::RegisterFont) {
     Nan::ThrowError(GENERIC_FACE_ERROR);
   }
 
-  g_free(family);
-  g_free(weight);
-  g_free(style);
+  free(family);
+  free(weight);
+  free(style);
 }
 
 NAN_METHOD(Canvas::DeregisterAllFonts) {

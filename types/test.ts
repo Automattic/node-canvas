@@ -16,7 +16,6 @@ ctx.currentTransform = ctx.getTransform()
 
 ctx.quality = 'best'
 ctx.textDrawingMode = 'glyph'
-ctx.globalCompositeOperation = 'saturate'
 
 const grad: Canvas.CanvasGradient = ctx.createLinearGradient(0, 1, 2, 3)
 grad.addColorStop(0.1, 'red')

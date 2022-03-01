@@ -16,7 +16,8 @@ const {
   loadImage,
   parseFont,
   registerFont,
-  Canvas
+  Canvas,
+  deregisterAllFonts
 } = require('../')
 
 describe('Canvas', function () {
@@ -105,7 +106,12 @@ describe('Canvas', function () {
     // Minimal test to make sure nothing is thrown
     registerFont('./examples/pfennigFont/Pfennig.ttf', { family: 'Pfennig' })
     registerFont('./examples/pfennigFont/PfennigBold.ttf', { family: 'Pfennig', weight: 'bold' })
-  })
+
+    // Test to multi byte file path support
+    registerFont('./examples/pfennigFont/pfennigMultiByte🚀.ttf', { family: 'Pfennig' })
+
+    deregisterAllFonts()
+  });
 
   it('color serialization', function () {
     const canvas = createCanvas(200, 200)
