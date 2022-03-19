@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+2.9.1
+==================
+### Fixed
 * Stringify CanvasGradient, CanvasPattern and ImageData like browsers do. (#1639, #1646)
 * Add missing include for `toupper`.
 * Throw an error instead of crashing the process if `getImageData` or `putImageData` is called on a PDF or SVG canvas (#1853)
