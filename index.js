@@ -10,6 +10,7 @@ const PNGStream = require('./lib/pngstream')
 const PDFStream = require('./lib/pdfstream')
 const JPEGStream = require('./lib/jpegstream')
 const { DOMPoint, DOMMatrix } = require('./lib/DOMMatrix')
+const Path2D = require('./lib/Path2D')
 
 function createCanvas (width, height, type) {
   return new Canvas(width, height, type)
@@ -68,6 +69,7 @@ module.exports = {
   JPEGStream,
   DOMMatrix,
   DOMPoint,
+  Path2D,
 
   registerFont,
   deregisterAllFonts,
