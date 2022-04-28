@@ -42,8 +42,8 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [16]
-        canvas_tag: ["v2.9.1"] # e.g. "v2.6.1"
+        node: [18]
+        canvas_tag: ["v2.9.1", "v2.9.0", "v2.8.0", "v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
@@ -134,8 +134,8 @@ jobs:
   macOS:
     strategy:
       matrix:
-        node: [12, 14, 16, 17]
-        canvas_tag: ["v2.9.1"] # e.g. "v2.6.1"
+        node: [18]
+        canvas_tag: ["v2.9.1", "v2.9.0", "v2.8.0", "v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -205,8 +205,8 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [12, 14, 16, 17]
-        canvas_tag: ["v2.9.1"] # e.g. "v2.6.1"
+        node: [18]
+        canvas_tag: ["v2.9.1", "v2.9.0", "v2.8.0", "v2.7.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
     env:
