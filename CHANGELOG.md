@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Added ESM support.
 ### Fixed
 
 2.9.1
