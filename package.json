@@ -4,7 +4,6 @@
   "version": "2.9.1",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
-  "module": "index.mjs",
   "browser": "browser.js",
   "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net>",

@@ -55,40 +55,38 @@ function deregisterAllFonts () {
   return Canvas._deregisterAllFonts()
 }
 
-module.exports = {
-  Canvas,
-  Context2d: CanvasRenderingContext2D, // Legacy/compat export
-  CanvasRenderingContext2D,
-  CanvasGradient: bindings.CanvasGradient,
-  CanvasPattern,
-  Image,
-  ImageData: bindings.ImageData,
-  PNGStream,
-  PDFStream,
-  JPEGStream,
-  DOMMatrix,
-  DOMPoint,
+exports.Canvas = Canvas
+exports.Context2d = CanvasRenderingContext2D // Legacy/compat export
+exports.CanvasRenderingContext2D = CanvasRenderingContext2D
+exports.CanvasGradient = bindings.CanvasGradient
+exports.CanvasPattern = CanvasPattern
+exports.Image = Image
+exports.ImageData = bindings.ImageData
+exports.PNGStream = PNGStream
+exports.PDFStream = PDFStream
+exports.JPEGStream = JPEGStream
+exports.DOMMatrix = DOMMatrix
+exports.DOMPoint = DOMPoint
 
-  registerFont,
-  deregisterAllFonts,
-  parseFont,
+exports.registerFont = registerFont
+exports.deregisterAllFonts = deregisterAllFonts
+exports.parseFont = parseFont
 
-  createCanvas,
-  createImageData,
-  loadImage,
+exports.createCanvas = createCanvas
+exports.createImageData = createImageData
+exports.loadImage = loadImage
 
-  backends: bindings.Backends,
+exports.backends = bindings.Backends
 
-  /** Library version. */
-  version: packageJson.version,
-  /** Cairo version. */
-  cairoVersion: bindings.cairoVersion,
-  /** jpeglib version. */
-  jpegVersion: bindings.jpegVersion,
-  /** gif_lib version. */
-  gifVersion: bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined,
-  /** freetype version. */
-  freetypeVersion: bindings.freetypeVersion,
-  /** rsvg version. */
-  rsvgVersion: bindings.rsvgVersion
-}
+/** Library version. */
+exports.version = packageJson.version
+/** Cairo version. */
+exports.cairoVersion = bindings.cairoVersion
+/** jpeglib version. */
+exports.jpegVersion = bindings.jpegVersion
+/** gif_lib version. */
+exports.gifVersion = bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined
+/** freetype version. */
+exports.freetypeVersion = bindings.freetypeVersion
+/** rsvg version. */
+exports.rsvgVersion = bindings.rsvgVersion
