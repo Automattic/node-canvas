@@ -21,6 +21,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Compatibility with Typescript 4.6
 * Near-perfect font matching on Linux (#1572)
 * Fix multi-byte font path support on Windows.
+* Allow rebuild of this library
 
 2.9.0
 ==================
