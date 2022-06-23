@@ -10,7 +10,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
-* Fixed ESM exports.
+
+2.9.2
+==================
+### Fixed
+* All exports now work when Canvas is used in ES Modules (ESM). ([#2047](https://github.com/Automattic/node-canvas/pull/2047))
+* `npm rebuild` will now re-fetch prebuilt binaries to avoid `NODE_MODULE_VERSION` mismatch errors. ([#1982](https://github.com/Automattic/node-canvas/pull/1982))
 
 2.9.1
 ==================
