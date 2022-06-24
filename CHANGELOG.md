@@ -10,7 +10,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
-* Wrong fonts used when calling `registerFont` multiple times with the same family name (#2041)
+
+2.9.3
+==================
+### Fixed
+* Wrong fonts used when calling `registerFont` multiple times with the same family name ([#2041](https://github.com/Automattic/node-canvas/issues/2041))
 
 2.9.2
 ==================
