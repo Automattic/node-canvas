@@ -879,18 +879,21 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
       if (streq_casein(family, pangofamily)) {
         const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
         bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
+        bool better = best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc);
 
         // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
         // https://bugzilla.gnome.org/show_bug.cgi?id=762873
         if (unseen) {
           seen_families.insert(sys_desc_family_name);
-          if (renamed_families.size()) renamed_families += ',';
-          renamed_families += sys_desc_family_name;
+
+          if (better) {
+            renamed_families = string(sys_desc_family_name) + (renamed_families.size() ? "," : "") + renamed_families;
+          } else {
+            renamed_families = renamed_families + (renamed_families.size() ? "," : "") + sys_desc_family_name;
+          }
         }
 
-        if (first && (best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc))) {
-          best = ff;
-        }
+        if (first && better) best = ff;
       }
     }
 
