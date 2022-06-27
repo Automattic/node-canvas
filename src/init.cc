@@ -84,6 +84,8 @@ NAN_MODULE_INIT(init) {
   Nan::Set(target, Nan::New<String>("rsvgVersion").ToLocalChecked(), Nan::New<String>(LIBRSVG_VERSION).ToLocalChecked()).Check();
 #endif
 
+  Nan::Set(target, Nan::New<String>("pangoVersion").ToLocalChecked(), Nan::New<String>(PANGO_VERSION_STRING).ToLocalChecked()).Check();
+
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
   Nan::Set(target, Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked()).Check();
