@@ -367,6 +367,7 @@ Context2d::setFillRule(v8::Local<v8::Value> value) {
 void
 Context2d::fill(bool preserve) {
   cairo_pattern_t *new_pattern;
+  bool needsRestore = false;
   if (state->fillPattern) {
     if (state->globalAlpha < 1) {
       new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
@@ -381,10 +382,35 @@ Context2d::fill(bool preserve) {
       cairo_set_source(_context, state->fillPattern);
     }
     repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->fillPattern);
-    if (NO_REPEAT == repeat) {
+    if (repeat == NO_REPEAT) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
-    } else {
+    } else if (repeat == REPEAT) {
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+    } else {
+      cairo_save(_context);
+      cairo_path_t *savedPath = cairo_copy_path(_context);
+      cairo_surface_t *patternSurface = nullptr;
+      cairo_pattern_get_surface(cairo_get_source(_context), &patternSurface);
+
+      double width, height;
+      if (repeat == REPEAT_X) {
+        double x1, x2;
+        cairo_path_extents(_context, &x1, nullptr, &x2, nullptr);
+        width = x2 - x1;
+        height = cairo_image_surface_get_height(patternSurface);
+      } else {
+        double y1, y2;
+        cairo_path_extents(_context, nullptr, &y1, nullptr, &y2);
+        width = cairo_image_surface_get_width(patternSurface);
+        height = y2 - y1;
+      }
+      
+      cairo_new_path(_context);
+      cairo_rectangle(_context, 0, 0, width, height);
+      cairo_clip(_context);
+      cairo_append_path(_context, savedPath);
+      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+      needsRestore = true;
     }
   } else if (state->fillGradient) {
     if (state->globalAlpha < 1) {
@@ -411,6 +437,9 @@ Context2d::fill(bool preserve) {
     hasShadow()
       ? shadow(cairo_fill)
       : cairo_fill(_context);
+  }
+  if (needsRestore) {
+    cairo_restore(_context);
   }
 }
 
