@@ -471,6 +471,24 @@ tests['createPattern() with globalAlpha'] = function (ctx, done) {
   img.src = imageSrc('face.jpeg')
 }
 
+tests['createPattern() repeat-x and repeat-y'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.scale(0.1, 0.1)
+    ctx.lineStyle = 'black'
+    ctx.lineWidth = 10
+    ctx.fillStyle = ctx.createPattern(img, 'repeat-x')
+    ctx.fillRect(0, 0, 900, 900)
+    ctx.strokeRect(0, 0, 900, 900)
+    ctx.translate(1000, 1000)
+    ctx.fillStyle = ctx.createPattern(img, 'repeat-y')
+    ctx.fillRect(0, 0, 900, 900)
+    ctx.strokeRect(0, 0, 900, 900)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
 tests['createPattern() no-repeat'] = function (ctx, done) {
   const img = new Image()
   img.onload = function () {
