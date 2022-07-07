@@ -7,12 +7,12 @@ export interface PngConfig {
 	/** Specifies the ZLIB compression level. Defaults to 6. */
 	compressionLevel?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 	/**
-	 * Any bitwise combination of `PNG_FILTER_NONE`, `PNG_FITLER_SUB`,
+	 * Any bitwise combination of `PNG_FILTER_NONE`, `PNG_FILTER_SUB`,
 	 * `PNG_FILTER_UP`, `PNG_FILTER_AVG` and `PNG_FILTER_PATETH`; or one of
 	 * `PNG_ALL_FILTERS` or `PNG_NO_FILTERS` (all are properties of the canvas
 	 * instance). These specify which filters *may* be used by libpng. During
 	 * encoding, libpng will select the best filter from this list of allowed
-	 * filters. Defaults to `canvas.PNG_ALL_FITLERS`.
+	 * filters. Defaults to `canvas.PNG_ALL_FILTERS`.
 	 */
 	filters?: number
 	/**
