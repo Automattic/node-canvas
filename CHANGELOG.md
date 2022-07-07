@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Export `pangoVersion`
 ### Added
 ### Fixed
+* `rgba(r,g,b)` with no alpha should parse as opaque, not transparent. ([#2029](https://github.com/Automattic/node-canvas/issues/2029))
 
 2.9.3
 ==================
