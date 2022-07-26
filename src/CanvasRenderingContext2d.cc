@@ -409,6 +409,7 @@ Context2d::fill(bool preserve) {
       cairo_rectangle(_context, 0, 0, width, height);
       cairo_clip(_context);
       cairo_append_path(_context, savedPath);
+      cairo_path_destroy(savedPath);
       cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
       needsRestore = true;
     }
