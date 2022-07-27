@@ -14,6 +14,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * `rgba(r,g,b)` with no alpha should parse as opaque, not transparent. ([#2029](https://github.com/Automattic/node-canvas/issues/2029))
 * Typo in `PngConfig.filters` types. ([#2072](https://github.com/Automattic/node-canvas/issues/2072))
 * `createPattern()` always used "repeat" mode; now supports "repeat-x" and "repeat-y". ([#2066](https://github.com/Automattic/node-canvas/issues/2066))
+* Crashes and hangs when using non-finite values in `context.arc()`. ([#2055](https://github.com/Automattic/node-canvas/issues/2055))
 
 2.9.3
 ==================
