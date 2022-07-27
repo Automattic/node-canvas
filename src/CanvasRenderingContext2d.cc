@@ -2936,35 +2936,34 @@ NAN_METHOD(Context2d::Rect) {
 }
 
 /*
- * Adds an arc at x, y with the given radis and start/end angles.
+ * Adds an arc at x, y with the given radii and start/end angles.
  */
 
 NAN_METHOD(Context2d::Arc) {
-  if (!info[0]->IsNumber()
-    || !info[1]->IsNumber()
-    || !info[2]->IsNumber()
-    || !info[3]->IsNumber()
-    || !info[4]->IsNumber()) return;
+  double args[5];
+  if(!checkArgs(info, args, 5))
+    return;
 
-  bool anticlockwise = Nan::To<bool>(info[5]).FromMaybe(false);
+  auto x = args[0];
+  auto y = args[1];
+  auto radius = args[2];
+  auto startAngle = args[3];
+  auto endAngle = args[4];
+
+  if (radius < 0) {
+    Nan::ThrowRangeError("The radius provided is negative.");
+    return;
+  }
+
+  bool counterclockwise = Nan::To<bool>(info[5]).FromMaybe(false);
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  if (anticlockwise && M_PI * 2 != Nan::To<double>(info[4]).FromMaybe(0)) {
-    cairo_arc_negative(ctx
-      , Nan::To<double>(info[0]).FromMaybe(0)
-      , Nan::To<double>(info[1]).FromMaybe(0)
-      , Nan::To<double>(info[2]).FromMaybe(0)
-      , Nan::To<double>(info[3]).FromMaybe(0)
-      , Nan::To<double>(info[4]).FromMaybe(0));
+  if (counterclockwise && M_PI * 2 != endAngle) {
+    cairo_arc_negative(ctx, x, y, radius, startAngle, endAngle);
   } else {
-    cairo_arc(ctx
-      , Nan::To<double>(info[0]).FromMaybe(0)
-      , Nan::To<double>(info[1]).FromMaybe(0)
-      , Nan::To<double>(info[2]).FromMaybe(0)
-      , Nan::To<double>(info[3]).FromMaybe(0)
-      , Nan::To<double>(info[4]).FromMaybe(0));
+    cairo_arc(ctx, x, y, radius, startAngle, endAngle);
   }
 }
 
