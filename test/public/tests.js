@@ -146,6 +146,35 @@ tests['arc() 2'] = function (ctx) {
   }
 }
 
+tests['arc()() #1736'] = function (ctx) {
+  let centerX = 512
+  let centerY = 512
+  let startAngle = 6.283185307179586 // exactly 2pi
+  let endAngle = 7.5398223686155035
+  let innerRadius = 359.67999999999995
+  let outerRadius = 368.64
+
+  ctx.scale(0.2, 0.2)
+
+  ctx.beginPath()
+  ctx.moveTo(centerX + Math.cos(startAngle) * innerRadius, centerY + Math.sin(startAngle) * innerRadius)
+  ctx.lineTo(centerX + Math.cos(startAngle) * outerRadius, centerY + Math.sin(startAngle) * outerRadius)
+  ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle, false)
+  ctx.lineTo(centerX + Math.cos(endAngle) * innerRadius, centerY + Math.sin(endAngle) * innerRadius)
+  ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true)
+  ctx.closePath()
+  ctx.stroke()
+}
+
+tests['arc()() #1808'] = function (ctx) {
+  ctx.scale(0.5, 0.5)
+  ctx.beginPath()
+  ctx.arc(256, 256, 50, 0, 2 * Math.PI, true)
+  ctx.arc(256, 256, 25, 0, 2 * Math.PI, false)
+  ctx.closePath()
+  ctx.fill()
+}
+
 tests['arcTo()'] = function (ctx) {
   ctx.fillStyle = '#08C8EE'
   ctx.translate(-50, -50)

@@ -36,6 +36,8 @@ Nan::Persistent<FunctionTemplate> Context2d::constructor;
   double width = args[2]; \
   double height = args[3];
 
+constexpr double twoPi = M_PI * 2.;
+
 /*
  * Text baselines.
  */
@@ -2935,6 +2937,52 @@ NAN_METHOD(Context2d::Rect) {
   }
 }
 
+// Adapted from https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/modules/canvas2d/CanvasPathMethods.cpp
+static void canonicalizeAngle(double& startAngle, double& endAngle) {
+  // Make 0 <= startAngle < 2*PI
+  double newStartAngle = std::fmod(startAngle, twoPi);
+  if (newStartAngle < 0) {
+      newStartAngle += twoPi;
+      // Check for possible catastrophic cancellation in cases where
+      // newStartAngle was a tiny negative number (c.f. crbug.com/503422)
+      if (newStartAngle >= twoPi)
+          newStartAngle -= twoPi;
+  }
+  double delta = newStartAngle - startAngle;
+  startAngle = newStartAngle;
+  endAngle = endAngle + delta;
+}
+
+// Adapted from https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/modules/canvas2d/CanvasPathMethods.cpp
+static double adjustEndAngle(double startAngle, double endAngle, bool counterclockwise) {
+  double newEndAngle = endAngle;
+  /* http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-arc
+  * If the counterclockwise argument is false and endAngle-startAngle is equal to or greater than 2pi, or,
+  * if the counterclockwise argument is true and startAngle-endAngle is equal to or greater than 2pi,
+  * then the arc is the whole circumference of this ellipse, and the point at startAngle along this circle's circumference,
+  * measured in radians clockwise from the ellipse's semi-major axis, acts as both the start point and the end point.
+  */
+  if (!counterclockwise && endAngle - startAngle >= twoPi)
+    newEndAngle = startAngle + twoPi;
+  else if (counterclockwise && startAngle - endAngle >= twoPi)
+    newEndAngle = startAngle - twoPi;
+  /*
+  * Otherwise, the arc is the path along the circumference of this ellipse from the start point to the end point,
+  * going anti-clockwise if the counterclockwise argument is true, and clockwise otherwise.
+  * Since the points are on the ellipse, as opposed to being simply angles from zero,
+  * the arc can never cover an angle greater than 2pi radians.
+  */
+  /* NOTE: When startAngle = 0, endAngle = 2Pi and counterclockwise = true, the spec does not indicate clearly.
+  * We draw the entire circle, because some web sites use arc(x, y, r, 0, 2*Math.PI, true) to draw circle.
+  * We preserve backward-compatibility.
+  */
+  else if (!counterclockwise && startAngle > endAngle)
+    newEndAngle = startAngle + (twoPi - std::fmod(startAngle - endAngle, twoPi));
+  else if (counterclockwise && startAngle < endAngle)
+    newEndAngle = startAngle - (twoPi - std::fmod(endAngle - startAngle, twoPi));
+  return newEndAngle;
+}
+
 /*
  * Adds an arc at x, y with the given radii and start/end angles.
  */
@@ -2960,7 +3008,10 @@ NAN_METHOD(Context2d::Arc) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  if (counterclockwise && M_PI * 2 != endAngle) {
+  canonicalizeAngle(startAngle, endAngle);
+  endAngle = adjustEndAngle(startAngle, endAngle, counterclockwise);
+
+  if (counterclockwise) {
     cairo_arc_negative(ctx, x, y, radius, startAngle, endAngle);
   } else {
     cairo_arc(ctx, x, y, radius, startAngle, endAngle);
