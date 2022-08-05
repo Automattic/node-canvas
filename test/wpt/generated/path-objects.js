@@ -1614,7 +1614,7 @@ describe("WPT: path-objects", function () {
 		_assertPixel(canvas, 98,48, 0,255,0,255);
 	});
 
-	it.skip("2d.path.arc.nonfinite", function () {
+	it("2d.path.arc.nonfinite", function () {
 		// arc() with Infinity/NaN is ignored
 		const canvas = createCanvas(100, 50);
 		const ctx = canvas.getContext("2d");

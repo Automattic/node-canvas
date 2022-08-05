@@ -9,7 +9,6 @@ const yamlFiles = fs.readdirSync(__dirname).filter(f => f.endsWith(".yaml"));
 const SKIP_FILES = new Set("meta.yaml");
 // Tests that should be skipped (e.g. because they cause hangs or V8 crashes):
 const SKIP_TESTS = new Set([
-	"2d.path.arc.nonfinite", // https://github.com/Automattic/node-canvas/issues/2055
 	"2d.imageData.create2.negative",
 	"2d.imageData.create2.zero",
 	"2d.imageData.create2.nonfinite",
