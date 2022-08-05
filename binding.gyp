@@ -96,7 +96,8 @@
             '<(GTK_Root)/lib/glib-2.0/include'
           ],
           'defines': [
-            '_USE_MATH_DEFINES'  # for M_PI
+            '_USE_MATH_DEFINES',  # for M_PI
+            'NOMINMAX' # allow std::min/max to work
           ],
           'configurations': {
             'Debug': {

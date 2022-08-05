@@ -126,6 +126,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "strokeRect", StrokeRect);
   Nan::SetPrototypeMethod(ctor, "clearRect", ClearRect);
   Nan::SetPrototypeMethod(ctor, "rect", Rect);
+  Nan::SetPrototypeMethod(ctor, "roundRect", RoundRect);
   Nan::SetPrototypeMethod(ctor, "measureText", MeasureText);
   Nan::SetPrototypeMethod(ctor, "moveTo", MoveTo);
   Nan::SetPrototypeMethod(ctor, "lineTo", LineTo);
@@ -2935,6 +2936,179 @@ NAN_METHOD(Context2d::Rect) {
   } else {
     cairo_rectangle(ctx, x, y, width, height);
   }
+}
+
+// Draws an arc with two potentially different radii.
+inline static
+void elli_arc(cairo_t* ctx, double xc, double yc, double rx, double ry, double a1, double a2, bool clockwise=true) {
+  if (rx == 0. || ry == 0.) {
+    cairo_line_to(ctx, xc + rx, yc + ry);
+  } else {
+    cairo_save(ctx);
+    cairo_translate(ctx, xc, yc);
+    cairo_scale(ctx, rx, ry);
+    if (clockwise)
+      cairo_arc(ctx, 0., 0., 1., a1, a2);
+    else
+      cairo_arc_negative(ctx, 0., 0., 1., a2, a1);
+    cairo_restore(ctx);
+  }
+}
+
+inline static
+bool getRadius(Point<double>& p, const Local<Value>& v) {
+  if (v->IsObject()) { // 5.1 DOMPointInit
+    auto rx = Nan::Get(v.As<Object>(), Nan::New("x").ToLocalChecked()).ToLocalChecked();
+    auto ry = Nan::Get(v.As<Object>(), Nan::New("y").ToLocalChecked()).ToLocalChecked();
+    if (rx->IsNumber() && ry->IsNumber()) {
+      auto rxv = Nan::To<double>(rx).FromJust();
+      auto ryv = Nan::To<double>(ry).FromJust();
+      if (!std::isfinite(rxv) || !std::isfinite(ryv))
+        return true;
+      if (rxv < 0 || ryv < 0) {
+        Nan::ThrowRangeError("radii must be positive.");
+        return true;
+      }
+      p.x = rxv;
+      p.y = ryv;
+      return false;
+    }
+  } else if (v->IsNumber()) { // 5.2 unrestricted double
+    auto rv = Nan::To<double>(v).FromJust();
+    if (!std::isfinite(rv))
+      return true;
+    if (rv < 0) {
+      Nan::ThrowRangeError("radii must be positive.");
+      return true;
+    }
+    p.x = p.y = rv;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-roundrect
+ * x, y, w, h, [radius|[radii]]
+ */
+NAN_METHOD(Context2d::RoundRect) {
+  RECT_ARGS;
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  cairo_t *ctx = context->context();
+
+  // 4. Let normalizedRadii be an empty list
+  Point<double> normalizedRadii[4];
+  size_t nRadii = 4;
+
+  if (info[4]->IsUndefined()) {
+    for (size_t i = 0; i < 4; i++)
+      normalizedRadii[i].x = normalizedRadii[i].y = 0.;
+
+  } else if (info[4]->IsArray()) {
+    auto radiiList = info[4].As<v8::Array>();
+    nRadii = radiiList->Length();
+    if (!(nRadii >= 1 && nRadii <= 4)) {
+      Nan::ThrowRangeError("radii must be a list of one, two, three or four radii.");
+      return;
+    }
+    // 5. For each radius of radii
+    for (size_t i = 0; i < nRadii; i++) {
+      auto r = Nan::Get(radiiList, i).ToLocalChecked();
+      if (getRadius(normalizedRadii[i], r))
+        return;
+    }
+
+  } else {
+    // 2. If radii is a double, then set radii to <<radii>>
+    if (getRadius(normalizedRadii[0], info[4]))
+      return;
+    for (size_t i = 1; i < 4; i++) {
+      normalizedRadii[i].x = normalizedRadii[0].x;
+      normalizedRadii[i].y = normalizedRadii[0].y;
+    }
+  }
+
+  Point<double> upperLeft, upperRight, lowerRight, lowerLeft;
+  if (nRadii == 4) {
+    upperLeft = normalizedRadii[0];
+    upperRight = normalizedRadii[1];
+    lowerRight = normalizedRadii[2];
+    lowerLeft = normalizedRadii[3];
+  } else if (nRadii == 3) {
+    upperLeft = normalizedRadii[0];
+    upperRight = normalizedRadii[1];
+    lowerLeft = normalizedRadii[1];
+    lowerRight = normalizedRadii[2];
+  } else if (nRadii == 2) {
+    upperLeft = normalizedRadii[0];
+    lowerRight = normalizedRadii[0];
+    upperRight = normalizedRadii[1];
+    lowerLeft = normalizedRadii[1];
+  } else {
+    upperLeft = normalizedRadii[0];
+    upperRight = normalizedRadii[0];
+    lowerRight = normalizedRadii[0];
+    lowerLeft = normalizedRadii[0];
+  }
+
+  bool clockwise = true;
+  if (width < 0) {
+    clockwise = false;
+    x += width;
+    width = -width;
+    std::swap(upperLeft, upperRight);
+    std::swap(lowerLeft, lowerRight);
+  }
+
+  if (height < 0) {
+    clockwise = !clockwise;
+    y += height;
+    height = -height;
+    std::swap(upperLeft, lowerLeft);
+    std::swap(upperRight, lowerRight);
+  }
+
+  // 11. Corner curves must not overlap. Scale radii to prevent this.
+  {
+    auto top = upperLeft.x + upperRight.x;
+    auto right = upperRight.y + lowerRight.y;
+    auto bottom = lowerRight.x + lowerLeft.x;
+    auto left = upperLeft.y + lowerLeft.y;
+    auto scale = std::min({ width / top, height / right, width / bottom, height / left });
+    if (scale < 1.) {
+      upperLeft.x *= scale;
+      upperLeft.y *= scale;
+      upperRight.x *= scale;
+      upperRight.x *= scale;
+      lowerLeft.y *= scale;
+      lowerLeft.y *= scale;
+      lowerRight.y *= scale;
+      lowerRight.y *= scale;
+    }
+  }
+
+  // 12. Draw
+  cairo_move_to(ctx, x + upperLeft.x, y);
+  if (clockwise) {
+    cairo_line_to(ctx, x + width - upperRight.x, y);
+    elli_arc(ctx, x + width - upperRight.x, y + upperRight.y, upperRight.x, upperRight.y, 3. * M_PI / 2., 0.);
+    cairo_line_to(ctx, x + width, y + height - lowerRight.y);
+    elli_arc(ctx, x + width - lowerRight.x, y + height - lowerRight.y, lowerRight.x, lowerRight.y, 0, M_PI / 2.);
+    cairo_line_to(ctx, x + lowerLeft.x, y + height);
+    elli_arc(ctx, x + lowerLeft.x, y + height - lowerLeft.y, lowerLeft.x, lowerLeft.y, M_PI / 2., M_PI);
+    cairo_line_to(ctx, x, y + upperLeft.y);
+    elli_arc(ctx, x + upperLeft.x, y + upperLeft.y, upperLeft.x, upperLeft.y, M_PI, 3. * M_PI / 2.);
+  } else {
+    elli_arc(ctx, x + upperLeft.x, y + upperLeft.y, upperLeft.x, upperLeft.y, M_PI, 3. * M_PI / 2., false);
+    cairo_line_to(ctx, x, y + upperLeft.y);
+    elli_arc(ctx, x + lowerLeft.x, y + height - lowerLeft.y, lowerLeft.x, lowerLeft.y, M_PI / 2., M_PI, false);
+    cairo_line_to(ctx, x + lowerLeft.x, y + height);
+    elli_arc(ctx, x + width - lowerRight.x, y + height - lowerRight.y, lowerRight.x, lowerRight.y, 0, M_PI / 2., false);
+    cairo_line_to(ctx, x + width, y + height - lowerRight.y);
+    elli_arc(ctx, x + width - upperRight.x, y + upperRight.y, upperRight.x, upperRight.y, 3. * M_PI / 2., 0., false);
+    cairo_line_to(ctx, x + width - upperRight.x, y);
+  }
+  cairo_close_path(ctx);
 }
 
 // Adapted from https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/modules/canvas2d/CanvasPathMethods.cpp

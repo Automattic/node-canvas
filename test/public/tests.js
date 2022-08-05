@@ -95,6 +95,43 @@ tests['fillRect()'] = function (ctx) {
   render(1)
 }
 
+tests['roundRect()'] = function (ctx) {
+  if (!ctx.roundRect) {
+    ctx.textAlign = 'center'
+    ctx.fillText('roundRect() not supported', 100, 100, 190)
+    ctx.fillText('try Chrome instead', 100, 115, 190)
+    return
+  }
+  ctx.roundRect(5, 5, 60, 60, 20)
+  ctx.fillStyle = 'red'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(5, 70, 60, 60, [10, 15, 20, 25])
+  ctx.fillStyle = 'blue'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(70, 5, 60, 60, [10])
+  ctx.fillStyle = 'green'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(70, 70, 60, 60, [10, 15])
+  ctx.fillStyle = 'orange'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(135, 5, 60, 60, [10, 15, 20])
+  ctx.fillStyle = 'pink'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(135, 70, 60, 60, [{ x: 30, y: 10 }, { x: 5, y: 20 }])
+  ctx.fillStyle = 'darkseagreen'
+  ctx.fill()
+}
+
 tests['lineTo()'] = function (ctx) {
   // Filled triangle
   ctx.beginPath()

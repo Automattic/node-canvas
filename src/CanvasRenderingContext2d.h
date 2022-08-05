@@ -104,6 +104,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(StrokeRect);
     static NAN_METHOD(ClearRect);
     static NAN_METHOD(Rect);
+    static NAN_METHOD(RoundRect);
     static NAN_METHOD(Arc);
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
