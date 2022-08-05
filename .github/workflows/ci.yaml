@@ -45,7 +45,7 @@ jobs:
           Expand-Archive gtk.zip -DestinationPath "C:\GTK"
           Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
           .\libjpeg.exe /S
-          npm install -g node-gyp@latest
+          npm install -g node-gyp@8
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Install
         run: npm install --build-from-source
