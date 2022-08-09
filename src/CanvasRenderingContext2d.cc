@@ -2646,7 +2646,8 @@ NAN_GETTER(Context2d::GetTextBaseline) {
 NAN_SETTER(Context2d::SetTextBaseline) {
   if (!value->IsString()) return;
 
-  Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
+  Nan::Utf8String jsStr(Nan::To<String>(value).ToLocalChecked());
+  std::string opStr{*jsStr, static_cast<size_t>(jsStr.length())};
   const std::map<std::string, int32_t> modes = {
     {"alphabetic", 0},
     {"top", 1},
@@ -2655,7 +2656,7 @@ NAN_SETTER(Context2d::SetTextBaseline) {
     {"ideographic", 4},
     {"hanging", 5}
   };
-  auto op = modes.find(*opStr);
+  auto op = modes.find(opStr);
   if (op == modes.end()) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -2687,7 +2688,8 @@ NAN_GETTER(Context2d::GetTextAlign) {
 NAN_SETTER(Context2d::SetTextAlign) {
   if (!value->IsString()) return;
 
-  Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
+  Nan::Utf8String jsStr(Nan::To<String>(value).ToLocalChecked());
+  std::string opStr{*jsStr, static_cast<size_t>(jsStr.length())};
   const std::map<std::string, int32_t> modes = {
     {"center", 0},
     {"left", -1},
@@ -2695,7 +2697,7 @@ NAN_SETTER(Context2d::SetTextAlign) {
     {"right", 1},
     {"end", 1}
   };
-  auto op = modes.find(*opStr);
+  auto op = modes.find(opStr);
   if (op == modes.end()) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
