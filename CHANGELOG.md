@@ -16,6 +16,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * `createPattern()` always used "repeat" mode; now supports "repeat-x" and "repeat-y". ([#2066](https://github.com/Automattic/node-canvas/issues/2066))
 * Crashes and hangs when using non-finite values in `context.arc()`. ([#2055](https://github.com/Automattic/node-canvas/issues/2055))
 * Incorrect `context.arc()` geometry logic for full ellipses. ([#1808](https://github.com/Automattic/node-canvas/issues/1808), ([#1736](https://github.com/Automattic/node-canvas/issues/1736)))
+* Added missing `deregisterAllFonts` to the Typescript declaration file ([#2096](https://github.com/Automattic/node-canvas/pull/2096))
 
 2.9.3
 ==================

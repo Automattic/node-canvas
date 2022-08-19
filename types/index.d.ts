@@ -300,6 +300,11 @@ export function loadImage(src: string|Buffer, options?: any): Promise<Image>
  */
 export function registerFont(path: string, fontFace: {family: string, weight?: string, style?: string}): void
 
+/**
+ * Unloads all fonts
+ */
+export function deregisterAllFonts(): void;
+
 /** This class must not be constructed directly; use `canvas.createPNGStream()`. */
 export class PNGStream extends Readable {}
 /** This class must not be constructed directly; use `canvas.createJPEGStream()`. */
