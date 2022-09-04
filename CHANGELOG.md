@@ -8,8 +8,13 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
-* Export `pangoVersion`
 ### Added
+### Fixed
+
+2.10.0
+==================
+### Added
+* Export `pangoVersion`
 * [`ctx.roundRect()`](https://developer.chrome.com/blog/canvas2d/#round-rect)
 ### Fixed
 * `rgba(r,g,b)` with no alpha should parse as opaque, not transparent. ([#2029](https://github.com/Automattic/node-canvas/issues/2029))
