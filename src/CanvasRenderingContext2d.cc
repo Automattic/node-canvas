@@ -2591,6 +2591,8 @@ NAN_SETTER(Context2d::SetFont) {
   double size = Nan::To<double>(Nan::Get(font, Nan::New("size").ToLocalChecked()).ToLocalChecked()).FromMaybe(0);
   Nan::Utf8String unit(Nan::Get(font, Nan::New("unit").ToLocalChecked()).ToLocalChecked());
   Nan::Utf8String family(Nan::Get(font, Nan::New("family").ToLocalChecked()).ToLocalChecked());
+  Local<String> canonicalDescription =
+    Nan::To<String>(Nan::Get(font, Nan::New("canonicalDescription").ToLocalChecked()).ToLocalChecked()).ToLocalChecked();
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
@@ -2619,7 +2621,7 @@ NAN_SETTER(Context2d::SetFont) {
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
 
-  context->_font.Reset(value);
+  context->_font.Reset(canonicalDescription);
 }
 
 /*
