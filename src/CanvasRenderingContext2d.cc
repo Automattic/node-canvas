@@ -2748,7 +2748,7 @@ NAN_METHOD(Context2d::MeasureText) {
   double x_offset;
   switch (context->state->textAlignment) {
     case 0: // center
-      x_offset = logical_rect.width / 2;
+      x_offset = logical_rect.width / 2.;
       break;
     case 1: // right
       x_offset = logical_rect.width;
@@ -2766,10 +2766,10 @@ NAN_METHOD(Context2d::MeasureText) {
            Nan::New<Number>(logical_rect.width)).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxLeft").ToLocalChecked(),
-           Nan::New<Number>(x_offset - PANGO_LBEARING(ink_rect))).Check();
+           Nan::New<Number>(PANGO_LBEARING(ink_rect) + x_offset)).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxRight").ToLocalChecked(),
-           Nan::New<Number>(x_offset + PANGO_RBEARING(ink_rect))).Check();
+           Nan::New<Number>(PANGO_RBEARING(ink_rect) - x_offset)).Check();
   Nan::Set(obj,
            Nan::New<String>("actualBoundingBoxAscent").ToLocalChecked(),
            Nan::New<Number>(y_offset + PANGO_ASCENT(ink_rect))).Check();

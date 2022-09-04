@@ -2658,7 +2658,8 @@ tests['measureText()'] = function (ctx) {
     const metrics = ctx.measureText(text)
     ctx.strokeStyle = 'blue'
     ctx.strokeRect(
-      x - metrics.actualBoundingBoxLeft + 0.5,
+      // positive numbers for actualBoundingBoxLeft indicate a distance going left
+      x + metrics.actualBoundingBoxLeft + 0.5,
       y - metrics.actualBoundingBoxAscent + 0.5,
       metrics.width,
       metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
@@ -2677,8 +2678,19 @@ tests['measureText()'] = function (ctx) {
   drawWithBBox('Alphabet bottom', 20, 90)
 
   ctx.textBaseline = 'alphabetic'
+  ctx.save()
   ctx.rotate(Math.PI / 8)
   drawWithBBox('Alphabet', 50, 100)
+  ctx.restore()
+
+  ctx.textAlign = 'center'
+  drawWithBBox('Centered', 100, 195)
+
+  ctx.textAlign = 'left'
+  drawWithBBox('Left', 10, 195)
+
+  ctx.textAlign = 'right'
+  drawWithBBox('right', 195, 195)
 }
 
 tests['image sampling (#1084)'] = function (ctx, done) {

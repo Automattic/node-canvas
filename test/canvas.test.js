@@ -20,6 +20,11 @@ const {
   deregisterAllFonts
 } = require('../')
 
+function assertApprox(actual, expected, tol) {
+  assert(Math.abs(expected - actual) <= tol,
+    "Expected " + actual + " to be " + expected + " +/- " + tol);
+}
+
 describe('Canvas', function () {
   // Run with --expose-gc and uncomment this line to help find memory problems:
   // afterEach(gc);
@@ -946,19 +951,45 @@ describe('Canvas', function () {
       let metrics = ctx.measureText('Alphabet')
       // Actual value depends on font library version. Have observed values
       // between 0 and 0.769.
-      assert.ok(metrics.alphabeticBaseline >= 0 && metrics.alphabeticBaseline <= 1)
+      assertApprox(metrics.alphabeticBaseline, 0.5, 0.5)
       // Positive = going up from the baseline
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // Positive = going down from the baseline
-      assert.ok(metrics.actualBoundingBoxDescent > 0) // ~4-5
+      assertApprox(metrics.actualBoundingBoxDescent, 5, 2)
 
       ctx.textBaseline = 'bottom'
       metrics = ctx.measureText('Alphabet')
       assert.strictEqual(ctx.textBaseline, 'bottom')
-      assert.ok(metrics.alphabeticBaseline > 0) // ~4-5
+      assertApprox(metrics.alphabeticBaseline, 5, 2)
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // On the baseline or slightly above
       assert.ok(metrics.actualBoundingBoxDescent <= 0)
+    })
+
+    it('actualBoundingBox is correct for left, center and right alignment (#1909)', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+
+      // positive actualBoundingBoxLeft indicates a distance going left from the
+      // given alignment point.
+
+      // positive actualBoundingBoxRight indicates a distance going right from
+      // the given alignment point.
+
+      ctx.textAlign = 'left'
+      const lm = ctx.measureText('aaaa')
+      assertApprox(lm.actualBoundingBoxLeft, -1, 6)
+      assertApprox(lm.actualBoundingBoxRight, 21, 6)
+
+      ctx.textAlign = 'center'
+      const cm = ctx.measureText('aaaa')
+      assertApprox(cm.actualBoundingBoxLeft, 9, 6)
+      assertApprox(cm.actualBoundingBoxRight, 11, 6)
+      
+      ctx.textAlign = 'right'
+      const rm = ctx.measureText('aaaa')
+      assertApprox(rm.actualBoundingBoxLeft, 19, 6)
+      assertApprox(rm.actualBoundingBoxRight, 1, 6)
     })
   })
 
