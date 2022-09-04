@@ -25,7 +25,8 @@
         'HAVE_JPEG',
         'HAVE_RSVG',
         'HAVE_BOOLEAN', # or jmorecfg.h tries to define it
-        '_USE_MATH_DEFINES' # for M_PI
+        '_USE_MATH_DEFINES', # for M_PI
+        'NOMINMAX' # allow std::min/max to work
       ],
       'libraries': [
         'D:/a/_temp/msys64/mingw64/lib/libcairo-2.lib',
