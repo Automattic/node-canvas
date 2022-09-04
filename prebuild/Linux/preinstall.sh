@@ -3,6 +3,8 @@
 
 git clone git://anongit.gentoo.org/proj/pax-utils.git
 cd pax-utils
+# the last commit before they changed from make to meson
+git checkout d9f65269d7182ef1d313e3b87bcea37e45958561
 PATH=$PATH:$PWD
 make
 cd ..
