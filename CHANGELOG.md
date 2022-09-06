@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` when `textAlign='center'` or `'right'` ([#1909](https://github.com/Automattic/node-canvas/issues/1909))
 
 2.10.0
 ==================
