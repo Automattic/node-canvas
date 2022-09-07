@@ -10,8 +10,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+2.10.1
+==================
+### Fixed
 * Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` when `textAlign='center'` or `'right'` ([#1909](https://github.com/Automattic/node-canvas/issues/1909))
-* Fix `rgba(r,g,b,0)` with alpha to 0 should parse as transparent, not opaque.
+* Fix `rgba(r,g,b,0)` with alpha to 0 should parse as transparent, not opaque. ([#2110](https://github.com/Automattic/node-canvas/pull/2110))
 
 2.10.0
 ==================
