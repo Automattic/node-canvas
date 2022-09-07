@@ -210,6 +210,9 @@ describe('Canvas', function () {
     ctx.fillStyle = 'rgba(255, 250, 255)';
     assert.equal('#fffaff', ctx.fillStyle);
 
+    ctx.fillStyle = 'rgba(124, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
+
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
@@ -985,7 +988,7 @@ describe('Canvas', function () {
       const cm = ctx.measureText('aaaa')
       assertApprox(cm.actualBoundingBoxLeft, 9, 6)
       assertApprox(cm.actualBoundingBoxRight, 11, 6)
-      
+
       ctx.textAlign = 'right'
       const rm = ctx.measureText('aaaa')
       assertApprox(rm.actualBoundingBoxLeft, 19, 6)
