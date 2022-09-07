@@ -228,7 +228,10 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
     if (*str >= '1' && *str <= '9') { \
       NAME = 1; \
     } else { \
-      if ('0' == *str) ++str; \
+      if ('0' == *str) { \
+        NAME = 0; \
+        ++str; \
+      } \
       if ('.' == *str) { \
         ++str; \
         NAME = 0; \
