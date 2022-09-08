@@ -34,17 +34,19 @@ cairo_surface_t* PdfBackend::recreateSurface() {
 }
 
 
-Nan::Persistent<FunctionTemplate> PdfBackend::constructor;
+const char *PdfBackend::ctor_name = "PdfBackend";
 
-void PdfBackend::Initialize(Local<Object> target) {
+void PdfBackend::Initialize(Local<Object> target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(PdfBackend::New);
-  PdfBackend::constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New<String>("PdfBackend").ToLocalChecked());
+  Local<External> data_holder = Nan::New<External>(addon_data);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(PdfBackend::New, data_holder);
+
+  addon_data->pdf_backend_ctor_tpl.Reset(ctor);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
+  ctor->SetClassName(Nan::New<String>(ctor_name).ToLocalChecked());
   Nan::Set(target,
-           Nan::New<String>("PdfBackend").ToLocalChecked(),
+           Nan::New<String>(ctor_name).ToLocalChecked(),
            Nan::GetFunction(ctor).ToLocalChecked()).Check();
 }
 

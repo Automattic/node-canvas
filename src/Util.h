@@ -3,6 +3,7 @@
 #include <nan.h>
 #include <v8.h>
 #include <cctype>
+#include "AddonData.h"
 
 // Wrapper around Nan::SetAccessor that makes it easier to change the last
 // argument (signature). Getters/setters must be accessed only when there is
@@ -31,4 +32,14 @@ inline bool streq_casein(std::string& str1, std::string& str2) {
   return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(), [](char& c1, char& c2) {
     return c1 == c2 || std::toupper(c1) == std::toupper(c2);
   });
+}
+
+inline AddonData* get_data_from_if1(v8::Local<v8::Object> obj)
+{
+	if (obj->InternalFieldCount() < 2)
+		return nullptr;
+	if (!obj->GetInternalField(1)->IsExternal())
+		return nullptr;
+
+	return reinterpret_cast<AddonData*>(obj->GetInternalField(1).As<v8::External>()->Value());
 }

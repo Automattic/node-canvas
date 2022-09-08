@@ -21,6 +21,7 @@
 #include "Util.h"
 #include <vector>
 #include "node_buffer.h"
+#include "lock.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -38,8 +39,10 @@
 using namespace v8;
 using namespace std;
 
-Nan::Persistent<FunctionTemplate> Canvas::constructor;
+const char *Canvas::ctor_name = "Canvas";
 
+// these variables are protected by uv_rwlock;
+UVLockHandle rwlock_handle;
 std::vector<FontFace> font_face_list;
 
 /*
@@ -47,14 +50,15 @@ std::vector<FontFace> font_face_list;
  */
 
 void
-Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData* addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New);
-  constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Canvas").ToLocalChecked());
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->canvas_ctor_tpl.Reset(ctor);
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -78,12 +82,12 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
 
   // Class methods
-  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
-  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts);
+  Nan::SetMethod(ctor, "_registerFont", RegisterFont, data_holder);
+  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts, data_holder);
 
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target,
-           Nan::New("Canvas").ToLocalChecked(),
+           Nan::New(ctor_name).ToLocalChecked(),
            ctor->GetFunction(ctx).ToLocalChecked());
 }
 
@@ -96,6 +100,7 @@ NAN_METHOD(Canvas::New) {
     return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
   }
 
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
   Backend* backend = NULL;
   if (info[0]->IsNumber()) {
     int width = Nan::To<uint32_t>(info[0]).FromMaybe(0), height = 0;
@@ -114,9 +119,12 @@ NAN_METHOD(Canvas::New) {
       backend = new ImageBackend(width, height);
   }
   else if (info[0]->IsObject()) {
-    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
+    Local<FunctionTemplate> image_backend = Nan::New(addon_data->image_backend_ctor_tpl);
+    Local<FunctionTemplate> pdf_backend = Nan::New(addon_data->pdf_backend_ctor_tpl);
+    Local<FunctionTemplate> svg_backend = Nan::New(addon_data->svg_backend_ctor_tpl);
+    if (image_backend->HasInstance(info[0]) ||
+        pdf_backend->HasInstance(info[0]) ||
+        svg_backend->HasInstance(info[0])) {
       backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
     }else{
       return Nan::ThrowTypeError("Invalid arguments");
@@ -133,6 +141,7 @@ NAN_METHOD(Canvas::New) {
 
   Canvas* canvas = new Canvas(backend);
   canvas->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
 
   backend->setCanvas(canvas);
 
@@ -743,6 +752,8 @@ NAN_METHOD(Canvas::RegisterFont) {
     pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
     pango_font_description_set_family(user_desc, family);
 
+    UVLocker locker(rwlock_handle, UVLocker::LockerType::mutex);
+
     auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
       return pango_font_description_equal(f.sys_desc, sys_desc);
     });
@@ -760,6 +771,8 @@ NAN_METHOD(Canvas::RegisterFont) {
       pango_font_description_free(user_desc);
       Nan::ThrowError("Could not load font to the system's font host");
     }
+
+    locker.clean();
   } else {
     pango_font_description_free(user_desc);
     Nan::ThrowError(GENERIC_FACE_ERROR);
@@ -773,14 +786,21 @@ NAN_METHOD(Canvas::RegisterFont) {
 NAN_METHOD(Canvas::DeregisterAllFonts) {
   // Unload all fonts from pango to free up memory
   bool success = true;
+
+  UVLocker locker(rwlock_handle, UVLocker::LockerType::rd);
+  auto begin = font_face_list.begin();
+  auto end = font_face_list.end();
+  locker.clean();
   
-  std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
+  std::for_each(begin, end, [&](FontFace& f) {
     if (!deregister_font( (unsigned char *)f.file_path )) success = false;
     pango_font_description_free(f.user_desc);
     pango_font_description_free(f.sys_desc);
   });
-  
+
+  locker = UVLocker(rwlock_handle, UVLocker::LockerType::wr);
   font_face_list.clear();
+  locker.clean();
   if (!success) Nan::ThrowError("Could not deregister one or more fonts");
 }
 
@@ -862,7 +882,7 @@ Canvas::GetWeightFromCSSString(const char *weight) {
  */
 
 PangoFontDescription *
-Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
+Canvas::ResolveFontDescription(const PangoFontDescription *desc, AddonData *addon_data) {
   // One of the user-specified families could map to multiple SFNT family names
   // if someone registered two different fonts under the same family name.
   // https://drafts.csswg.org/css-fonts-3/#font-style-matching
@@ -874,6 +894,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
 
   for (string family; getline(families, family, ','); ) {
     string renamed_families;
+    UVLocker locker(rwlock_handle, UVLocker::LockerType::rd);
     for (auto& ff : font_face_list) {
       string pangofamily = string(pango_font_description_get_family(ff.user_desc));
       if (streq_casein(family, pangofamily)) {
@@ -896,6 +917,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
         if (first && better) best = ff;
       }
     }
+    locker.clean();
 
     if (resolved_families.size()) resolved_families += ',';
     resolved_families += renamed_families.size() ? renamed_families : family;

@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* support nodejs worker
 ### Fixed
 
 2.10.1

@@ -21,6 +21,7 @@ void Backend::init(const Nan::FunctionCallbackInfo<v8::Value> &info) {
   Backend *backend = construct(width, height);
 
   backend->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
   info.GetReturnValue().Set(info.This());
 }
 

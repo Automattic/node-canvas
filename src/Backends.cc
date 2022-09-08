@@ -6,13 +6,13 @@
 
 using namespace v8;
 
-void Backends::Initialize(Local<Object> target) {
+void Backends::Initialize(Local<Object> target, AddonData* data) {
   Nan::HandleScope scope;
 
   Local<Object> obj = Nan::New<Object>();
-  ImageBackend::Initialize(obj);
-  PdfBackend::Initialize(obj);
-  SvgBackend::Initialize(obj);
+  ImageBackend::Initialize(obj, data);
+  PdfBackend::Initialize(obj, data);
+  SvgBackend::Initialize(obj, data);
 
   Nan::Set(target, Nan::New<String>("Backends").ToLocalChecked(), obj).Check();
 }

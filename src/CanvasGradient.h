@@ -5,11 +5,13 @@
 #include <nan.h>
 #include <v8.h>
 #include <cairo.h>
+#include <map>
+#include "AddonData.h"
 
 class Gradient: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static const char *ctor_name;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_METHOD(AddColorStop);
     Gradient(double x0, double y0, double x1, double y1);

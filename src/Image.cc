@@ -43,20 +43,21 @@ typedef struct {
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> Image::constructor;
+const char *Image::ctor_name = "Image";
 
 /*
  * Initialize Image.
  */
 
 void
-Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Image::New);
-  constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Image").ToLocalChecked());
+  Local<External> data_holder = Nan::New<External>(addon_data);
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Image::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->image_ctor_tpl.Reset(ctor);
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
@@ -90,6 +91,7 @@ NAN_METHOD(Image::New) {
   Image *img = new Image;
   img->data_mode = DATA_IMAGE;
   img->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
   Nan::Set(info.This(), Nan::New("onload").ToLocalChecked(), Nan::Null()).Check();
   Nan::Set(info.This(), Nan::New("onerror").ToLocalChecked(), Nan::Null()).Check();
   info.GetReturnValue().Set(info.This());
@@ -186,7 +188,9 @@ NAN_SETTER(Image::SetHeight) {
  */
 
 NAN_METHOD(Image::GetSource){
-  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+  AddonData *addon_data = get_data_from_if1(info.This());
+  Local<FunctionTemplate> ctor_tpl = Nan::New(addon_data->image_ctor_tpl);
+  if (!ctor_tpl->HasInstance(info.This())) {
     // #1534
     Nan::ThrowTypeError("Method Image.GetSource called on incompatible receiver");
     return;
@@ -231,7 +235,9 @@ Image::clearData() {
  */
 
 NAN_METHOD(Image::SetSource){
-  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+  AddonData *addon_data = get_data_from_if1(info.This());
+  Local<FunctionTemplate> ctor_tpl = Nan::New(addon_data->image_ctor_tpl);
+  if (!ctor_tpl->HasInstance(info.This())) {
     // #1534
     Nan::ThrowTypeError("Method Image.SetSource called on incompatible receiver");
     return;

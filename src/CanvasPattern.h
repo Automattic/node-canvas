@@ -5,6 +5,7 @@
 #include <cairo.h>
 #include <nan.h>
 #include <v8.h>
+#include "AddonData.h"
 
 /*
  * Canvas types.
@@ -21,9 +22,9 @@ extern const cairo_user_data_key_t *pattern_repeat_key;
 
 class Pattern: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static Nan::Persistent<v8::Function> _DOMMatrix;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static const char *ctor_name;
+    static const char *dom_matrix_name;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_METHOD(SaveExternalModules);
     static NAN_METHOD(SetTransform);

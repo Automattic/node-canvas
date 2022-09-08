@@ -2,6 +2,7 @@
 
 #include "Backend.h"
 #include "../closure.h"
+#include "../AddonData.h"
 #include <v8.h>
 
 class PdfBackend : public Backend
@@ -18,7 +19,7 @@ class PdfBackend : public Backend
     ~PdfBackend();
     static Backend *construct(int width, int height);
 
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Local<v8::Object> target);
+    static const char* ctor_name;
+    static void Initialize(v8::Local<v8::Object> target, AddonData*);
     static NAN_METHOD(New);
 };

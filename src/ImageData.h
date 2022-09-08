@@ -5,11 +5,12 @@
 #include <nan.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <v8.h>
+#include "AddonData.h"
 
 class ImageData: public Nan::ObjectWrap {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static const char *ctor_name;
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData*);
     static NAN_METHOD(New);
     static NAN_GETTER(GetWidth);
     static NAN_GETTER(GetHeight);

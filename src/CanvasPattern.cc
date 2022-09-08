@@ -2,35 +2,36 @@
 
 #include "CanvasPattern.h"
 
+#include "Util.h"
 #include "Canvas.h"
 #include "Image.h"
 
 using namespace v8;
 
 const cairo_user_data_key_t *pattern_repeat_key;
-
-Nan::Persistent<FunctionTemplate> Pattern::constructor;
-Nan::Persistent<Function> Pattern::_DOMMatrix;
+const char *Pattern::ctor_name = "CanvasPattern";
+const char *Pattern::dom_matrix_name = "CanvasPattern_DOMMatrix";
 
 /*
  * Initialize CanvasPattern.
  */
 
 void
-Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target, AddonData *addon_data) {
   Nan::HandleScope scope;
 
+  Local<External> data_holder = Nan::New<External>(addon_data);
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New);
-  constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("CanvasPattern").ToLocalChecked());
+  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Pattern::New, data_holder);
+  ctor->InstanceTemplate()->SetInternalFieldCount(2);
+  ctor->SetClassName(Nan::New(ctor_name).ToLocalChecked());
+  addon_data->pattern_ctor_tpl.Reset(ctor);
   Nan::SetPrototypeMethod(ctor, "setTransform", SetTransform);
 
   // Prototype
   Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target, Nan::New("CanvasPattern").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
-  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
+  Nan::Set(target, Nan::New(ctor_name).ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
+  Nan::Set(target, Nan::New("CanvasPatternInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules, data_holder));
 }
 
 /*
@@ -38,7 +39,9 @@ Pattern::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
  */
 
 NAN_METHOD(Pattern::SaveExternalModules) {
-  _DOMMatrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
+
+  addon_data->pattern_dom_matrix.Reset(Nan::To<Function>(info[0]).ToLocalChecked());
 }
 
 /*
@@ -51,11 +54,14 @@ NAN_METHOD(Pattern::New) {
   }
 
   cairo_surface_t *surface;
+  AddonData *addon_data = reinterpret_cast<AddonData*>(info.Data().As<External>()->Value());
 
   Local<Object> obj = Nan::To<Object>(info[0]).ToLocalChecked();
+  Local<FunctionTemplate> canvas_ctor_tpl = Nan::New(addon_data->canvas_ctor_tpl);
+  Local<FunctionTemplate> image_ctor_tpl = Nan::New(addon_data->image_ctor_tpl);
 
   // Image
-  if (Nan::New(Image::constructor)->HasInstance(obj)) {
+  if (image_ctor_tpl->HasInstance(obj)) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(obj);
     if (!img->isComplete()) {
       return Nan::ThrowError("Image given has not completed loading");
@@ -63,7 +69,7 @@ NAN_METHOD(Pattern::New) {
     surface = img->surface();
 
   // Canvas
-  } else if (Nan::New(Canvas::constructor)->HasInstance(obj)) {
+  } else if (canvas_ctor_tpl->HasInstance(obj)) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(obj);
     surface = canvas->surface();
   // Invalid
@@ -80,6 +86,7 @@ NAN_METHOD(Pattern::New) {
   }
   Pattern *pattern = new Pattern(surface, repeat);
   pattern->Wrap(info.This());
+  info.This()->SetInternalField(1, info.Data());
   info.GetReturnValue().Set(info.This());
 }
 
@@ -87,12 +94,14 @@ NAN_METHOD(Pattern::New) {
  * Set the pattern-space to user-space transform.
  */
 NAN_METHOD(Pattern::SetTransform) {
+  AddonData *addon_data = get_data_from_if1(info.This());
   Pattern *pattern = Nan::ObjectWrap::Unwrap<Pattern>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
   Local<Object> mat = Nan::To<Object>(info[0]).ToLocalChecked();
 
 #if NODE_MAJOR_VERSION >= 8
-  if (!mat->InstanceOf(ctx, _DOMMatrix.Get(Isolate::GetCurrent())).ToChecked()) {
+  Local<Function> _DOMMatrix = Nan::New(addon_data->context2d_dom_matrix);
+  if (!mat->InstanceOf(ctx, _DOMMatrix).ToChecked()) {
     return Nan::ThrowTypeError("Expected DOMMatrix");
   }
 #endif
