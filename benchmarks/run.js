@@ -64,6 +64,18 @@ function done (benchmark, times, start, isAsync) {
 
 // node-canvas
 
+bm('save/restore', function () {
+  for (let i = 0; i < 1000; i++) {
+    const max = i & 15
+    for (let j = 0; j < max; ++j) {
+      ctx.save()
+    }
+    for (let j = 0; j < max; ++j) {
+      ctx.restore()
+    }
+  }
+})
+
 bm('fillStyle= name', function () {
   for (let i = 0; i < 10000; i++) {
     ctx.fillStyle = '#fefefe'

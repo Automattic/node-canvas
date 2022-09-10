@@ -8,8 +8,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Improve performance and memory usage of `save()`/`restore()`.
+* `save()`/`restore()` no longer have a maximum depth (previously 64 states).
 ### Added
 ### Fixed
+* `textBaseline` and `textAlign` were not saved/restored by `save()`/`restore()`. ([#1936](https://github.com/Automattic/node-canvas/issues/2029))
 
 2.10.1
 ==================

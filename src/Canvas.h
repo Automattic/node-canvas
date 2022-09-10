@@ -12,15 +12,6 @@
 #include <cstddef>
 
 /*
- * Maxmimum states per context.
- * TODO: remove/resize
- */
-
-#ifndef CANVAS_MAX_STATES
-#define CANVAS_MAX_STATES 64
-#endif
-
-/*
  * FontFace describes a font file in terms of one PangoFontDescription that
  * will resolve to it and one that the user describes it as (like @font-face)
  */
@@ -29,6 +20,29 @@ class FontFace {
     PangoFontDescription *sys_desc = nullptr;
     PangoFontDescription *user_desc = nullptr;
     unsigned char file_path[1024];
+};
+
+enum text_baseline_t : uint8_t {
+  TEXT_BASELINE_ALPHABETIC = 0,
+  TEXT_BASELINE_TOP = 1,
+  TEXT_BASELINE_BOTTOM = 2,
+  TEXT_BASELINE_MIDDLE = 3,
+  TEXT_BASELINE_IDEOGRAPHIC = 4,
+  TEXT_BASELINE_HANGING = 5
+};
+
+enum text_align_t : int8_t {
+  TEXT_ALIGNMENT_LEFT = -1,
+  TEXT_ALIGNMENT_CENTER = 0,
+  TEXT_ALIGNMENT_RIGHT = 1,
+  // Currently same as LEFT and RIGHT without RTL support:
+  TEXT_ALIGNMENT_START = -2,
+  TEXT_ALIGNMENT_END = 2
+};
+
+enum canvas_draw_mode_t : uint8_t {
+  TEXT_DRAW_PATHS,
+  TEXT_DRAW_GLYPHS
 };
 
 /*
