@@ -91,7 +91,7 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
 * [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
 * [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
-* [CanvasRenderingContext2D#globalCompositeOperator = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperator--saturate)
+* [CanvasRenderingContext2D#globalCompositeOperation = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperation--saturate)
 * [CanvasRenderingContext2D#antialias](#canvasrenderingcontext2dantialias)
 
 ### createCanvas()

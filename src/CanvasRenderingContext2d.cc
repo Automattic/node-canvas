@@ -39,19 +39,6 @@ Nan::Persistent<FunctionTemplate> Context2d::constructor;
 constexpr double twoPi = M_PI * 2.;
 
 /*
- * Text baselines.
- */
-
-enum {
-    TEXT_BASELINE_ALPHABETIC
-  , TEXT_BASELINE_TOP
-  , TEXT_BASELINE_BOTTOM
-  , TEXT_BASELINE_MIDDLE
-  , TEXT_BASELINE_IDEOGRAPHIC
-  , TEXT_BASELINE_HANGING
-};
-
-/*
  * Simple helper macro for a rather verbose function call.
  */
 
@@ -178,9 +165,9 @@ Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = canvas->createCairoContext();
   _layout = pango_cairo_create_layout(_context);
-  state = states[stateno = 0] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-
-  resetState(true);
+  states.emplace();
+  state = &states.top();
+  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -188,10 +175,6 @@ Context2d::Context2d(Canvas *canvas) {
  */
 
 Context2d::~Context2d() {
-  while(stateno >= 0) {
-    pango_font_description_free(states[stateno]->fontDescription);
-    free(states[stateno--]);
-  }
   g_object_unref(_layout);
   cairo_destroy(_context);
   _resetPersistentHandles();
@@ -201,32 +184,10 @@ Context2d::~Context2d() {
  * Reset canvas state.
  */
 
-void Context2d::resetState(bool init) {
-  if (!init) {
-    pango_font_description_free(state->fontDescription);
-  }
-
-  state->shadowBlur = 0;
-  state->shadowOffsetX = state->shadowOffsetY = 0;
-  state->globalAlpha = 1;
-  state->textAlignment = -1;
-  state->fillPattern = nullptr;
-  state->strokePattern = nullptr;
-  state->fillGradient = nullptr;
-  state->strokeGradient = nullptr;
-  state->textBaseline = TEXT_BASELINE_ALPHABETIC;
-  rgba_t transparent = { 0, 0, 0, 1 };
-  rgba_t transparent_black = { 0, 0, 0, 0 };
-  state->fill = transparent;
-  state->stroke = transparent;
-  state->shadow = transparent_black;
-  state->patternQuality = CAIRO_FILTER_GOOD;
-  state->imageSmoothingEnabled = true;
-  state->textDrawingMode = TEXT_DRAW_PATHS;
-  state->fontDescription = pango_font_description_from_string("sans");
-  pango_font_description_set_absolute_size(state->fontDescription, 10 * PANGO_SCALE);
+void Context2d::resetState() {
+  states.pop();
+  states.emplace();
   pango_layout_set_font_description(_layout, state->fontDescription);
-
   _resetPersistentHandles();
 }
 
@@ -234,8 +195,6 @@ void Context2d::_resetPersistentHandles() {
   _fillStyle.Reset();
   _strokeStyle.Reset();
   _font.Reset();
-  _textBaseline.Reset();
-  _textAlign.Reset();
 }
 
 /*
@@ -244,13 +203,9 @@ void Context2d::_resetPersistentHandles() {
 
 void
 Context2d::save() {
-  if (stateno < CANVAS_MAX_STATES) {
-    cairo_save(_context);
-    states[++stateno] = (canvas_state_t *) malloc(sizeof(canvas_state_t));
-    memcpy(states[stateno], state, sizeof(canvas_state_t));
-    states[stateno]->fontDescription = pango_font_description_copy(states[stateno-1]->fontDescription);
-    state = states[stateno];
-  }
+  cairo_save(_context);
+  states.emplace(states.top());
+  state = &states.top();
 }
 
 /*
@@ -259,12 +214,10 @@ Context2d::save() {
 
 void
 Context2d::restore() {
-  if (stateno > 0) {
+  if (states.size() > 1) {
     cairo_restore(_context);
-    pango_font_description_free(states[stateno]->fontDescription);
-    free(states[stateno]);
-    states[stateno] = NULL;
-    state = states[--stateno];
+    states.pop();
+    state = &states.top();
     pango_layout_set_font_description(_layout, state->fontDescription);
   }
 }
@@ -2496,13 +2449,12 @@ Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
 
   switch (state->textAlignment) {
-    // center
-    case 0:
+    case TEXT_ALIGNMENT_CENTER:
       pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width / 2;
       break;
-    // right
-    case 1:
+    case TEXT_ALIGNMENT_END:
+    case TEXT_ALIGNMENT_RIGHT:
       pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width;
       break;
@@ -2629,15 +2581,17 @@ NAN_SETTER(Context2d::SetFont) {
 
 NAN_GETTER(Context2d::GetTextBaseline) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Isolate *iso = Isolate::GetCurrent();
-  Local<Value> font;
-
-  if (context->_textBaseline.IsEmpty())
-    font = Nan::New("alphabetic").ToLocalChecked();
-  else
-    font = context->_textBaseline.Get(iso);
-
-  info.GetReturnValue().Set(font);
+  const char* baseline;
+  switch (context->state->textBaseline) {
+    default:
+    case TEXT_BASELINE_ALPHABETIC: baseline = "alphabetic"; break;
+    case TEXT_BASELINE_TOP: baseline = "top"; break;
+    case TEXT_BASELINE_BOTTOM: baseline = "bottom"; break;
+    case TEXT_BASELINE_MIDDLE: baseline = "middle"; break;
+    case TEXT_BASELINE_IDEOGRAPHIC: baseline = "ideographic"; break;
+    case TEXT_BASELINE_HANGING: baseline = "hanging"; break;
+  }
+  info.GetReturnValue().Set(Nan::New(baseline).ToLocalChecked());
 }
 
 /*
@@ -2648,20 +2602,19 @@ NAN_SETTER(Context2d::SetTextBaseline) {
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
-  const std::map<std::string, int32_t> modes = {
-    {"alphabetic", 0},
-    {"top", 1},
-    {"bottom", 2},
-    {"middle", 3},
-    {"ideographic", 4},
-    {"hanging", 5}
+  const std::map<std::string, text_baseline_t> modes = {
+    {"alphabetic", TEXT_BASELINE_ALPHABETIC},
+    {"top", TEXT_BASELINE_TOP},
+    {"bottom", TEXT_BASELINE_BOTTOM},
+    {"middle", TEXT_BASELINE_MIDDLE},
+    {"ideographic", TEXT_BASELINE_IDEOGRAPHIC},
+    {"hanging", TEXT_BASELINE_HANGING}
   };
   auto op = modes.find(*opStr);
   if (op == modes.end()) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->textBaseline = op->second;
-  context->_textBaseline.Reset(value);
 }
 
 /*
@@ -2670,15 +2623,17 @@ NAN_SETTER(Context2d::SetTextBaseline) {
 
 NAN_GETTER(Context2d::GetTextAlign) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Isolate *iso = Isolate::GetCurrent();
-  Local<Value> font;
-
-  if (context->_textAlign.IsEmpty())
-    font = Nan::New("start").ToLocalChecked();
-  else
-    font = context->_textAlign.Get(iso);
-
-  info.GetReturnValue().Set(font);
+  const char* align;
+  switch (context->state->textAlignment) {
+    default:
+    // TODO the default is supposed to be "start"
+    case TEXT_ALIGNMENT_LEFT: align = "left"; break;
+    case TEXT_ALIGNMENT_START: align = "start"; break;
+    case TEXT_ALIGNMENT_CENTER: align = "center"; break;
+    case TEXT_ALIGNMENT_RIGHT: align = "right"; break;
+    case TEXT_ALIGNMENT_END: align = "end"; break;
+  }
+  info.GetReturnValue().Set(Nan::New(align).ToLocalChecked());
 }
 
 /*
@@ -2689,19 +2644,18 @@ NAN_SETTER(Context2d::SetTextAlign) {
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
-  const std::map<std::string, int32_t> modes = {
-    {"center", 0},
-    {"left", -1},
-    {"start", -1},
-    {"right", 1},
-    {"end", 1}
+  const std::map<std::string, text_align_t> modes = {
+    {"center", TEXT_ALIGNMENT_CENTER},
+    {"left", TEXT_ALIGNMENT_LEFT},
+    {"start", TEXT_ALIGNMENT_START},
+    {"right", TEXT_ALIGNMENT_RIGHT},
+    {"end", TEXT_ALIGNMENT_END}
   };
   auto op = modes.find(*opStr);
   if (op == modes.end()) return;
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->textAlignment = op->second;
-  context->_textAlign.Reset(value);
 }
 
 /*
@@ -2747,13 +2701,16 @@ NAN_METHOD(Context2d::MeasureText) {
 
   double x_offset;
   switch (context->state->textAlignment) {
-    case 0: // center
+    case TEXT_ALIGNMENT_CENTER:
       x_offset = logical_rect.width / 2.;
       break;
-    case 1: // right
+    case TEXT_ALIGNMENT_END:
+    case TEXT_ALIGNMENT_RIGHT:
       x_offset = logical_rect.width;
       break;
-    default: // left
+    case TEXT_ALIGNMENT_START:
+    case TEXT_ALIGNMENT_LEFT:
+    default:
       x_offset = 0.0;
   }
 
