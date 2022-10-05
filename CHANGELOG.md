@@ -16,6 +16,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Add Node.js v20 to CI. (#2237)
 ### Added
 * Added string tags to support class detection
+* Implemented `OffscreenCanvas.prototype.convertToBlob()` - Depends on global `Blob` support. (NodeJS 18+) (#1845)
 ### Fixed
 * Fix a case of use-after-free. (#2229)
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
