@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 16]
+        node: [10, 12, 14, 16, 18]
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        node: [10, 12, 14, 16]
+        node: [10, 12, 14, 16, 18]
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -57,7 +57,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 16]
+        node: [10, 12, 14, 16, 18]
     steps:
       - uses: actions/setup-node@v3
         with:
