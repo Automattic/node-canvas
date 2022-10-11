@@ -2,8 +2,6 @@
 
 #include "ImageData.h"
 
-#include "Util.h"
-
 using namespace v8;
 
 Nan::Persistent<FunctionTemplate> ImageData::constructor;
@@ -22,10 +20,12 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("ImageData").ToLocalChecked());
 
-  // Prototype
-  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
+  // link getters and setter to the object property
+  Local<ObjectTemplate> inst = ctor->InstanceTemplate();
+
+  Nan::SetAccessor(inst, Nan::New("width").ToLocalChecked(), GetWidth, NULL);
+  Nan::SetAccessor(inst, Nan::New("height").ToLocalChecked(), GetHeight, NULL);
+
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 }

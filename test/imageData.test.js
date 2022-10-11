@@ -8,9 +8,6 @@ const {ImageData} = require('../')
 const assert = require('assert')
 
 describe('ImageData', function () {
-  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
-    assert.throws(function () { ImageData.prototype.width }, /incompatible receiver/)
-  })
 
   it('stringifies as [object ImageData]', function () {
     const imageData = createImageData(2, 3)

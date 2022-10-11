@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <node_buffer.h>
-#include "Util.h"
 
 /* Cairo limit:
   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
@@ -58,14 +57,15 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
-  // Prototype
-  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
-  SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
+  // link getters and setter to the object property
+  Local<ObjectTemplate> inst = ctor->InstanceTemplate();
+  Nan::SetAccessor(inst, Nan::New("complete").ToLocalChecked(), GetComplete, NULL);
+  Nan::SetAccessor(inst, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(inst, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);;
+  Nan::SetAccessor(inst, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL);
+  Nan::SetAccessor(inst, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL);
+  Nan::SetAccessor(inst, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
+
 
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));

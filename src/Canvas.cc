@@ -57,17 +57,21 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->SetClassName(Nan::New("Canvas").ToLocalChecked());
 
   // Prototype
-  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  Local<ObjectTemplate> proto = ctor->InstanceTemplate();
   Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
   Nan::SetPrototypeMethod(ctor, "streamPNGSync", StreamPNGSync);
   Nan::SetPrototypeMethod(ctor, "streamPDFSync", StreamPDFSync);
 #ifdef HAVE_JPEG
   Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
-  SetProtoAccessor(proto, Nan::New("type").ToLocalChecked(), GetType, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
+
+  // link getters and setter to the object property
+  Local<ObjectTemplate> inst = ctor->InstanceTemplate();
+
+  Nan::SetAccessor(inst, Nan::New("type").ToLocalChecked(), GetType, NULL);
+  Nan::SetAccessor(inst, Nan::New("stride").ToLocalChecked(), GetStride, NULL);
+  Nan::SetAccessor(inst, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(inst, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
 
   Nan::SetTemplate(proto, "PNG_NO_FILTERS", Nan::New<Uint32>(PNG_NO_FILTERS));
   Nan::SetTemplate(proto, "PNG_FILTER_NONE", Nan::New<Uint32>(PNG_FILTER_NONE));
