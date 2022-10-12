@@ -29,9 +29,12 @@ describe('Canvas', function () {
   // Run with --expose-gc and uncomment this line to help find memory problems:
   // afterEach(gc);
 
-  it('Instance and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
+  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
     const c = new Canvas(10, 10)
+    assert.throws(function () { Canvas.prototype.width }, /incompatible receiver/)
+    assert(!c.hasOwnProperty('width'))
     assert('width' in c)
+    assert('width' in Canvas.prototype)
   })
 
   it('.parseFont()', function () {

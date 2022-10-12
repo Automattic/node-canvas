@@ -57,15 +57,14 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->InstanceTemplate()->SetInternalFieldCount(1);
   ctor->SetClassName(Nan::New("Image").ToLocalChecked());
 
-  // link getters and setter to the object property
-  Local<ObjectTemplate> inst = ctor->InstanceTemplate();
-  Nan::SetAccessor(inst, Nan::New("complete").ToLocalChecked(), GetComplete, NULL);
-  Nan::SetAccessor(inst, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
-  Nan::SetAccessor(inst, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);;
-  Nan::SetAccessor(inst, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL);
-  Nan::SetAccessor(inst, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL);
-  Nan::SetAccessor(inst, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
-
+  // Prototype
+  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
+  Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
+  Nan::SetAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth);
+  Nan::SetAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight);
+  Nan::SetAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
 
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
@@ -108,6 +107,10 @@ NAN_GETTER(Image::GetComplete) {
  */
 
 NAN_GETTER(Image::GetDataMode) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetDataMode called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->data_mode));
 }
@@ -117,6 +120,10 @@ NAN_GETTER(Image::GetDataMode) {
  */
 
 NAN_SETTER(Image::SetDataMode) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.SetDataMode called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     int mode = Nan::To<uint32_t>(value).FromMaybe(0);
@@ -129,6 +136,10 @@ NAN_SETTER(Image::SetDataMode) {
  */
 
 NAN_GETTER(Image::GetNaturalWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetNaturalWidth called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->naturalWidth));
 }
@@ -138,6 +149,10 @@ NAN_GETTER(Image::GetNaturalWidth) {
  */
 
 NAN_GETTER(Image::GetWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetWidth called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
@@ -147,6 +162,10 @@ NAN_GETTER(Image::GetWidth) {
  */
 
 NAN_SETTER(Image::SetWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.SetWidth called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->width = Nan::To<uint32_t>(value).FromMaybe(0);
@@ -158,6 +177,10 @@ NAN_SETTER(Image::SetWidth) {
  */
 
 NAN_GETTER(Image::GetNaturalHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetNaturalHeight called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->naturalHeight));
 }
@@ -167,6 +190,10 @@ NAN_GETTER(Image::GetNaturalHeight) {
  */
 
 NAN_GETTER(Image::GetHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetHeight called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->height));
 }
@@ -175,6 +202,11 @@ NAN_GETTER(Image::GetHeight) {
  */
 
 NAN_SETTER(Image::SetHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    // #1534
+    Nan::ThrowTypeError("Method Image.SetHeight called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->height = Nan::To<uint32_t>(value).FromMaybe(0);

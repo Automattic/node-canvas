@@ -101,6 +101,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   ctor->SetClassName(Nan::New("CanvasRenderingContext2D").ToLocalChecked());
 
   // Prototype
+  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
   Nan::SetPrototypeMethod(ctor, "drawImage", DrawImage);
   Nan::SetPrototypeMethod(ctor, "putImageData", PutImageData);
   Nan::SetPrototypeMethod(ctor, "getImageData", GetImageData);
@@ -141,31 +142,29 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "createPattern", CreatePattern);
   Nan::SetPrototypeMethod(ctor, "createLinearGradient", CreateLinearGradient);
   Nan::SetPrototypeMethod(ctor, "createRadialGradient", CreateRadialGradient);
-
-  Local<ObjectTemplate> inst = ctor->InstanceTemplate();
-  Nan::SetAccessor(inst, Nan::New("pixelFormat").ToLocalChecked(), GetFormat, NULL);
-  Nan::SetAccessor(inst, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality);
-  Nan::SetAccessor(inst, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled);
-  Nan::SetAccessor(inst, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
-  Nan::SetAccessor(inst, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha);
-  Nan::SetAccessor(inst, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor);
-  Nan::SetAccessor(inst, Nan::New("miterLimit").ToLocalChecked(), GetMiterLimit, SetMiterLimit);
-  Nan::SetAccessor(inst, Nan::New("lineWidth").ToLocalChecked(), GetLineWidth, SetLineWidth);
-  Nan::SetAccessor(inst, Nan::New("lineCap").ToLocalChecked(), GetLineCap, SetLineCap);
-  Nan::SetAccessor(inst, Nan::New("lineJoin").ToLocalChecked(), GetLineJoin, SetLineJoin);
-  Nan::SetAccessor(inst, Nan::New("lineDashOffset").ToLocalChecked(), GetLineDashOffset, SetLineDashOffset);
-  Nan::SetAccessor(inst, Nan::New("shadowOffsetX").ToLocalChecked(), GetShadowOffsetX, SetShadowOffsetX);
-  Nan::SetAccessor(inst, Nan::New("shadowOffsetY").ToLocalChecked(), GetShadowOffsetY, SetShadowOffsetY);
-  Nan::SetAccessor(inst, Nan::New("shadowBlur").ToLocalChecked(), GetShadowBlur, SetShadowBlur);
-  Nan::SetAccessor(inst, Nan::New("antialias").ToLocalChecked(), GetAntiAlias, SetAntiAlias);
-  Nan::SetAccessor(inst, Nan::New("textDrawingMode").ToLocalChecked(), GetTextDrawingMode, SetTextDrawingMode);
-  Nan::SetAccessor(inst, Nan::New("quality").ToLocalChecked(), GetQuality, SetQuality);
-  Nan::SetAccessor(inst, Nan::New("currentTransform").ToLocalChecked(), GetCurrentTransform, SetCurrentTransform);
-  Nan::SetAccessor(inst, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle);
-  Nan::SetAccessor(inst, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle);
-  Nan::SetAccessor(inst, Nan::New("font").ToLocalChecked(), GetFont, SetFont);
-  Nan::SetAccessor(inst, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline);
-  Nan::SetAccessor(inst, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign);
+  Nan::SetAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat);
+  Nan::SetAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality);
+  Nan::SetAccessor(proto, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled);
+  Nan::SetAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
+  Nan::SetAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha);
+  Nan::SetAccessor(proto, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor);
+  Nan::SetAccessor(proto, Nan::New("miterLimit").ToLocalChecked(), GetMiterLimit, SetMiterLimit);
+  Nan::SetAccessor(proto, Nan::New("lineWidth").ToLocalChecked(), GetLineWidth, SetLineWidth);
+  Nan::SetAccessor(proto, Nan::New("lineCap").ToLocalChecked(), GetLineCap, SetLineCap);
+  Nan::SetAccessor(proto, Nan::New("lineJoin").ToLocalChecked(), GetLineJoin, SetLineJoin);
+  Nan::SetAccessor(proto, Nan::New("lineDashOffset").ToLocalChecked(), GetLineDashOffset, SetLineDashOffset);
+  Nan::SetAccessor(proto, Nan::New("shadowOffsetX").ToLocalChecked(), GetShadowOffsetX, SetShadowOffsetX);
+  Nan::SetAccessor(proto, Nan::New("shadowOffsetY").ToLocalChecked(), GetShadowOffsetY, SetShadowOffsetY);
+  Nan::SetAccessor(proto, Nan::New("shadowBlur").ToLocalChecked(), GetShadowBlur, SetShadowBlur);
+  Nan::SetAccessor(proto, Nan::New("antialias").ToLocalChecked(), GetAntiAlias, SetAntiAlias);
+  Nan::SetAccessor(proto, Nan::New("textDrawingMode").ToLocalChecked(), GetTextDrawingMode, SetTextDrawingMode);
+  Nan::SetAccessor(proto, Nan::New("quality").ToLocalChecked(), GetQuality, SetQuality);
+  Nan::SetAccessor(proto, Nan::New("currentTransform").ToLocalChecked(), GetCurrentTransform, SetCurrentTransform);
+  Nan::SetAccessor(proto, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle);
+  Nan::SetAccessor(proto, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle);
+  Nan::SetAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont);
+  Nan::SetAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline);
+  Nan::SetAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign);
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
   Nan::Set(target, Nan::New("CanvasRenderingContext2dInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
@@ -761,6 +760,10 @@ NAN_METHOD(Context2d::SaveExternalModules) {
 */
 
 NAN_GETTER(Context2d::GetFormat) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetFormat called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   std::string pixelFormatString;
   switch (context->canvas()->backend()->getFormat()) {
@@ -1440,6 +1443,10 @@ NAN_METHOD(Context2d::DrawImage) {
  */
 
 NAN_GETTER(Context2d::GetGlobalAlpha) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetGlobalAlpha called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->globalAlpha));
 }
@@ -1449,6 +1456,10 @@ NAN_GETTER(Context2d::GetGlobalAlpha) {
  */
 
 NAN_SETTER(Context2d::SetGlobalAlpha) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetGlobalAlpha called on incompatible receiver");
+    return;
+  }
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0 && n <= 1) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1461,6 +1472,10 @@ NAN_SETTER(Context2d::SetGlobalAlpha) {
  */
 
 NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetGlobalCompositeOperation called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
@@ -1511,6 +1526,10 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
  */
 
 NAN_SETTER(Context2d::SetPatternQuality) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetPatternQuality called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Nan::Utf8String quality(Nan::To<String>(value).ToLocalChecked());
   if (0 == strcmp("fast", *quality)) {
@@ -1531,6 +1550,10 @@ NAN_SETTER(Context2d::SetPatternQuality) {
  */
 
 NAN_GETTER(Context2d::GetPatternQuality) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetPatternQuality called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *quality;
   switch (context->state->patternQuality) {
@@ -1548,6 +1571,10 @@ NAN_GETTER(Context2d::GetPatternQuality) {
  */
 
 NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetImageSmoothingEnabled called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->imageSmoothingEnabled = Nan::To<bool>(value).FromMaybe(false);
 }
@@ -1557,6 +1584,10 @@ NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
  */
 
 NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetImageSmoothingEnabled called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Boolean>(context->state->imageSmoothingEnabled));
 }
@@ -1566,6 +1597,10 @@ NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
  */
 
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetGlobalCompositeOperation called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked()); // Unlike CSS colors, this *is* case-sensitive
@@ -1613,6 +1648,10 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
  */
 
 NAN_GETTER(Context2d::GetShadowOffsetX) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetShadowOffsetX called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowOffsetX));
 }
@@ -1622,6 +1661,10 @@ NAN_GETTER(Context2d::GetShadowOffsetX) {
  */
 
 NAN_SETTER(Context2d::SetShadowOffsetX) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetShadowOffsetX called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetX = Nan::To<double>(value).FromMaybe(0);
 }
@@ -1631,6 +1674,10 @@ NAN_SETTER(Context2d::SetShadowOffsetX) {
  */
 
 NAN_GETTER(Context2d::GetShadowOffsetY) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetShadowOffsetY called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowOffsetY));
 }
@@ -1640,6 +1687,10 @@ NAN_GETTER(Context2d::GetShadowOffsetY) {
  */
 
 NAN_SETTER(Context2d::SetShadowOffsetY) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetShadowOffsetY called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetY = Nan::To<double>(value).FromMaybe(0);
 }
@@ -1649,6 +1700,10 @@ NAN_SETTER(Context2d::SetShadowOffsetY) {
  */
 
 NAN_GETTER(Context2d::GetShadowBlur) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetShadowBlur called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowBlur));
 }
@@ -1658,6 +1713,10 @@ NAN_GETTER(Context2d::GetShadowBlur) {
  */
 
 NAN_SETTER(Context2d::SetShadowBlur) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetShadowBlur called on incompatible receiver");
+    return;
+  }
   int n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1670,6 +1729,10 @@ NAN_SETTER(Context2d::SetShadowBlur) {
  */
 
 NAN_GETTER(Context2d::GetAntiAlias) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetAntiAlias called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *aa;
   switch (cairo_get_antialias(context->context())) {
@@ -1686,6 +1749,10 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetAntiAlias called on incompatible receiver");
+    return;
+  }
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
@@ -1709,6 +1776,10 @@ NAN_SETTER(Context2d::SetAntiAlias) {
  */
 
 NAN_GETTER(Context2d::GetTextDrawingMode) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetTextDrawingMode called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *mode;
   if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -1726,6 +1797,10 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetTextDrawingMode called on incompatible receiver");
+    return;
+  }
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
@@ -1740,6 +1815,10 @@ NAN_SETTER(Context2d::SetTextDrawingMode) {
  */
 
 NAN_GETTER(Context2d::GetQuality) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetQuality called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *filter;
   switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
@@ -1757,6 +1836,10 @@ NAN_GETTER(Context2d::GetQuality) {
  */
 
 NAN_SETTER(Context2d::SetQuality) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetQuality called on incompatible receiver");
+    return;
+  }
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
@@ -1819,6 +1902,10 @@ void parse_matrix_from_object(cairo_matrix_t &matrix, Local<Object> mat) {
  */
 
 NAN_GETTER(Context2d::GetCurrentTransform) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetCurrentTransform called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Object> instance = get_current_transform(context);
 
@@ -1830,6 +1917,10 @@ NAN_GETTER(Context2d::GetCurrentTransform) {
  */
 
 NAN_SETTER(Context2d::SetCurrentTransform) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetCurrentTransform called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
   Local<Object> mat = Nan::To<Object>(value).ToLocalChecked();
@@ -1851,6 +1942,10 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
  */
 
 NAN_GETTER(Context2d::GetFillStyle) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetFillStyle called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> style;
@@ -1868,6 +1963,10 @@ NAN_GETTER(Context2d::GetFillStyle) {
  */
 
 NAN_SETTER(Context2d::SetFillStyle) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetFillStyle called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
   if (value->IsString()) {
@@ -1895,6 +1994,10 @@ NAN_SETTER(Context2d::SetFillStyle) {
  */
 
 NAN_GETTER(Context2d::GetStrokeStyle) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetStrokeStyle called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Value> style;
 
@@ -1911,6 +2014,10 @@ NAN_GETTER(Context2d::GetStrokeStyle) {
  */
 
 NAN_SETTER(Context2d::SetStrokeStyle) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetStrokeStyle called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
   if (value->IsString()) {
@@ -1938,6 +2045,10 @@ NAN_SETTER(Context2d::SetStrokeStyle) {
  */
 
 NAN_GETTER(Context2d::GetMiterLimit) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetMiterLimit called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(cairo_get_miter_limit(context->context())));
 }
@@ -1947,6 +2058,10 @@ NAN_GETTER(Context2d::GetMiterLimit) {
  */
 
 NAN_SETTER(Context2d::SetMiterLimit) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetMiterLimit called on incompatible receiver");
+    return;
+  }
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1959,6 +2074,10 @@ NAN_SETTER(Context2d::SetMiterLimit) {
  */
 
 NAN_GETTER(Context2d::GetLineWidth) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetLineWidth called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(cairo_get_line_width(context->context())));
 }
@@ -1968,6 +2087,10 @@ NAN_GETTER(Context2d::GetLineWidth) {
  */
 
 NAN_SETTER(Context2d::SetLineWidth) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetLineWidth called on incompatible receiver");
+    return;
+  }
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0 && n != std::numeric_limits<double>::infinity()) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1980,6 +2103,10 @@ NAN_SETTER(Context2d::SetLineWidth) {
  */
 
 NAN_GETTER(Context2d::GetLineJoin) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetLineJoin called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *join;
   switch (cairo_get_line_join(context->context())) {
@@ -1995,6 +2122,10 @@ NAN_GETTER(Context2d::GetLineJoin) {
  */
 
 NAN_SETTER(Context2d::SetLineJoin) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetLineJoin called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
@@ -2012,6 +2143,10 @@ NAN_SETTER(Context2d::SetLineJoin) {
  */
 
 NAN_GETTER(Context2d::GetLineCap) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetLineCap called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *cap;
   switch (cairo_get_line_cap(context->context())) {
@@ -2027,6 +2162,10 @@ NAN_GETTER(Context2d::GetLineCap) {
  */
 
 NAN_SETTER(Context2d::SetLineCap) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetLineCap called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
@@ -2061,6 +2200,10 @@ NAN_METHOD(Context2d::IsPointInPath) {
  */
 
 NAN_SETTER(Context2d::SetShadowColor) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetShadowColor called on incompatible receiver");
+    return;
+  }
   short ok;
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   uint32_t rgba = rgba_from_string(*str, &ok);
@@ -2075,6 +2218,10 @@ NAN_SETTER(Context2d::SetShadowColor) {
  */
 
 NAN_GETTER(Context2d::GetShadowColor) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetShadowColor called on incompatible receiver");
+    return;
+  }
   char buf[64];
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
@@ -2550,6 +2697,10 @@ NAN_METHOD(Context2d::MoveTo) {
  */
 
 NAN_GETTER(Context2d::GetFont) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetFont called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> font;
@@ -2572,6 +2723,10 @@ NAN_GETTER(Context2d::GetFont) {
  */
 
 NAN_SETTER(Context2d::SetFont) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetFont called on incompatible receiver");
+    return;
+  }
   if (!value->IsString()) return;
 
   Isolate *iso = Isolate::GetCurrent();
@@ -2629,6 +2784,10 @@ NAN_SETTER(Context2d::SetFont) {
  */
 
 NAN_GETTER(Context2d::GetTextBaseline) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetTextBaseline called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> font;
@@ -2646,6 +2805,10 @@ NAN_GETTER(Context2d::GetTextBaseline) {
  */
 
 NAN_SETTER(Context2d::SetTextBaseline) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetTextBaseline called on incompatible receiver");
+    return;
+  }
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
@@ -2670,6 +2833,10 @@ NAN_SETTER(Context2d::SetTextBaseline) {
  */
 
 NAN_GETTER(Context2d::GetTextAlign) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetTextAlign called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> font;
@@ -2687,6 +2854,10 @@ NAN_GETTER(Context2d::GetTextAlign) {
  */
 
 NAN_SETTER(Context2d::SetTextAlign) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetTextAlign called on incompatible receiver");
+    return;
+  }
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
@@ -2847,6 +3018,10 @@ NAN_METHOD(Context2d::GetLineDash) {
  * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
  */
 NAN_SETTER(Context2d::SetLineDashOffset) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.SetLineDashOffset called on incompatible receiver");
+    return;
+  }
   double offset = Nan::To<double>(value).FromMaybe(0);
   if (!std::isfinite(offset)) return;
 
@@ -2864,6 +3039,10 @@ NAN_SETTER(Context2d::SetLineDashOffset) {
  * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
  */
 NAN_GETTER(Context2d::GetLineDashOffset) {
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Context2d.GetLineDashOffset called on incompatible receiver");
+    return;
+  }
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   double offset;

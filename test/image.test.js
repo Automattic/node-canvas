@@ -22,9 +22,12 @@ const svgTree = path.join(__dirname, '/fixtures/tree.svg')
 const bmpDir = path.join(__dirname, '/fixtures/bmp')
 
 describe('Image', function () {
-  it('Instance and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
+  it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
     const img = new Image()
+    assert.throws(function () { Image.prototype.width }, /incompatible receiver/)
+    assert(!img.hasOwnProperty('width'))
     assert('width' in img)
+    assert(Image.prototype.hasOwnProperty('width'))
   })
 
   it('loads JPEG image', function () {
