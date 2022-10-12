@@ -19,7 +19,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Prebuilt binaries for Node.js v18
 ### Changed
 * Update nan to v2.17.0 to ensure Node.js v18+ support.
-* Implement `SetAccessor` on `InstanceTemplate` instead of `PrototypeTemplate`
+* Implement valid `this` checks in all `SetAccessor` methods. 
 
 2.10.1
 ==================
