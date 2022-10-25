@@ -17,7 +17,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix `Assertion failed: (object->InternalFieldCount() > 0), function Unwrap, file nan_object_wrap.h, line 32.` ([#2025](https://github.com/Automattic/node-canvas/issues/2025))
 ### Changed
 * Update nan to v2.17.0 to ensure Node.js v18+ support.
-* Implement `SetAccessor` on `InstanceTemplate` instead of `PrototypeTemplate`
+* Implement valid `this` checks in all `SetAccessor` methods. 
 
 2.10.1
 ==================
