@@ -979,10 +979,6 @@ NAN_METHOD(Context2d::GetImageData) {
   if (sx + sw > width) sw = width - sx;
   if (sy + sh > height) sh = height - sy;
 
-  // WebKit/moz functionality. node-canvas used to return in either case.
-  if (sw <= 0) sw = 1;
-  if (sh <= 0) sh = 1;
-
   // Non-compliant. "Pixels outside the canvas must be returned as transparent
   // black." This instead clips the returned array to the canvas area.
   if (sx < 0) {
@@ -993,6 +989,10 @@ NAN_METHOD(Context2d::GetImageData) {
     sh += sy;
     sy = 0;
   }
+
+  // WebKit/moz functionality. node-canvas used to return in either case.
+  if (sw <= 0) sw = 1;
+  if (sh <= 0) sh = 1;
 
   int srcStride = canvas->stride();
   int bpp = srcStride / width;
