@@ -1242,6 +1242,18 @@ describe('Canvas', function () {
         ctx.getImageData(0, 0, 3, 6)
       })
     })
+
+    it('does not throw if rectangle is outside the canvas (#2024)', () => {
+      const canvas = createCanvas(200, 200)
+      const ctx = canvas.getContext('2d')
+
+      ctx.rect(0, 0, 100, 100);
+      ctx.fill();
+
+      const imageData = ctx.getImageData(0, -11, 10, 10);
+      assert.equal(10, imageData.width)
+      assert.equal(1, imageData.height)
+    })
   })
 
   it('Context2d#createPattern(Canvas)', function () {
