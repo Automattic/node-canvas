@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * `textBaseline` and `textAlign` were not saved/restored by `save()`/`restore()`. ([#1936](https://github.com/Automattic/node-canvas/issues/2029))
+* Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
 
 2.10.2
 ==================
