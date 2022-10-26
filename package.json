@@ -1,7 +1,7 @@
 {
-  "name": "canvas",
+  "name": "@ecervo/canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "2.10.1",
+  "version": "2.10.1-ecervo.1",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -37,7 +37,7 @@
   "binary": {
     "module_name": "canvas",
     "module_path": "build/Release",
-    "host": "https://github.com/Automattic/node-canvas/releases/download/",
+    "host": "https://github.com/e-cervo/node-canvas/releases/download/",
     "remote_path": "v{version}",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
