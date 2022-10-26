@@ -1011,21 +1011,26 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     sh = -sh;
   }
 
-  if (sx + sw > width) sw = width - sx;
-  if (sy + sh > height) sh = height - sy;
+  // Width and height to actually copy
+  int cw = sw;
+  int ch = sh;
+  // Offsets in the destination image
+  int ox = 0;
+  int oy = 0;
 
-  // WebKit/moz functionality. node-canvas used to return in either case.
-  if (sw <= 0) sw = 1;
-  if (sh <= 0) sh = 1;
+  // Clamp the copy width and height if the copy would go outside the image
+  if (sx + sw > width) cw = width - sx;
+  if (sy + sh > height) ch = height - sy;
 
-  // Non-compliant. "Pixels outside the canvas must be returned as transparent
-  // black." This instead clips the returned array to the canvas area.
+  // Clamp the copy origin if the copy would go outside the image
   if (sx < 0) {
-    sw += sx;
+    ox = -sx;
+    cw += sx;
     sx = 0;
   }
   if (sy < 0) {
-    sh += sy;
+    oy = -sy;
+    ch += sy;
     sy = 0;
   }
 
@@ -1047,13 +1052,16 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
 
   uint8_t *dst = (uint8_t *)buffer.Data();
 
+  if (!(cw > 0 && ch > 0)) goto return_empty;
+
   switch (canvas->backend()->getFormat()) {
   case CAIRO_FORMAT_ARGB32: {
+    dst += oy * dstStride + ox * 4;
     // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
     // and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
+    for (int y = 0; y < ch; ++y) {
       uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-      for (int x = 0; x < sw; ++x) {
+      for (int x = 0; x < cw; ++x) {
         int bx = x * 4;
         uint32_t *pixel = row + x + sx;
         uint8_t a = *pixel >> 24;
@@ -1082,10 +1090,11 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_RGB24: {
+    dst += oy * dstStride + ox * 4;
   // Rearrange alpha (argb -> rgba) and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
+    for (int y = 0; y < ch; ++y) {
     uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-    for (int x = 0; x < sw; ++x) {
+    for (int x = 0; x < cw; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + sx;
       uint8_t r = *pixel >> 16;
@@ -1102,9 +1111,10 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_A8: {
-    for (int y = 0; y < sh; ++y) {
+    dst += oy * dstStride + ox;
+    for (int y = 0; y < ch; ++y) {
       uint8_t *row = (uint8_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
+      memcpy(dst, row + sx, cw);
       dst += dstStride;
     }
     break;
@@ -1116,9 +1126,10 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_RGB16_565: {
-    for (int y = 0; y < sh; ++y) {
+    dst += oy * dstStride + ox * 2;
+    for (int y = 0; y < ch; ++y) {
       uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
+      memcpy(dst, row + sx, cw * 2);
       dst += dstStride;
     }
     break;
@@ -1138,6 +1149,7 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   }
   }
 
+return_empty:
   Napi::Number swHandle = Napi::Number::New(env, sw);
   Napi::Number shHandle = Napi::Number::New(env, sh);
   Napi::Function ctor = env.GetInstanceData<InstanceData>()->ImageDataCtor.Value();
