@@ -47,12 +47,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        node: [17] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
-      image: chearon/canvas-prebuilt:9
+      image: ${{ matrix.node < 18 && 'chearon/canvas-prebuilt:9' || 'zbbjornson/canvas-prebuilt:10' }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -140,7 +140,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        node: [17, 19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
@@ -212,7 +212,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        node: [17, 19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
