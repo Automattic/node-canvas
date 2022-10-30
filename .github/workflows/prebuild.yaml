@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [17] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+        node: [18, 19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
@@ -140,7 +140,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [17, 19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+        node: [19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
@@ -162,7 +162,7 @@ jobs:
         run: |
           git checkout ${{ matrix.canvas_tag }}
           git checkout $GITHUB_SHA -- prebuild/
-          npm install -g node-gyp@6.1
+          npm install -g node-gyp
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
@@ -212,7 +212,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [17, 19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+        node: [19] # 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
         canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
@@ -243,7 +243,7 @@ jobs:
         run: |
           git checkout ${{ matrix.canvas_tag }}
           git checkout $env:GITHUB_SHA -- prebuild/
-          npm install -g node-gyp@6.1
+          npm install -g node-gyp
           npm install --ignore-scripts
           msys2 -c ". prebuild/Windows/preinstall.sh"
           msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
