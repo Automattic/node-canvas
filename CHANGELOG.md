@@ -8,19 +8,18 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
-* Improve performance and memory usage of `save()`/`restore()`.
-* `save()`/`restore()` no longer have a maximum depth (previously 64 states).
 ### Added
 ### Fixed
-* `textBaseline` and `textAlign` were not saved/restored by `save()`/`restore()`. ([#1936](https://github.com/Automattic/node-canvas/issues/2029))
 
 2.10.2
 ==================
 ### Fixed
 * Fix `Assertion failed: (object->InternalFieldCount() > 0), function Unwrap, file nan_object_wrap.h, line 32.` ([#2025](https://github.com/Automattic/node-canvas/issues/2025))
-### Changed
+* `textBaseline` and `textAlign` were not saved/restored by `save()`/`restore()`. ([#1936](https://github.com/Automattic/node-canvas/issues/2029))
 * Update nan to v2.17.0 to ensure Node.js v18+ support.
-* Implement valid `this` checks in all `SetAccessor` methods. 
+### Changed
+* Improve performance and memory usage of `save()`/`restore()`.
+* `save()`/`restore()` no longer have a maximum depth (previously 64 states).
 
 2.10.1
 ==================
