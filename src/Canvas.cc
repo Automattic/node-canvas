@@ -35,6 +35,12 @@
   "with at least a family (string) and optionally weight (string/number) " \
   "and style (string)."
 
+#define CHECK_RECEIVER(prop) \
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) { \
+    Nan::ThrowTypeError("Method " #prop " called on incompatible receiver"); \
+    return; \
+  }
+
 using namespace v8;
 using namespace std;
 
@@ -144,10 +150,7 @@ NAN_METHOD(Canvas::New) {
  */
 
 NAN_GETTER(Canvas::GetType) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.GetType called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.GetType);
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName()).ToLocalChecked());
 }
@@ -156,10 +159,7 @@ NAN_GETTER(Canvas::GetType) {
  * Get stride.
  */
 NAN_GETTER(Canvas::GetStride) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.GetStride called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.GetStride);
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->stride()));
 }
@@ -169,10 +169,7 @@ NAN_GETTER(Canvas::GetStride) {
  */
 
 NAN_GETTER(Canvas::GetWidth) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.GetWidth called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.GetWidth);
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->getWidth()));
 }
@@ -182,10 +179,7 @@ NAN_GETTER(Canvas::GetWidth) {
  */
 
 NAN_SETTER(Canvas::SetWidth) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.SetWidth called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.SetWidth);
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->backend()->setWidth(Nan::To<uint32_t>(value).FromMaybe(0));
@@ -198,10 +192,7 @@ NAN_SETTER(Canvas::SetWidth) {
  */
 
 NAN_GETTER(Canvas::GetHeight) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.GetHeight called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.GetHeight);
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->getHeight()));
 }
@@ -211,10 +202,7 @@ NAN_GETTER(Canvas::GetHeight) {
  */
 
 NAN_SETTER(Canvas::SetHeight) {
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
-    Nan::ThrowTypeError("Method Canvas.SetHeight called on incompatible receiver");
-    return;
-  }
+  CHECK_RECEIVER(Canvas.SetHeight);
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->backend()->setHeight(Nan::To<uint32_t>(value).FromMaybe(0));
@@ -973,3 +961,5 @@ Local<Value>
 Canvas::Error(cairo_status_t status) {
   return Exception::Error(Nan::New<String>(cairo_status_to_string(status)).ToLocalChecked());
 }
+
+#undef CHECK_RECEIVER
