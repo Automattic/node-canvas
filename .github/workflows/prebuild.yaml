@@ -47,8 +47,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-        canvas_tag: ["v2.10.1"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
@@ -140,8 +140,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-        canvas_tag: ["v2.10.1"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -212,8 +212,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-        canvas_tag: ["v2.10.1"] # e.g. "v2.6.1"
+        node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+        canvas_tag: ["v2.10.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
     env:
