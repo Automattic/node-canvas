@@ -1,5 +1,4 @@
 // TypeScript Version: 3.0
-/// <reference lib="dom" />
 
 import { Readable } from 'stream'
 
@@ -80,7 +79,7 @@ export class Canvas {
 
 	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 
-	getContext(contextId: '2d', contextAttributes?: NodeCanvasRenderingContext2DSettings): NodeCanvasRenderingContext2D
+	getContext(contextId: '2d', contextAttributes?: NodeCanvasRenderingContext2DSettings): CanvasRenderingContext2D
 
 	/**
 	 * For image canvases, encodes the canvas as a PNG. For PDF canvases,
@@ -128,19 +127,126 @@ export class Canvas {
 	toDataURL(mimeType: 'image/jpeg', quality: number, cb: (err: Error|null, result: string) => void): void
 }
 
-declare class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
+export interface TextMetrics {
+	readonly actualBoundingBoxAscent: number;
+	readonly actualBoundingBoxDescent: number;
+	readonly actualBoundingBoxLeft: number;
+	readonly actualBoundingBoxRight: number;
+	readonly fontBoundingBoxAscent: number;
+	readonly fontBoundingBoxDescent: number;
+	readonly width: number;
+}
+
+export type CanvasFillRule = 'evenodd' | 'nonzero';
+
+export type GlobalCompositeOperation =
+	| 'clear'
+	| 'copy'
+	| 'destination'
+	| 'source-over'
+	| 'destination-over'
+	| 'source-in'
+	| 'destination-in'
+	| 'source-out'
+	| 'destination-out'
+	| 'source-atop'
+	| 'destination-atop'
+	| 'xor'
+	| 'lighter'
+	| 'normal'
+	| 'multiply'
+	| 'screen'
+	| 'overlay'
+	| 'darken'
+	| 'lighten'
+	| 'color-dodge'
+	| 'color-burn'
+	| 'hard-light'
+	| 'soft-light'
+	| 'difference'
+	| 'exclusion'
+	| 'hue'
+	| 'saturation'
+	| 'color'
+	| 'luminosity'
+	| 'saturate';
+
+export type CanvasLineCap = 'butt' | 'round' | 'square';
+
+export type CanvasLineJoin = 'bevel' | 'miter' | 'round';
+
+export type CanvasTextBaseline = 'alphabetic' | 'bottom' | 'hanging' | 'ideographic' | 'middle' | 'top';
+
+export type CanvasTextAlign = 'center' | 'end' | 'left' | 'right' | 'start';
+
+export class CanvasRenderingContext2D {
+	drawImage(image: Canvas|Image, dx: number, dy: number): void
+	drawImage(image: Canvas|Image, dx: number, dy: number, dw: number, dh: number): void
+	drawImage(image: Canvas|Image, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void
+	putImageData(imagedata: ImageData, dx: number, dy: number): void;
+	putImageData(imagedata: ImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void;
+	getImageData(sx: number, sy: number, sw: number, sh: number): ImageData;
+	createImageData(sw: number, sh: number): ImageData;
+	createImageData(imagedata: ImageData): ImageData;
+	/**
+	 * For PDF canvases, adds another page. If width and/or height are omitted,
+	 * the canvas's initial size is used.
+	 */
+	addPage(width?: number, height?: number): void
+	save(): void;
+	restore(): void;
+	rotate(angle: number): void;
+	translate(x: number, y: number): void;
+	transform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+	getTransform(): DOMMatrix;
+	resetTransform(): void;
+	setTransform(transform?: DOMMatrix): void;
+	isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
+	scale(x: number, y: number): void;
+	clip(fillRule?: CanvasFillRule): void;
+	fill(fillRule?: CanvasFillRule): void;
+	stroke(): void;
+	fillText(text: string, x: number, y: number, maxWidth?: number): void;
+	strokeText(text: string, x: number, y: number, maxWidth?: number): void;
+	fillRect(x: number, y: number, w: number, h: number): void;
+	strokeRect(x: number, y: number, w: number, h: number): void;
+	clearRect(x: number, y: number, w: number, h: number): void;
+	rect(x: number, y: number, w: number, h: number): void;
+	roundRect(x: number, y: number, w: number, h: number, radii?: number | number[]): void;
+	measureText(text: string): TextMetrics;
+	moveTo(x: number, y: number): void;
+	lineTo(x: number, y: number): void;
+	bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+	quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
+	beginPath(): void;
+	closePath(): void;
+	arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
+	arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
+	ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
+	setLineDash(segments: number[]): void;
+	getLineDash(): number[];
+	createPattern(image: Canvas|Image, repetition: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '' | null): CanvasPattern
+	createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
+	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
 	/**
 	 * _Non-standard_. Defaults to 'good'. Affects pattern (gradient, image,
 	 * etc.) rendering quality.
 	 */
 	patternQuality: 'fast' | 'good' | 'best' | 'nearest' | 'bilinear'
-
-	/**
-	 * _Non-standard_. Defaults to 'good'. Like `patternQuality`, but applies to
-	 * transformations affecting more than just patterns.
-	 */
-	quality: 'fast' | 'good' | 'best' | 'nearest' | 'bilinear'
-
+	imageSmoothingEnabled: boolean;
+	globalCompositeOperation: GlobalCompositeOperation;
+	globalAlpha: number;
+	shadowColor: string;
+	miterLimit: number;
+	lineWidth: number;
+	lineCap: CanvasLineCap;
+	lineJoin: CanvasLineJoin;
+	lineDashOffset: number;
+	shadowOffsetX: number;
+	shadowOffsetY: number;
+	shadowBlur: number;
+	/** _Non-standard_. Sets the antialiasing mode. */
+	antialias: 'default' | 'gray' | 'none' | 'subpixel'
 	/**
 	 * Defaults to 'path'. The effect depends on the canvas type:
 	 *
@@ -165,55 +271,27 @@ declare class NodeCanvasRenderingContext2D extends CanvasRenderingContext2D {
 	 * (aside from using the stroke and fill style, respectively).
 	 */
 	textDrawingMode: 'path' | 'glyph'
-
-	/** _Non-standard_. Sets the antialiasing mode. */
-	antialias: 'default' | 'gray' | 'none' | 'subpixel'
-
-	// Standard, but not in the TS lib and needs node-canvas class return type.
+	/**
+	 * _Non-standard_. Defaults to 'good'. Like `patternQuality`, but applies to
+	 * transformations affecting more than just patterns.
+	 */
+	quality: 'fast' | 'good' | 'best' | 'nearest' | 'bilinear'
 	/** Returns or sets a `DOMMatrix` for the current transformation matrix. */
-	currentTransform: NodeCanvasDOMMatrix
-
-	// Standard, but need node-canvas class versions:
-	getTransform(): NodeCanvasDOMMatrix
-	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void
-	setTransform(transform?: NodeCanvasDOMMatrix): void
-	createImageData(sw: number, sh: number): NodeCanvasImageData
-	createImageData(imagedata: NodeCanvasImageData): NodeCanvasImageData
-	getImageData(sx: number, sy: number, sw: number, sh: number): NodeCanvasImageData
-	putImageData(imagedata: NodeCanvasImageData, dx: number, dy: number): void
-	putImageData(imagedata: NodeCanvasImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void
-	drawImage(image: Canvas|Image, dx: number, dy: number): void
-	drawImage(image: Canvas|Image, dx: number, dy: number, dw: number, dh: number): void
-	drawImage(image: Canvas|Image, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void
-	/**
-	 * **Do not use this overload. Use one of the other three overloads.** This
-	 * is a catch-all definition required for compatibility with the base
-	 * `CanvasRenderingContext2D` interface.
-	 */
-	drawImage(...args: any[]): void
-	createPattern(image: Canvas|Image, repetition: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '' | null): NodeCanvasCanvasPattern
-	/**
-	 * **Do not use this overload. Use the other three overload.** This is a
-	 * catch-all definition required for compatibility with the base
-	 * `CanvasRenderingContext2D` interface.
-	 */
-	createPattern(...args: any[]): NodeCanvasCanvasPattern
-	createLinearGradient(x0: number, y0: number, x1: number, y1: number): NodeCanvasCanvasGradient;
-	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): NodeCanvasCanvasGradient;
-
-	/**
-	 * For PDF canvases, adds another page. If width and/or height are omitted,
-	 * the canvas's initial size is used.
-	 */
-	addPage(width?: number, height?: number): void
+	currentTransform: DOMMatrix
+	fillStyle: string | CanvasGradient | CanvasPattern;
+	strokeStyle: string | CanvasGradient | CanvasPattern;
+	font: string;
+	textBaseline: CanvasTextBaseline;
+	textAlign: CanvasTextAlign;
 }
-export { NodeCanvasRenderingContext2D as CanvasRenderingContext2D }
 
-declare class NodeCanvasCanvasGradient extends CanvasGradient {}
-export { NodeCanvasCanvasGradient as CanvasGradient }
+export class CanvasGradient {
+	addColorStop(offset: number, color: string): void;
+}
 
-declare class NodeCanvasCanvasPattern extends CanvasPattern {}
-export { NodeCanvasCanvasPattern as CanvasPattern }
+export class CanvasPattern {
+	setTransform(transform?: DOMMatrix): void;
+}
 
 // This does not extend HTMLImageElement because there are dozens of inherited
 // methods and properties that we do not provide.
@@ -312,14 +390,79 @@ export class JPEGStream extends Readable {}
 /** This class must not be constructed directly; use `canvas.createPDFStream()`. */
 export class PDFStream extends Readable {}
 
-declare class NodeCanvasDOMMatrix extends DOMMatrix {}
-export { NodeCanvasDOMMatrix as DOMMatrix }
+export class DOMPoint {
+	w: number;
+	x: number;
+	y: number;
+	z: number;
+}
 
-declare class NodeCanvasDOMPoint extends DOMPoint {}
-export { NodeCanvasDOMPoint as DOMPoint }
+export class DOMMatrix {
+	constructor(init: string | number[]);
+	toString(): string;
+	multiply(other?: DOMMatrix): DOMMatrix;
+	multiplySelf(other?: DOMMatrix): DOMMatrix;
+	preMultiplySelf(other?: DOMMatrix): DOMMatrix;
+	translate(tx?: number, ty?: number, tz?: number): DOMMatrix;
+	translateSelf(tx?: number, ty?: number, tz?: number): DOMMatrix;
+	scale(scaleX?: number, scaleY?: number, scaleZ?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	scale3d(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	scale3dSelf(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	scaleSelf(scaleX?: number, scaleY?: number, scaleZ?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	rotateFromVector(x?: number, y?: number): DOMMatrix;
+	rotateFromVectorSelf(x?: number, y?: number): DOMMatrix;
+	rotate(rotX?: number, rotY?: number, rotZ?: number): DOMMatrix;
+	rotateSelf(rotX?: number, rotY?: number, rotZ?: number): DOMMatrix;
+	rotateAxisAngle(x?: number, y?: number, z?: number, angle?: number): DOMMatrix;
+	rotateAxisAngleSelf(x?: number, y?: number, z?: number, angle?: number): DOMMatrix;
+	skewX(sx?: number): DOMMatrix;
+	skewXSelf(sx?: number): DOMMatrix;
+	skewY(sy?: number): DOMMatrix;
+	skewYSelf(sy?: number): DOMMatrix;
+	flipX(): DOMMatrix;
+	flipY(): DOMMatrix;
+	inverse(): DOMMatrix;
+	invertSelf(): DOMMatrix;
+	setMatrixValue(transformList: string): DOMMatrix;
+	transformPoint(point?: DOMPoint): DOMPoint;
+	toFloat32Array(): Float32Array;
+	toFloat64Array(): Float64Array;
+	readonly is2D: boolean;
+	readonly isIdentity: boolean;
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	e: number;
+	f: number;
+	m11: number;
+	m12: number;
+	m13: number;
+	m14: number;
+	m21: number;
+	m22: number;
+	m23: number;
+	m24: number;
+	m31: number;
+	m32: number;
+	m33: number;
+	m34: number;
+	m41: number;
+	m42: number;
+	m43: number;
+	m44: number;
+	static fromMatrix(other: DOMMatrix): DOMMatrix;
+	static fromFloat32Array(a: Float32Array): DOMMatrix;
+	static fromFloat64Array(a: Float64Array): DOMMatrix;
+}
 
-declare class NodeCanvasImageData extends ImageData {}
-export { NodeCanvasImageData as ImageData }
+export class ImageData {
+	constructor(sw: number, sh: number);
+	constructor(data: Uint8ClampedArray, sw: number, sh?: number);
+	readonly data: Uint8ClampedArray;
+	readonly height: number;
+	readonly width: number;
+}
 
 // This is marked private, but is exported...
 // export function parseFont(description: string): object
