@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Replace triple-slash directive in types with own types to avoid polluting TS modules with globals ([#1656](https://github.com/Automattic/node-canvas/issues/1656))
 
 2.10.2
 ==================
