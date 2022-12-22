@@ -81,7 +81,7 @@ jobs:
           set -ex
           mkdir -p prebuild
           cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
-          npm install -g node-gyp@9.0.0
+          npm install -g node-gyp@7
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
