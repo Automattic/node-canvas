@@ -81,7 +81,7 @@ jobs:
           set -ex
           mkdir -p prebuild
           cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
-          npm install -g node-gyp
+          npm install -g node-gyp@9.0.0
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
@@ -145,7 +145,7 @@ jobs:
         node: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         canvas_tag: ["v2.11.0"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-11
+    runs-on: macos-latest
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -245,7 +245,7 @@ jobs:
         run: |
           git checkout ${{ matrix.canvas_tag }}
           git checkout $env:GITHUB_SHA -- prebuild/
-          npm install -g node-gyp
+          npm install -g node-gyp@8
           npm install --ignore-scripts
           msys2 -c ". prebuild/Windows/preinstall.sh"
           msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
