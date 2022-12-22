@@ -162,6 +162,7 @@ jobs:
 
       - name: Build
         run: |
+          set -Eeuxo pipefail
           git checkout ${{ matrix.canvas_tag }}
           git checkout $GITHUB_SHA -- prebuild/
           npm install -g node-gyp
