@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Add missing property `canvas` to the `CanvasRenderingContext2D` type
 
 2.11.0
 ==================
