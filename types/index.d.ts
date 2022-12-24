@@ -283,6 +283,7 @@ export class CanvasRenderingContext2D {
 	font: string;
 	textBaseline: CanvasTextBaseline;
 	textAlign: CanvasTextAlign;
+	canvas: Canvas;
 }
 
 export class CanvasGradient {
