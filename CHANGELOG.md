@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Add missing property `canvas` to the `CanvasRenderingContext2D` type
+* Fixed glyph positions getting rounded, resulting text having a slight `letter-spacing` effect
 
 2.11.0
 ==================

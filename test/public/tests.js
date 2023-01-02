@@ -2693,6 +2693,11 @@ tests['measureText()'] = function (ctx) {
   drawWithBBox('right', 195, 195)
 }
 
+tests['glyph advances (#2184)'] = function (ctx) {
+  ctx.font = '8px Arial'
+  ctx.fillText('A float is a box that is shifted to the left or right on the current line.', 0, 8)
+}
+
 tests['image sampling (#1084)'] = function (ctx, done) {
   let loaded1, loaded2
   const img1 = new Image()
