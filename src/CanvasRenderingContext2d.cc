@@ -171,6 +171,13 @@ Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = canvas->createCairoContext();
   _layout = pango_cairo_create_layout(_context);
+
+  // As of January 2023, Pango rounds glyph positions which renders text wider
+  // or narrower than the browser. See #2184 for more information
+#if PANGO_VERSION_CHECK(1, 44, 0)
+  pango_context_set_round_glyph_positions(pango_layout_get_context(_layout), FALSE);
+#endif
+
   states.emplace();
   state = &states.top();
   pango_layout_set_font_description(_layout, state->fontDescription);
