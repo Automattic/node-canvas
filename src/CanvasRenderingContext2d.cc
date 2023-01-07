@@ -990,17 +990,22 @@ NAN_METHOD(Context2d::GetImageData) {
     sh = -sh;
   }
 
-  if (sx + sw > width) sw = width - sx;
-  if (sy + sh > height) sh = height - sy;
+  int cw = sw;
+  int ch = sh;
+  int ox = 0;
+  int oy = 0;
+  
+  if (sx + sw > width) cw = width - sx;
+  if (sy + sh > height) ch = height - sy;
 
-  // Non-compliant. "Pixels outside the canvas must be returned as transparent
-  // black." This instead clips the returned array to the canvas area.
   if (sx < 0) {
-    sw += sx;
+    ox = -sx;
+    cw += sx;
     sx = 0;
   }
   if (sy < 0) {
-    sh += sy;
+    oy = -sy;
+    ch += sy;
     sy = 0;
   }
 
@@ -1027,93 +1032,98 @@ NAN_METHOD(Context2d::GetImageData) {
   Nan::TypedArrayContents<uint8_t> typedArrayContents(dataArray);
   uint8_t* dst = *typedArrayContents;
 
-  switch (canvas->backend()->getFormat()) {
-  case CAIRO_FORMAT_ARGB32: {
-    // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
-    // and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
-      uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-      for (int x = 0; x < sw; ++x) {
-        int bx = x * 4;
-        uint32_t *pixel = row + x + sx;
-        uint8_t a = *pixel >> 24;
-        uint8_t r = *pixel >> 16;
-        uint8_t g = *pixel >> 8;
-        uint8_t b = *pixel;
-        dst[bx + 3] = a;
+  if (cw > 0 && ch > 0) {
+    switch (canvas->backend()->getFormat()) {
+    case CAIRO_FORMAT_ARGB32: {
+      dst += oy * dstStride + ox * 4;
+      // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
+      // and store in big-endian format
+      for (int y = 0; y < ch; ++y) {
+        uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
+        for (int x = 0; x < cw; ++x) {
+          int bx = x * 4;
+          uint32_t *pixel = row + x + sx;
+          uint8_t a = *pixel >> 24;
+          uint8_t r = *pixel >> 16;
+          uint8_t g = *pixel >> 8;
+          uint8_t b = *pixel;
+          dst[bx + 3] = a;
 
-        // Performance optimization: fully transparent/opaque pixels can be
-        // processed more efficiently.
-        if (a == 0 || a == 255) {
+          // Performance optimization: fully transparent/opaque pixels can be
+          // processed more efficiently.
+          if (a == 0 || a == 255) {
+            dst[bx + 0] = r;
+            dst[bx + 1] = g;
+            dst[bx + 2] = b;
+          } else {
+            // Undo alpha pre-multiplication
+            float alphaR = (float)255 / a;
+            dst[bx + 0] = (int)((float)r * alphaR);
+            dst[bx + 1] = (int)((float)g * alphaR);
+            dst[bx + 2] = (int)((float)b * alphaR);
+          }
+        }
+        dst += dstStride;
+      }
+      break;
+    }
+    case CAIRO_FORMAT_RGB24: {
+      dst += oy * dstStride + ox * 4;
+      // Rearrange alpha (argb -> rgba) and store in big-endian format
+      for (int y = 0; y < ch; ++y) {
+        uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
+        for (int x = 0; x < cw; ++x) {
+          int bx = x * 4;
+          uint32_t *pixel = row + x + sx;
+          uint8_t r = *pixel >> 16;
+          uint8_t g = *pixel >> 8;
+          uint8_t b = *pixel;
+
           dst[bx + 0] = r;
           dst[bx + 1] = g;
           dst[bx + 2] = b;
-        } else {
-          // Undo alpha pre-multiplication
-          float alphaR = (float)255 / a;
-          dst[bx + 0] = (int)((float)r * alphaR);
-          dst[bx + 1] = (int)((float)g * alphaR);
-          dst[bx + 2] = (int)((float)b * alphaR);
+          dst[bx + 3] = 255;
         }
-
+        dst += dstStride;
       }
-      dst += dstStride;
+      break;
     }
-    break;
-  }
-  case CAIRO_FORMAT_RGB24: {
-  // Rearrange alpha (argb -> rgba) and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
-    uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-    for (int x = 0; x < sw; ++x) {
-      int bx = x * 4;
-      uint32_t *pixel = row + x + sx;
-      uint8_t r = *pixel >> 16;
-      uint8_t g = *pixel >> 8;
-      uint8_t b = *pixel;
-
-      dst[bx + 0] = r;
-      dst[bx + 1] = g;
-      dst[bx + 2] = b;
-      dst[bx + 3] = 255;
+    case CAIRO_FORMAT_A8: {
+      dst += oy * dstStride + ox;
+      for (int y = 0; y < ch; ++y) {
+        uint8_t *row = (uint8_t *)(src + srcStride * (y + sy));
+        memcpy(dst, row + sx, cw);
+        dst += dstStride;
+      }
+      break;
     }
-    dst += dstStride;
+    case CAIRO_FORMAT_A1: {
+      // TODO Should this be totally packed, or maintain a stride divisible by 4?
+      Nan::ThrowError("getImageData for CANVAS_FORMAT_A1 is not yet implemented");
+      break;
     }
-    break;
-  }
-  case CAIRO_FORMAT_A8: {
-    for (int y = 0; y < sh; ++y) {
-      uint8_t *row = (uint8_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
-      dst += dstStride;
+    case CAIRO_FORMAT_RGB16_565: {
+      dst += oy * dstStride + ox * 2;
+      for (int y = 0; y < ch; ++y) {
+        uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
+        memcpy(dst, row + sx, cw * 2);
+        dst += dstStride;
+      }
+      break;
     }
-    break;
-  }
-  case CAIRO_FORMAT_A1: {
-    // TODO Should this be totally packed, or maintain a stride divisible by 4?
-    Nan::ThrowError("getImageData for CANVAS_FORMAT_A1 is not yet implemented");
-    break;
-  }
-  case CAIRO_FORMAT_RGB16_565: {
-    for (int y = 0; y < sh; ++y) {
-      uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
-      dst += dstStride;
-    }
-    break;
-  }
 #ifdef CAIRO_FORMAT_RGB30
-  case CAIRO_FORMAT_RGB30: {
-    // TODO
-    Nan::ThrowError("getImageData for CANVAS_FORMAT_RGB30 is not yet implemented");
-    break;
-  }
+    case CAIRO_FORMAT_RGB30: {
+      // TODO
+      Nan::ThrowError("getImageData for CANVAS_FORMAT_RGB30 is not yet implemented");
+      break;
+    }
 #endif
-  default: {
-    // Unlikely
-    Nan::ThrowError("Invalid pixel format or not an image canvas");
-    return;
-  }
+    default: {
+      // Unlikely
+      Nan::ThrowError("Invalid pixel format or not an image canvas");
+      return;
+    }
+    }
   }
 
   const int argc = 3;

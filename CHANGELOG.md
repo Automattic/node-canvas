@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Add missing property `canvas` to the `CanvasRenderingContext2D` type
 * Fixed glyph positions getting rounded, resulting text having a slight `letter-spacing` effect
 * Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
+* Fix `getImageData` cropping the resulting `ImageData` when the given rectangle is partly outside the canvas. ([#1849](https://github.com/Automattic/node-canvas/issues/1849))
 
 2.11.0
 ==================
