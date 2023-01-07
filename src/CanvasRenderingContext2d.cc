@@ -207,7 +207,6 @@ void Context2d::resetState() {
 void Context2d::_resetPersistentHandles() {
   _fillStyle.Reset();
   _strokeStyle.Reset();
-  _font.Reset();
 }
 
 /*
@@ -2553,15 +2552,8 @@ NAN_METHOD(Context2d::MoveTo) {
 NAN_GETTER(Context2d::GetFont) {
   CHECK_RECEIVER(Context2d.GetFont);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
-  Isolate *iso = Isolate::GetCurrent();
-  Local<Value> font;
 
-  if (context->_font.IsEmpty())
-    font = Nan::New("10px sans-serif").ToLocalChecked();
-  else
-    font = context->_font.Get(iso);
-
-  info.GetReturnValue().Set(font);
+  info.GetReturnValue().Set(Nan::New(context->state->font).ToLocalChecked());
 }
 
 /*
@@ -2624,7 +2616,7 @@ NAN_SETTER(Context2d::SetFont) {
   context->state->fontDescription = sys_desc;
   pango_layout_set_font_description(context->_layout, sys_desc);
 
-  context->_font.Reset(value);
+  context->state->font = *Nan::Utf8String(value);
 }
 
 /*
