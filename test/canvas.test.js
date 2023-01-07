@@ -1918,7 +1918,7 @@ describe('Canvas', function () {
       ['shadowBlur', 5],
       ['shadowColor', '#ff0000'],
       ['globalCompositeOperation', 'copy'],
-      // ['font', '25px serif'], // TODO #1946
+      ['font', '25px serif'],
       ['textAlign', 'center'],
       ['textBaseline', 'bottom'],
       // Added vs. WPT
