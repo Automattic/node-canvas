@@ -990,14 +990,18 @@ NAN_METHOD(Context2d::GetImageData) {
     sh = -sh;
   }
 
+  // Width and height to actually copy
   int cw = sw;
   int ch = sh;
+  // Offsets in the destination image
   int ox = 0;
   int oy = 0;
   
+  // Clamp the copy width and height if the copy would go outside the image
   if (sx + sw > width) cw = width - sx;
   if (sy + sh > height) ch = height - sy;
 
+  // Clamp the copy origin if the copy would go outside the image
   if (sx < 0) {
     ox = -sx;
     cw += sx;
@@ -1008,10 +1012,6 @@ NAN_METHOD(Context2d::GetImageData) {
     ch += sy;
     sy = 0;
   }
-
-  // WebKit/moz functionality. node-canvas used to return in either case.
-  if (sw <= 0) sw = 1;
-  if (sh <= 0) sh = 1;
 
   int srcStride = canvas->stride();
   int bpp = srcStride / width;
