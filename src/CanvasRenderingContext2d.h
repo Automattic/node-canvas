@@ -27,6 +27,7 @@ struct canvas_state_t {
   cairo_pattern_t* fillGradient = nullptr;
   cairo_pattern_t* strokeGradient = nullptr;
   PangoFontDescription* fontDescription = nullptr;
+  std::string font = "10px sans-serif";
   cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
   float globalAlpha = 1.f;
   int shadowBlur = 0;
@@ -57,6 +58,7 @@ struct canvas_state_t {
     shadowOffsetY = other.shadowOffsetY;
     textDrawingMode = other.textDrawingMode;
     fontDescription = pango_font_description_copy(other.fontDescription);
+    font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
   }
 
@@ -216,7 +218,6 @@ class Context2d : public Nan::ObjectWrap {
     void _setStrokePattern(v8::Local<v8::Value> arg);
     Nan::Persistent<v8::Value> _fillStyle;
     Nan::Persistent<v8::Value> _strokeStyle;
-    Nan::Persistent<v8::Value> _font;
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;
