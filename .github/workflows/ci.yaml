@@ -80,7 +80,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 14
-      - uses: actions/checkout@v23
+      - uses: actions/checkout@v3
       - name: Install
         run: npm install --ignore-scripts
       - name: Lint
