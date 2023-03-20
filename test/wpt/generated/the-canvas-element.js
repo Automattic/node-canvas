@@ -171,6 +171,12 @@ describe("WPT: the-canvas-element", function () {
 		assert.strictEqual(window.CanvasRenderingContext2D.prototype.fill, undefined, "window.CanvasRenderingContext2D.prototype.fill", "undefined")
 	});
 
+	it("2d.type class string", function () {
+		const canvas = createCanvas(100, 50);
+		const ctx = canvas.getContext("2d");
+		assert.strictEqual(Object.prototype.toString.call(ctx), '[object CanvasRenderingContext2D]')
+	})
+
 	it("2d.type.replace", function () {
 		// Interface methods can be overridden
 		const canvas = createCanvas(100, 50);

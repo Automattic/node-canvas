@@ -17,6 +17,11 @@ describe('ImageData', function () {
     assert.strictEqual(imageData.toString(), '[object ImageData]')
   })
 
+  it('gives class string as `ImageData`', function () {
+    const imageData = createImageData(2, 3)
+    assert.strictEqual(Object.prototype.toString.call(imageData), '[object ImageData]')
+  })
+
   it('should throw with invalid numeric arguments', function () {
     assert.throws(() => { createImageData(0, 0) }, /width is zero/)
     assert.throws(() => { createImageData(1, 0) }, /height is zero/)

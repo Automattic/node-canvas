@@ -30,6 +30,11 @@ describe('Image', function () {
     assert(Image.prototype.hasOwnProperty('width'))
   })
 
+  it('Image has class string of `HTMLImageElement`', async function () {
+    const img = new Image()
+    assert.strictEqual(Object.prototype.toString.call(img), '[object HTMLImageElement]')
+  })
+
   it('loads JPEG image', function () {
     return loadImage(jpgFace).then((img) => {
       assert.strictEqual(img.onerror, null)
