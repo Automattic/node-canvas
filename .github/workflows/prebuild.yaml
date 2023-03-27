@@ -228,14 +228,15 @@ jobs:
       # https://github.com/actions/virtual-environments/pull/632
       - uses: msys2/setup-msys2@v2
         with:
+          msystem: UCRT64
           update: true
           path-type: inherit
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.canvas_tag }}
           # Fetch all commits/all branches so we can checkout the prebuild
@@ -265,11 +266,11 @@ jobs:
 
           copies=$(comm -12 \
             <(cat depends.csv | cut -d ',' -f2 | sed 's/"//g' | tr '[:upper:]' '[:lower:]' | sort) \
-            <(find /mingw64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
+            <(find /ucrt64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
           )
 
           for dll in $copies; do
-            cp /mingw64/bin/$dll build/Release
+            cp /ucrt64/bin/$dll build/Release
           done;
 
       - name: Test binary
