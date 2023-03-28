@@ -11,6 +11,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 
+2.11.2
+==================
+### Fixed
+* Building on Windows in CI (and maybe other Windows configurations?) (#2216)
+
 2.11.1
 ==================
 ### Fixed
