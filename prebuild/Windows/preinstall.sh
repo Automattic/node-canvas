@@ -7,28 +7,28 @@ deps="cairo-2 png16-16 jpeg-8 pango-1.0-0 pangocairo-1.0-0 gobject-2.0-0 glib-2.
 pacman --noconfirm -S \
   wget \
   unzip \
-  mingw64/mingw-w64-x86_64-binutils \
-  mingw64/mingw-w64-x86_64-tools \
-  mingw64/mingw-w64-x86_64-libjpeg-turbo \
-  mingw64/mingw-w64-x86_64-pango \
-  mingw64/mingw-w64-x86_64-cairo \
-  mingw64/mingw-w64-x86_64-giflib \
-  mingw64/mingw-w64-x86_64-freetype \
-  mingw64/mingw-w64-x86_64-fontconfig \
-  mingw64/mingw-w64-x86_64-librsvg \
-  mingw64/mingw-w64-x86_64-libxml2 \
-  mingw64/mingw-w64-x86_64-libgsf
+  ucrt64/mingw-w64-ucrt-x86_64-binutils \
+  ucrt64/mingw-w64-ucrt-x86_64-tools \
+  ucrt64/mingw-w64-ucrt-x86_64-libjpeg-turbo \
+  ucrt64/mingw-w64-ucrt-x86_64-pango \
+  ucrt64/mingw-w64-ucrt-x86_64-cairo \
+  ucrt64/mingw-w64-ucrt-x86_64-giflib \
+  ucrt64/mingw-w64-ucrt-x86_64-freetype \
+  ucrt64/mingw-w64-ucrt-x86_64-fontconfig \
+  ucrt64/mingw-w64-ucrt-x86_64-librsvg \
+  ucrt64/mingw-w64-ucrt-x86_64-libxml2 \
+  ucrt64/mingw-w64-ucrt-x86_64-libgsf
 
 # create .lib files for vc++
 
-echo "generating lib files for the MSYS2 dlls"
+echo "generating lib files for the MSYS2 UCRT64 dlls"
 for lib in $deps; do
-  gendef /mingw64/bin/lib$lib.dll > /dev/null 2>&1 || {
+  gendef /ucrt64/bin/lib$lib.dll > /dev/null 2>&1 || {
     echo "could not find lib$lib.dll, have to skip ";
     continue;
   }
 
-  dlltool -d lib$lib.def -l /mingw64/lib/lib$lib.lib > /dev/null 2>&1 || {
+  dlltool -d lib$lib.def -l /ucrt64/lib/lib$lib.lib > /dev/null 2>&1 || {
     echo "could not create dll for lib$lib.dll";
     continue;
   }
