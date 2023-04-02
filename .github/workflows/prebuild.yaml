@@ -39,17 +39,18 @@ on: workflow_dispatch
 # release tag as the canvas version being built.
 # env:
 #   UPLOAD_TO: "v0.0.1"
-
-# If/when node-canvas moves to Node.js 10+, the latest node-gyp can be used.
-# Node 19 requires a recent node-gyp, but Node <10 requires 6.1. Manually set
-# this file depending on what you're building!!
+#
+# Node 19 requires a recent node-gyp
+# Node 10, 11 require 8
+# Node 8, 9 require 6.1
+# Manually set this file depending on what you're building!!
 
 jobs:
   Linux:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        node: [8, 9]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
@@ -142,7 +143,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [13, 14, 15, 16, 17, 18, 19]
+        node: [8, 9]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
@@ -165,7 +166,7 @@ jobs:
           set -Eeuxo pipefail
           git checkout ${{ matrix.canvas_tag }}
           git checkout $GITHUB_SHA -- prebuild/
-          npm install -g node-gyp
+          npm install -g node-gyp@6
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
@@ -215,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [13, 14, 15, 16, 17, 18, 19]
+        node: [8, 9]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
@@ -247,7 +248,7 @@ jobs:
         run: |
           git checkout ${{ matrix.canvas_tag }}
           git checkout $env:GITHUB_SHA -- prebuild/
-          npm install -g node-gyp@8
+          npm install -g node-gyp@6
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
           npm install --ignore-scripts
           msys2 -c ". prebuild/Windows/preinstall.sh"
