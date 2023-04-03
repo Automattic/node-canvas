@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+- Upgrade single-get dependency ^3.0.3 to ^4.0.1
 
 2.11.2
 ==================
