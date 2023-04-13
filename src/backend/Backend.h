@@ -57,7 +57,6 @@ class Backend : public Nan::ObjectWrap
 class BackendOperationNotAvailable: public std::exception
 {
   private:
-    Backend* backend;
     std::string operation_name;
     std::string msg;
 

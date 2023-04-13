@@ -8,8 +8,16 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
+* Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
+* Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
+* Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
+* Remove unused private field `backend` in the `Backend` class. (#2229)
 ### Added
 ### Fixed
+* Fix a case of use-after-free. (#2229)
+* Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
+* Fix a potential memory leak. (#2229)
 
 2.11.2
 ==================

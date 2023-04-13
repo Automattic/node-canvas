@@ -607,8 +607,8 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
   // get width, height
   int width = cairo_image_surface_get_width( surface );
   int height = cairo_image_surface_get_height( surface );
-  unsigned* precalc =
-      (unsigned*)malloc(width*height*sizeof(unsigned));
+  const unsigned int size = width * height * sizeof(unsigned);
+  unsigned* precalc = (unsigned*)malloc(size);
   cairo_surface_flush( surface );
   unsigned char* src = cairo_image_surface_get_data( surface );
   double mul=1.f/((radius*2)*(radius*2));
@@ -627,6 +627,8 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
           unsigned char* pix = src;
           unsigned* pre = precalc;
 
+          bool modified = false;
+
           pix += channel;
           for (y=0;y<height;y++) {
               for (x=0;x<width;x++) {
@@ -635,8 +637,13 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
                   if (y>0) tot+=pre[-width];
                   if (x>0 && y>0) tot-=pre[-width-1];
                   *pre++=tot;
+                  if (!modified) modified = true;
                   pix += 4;
               }
+          }
+
+          if (!modified) {
+              memset(precalc, 0, size);
           }
 
           // blur step.
@@ -1432,7 +1439,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
-  const char *op = "source-over";
+  const char *op{};
   switch (cairo_get_operator(ctx)) {
     // composite modes:
     case CAIRO_OPERATOR_CLEAR: op = "clear"; break;
@@ -1469,6 +1476,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
     case CAIRO_OPERATOR_HSL_LUMINOSITY: op = "luminosity"; break;
     // non-standard:
     case CAIRO_OPERATOR_SATURATE: op = "saturate"; break;
+    default: op = "source-over";
   }
 
   info.GetReturnValue().Set(Nan::New(op).ToLocalChecked());
@@ -2507,6 +2515,7 @@ Context2d::setTextPath(double x, double y) {
       pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width;
       break;
+    default: ;
   }
 
   y -= getBaselineAdjustment(_layout, state->textBaseline);

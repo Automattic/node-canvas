@@ -133,8 +133,9 @@ NAN_METHOD(Canvas::New) {
   }
 
   if (!backend->isSurfaceValid()) {
+    const char *error = backend->getError();
     delete backend;
-    return Nan::ThrowError(backend->getError());
+    return Nan::ThrowError(error);
   }
 
   Canvas* canvas = new Canvas(backend);
