@@ -8,7 +8,7 @@ using namespace v8;
 
 PdfBackend::PdfBackend(int width, int height)
   : Backend("pdf", width, height) {
-  createSurface();
+  PdfBackend::createSurface();
 }
 
 PdfBackend::~PdfBackend() {

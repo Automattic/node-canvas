@@ -1192,11 +1192,13 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  RsvgDimensionData *dims = new RsvgDimensionData();
-  rsvg_handle_get_dimensions(_rsvg, dims);
+  double d_width;
+  double d_height;
 
-  width = naturalWidth = dims->width;
-  height = naturalHeight = dims->height;
+  rsvg_handle_get_intrinsic_size_in_pixels(_rsvg, &d_width, &d_height);
+
+  width = naturalWidth = d_width;
+  height = naturalHeight = d_height;
 
   status = renderSVGToSurface();
   if (status != CAIRO_STATUS_SUCCESS) {
@@ -1232,7 +1234,13 @@ Image::renderSVGToSurface() {
     return status;
   }
 
-  gboolean render_ok = rsvg_handle_render_cairo(_rsvg, cr);
+  RsvgRectangle viewport = {
+    .x = 0,
+    .y = 0,
+    .width = static_cast<double>(width),
+    .height = static_cast<double>(height),
+  };
+  gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
   if (!render_ok) {
     g_object_unref(_rsvg);
     cairo_destroy(cr);

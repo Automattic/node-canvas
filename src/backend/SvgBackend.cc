@@ -9,7 +9,7 @@ using namespace v8;
 
 SvgBackend::SvgBackend(int width, int height)
   : Backend("svg", width, height) {
-  createSurface();
+  SvgBackend::createSurface();
 }
 
 SvgBackend::~SvgBackend() {
