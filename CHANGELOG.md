@@ -14,6 +14,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
+* Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
 ### Added
 * Added string tags to support class detection
 ### Fixed

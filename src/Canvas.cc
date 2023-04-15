@@ -1,7 +1,7 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 
 #include "Canvas.h"
-
+#include "InstanceData.h"
 #include <algorithm> // std::min
 #include <assert.h>
 #include <cairo-pdf.h>
@@ -35,16 +35,7 @@
   "with at least a family (string) and optionally weight (string/number) " \
   "and style (string)."
 
-#define CHECK_RECEIVER(prop) \
-  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) { \
-    Nan::ThrowTypeError("Method " #prop " called on incompatible receiver"); \
-    return; \
-  }
-
-using namespace v8;
 using namespace std;
-
-Nan::Persistent<FunctionTemplate> Canvas::constructor;
 
 std::vector<FontFace> font_face_list;
 
@@ -53,138 +44,138 @@ std::vector<FontFace> font_face_list;
  */
 
 void
-Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
-  Nan::HandleScope scope;
+Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
+  Napi::HandleScope scope(env);
+  InstanceData* data = env.GetInstanceData<InstanceData>();
 
   // Constructor
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(Canvas::New);
-  constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New("Canvas").ToLocalChecked());
-
-  // Prototype
-  Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
-  Nan::SetPrototypeMethod(ctor, "streamPNGSync", StreamPNGSync);
-  Nan::SetPrototypeMethod(ctor, "streamPDFSync", StreamPDFSync);
+  Napi::Function ctor = DefineClass(env, "Canvas", {
+    InstanceMethod<&Canvas::ToBuffer>("toBuffer"),
+    InstanceMethod<&Canvas::StreamPNGSync>("streamPNGSync"),
+    InstanceMethod<&Canvas::StreamPDFSync>("streamPDFSync"),
 #ifdef HAVE_JPEG
-  Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
+    InstanceMethod<&Canvas::StreamJPEGSync>("streamJPEGSync"),
 #endif
-  Nan::SetAccessor(proto, Nan::New("type").ToLocalChecked(), GetType);
-  Nan::SetAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride);
-  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
-  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
+    InstanceAccessor<&Canvas::GetType>("type"),
+    InstanceAccessor<&Canvas::GetStride>("stride"),
+    InstanceAccessor<&Canvas::GetWidth, &Canvas::SetWidth>("width"),
+    InstanceAccessor<&Canvas::GetHeight, &Canvas::SetHeight>("height"),
+    InstanceValue("PNG_NO_FILTERS", Napi::Number::New(env, PNG_NO_FILTERS)),
+    InstanceValue("PNG_FILTER_NONE", Napi::Number::New(env, PNG_FILTER_NONE)),
+    InstanceValue("PNG_FILTER_SUB", Napi::Number::New(env, PNG_FILTER_SUB)),
+    InstanceValue("PNG_FILTER_UP", Napi::Number::New(env, PNG_FILTER_UP)),
+    InstanceValue("PNG_FILTER_AVG", Napi::Number::New(env, PNG_FILTER_AVG)),
+    InstanceValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH)),
+    InstanceValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS)),
+    StaticMethod<&Canvas::RegisterFont>("_registerFont"),
+    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts")
+  });
 
-  Nan::SetTemplate(proto, "PNG_NO_FILTERS", Nan::New<Uint32>(PNG_NO_FILTERS));
-  Nan::SetTemplate(proto, "PNG_FILTER_NONE", Nan::New<Uint32>(PNG_FILTER_NONE));
-  Nan::SetTemplate(proto, "PNG_FILTER_SUB", Nan::New<Uint32>(PNG_FILTER_SUB));
-  Nan::SetTemplate(proto, "PNG_FILTER_UP", Nan::New<Uint32>(PNG_FILTER_UP));
-  Nan::SetTemplate(proto, "PNG_FILTER_AVG", Nan::New<Uint32>(PNG_FILTER_AVG));
-  Nan::SetTemplate(proto, "PNG_FILTER_PAETH", Nan::New<Uint32>(PNG_FILTER_PAETH));
-  Nan::SetTemplate(proto, "PNG_ALL_FILTERS", Nan::New<Uint32>(PNG_ALL_FILTERS));
-
-  // Class methods
-  Nan::SetMethod(ctor, "_registerFont", RegisterFont);
-  Nan::SetMethod(ctor, "_deregisterAllFonts", DeregisterAllFonts);
-
-  Local<Context> ctx = Nan::GetCurrentContext();
-  Nan::Set(target,
-           Nan::New("Canvas").ToLocalChecked(),
-           ctor->GetFunction(ctx).ToLocalChecked());
+  data->CanvasCtor = Napi::Persistent(ctor);
+  exports.Set("Canvas", ctor);
 }
 
 /*
  * Initialize a Canvas with the given width and height.
  */
 
-NAN_METHOD(Canvas::New) {
-  if (!info.IsConstructCall()) {
-    return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
-  }
-
+Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info), env(info.Env()) {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  ctor = Napi::Persistent(data->CanvasCtor.Value());
   Backend* backend = NULL;
-  if (info[0]->IsNumber()) {
-    int width = Nan::To<uint32_t>(info[0]).FromMaybe(0), height = 0;
+  Napi::Object jsBackend;
 
-    if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
+  if (info[0].IsNumber()) {
+    Napi::Number width = info[0].As<Napi::Number>();
+    Napi::Number height = Napi::Number::New(env, 0);
 
-    if (info[2]->IsString()) {
-      if (0 == strcmp("pdf", *Nan::Utf8String(info[2])))
-        backend = new PdfBackend(width, height);
-      else if (0 == strcmp("svg", *Nan::Utf8String(info[2])))
-        backend = new SvgBackend(width, height);
-      else
-        backend = new ImageBackend(width, height);
+    if (info[1].IsNumber()) height = info[1].As<Napi::Number>();
+
+    if (info[2].IsString()) {
+      std::string str = info[2].As<Napi::String>();
+      if (str == "pdf") {
+        Napi::Maybe<Napi::Object> instance = data->PdfBackendCtor.New({ width, height });
+        if (instance.IsJust()) backend = PdfBackend::Unwrap(jsBackend = instance.Unwrap());
+      } else if (str == "svg") {
+        Napi::Maybe<Napi::Object> instance = data->SvgBackendCtor.New({ width, height });
+        if (instance.IsJust()) backend = SvgBackend::Unwrap(jsBackend = instance.Unwrap());
+      } else {
+        Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
+        if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
+      }
+    } else {
+      Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
+      if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
     }
-    else
-      backend = new ImageBackend(width, height);
-  }
-  else if (info[0]->IsObject()) {
-    if (Nan::New(ImageBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(PdfBackend::constructor)->HasInstance(info[0]) ||
-        Nan::New(SvgBackend::constructor)->HasInstance(info[0])) {
-      backend = Nan::ObjectWrap::Unwrap<Backend>(Nan::To<Object>(info[0]).ToLocalChecked());
-    }else{
-      return Nan::ThrowTypeError("Invalid arguments");
+  } else if (info[0].IsObject()) {
+    jsBackend = info[0].As<Napi::Object>();
+    if (jsBackend.InstanceOf(data->ImageBackendCtor.Value()).UnwrapOr(false)) {
+      backend = ImageBackend::Unwrap(jsBackend);
+    } else if (jsBackend.InstanceOf(data->PdfBackendCtor.Value()).UnwrapOr(false)) {
+      backend = PdfBackend::Unwrap(jsBackend);
+    } else if (jsBackend.InstanceOf(data->SvgBackendCtor.Value()).UnwrapOr(false)) {
+      backend = SvgBackend::Unwrap(jsBackend);
+    } else {
+      Napi::TypeError::New(env, "Invalid arguments").ThrowAsJavaScriptException();
+      return;
     }
-  }
-  else {
-    backend = new ImageBackend(0, 0);
+  } else {
+    Napi::Number width = Napi::Number::New(env, 0);
+    Napi::Number height = Napi::Number::New(env, 0);
+    Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
+    if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
   }
 
   if (!backend->isSurfaceValid()) {
-    const char *error = backend->getError();
-    delete backend;
-    return Nan::ThrowError(error);
+    Napi::Error::New(env, backend->getError()).ThrowAsJavaScriptException();
+    return;
   }
 
-  Canvas* canvas = new Canvas(backend);
-  canvas->Wrap(info.This());
+  backend->setCanvas(this);
 
-  backend->setCanvas(canvas);
-
-  info.GetReturnValue().Set(info.This());
+  // Note: the backend gets destroyed when the jsBackend is GC'd. The cleaner
+  // way would be to only store the jsBackend and unwrap it when the c++ ref is
+  // needed, but that's slower and a burden. The _backend might be null if we
+  // returned early, but since an exception was thrown it gets destroyed soon.
+  _backend = backend;
+  _jsBackend = Napi::Persistent(jsBackend);
 }
 
 /*
  * Get type string.
  */
 
-NAN_GETTER(Canvas::GetType) {
-  CHECK_RECEIVER(Canvas.GetType);
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName()).ToLocalChecked());
+Napi::Value
+Canvas::GetType(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, backend()->getName());
 }
 
 /*
  * Get stride.
  */
-NAN_GETTER(Canvas::GetStride) {
-  CHECK_RECEIVER(Canvas.GetStride);
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<Number>(canvas->stride()));
+Napi::Value
+Canvas::GetStride(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, stride());
 }
 
 /*
  * Get width.
  */
 
-NAN_GETTER(Canvas::GetWidth) {
-  CHECK_RECEIVER(Canvas.GetWidth);
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<Number>(canvas->getWidth()));
+Napi::Value
+Canvas::GetWidth(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, getWidth());
 }
 
 /*
  * Set width.
  */
 
-NAN_SETTER(Canvas::SetWidth) {
-  CHECK_RECEIVER(Canvas.SetWidth);
-  if (value->IsNumber()) {
-    Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setWidth(Nan::To<uint32_t>(value).FromMaybe(0));
-    canvas->resurface(info.This());
+void
+Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (value.IsNumber()) {
+    backend()->setWidth(value.As<Napi::Number>().Uint32Value());
+    resurface(info.This().As<Napi::Object>());
   }
 }
 
@@ -192,22 +183,20 @@ NAN_SETTER(Canvas::SetWidth) {
  * Get height.
  */
 
-NAN_GETTER(Canvas::GetHeight) {
-  CHECK_RECEIVER(Canvas.GetHeight);
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<Number>(canvas->getHeight()));
+Napi::Value
+Canvas::GetHeight(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, getHeight());
 }
 
 /*
  * Set height.
  */
 
-NAN_SETTER(Canvas::SetHeight) {
-  CHECK_RECEIVER(Canvas.SetHeight);
-  if (value->IsNumber()) {
-    Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-    canvas->backend()->setHeight(Nan::To<uint32_t>(value).FromMaybe(0));
-    canvas->resurface(info.This());
+void
+Canvas::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (value.IsNumber()) {
+    backend()->setHeight(value.As<Napi::Number>().Uint32Value());
+    resurface(info.This().As<Napi::Object>());
   }
 }
 
@@ -216,8 +205,8 @@ NAN_SETTER(Canvas::SetHeight) {
  */
 
 void
-Canvas::ToPngBufferAsync(uv_work_t *req) {
-  PngClosure* closure = static_cast<PngClosure*>(req->data);
+Canvas::ToPngBufferAsync(Closure* base) {
+  PngClosure* closure = static_cast<PngClosure*>(base);
 
   closure->status = canvas_write_to_png_stream(
     closure->canvas->surface(),
@@ -227,102 +216,84 @@ Canvas::ToPngBufferAsync(uv_work_t *req) {
 
 #ifdef HAVE_JPEG
 void
-Canvas::ToJpegBufferAsync(uv_work_t *req) {
-  JpegClosure* closure = static_cast<JpegClosure*>(req->data);
+Canvas::ToJpegBufferAsync(Closure* base) {
+  JpegClosure* closure = static_cast<JpegClosure*>(base);
   write_to_jpeg_buffer(closure->canvas->surface(), closure);
 }
 #endif
 
-/*
- * EIO after toBuffer callback.
- */
+static void
+parsePNGArgs(Napi::Value arg, PngClosure& pngargs) {
+  if (arg.IsObject()) {
+    Napi::Object obj = arg.As<Napi::Object>();
+    Napi::Value cLevel;
 
-void
-Canvas::ToBufferAsyncAfter(uv_work_t *req) {
-  Nan::HandleScope scope;
-  Nan::AsyncResource async("canvas:ToBufferAsyncAfter");
-  Closure* closure = static_cast<Closure*>(req->data);
-  delete req;
-
-  if (closure->status) {
-    Local<Value> argv[1] = { Canvas::Error(closure->status) };
-    closure->cb.Call(1, argv, &async);
-  } else {
-    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
-    Local<Value> argv[2] = { Nan::Null(), buf };
-    closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
-  }
-
-  closure->canvas->Unref();
-  delete closure;
-}
-
-static void parsePNGArgs(Local<Value> arg, PngClosure& pngargs) {
-  if (arg->IsObject()) {
-    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
-
-    Local<Value> cLevel = Nan::Get(obj, Nan::New("compressionLevel").ToLocalChecked()).ToLocalChecked();
-    if (cLevel->IsUint32()) {
-      uint32_t val = Nan::To<uint32_t>(cLevel).FromMaybe(0);
+    if (obj.Get("compressionLevel").UnwrapTo(&cLevel) && cLevel.IsNumber()) {
+      uint32_t val = cLevel.As<Napi::Number>().Uint32Value();
       // See quote below from spec section 4.12.5.5.
       if (val <= 9) pngargs.compressionLevel = val;
     }
 
-    Local<Value> rez = Nan::Get(obj, Nan::New("resolution").ToLocalChecked()).ToLocalChecked();
-    if (rez->IsUint32()) {
-      uint32_t val = Nan::To<uint32_t>(rez).FromMaybe(0);
+    Napi::Value rez;
+    if (obj.Get("resolution").UnwrapTo(&rez) && rez.IsNumber()) {
+      uint32_t val = rez.As<Napi::Number>().Uint32Value();
       if (val > 0) pngargs.resolution = val;
     }
 
-    Local<Value> filters = Nan::Get(obj, Nan::New("filters").ToLocalChecked()).ToLocalChecked();
-    if (filters->IsUint32()) pngargs.filters = Nan::To<uint32_t>(filters).FromMaybe(0);
+    Napi::Value filters;
+    if (obj.Get("filters").UnwrapTo(&filters) && filters.IsNumber()) {
+      pngargs.filters = filters.As<Napi::Number>().Uint32Value();
+    }
 
-    Local<Value> palette = Nan::Get(obj, Nan::New("palette").ToLocalChecked()).ToLocalChecked();
-    if (palette->IsUint8ClampedArray()) {
-      Local<Uint8ClampedArray> palette_ta = palette.As<Uint8ClampedArray>();
-      pngargs.nPaletteColors = palette_ta->Length();
-      if (pngargs.nPaletteColors % 4 != 0) {
-        throw "Palette length must be a multiple of 4.";
-      }
-      pngargs.nPaletteColors /= 4;
-      Nan::TypedArrayContents<uint8_t> _paletteColors(palette_ta);
-      pngargs.palette = *_paletteColors;
-      // Optional background color index:
-      Local<Value> backgroundIndexVal = Nan::Get(obj, Nan::New("backgroundIndex").ToLocalChecked()).ToLocalChecked();
-      if (backgroundIndexVal->IsUint32()) {
-        pngargs.backgroundIndex = static_cast<uint8_t>(Nan::To<uint32_t>(backgroundIndexVal).FromMaybe(0));
+    Napi::Value palette;
+    if (obj.Get("palette").UnwrapTo(&palette) && palette.IsTypedArray()) {
+      Napi::TypedArray palette_ta = palette.As<Napi::TypedArray>();
+      if (palette_ta.TypedArrayType() == napi_uint8_clamped_array) {
+        pngargs.nPaletteColors = palette_ta.ElementLength();
+        if (pngargs.nPaletteColors % 4 != 0) {
+          throw "Palette length must be a multiple of 4.";
+        }
+        pngargs.palette = palette_ta.As<Napi::Uint8Array>().Data();
+        pngargs.nPaletteColors /= 4;
+        // Optional background color index:
+        Napi::Value backgroundIndexVal;
+        if (obj.Get("backgroundIndex").UnwrapTo(&backgroundIndexVal) && backgroundIndexVal.IsNumber()) {
+          pngargs.backgroundIndex = backgroundIndexVal.As<Napi::Number>().Uint32Value();
+        }
       }
     }
   }
 }
 
 #ifdef HAVE_JPEG
-static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
+static void parseJPEGArgs(Napi::Value arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
   // user agent must use its default quality value, as if the quality argument
   // had not been given." - 4.12.5.5
-  if (arg->IsObject()) {
-    Local<Object> obj = Nan::To<Object>(arg).ToLocalChecked();
+  if (arg.IsObject()) {
+    Napi::Object obj = arg.As<Napi::Object>();
 
-    Local<Value> qual = Nan::Get(obj, Nan::New("quality").ToLocalChecked()).ToLocalChecked();
-    if (qual->IsNumber()) {
-      double quality = Nan::To<double>(qual).FromMaybe(0);
+    Napi::Value qual;
+    if (obj.Get("quality").UnwrapTo(&qual) && qual.IsNumber()) {
+      double quality = qual.As<Napi::Number>().DoubleValue();
       if (quality >= 0.0 && quality <= 1.0) {
         jpegargs.quality = static_cast<uint32_t>(100.0 * quality);
       }
     }
 
-    Local<Value> chroma = Nan::Get(obj, Nan::New("chromaSubsampling").ToLocalChecked()).ToLocalChecked();
-    if (chroma->IsBoolean()) {
-      bool subsample = Nan::To<bool>(chroma).FromMaybe(0);
-      jpegargs.chromaSubsampling = subsample ? 2 : 1;
-    } else if (chroma->IsNumber()) {
-      jpegargs.chromaSubsampling = Nan::To<uint32_t>(chroma).FromMaybe(0);
+    Napi::Value chroma;
+    if (obj.Get("chromaSubsampling").UnwrapTo(&chroma)) {
+      if (chroma.IsBoolean()) {
+        bool subsample = chroma.As<Napi::Boolean>().Value();
+        jpegargs.chromaSubsampling = subsample ? 2 : 1;
+      } else if (chroma.IsNumber()) {
+        jpegargs.chromaSubsampling = chroma.As<Napi::Number>().Uint32Value();
+      }
     }
 
-    Local<Value> progressive = Nan::Get(obj, Nan::New("progressive").ToLocalChecked()).ToLocalChecked();
-    if (!progressive->IsUndefined()) {
-      jpegargs.progressive = Nan::To<bool>(progressive).FromMaybe(0);
+    Napi::Value progressive;
+    if (obj.Get("progressive").UnwrapTo(&progressive) && progressive.IsBoolean()) {
+      jpegargs.progressive = progressive.As<Napi::Boolean>().Value();
     }
   }
 }
@@ -330,29 +301,27 @@ static void parseJPEGArgs(Local<Value> arg, JpegClosure& jpegargs) {
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
 
-static inline void setPdfMetaStr(cairo_surface_t* surf, Local<Object> opts,
-  cairo_pdf_metadata_t t, const char* pName) {
-  auto propName = Nan::New(pName).ToLocalChecked();
-  auto propValue = Nan::Get(opts, propName).ToLocalChecked();
-  if (propValue->IsString()) {
+static inline void setPdfMetaStr(cairo_surface_t* surf, Napi::Object opts,
+  cairo_pdf_metadata_t t, const char* propName) {
+  Napi::Value propValue;
+  if (opts.Get(propName).UnwrapTo(&propValue) && propValue.IsString()) {
     // (copies char data)
-    cairo_pdf_surface_set_metadata(surf, t, *Nan::Utf8String(propValue));
+    cairo_pdf_surface_set_metadata(surf, t, propValue.As<Napi::String>().Utf8Value().c_str());
   }
 }
 
-static inline void setPdfMetaDate(cairo_surface_t* surf, Local<Object> opts,
-  cairo_pdf_metadata_t t, const char* pName) {
-  auto propName = Nan::New(pName).ToLocalChecked();
-  auto propValue = Nan::Get(opts, propName).ToLocalChecked();
-  if (propValue->IsDate()) {
-    auto date = static_cast<time_t>(propValue.As<v8::Date>()->ValueOf() / 1000); // ms -> s
+static inline void setPdfMetaDate(cairo_surface_t* surf, Napi::Object opts,
+  cairo_pdf_metadata_t t, const char* propName) {
+  Napi::Value propValue;
+  if (opts.Get(propName).UnwrapTo(&propValue) && propValue.IsDate()) {
+    auto date = static_cast<time_t>(propValue.As<Napi::Date>().ValueOf() / 1000); // ms -> s
     char buf[sizeof "2011-10-08T07:07:09Z"];
     strftime(buf, sizeof buf, "%FT%TZ", gmtime(&date));
     cairo_pdf_surface_set_metadata(surf, t, buf);
   }
 }
 
-static void setPdfMetadata(Canvas* canvas, Local<Object> opts) {
+static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
   cairo_surface_t* surf = canvas->surface();
 
   setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_TITLE, "title");
@@ -392,146 +361,137 @@ static void setPdfMetadata(Canvas* canvas, Local<Object> opts) {
     ((err: null|Error, buffer) => any, "image/jpeg", {quality?: number, progressive?: Boolean, chromaSubsampling?: Boolean|number})
  */
 
-NAN_METHOD(Canvas::ToBuffer) {
+Napi::Value
+Canvas::ToBuffer(const Napi::CallbackInfo& info) {
+  EncodingWorker *worker = new EncodingWorker(info.Env());
   cairo_status_t status;
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   // Vector canvases, sync only
-  const std::string name = canvas->backend()->getName();
+  const std::string name = backend()->getName();
   if (name == "pdf" || name == "svg") {
     // mime type may be present, but it's not checked
     PdfSvgClosure* closure;
     if (name == "pdf") {
-      closure = static_cast<PdfBackend*>(canvas->backend())->closure();
+      closure = static_cast<PdfBackend*>(backend())->closure();
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-      if (info[1]->IsObject()) { // toBuffer("application/pdf", config)
-        setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+      if (info[1].IsObject()) { // toBuffer("application/pdf", config)
+        setPdfMetadata(this, info[1].As<Napi::Object>());
       }
 #endif // CAIRO 16+
     } else {
-      closure = static_cast<SvgBackend*>(canvas->backend())->closure();
+      closure = static_cast<SvgBackend*>(backend())->closure();
     }
 
-    cairo_surface_finish(canvas->surface());
-    Local<Object> buf = Nan::CopyBuffer((char*)&closure->vec[0], closure->vec.size()).ToLocalChecked();
-    info.GetReturnValue().Set(buf);
-    return;
+    cairo_surface_finish(surface());
+    return Napi::Buffer<uint8_t>::Copy(env, &closure->vec[0], closure->vec.size());
   }
 
   // Raw ARGB data -- just a memcpy()
-  if (info[0]->StrictEquals(Nan::New<String>("raw").ToLocalChecked())) {
-    cairo_surface_t *surface = canvas->surface();
+  if (info[0].StrictEquals(Napi::String::New(env, "raw"))) {
+    cairo_surface_t *surface = this->surface();
     cairo_surface_flush(surface);
-    if (canvas->nBytes() > node::Buffer::kMaxLength) {
-      Nan::ThrowError("Data exceeds maximum buffer length.");
-      return;
+    if (nBytes() > node::Buffer::kMaxLength) {
+      Napi::Error::New(env, "Data exceeds maximum buffer length.").ThrowAsJavaScriptException();
+      return env.Undefined();
     }
-    const unsigned char *data = cairo_image_surface_get_data(surface);
-    Isolate* iso = Nan::GetCurrentContext()->GetIsolate();
-    Local<Object> buf = node::Buffer::Copy(iso, reinterpret_cast<const char*>(data), canvas->nBytes()).ToLocalChecked();
-    info.GetReturnValue().Set(buf);
-    return;
+    return Napi::Buffer<uint8_t>::Copy(env, cairo_image_surface_get_data(surface), nBytes());
   }
 
   // Sync PNG, default
-  if (info[0]->IsUndefined() || info[0]->StrictEquals(Nan::New<String>("image/png").ToLocalChecked())) {
+  if (info[0].IsUndefined() || info[0].StrictEquals(Napi::String::New(env, "image/png"))) {
     try {
-      PngClosure closure(canvas);
+      PngClosure closure(this);
       parsePNGArgs(info[1], closure);
       if (closure.nPaletteColors == 0xFFFFFFFF) {
-        Nan::ThrowError("Palette length must be a multiple of 4.");
-        return;
+        Napi::Error::New(env, "Palette length must be a multiple of 4.").ThrowAsJavaScriptException();
+        return env.Undefined();
       }
 
-      Nan::TryCatch try_catch;
-      status = canvas_write_to_png_stream(canvas->surface(), PngClosure::writeVec, &closure);
+      status = canvas_write_to_png_stream(surface(), PngClosure::writeVec, &closure);
 
-      if (try_catch.HasCaught()) {
-        try_catch.ReThrow();
-      } else if (status) {
-        throw status;
-      } else {
-        // TODO it's possible to avoid this copy
-        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
-        info.GetReturnValue().Set(buf);
+      if (!env.IsExceptionPending()) {
+        if (status) {
+          throw status; // TODO: throw in js?
+        } else {
+          // TODO it's possible to avoid this copy
+          return Napi::Buffer<uint8_t>::Copy(env, &closure.vec[0], closure.vec.size());
+        }
       }
     } catch (cairo_status_t ex) {
-      Nan::ThrowError(Canvas::Error(ex));
+      CairoError(ex).ThrowAsJavaScriptException();
     } catch (const char* ex) {
-      Nan::ThrowError(ex);
+      Napi::Error::New(env, ex).ThrowAsJavaScriptException();
+
     }
-    return;
+
+    return env.Undefined();
   }
 
   // Async PNG
-  if (info[0]->IsFunction() &&
-    (info[1]->IsUndefined() || info[1]->StrictEquals(Nan::New<String>("image/png").ToLocalChecked()))) {
+  if (info[0].IsFunction() &&
+    (info[1].IsUndefined() || info[1].StrictEquals(Napi::String::New(env, "image/png")))) {
 
     PngClosure* closure;
     try {
-      closure = new PngClosure(canvas);
+      closure = new PngClosure(this);
       parsePNGArgs(info[2], *closure);
     } catch (cairo_status_t ex) {
-      Nan::ThrowError(Canvas::Error(ex));
-      return;
+      CairoError(ex).ThrowAsJavaScriptException();
+      return env.Undefined();
     } catch (const char* ex) {
-      Nan::ThrowError(ex);
-      return;
+      Napi::Error::New(env, ex).ThrowAsJavaScriptException();
+      return env.Undefined();
     }
 
-    canvas->Ref();
-    closure->cb.Reset(info[0].As<Function>());
+    Ref();
+    closure->cb = Napi::Persistent(info[0].As<Napi::Function>());
 
-    uv_work_t* req = new uv_work_t;
-    req->data = closure;
     // Make sure the surface exists since we won't have an isolate context in the async block:
-    canvas->surface();
-    uv_queue_work(uv_default_loop(), req, ToPngBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
+    surface();
+    worker->Init(&ToPngBufferAsync, closure);
+    worker->Queue();
 
-    return;
+    return env.Undefined();
   }
 
 #ifdef HAVE_JPEG
   // Sync JPEG
-  Local<Value> jpegStr = Nan::New<String>("image/jpeg").ToLocalChecked();
-  if (info[0]->StrictEquals(jpegStr)) {
+  Napi::Value jpegStr = Napi::String::New(env, "image/jpeg");
+  if (info[0].StrictEquals(jpegStr)) {
     try {
-      JpegClosure closure(canvas);
+      JpegClosure closure(this);
       parseJPEGArgs(info[1], closure);
 
-      Nan::TryCatch try_catch;
-      write_to_jpeg_buffer(canvas->surface(), &closure);
+      write_to_jpeg_buffer(surface(), &closure);
 
-      if (try_catch.HasCaught()) {
-        try_catch.ReThrow();
-      } else {
+      if (!env.IsExceptionPending()) {
         // TODO it's possible to avoid this copy.
-        Local<Object> buf = Nan::CopyBuffer((char *)&closure.vec[0], closure.vec.size()).ToLocalChecked();
-        info.GetReturnValue().Set(buf);
+        return Napi::Buffer<uint8_t>::Copy(env, &closure.vec[0], closure.vec.size());
       }
     } catch (cairo_status_t ex) {
-      Nan::ThrowError(Canvas::Error(ex));
+      CairoError(ex).ThrowAsJavaScriptException();
+      return env.Undefined();
     }
-    return;
+    return env.Undefined();
   }
 
   // Async JPEG
-  if (info[0]->IsFunction() && info[1]->StrictEquals(jpegStr)) {
-    JpegClosure* closure = new JpegClosure(canvas);
+  if (info[0].IsFunction() && info[1].StrictEquals(jpegStr)) {
+    JpegClosure* closure = new JpegClosure(this);
     parseJPEGArgs(info[2], *closure);
 
-    canvas->Ref();
-    closure->cb.Reset(info[0].As<Function>());
+    Ref();
+    closure->cb = Napi::Persistent(info[0].As<Napi::Function>());
 
-    uv_work_t* req = new uv_work_t;
-    req->data = closure;
     // Make sure the surface exists since we won't have an isolate context in the async block:
-    canvas->surface();
-    uv_queue_work(uv_default_loop(), req, ToJpegBufferAsync, (uv_after_work_cb)ToBufferAsyncAfter);
-
-    return;
+    surface();
+    worker->Init(&ToJpegBufferAsync, closure);
+    worker->Queue();
+    return env.Undefined();
   }
 #endif
+
+  return env.Undefined();
 }
 
 /*
@@ -540,15 +500,12 @@ NAN_METHOD(Canvas::ToBuffer) {
 
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
-  Nan::HandleScope scope;
-  Nan::AsyncResource async("canvas:StreamPNG");
   PngClosure* closure = (PngClosure*) c;
-  Local<Object> buf = Nan::CopyBuffer((char *)data, len).ToLocalChecked();
-  Local<Value> argv[3] = {
-      Nan::Null()
-    , buf
-    , Nan::New<Number>(len) };
-  closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
+  Napi::Env env = closure->canvas->env;
+  Napi::HandleScope scope(env);
+  Napi::AsyncContext async(env, "canvas:StreamPNG");
+  Napi::Value buf = Napi::Buffer<uint8_t>::Copy(env, data, len);
+  closure->cb.MakeCallback(env.Global(), { env.Null(), buf, Napi::Number::New(env, len) }, async);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -557,50 +514,35 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
  * StreamPngSync(this, options: {palette?: Uint8ClampedArray, backgroundIndex?: uint32, compressionLevel: uint32, filters: uint32})
  */
 
-NAN_METHOD(Canvas::StreamPNGSync) {
-  if (!info[0]->IsFunction())
-    return Nan::ThrowTypeError("callback function required");
+void
+Canvas::StreamPNGSync(const Napi::CallbackInfo& info) {
+  if (!info[0].IsFunction()) {
+    Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
+    return;
+  }
 
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-
-  PngClosure closure(canvas);
+  PngClosure closure(this);
   parsePNGArgs(info[1], closure);
 
-  closure.cb.Reset(Local<Function>::Cast(info[0]));
+  closure.cb = Napi::Persistent(info[0].As<Napi::Function>());
 
-  Nan::TryCatch try_catch;
+  cairo_status_t status = canvas_write_to_png_stream(surface(), streamPNG, &closure);
 
-  cairo_status_t status = canvas_write_to_png_stream(canvas->surface(), streamPNG, &closure);
-
-  if (try_catch.HasCaught()) {
-    try_catch.ReThrow();
-    return;
-  } else if (status) {
-    Local<Value> argv[1] = { Canvas::Error(status) };
-    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
-  } else {
-    Local<Value> argv[3] = {
-        Nan::Null()
-      , Nan::Null()
-      , Nan::New<Uint32>(0) };
-    Nan::Call(closure.cb, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+  if (!env.IsExceptionPending()) {
+    if (status) {
+      closure.cb.Call(env.Global(), { CairoError(status).Value() });
+    } else {
+      closure.cb.Call(env.Global(), { env.Null(), env.Null(), Napi::Number::New(env, 0) });
+    }
   }
-  return;
 }
 
 
 struct PdfStreamInfo {
-  Local<Function> fn;
+  Napi::Function fn;
   uint32_t len;
   uint8_t* data;
 };
-
-
-/*
- * Canvas::StreamPDF FreeCallback
- */
-
-void stream_pdf_free(char *, void *) {}
 
 /*
  * Canvas::StreamPDF callback.
@@ -608,18 +550,15 @@ void stream_pdf_free(char *, void *) {}
 
 static cairo_status_t
 streamPDF(void *c, const uint8_t *data, unsigned len) {
-  Nan::HandleScope scope;
-  Nan::AsyncResource async("canvas:StreamPDF");
   PdfStreamInfo* streaminfo = static_cast<PdfStreamInfo*>(c);
+  Napi::Env env = streaminfo->fn.Env();
+  Napi::HandleScope scope(env);
+  Napi::AsyncContext async(env, "canvas:StreamPDF");
   // TODO this is technically wrong, we're returning a pointer to the data in a
   // vector in a class with automatic storage duration. If the canvas goes out
   // of scope while we're in the handler, a use-after-free could happen.
-  Local<Object> buf = Nan::NewBuffer(const_cast<char *>(reinterpret_cast<const char *>(data)), len, stream_pdf_free, 0).ToLocalChecked();
-  Local<Value> argv[3] = {
-      Nan::Null()
-    , buf
-    , Nan::New<Number>(len) };
-  async.runInAsyncScope(Nan::GetCurrentContext()->Global(), streaminfo->fn, sizeof argv / sizeof *argv, argv);
+  Napi::Value buf = Napi::Buffer<uint8_t>::New(env, (uint8_t *)(data), len);
+  streaminfo->fn.MakeCallback(env.Global(), { env.Null(), buf, Napi::Number::New(env, len) }, async);
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -643,45 +582,41 @@ cairo_status_t canvas_write_to_pdf_stream(cairo_surface_t *surface, cairo_write_
  * Stream PDF data synchronously.
  */
 
-NAN_METHOD(Canvas::StreamPDFSync) {
-  if (!info[0]->IsFunction())
-    return Nan::ThrowTypeError("callback function required");
+void
+Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
+  if (!info[0].IsFunction()) {
+    Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
+    return;
+  }
 
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.Holder());
-
-  if (canvas->backend()->getName() != "pdf")
-    return Nan::ThrowTypeError("wrong canvas type");
+  if (backend()->getName() != "pdf") {
+    Napi::TypeError::New(env, "wrong canvas type").ThrowAsJavaScriptException();
+    return;
+  }
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  if (info[1]->IsObject()) {
-    setPdfMetadata(canvas, Nan::To<Object>(info[1]).ToLocalChecked());
+  if (info[1].IsObject()) {
+    setPdfMetadata(this, info[1].As<Napi::Object>());
   }
 #endif
 
-  cairo_surface_finish(canvas->surface());
+  cairo_surface_finish(surface());
 
-  PdfSvgClosure* closure = static_cast<PdfBackend*>(canvas->backend())->closure();
-  Local<Function> fn = info[0].As<Function>();
+  PdfSvgClosure* closure = static_cast<PdfBackend*>(backend())->closure();
+  Napi::Function fn = info[0].As<Napi::Function>();
   PdfStreamInfo streaminfo;
   streaminfo.fn = fn;
   streaminfo.data = &closure->vec[0];
   streaminfo.len = closure->vec.size();
 
-  Nan::TryCatch try_catch;
+  cairo_status_t status = canvas_write_to_pdf_stream(surface(), streamPDF, &streaminfo);
 
-  cairo_status_t status = canvas_write_to_pdf_stream(canvas->surface(), streamPDF, &streaminfo);
-
-  if (try_catch.HasCaught()) {
-    try_catch.ReThrow();
-  } else if (status) {
-    Local<Value> error = Canvas::Error(status);
-    Nan::Call(fn, Nan::GetCurrentContext()->Global(), 1, &error);
-  } else {
-    Local<Value> argv[3] = {
-        Nan::Null()
-      , Nan::Null()
-      , Nan::New<Uint32>(0) };
-    Nan::Call(fn, Nan::GetCurrentContext()->Global(), sizeof argv / sizeof *argv, argv);
+  if (!env.IsExceptionPending()) {
+    if (status) {
+      fn.Call(env.Global(), { CairoError(status).Value() });
+    } else {
+      fn.Call(env.Global(), { env.Null(), env.Null(), Napi::Number::New(env, 0) });
+    }
   }
 }
 
@@ -696,60 +631,64 @@ static uint32_t getSafeBufSize(Canvas* canvas) {
   return (std::min)(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
 }
 
-NAN_METHOD(Canvas::StreamJPEGSync) {
-  if (!info[1]->IsFunction())
-    return Nan::ThrowTypeError("callback function required");
-
-  Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  JpegClosure closure(canvas);
-  parseJPEGArgs(info[0], closure);
-  closure.cb.Reset(Local<Function>::Cast(info[1]));
-
-  Nan::TryCatch try_catch;
-  uint32_t bufsize = getSafeBufSize(canvas);
-  write_to_jpeg_stream(canvas->surface(), bufsize, &closure);
-
-  if (try_catch.HasCaught()) {
-    try_catch.ReThrow();
+void
+Canvas::StreamJPEGSync(const Napi::CallbackInfo& info) {
+  if (!info[1].IsFunction()) {
+    Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
+    return;
   }
-  return;
+
+  JpegClosure closure(this);
+  parseJPEGArgs(info[0], closure);
+  closure.cb = Napi::Persistent(info[1].As<Napi::Function>());
+
+  uint32_t bufsize = getSafeBufSize(this);
+  write_to_jpeg_stream(surface(), bufsize, &closure);
 }
 #endif
 
 char *
-str_value(Local<Value> val, const char *fallback, bool can_be_number) {
-  if (val->IsString() || (can_be_number && val->IsNumber())) {
-    return strdup(*Nan::Utf8String(val));
-  } else if (fallback) {
-    return strdup(fallback);
-  } else {
-    return NULL;
+str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_number) {
+  Napi::Value val;
+  if (maybe.UnwrapTo(&val)) {
+    if (val.IsString() || (can_be_number && val.IsNumber())) {
+      Napi::String strVal;
+      if (val.ToString().UnwrapTo(&strVal)) return strdup(strVal.Utf8Value().c_str());
+    } else if (fallback) {
+      return strdup(fallback);
+    }
   }
+  
+  return NULL;
 }
 
-NAN_METHOD(Canvas::RegisterFont) {
-  if (!info[0]->IsString()) {
-    return Nan::ThrowError("Wrong argument type");
-  } else if (!info[1]->IsObject()) {
-    return Nan::ThrowError(GENERIC_FACE_ERROR);
+void
+Canvas::RegisterFont(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  if (!info[0].IsString()) {
+    Napi::Error::New(env, "Wrong argument type").ThrowAsJavaScriptException();
+    return;
+  } else if (!info[1].IsObject()) {
+    Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
+    return;
   }
 
-  Nan::Utf8String filePath(info[0]);
-  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *) *filePath);
+  std::string filePath = info[0].As<Napi::String>();
+  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *)(filePath.c_str()));
 
-  if (!sys_desc) return Nan::ThrowError("Could not parse font file");
+  if (!sys_desc) {
+    Napi::Error::New(env, "Could not parse font file").ThrowAsJavaScriptException();
+    return;
+  }
 
   PangoFontDescription *user_desc = pango_font_description_new();
 
   // now check the attrs, there are many ways to be wrong
-  Local<Object> js_user_desc = Nan::To<Object>(info[1]).ToLocalChecked();
-  Local<String> family_prop = Nan::New<String>("family").ToLocalChecked();
-  Local<String> weight_prop = Nan::New<String>("weight").ToLocalChecked();
-  Local<String> style_prop = Nan::New<String>("style").ToLocalChecked();
+  Napi::Object js_user_desc = info[1].As<Napi::Object>();
 
-  char *family = str_value(Nan::Get(js_user_desc, family_prop).ToLocalChecked(), NULL, false);
-  char *weight = str_value(Nan::Get(js_user_desc, weight_prop).ToLocalChecked(), "normal", true);
-  char *style = str_value(Nan::Get(js_user_desc, style_prop).ToLocalChecked(), "normal", false);
+  char *family = str_value(js_user_desc.Get("family"), NULL, false);
+  char *weight = str_value(js_user_desc.Get("weight"), "normal", true);
+  char *style = str_value(js_user_desc.Get("style"), "normal", false);
 
   if (family && weight && style) {
     pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
@@ -763,19 +702,22 @@ NAN_METHOD(Canvas::RegisterFont) {
     if (found != font_face_list.end()) {
       pango_font_description_free(found->user_desc);
       found->user_desc = user_desc;
-    } else if (register_font((unsigned char *) *filePath)) {
+    } else if (register_font((unsigned char *) filePath.c_str())) {
       FontFace face;
       face.user_desc = user_desc;
       face.sys_desc = sys_desc;
-      strncpy((char *)face.file_path, (char *) *filePath, 1023);
+      strncpy((char *)face.file_path, (char *) filePath.c_str(), 1023);
       font_face_list.push_back(face);
     } else {
       pango_font_description_free(user_desc);
-      Nan::ThrowError("Could not load font to the system's font host");
+      Napi::Error::New(env, "Could not load font to the system's font host").ThrowAsJavaScriptException();
+
     }
   } else {
     pango_font_description_free(user_desc);
-    Nan::ThrowError(GENERIC_FACE_ERROR);
+    if (!env.IsExceptionPending()) {
+      Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
+    }
   }
 
   free(family);
@@ -783,7 +725,9 @@ NAN_METHOD(Canvas::RegisterFont) {
   free(style);
 }
 
-NAN_METHOD(Canvas::DeregisterAllFonts) {
+void
+Canvas::DeregisterAllFonts(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   // Unload all fonts from pango to free up memory
   bool success = true;
 
@@ -794,25 +738,7 @@ NAN_METHOD(Canvas::DeregisterAllFonts) {
   });
 
   font_face_list.clear();
-  if (!success) Nan::ThrowError("Could not deregister one or more fonts");
-}
-
-/*
- * Initialize cairo surface.
- */
-
-Canvas::Canvas(Backend* backend) : ObjectWrap() {
-  _backend = backend;
-}
-
-/*
- * Destroy cairo surface.
- */
-
-Canvas::~Canvas() {
-  if (_backend != NULL) {
-		delete _backend;
-	}
+  if (!success) Napi::Error::New(env, "Could not deregister one or more fonts").ThrowAsJavaScriptException();
 }
 
 /*
@@ -926,21 +852,19 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
  */
 
 void
-Canvas::resurface(Local<Object> canvas) {
-  Nan::HandleScope scope;
-  Local<Value> context;
+Canvas::resurface(Napi::Object This) {
+  Napi::HandleScope scope(env);
+  Napi::Value context;
 
-  backend()->recreateSurface();
-
-  // Reset context
-	context = Nan::Get(canvas, Nan::New<String>("context").ToLocalChecked()).ToLocalChecked();
-	if (!context->IsUndefined()) {
-		Context2d *context2d = ObjectWrap::Unwrap<Context2d>(Nan::To<Object>(context).ToLocalChecked());
-		cairo_t *prev = context2d->context();
-		context2d->setContext(createCairoContext());
-		context2d->resetState();
-		cairo_destroy(prev);
-	}
+  if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
+    backend()->recreateSurface();
+    // Reset context
+    Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
+    cairo_t *prev = context2d->context();
+    context2d->setContext(createCairoContext());
+    context2d->resetState();
+    cairo_destroy(prev);
+  }
 }
 
 /**
@@ -958,9 +882,7 @@ Canvas::createCairoContext() {
  * Construct an Error from the given cairo status.
  */
 
-Local<Value>
-Canvas::Error(cairo_status_t status) {
-  return Exception::Error(Nan::New<String>(cairo_status_to_string(status)).ToLocalChecked());
+Napi::Error
+Canvas::CairoError(cairo_status_t status) {
+  return Napi::Error::New(env, cairo_status_to_string(status));
 }
-
-#undef CHECK_RECEIVER

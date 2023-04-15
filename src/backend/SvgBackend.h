@@ -2,9 +2,9 @@
 
 #include "Backend.h"
 #include "../closure.h"
-#include <v8.h>
+#include <napi.h>
 
-class SvgBackend : public Backend
+class SvgBackend : public Napi::ObjectWrap<SvgBackend>, public Backend
 {
   private:
     cairo_surface_t* createSurface();
@@ -14,11 +14,8 @@ class SvgBackend : public Backend
     PdfSvgClosure* _closure = NULL;
     inline PdfSvgClosure* closure() { return _closure; }
 
-    SvgBackend(int width, int height);
+    SvgBackend(Napi::CallbackInfo& info);
     ~SvgBackend();
-    static Backend *construct(int width, int height);
 
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Local<v8::Object> target);
-    static NAN_METHOD(New);
+    static void Initialize(Napi::Object target);
 };

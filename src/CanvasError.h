@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <napi.h>
 
 class CanvasError {
   public:
@@ -19,5 +20,18 @@ class CanvasError {
       syscall.clear();
       path.clear();
       cerrno = 0;
+    }
+    bool empty() {
+      return cerrno == 0 && message.empty();
+    }
+    Napi::Error toError(Napi::Env env) {
+      if (cerrno) {
+        Napi::Error err = Napi::Error::New(env, strerror(cerrno));
+        if (!syscall.empty()) err.Value().Set("syscall", syscall);
+        if (!path.empty()) err.Value().Set("path", path);
+        return err;
+      } else {
+        return Napi::Error::New(env, message);
+      }
     }
 };

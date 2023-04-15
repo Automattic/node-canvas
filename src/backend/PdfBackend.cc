@@ -1,13 +1,11 @@
 #include "PdfBackend.h"
 
 #include <cairo-pdf.h>
+#include "../InstanceData.h"
 #include "../Canvas.h"
 #include "../closure.h"
 
-using namespace v8;
-
-PdfBackend::PdfBackend(int width, int height)
-  : Backend("pdf", width, height) {
+PdfBackend::PdfBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<PdfBackend>(info), Backend("pdf", info) {
   PdfBackend::createSurface();
 }
 
@@ -15,10 +13,6 @@ PdfBackend::~PdfBackend() {
   cairo_surface_finish(surface);
   if (_closure) delete _closure;
   destroySurface();
-}
-
-Backend *PdfBackend::construct(int width, int height){
-  return new PdfBackend(width, height);
 }
 
 cairo_surface_t* PdfBackend::createSurface() {
@@ -33,21 +27,10 @@ cairo_surface_t* PdfBackend::recreateSurface() {
   return surface;
 }
 
-
-Nan::Persistent<FunctionTemplate> PdfBackend::constructor;
-
-void PdfBackend::Initialize(Local<Object> target) {
-  Nan::HandleScope scope;
-
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(PdfBackend::New);
-  PdfBackend::constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New<String>("PdfBackend").ToLocalChecked());
-  Nan::Set(target,
-           Nan::New<String>("PdfBackend").ToLocalChecked(),
-           Nan::GetFunction(ctor).ToLocalChecked()).Check();
-}
-
-NAN_METHOD(PdfBackend::New) {
-  init(info);
+void
+PdfBackend::Initialize(Napi::Object target) {
+  Napi::Env env = target.Env();
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  Napi::Function ctor = DefineClass(env, "PdfBackend", {});
+  data->PdfBackendCtor = Napi::Persistent(ctor);
 }
