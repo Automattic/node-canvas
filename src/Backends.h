@@ -1,10 +1,9 @@
 #pragma once
 
 #include "backend/Backend.h"
-#include <nan.h>
-#include <v8.h>
+#include <napi.h>
 
-class Backends : public Nan::ObjectWrap {
+class Backends : public Napi::ObjectWrap<Backends> {
   public:
-    static void Initialize(v8::Local<v8::Object> target);
+    static void Initialize(Napi::Env env, Napi::Object exports);
 };

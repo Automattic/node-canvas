@@ -3,13 +3,12 @@
 #include <cairo.h>
 #include "../dll_visibility.h"
 #include <exception>
-#include <nan.h>
+#include <napi.h>
 #include <string>
-#include <v8.h>
 
 class Canvas;
 
-class Backend : public Nan::ObjectWrap
+class Backend
 {
   private:
     const std::string name;
@@ -21,11 +20,11 @@ class Backend : public Nan::ObjectWrap
     cairo_surface_t* surface = nullptr;
     Canvas* canvas = nullptr;
 
-    Backend(std::string name, int width, int height);
-    static void init(const Nan::FunctionCallbackInfo<v8::Value> &info);
-    static Backend *construct(int width, int height){ return nullptr; }
+    Backend(std::string name, Napi::CallbackInfo& info);
 
   public:
+    Napi::Env env;
+
     virtual ~Backend();
 
     void setCanvas(Canvas* canvas);

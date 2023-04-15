@@ -8,7 +8,7 @@
 #include <jpeglib.h>
 #endif
 
-#include <nan.h>
+#include <napi.h>
 #include <png.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <vector>
@@ -23,7 +23,7 @@
 
 struct Closure {
   std::vector<uint8_t> vec;
-  Nan::Callback cb;
+  Napi::FunctionReference cb;
   Canvas* canvas = nullptr;
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
 
@@ -79,3 +79,15 @@ struct JpegClosure : Closure {
   }
 };
 #endif
+
+class EncodingWorker : public Napi::AsyncWorker {
+  public:
+    EncodingWorker(Napi::Env env): Napi::AsyncWorker(env) {};
+    void Init(void (*work_fn)(Closure*), Closure* closure);
+    void Execute() override;
+    void OnWorkComplete(Napi::Env env, napi_status status) override;
+
+  private:
+    void (*work_fn)(Closure*) = nullptr;
+    Closure* closure = nullptr;
+};

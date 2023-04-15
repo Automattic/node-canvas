@@ -2,21 +2,19 @@
 
 #pragma once
 
-#include <nan.h>
-#include <v8.h>
+#include <napi.h>
 #include <cairo.h>
 
-class Gradient: public Nan::ObjectWrap {
+class Gradient : public Napi::ObjectWrap<Gradient> {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
-    static NAN_METHOD(New);
-    static NAN_METHOD(AddColorStop);
-    Gradient(double x0, double y0, double x1, double y1);
-    Gradient(double x0, double y0, double r0, double x1, double y1, double r1);
+    static void Initialize(Napi::Env& env, Napi::Object& target);
+    Gradient(const Napi::CallbackInfo& info);
+    void AddColorStop(const Napi::CallbackInfo& info);
     inline cairo_pattern_t *pattern(){ return _pattern; }
+    ~Gradient();
+
+    Napi::Env env;
 
   private:
-    ~Gradient();
     cairo_pattern_t *_pattern;
 };

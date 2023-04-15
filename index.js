@@ -11,6 +11,9 @@ const PDFStream = require('./lib/pdfstream')
 const JPEGStream = require('./lib/jpegstream')
 const { DOMPoint, DOMMatrix } = require('./lib/DOMMatrix')
 
+bindings.setDOMMatrix(DOMMatrix)
+bindings.setParseFont(parseFont)
+
 function createCanvas (width, height, type) {
   return new Canvas(width, height, type)
 }

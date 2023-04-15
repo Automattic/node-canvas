@@ -1,27 +1,19 @@
 #include "Backend.h"
 #include <string>
+#include <napi.h>
 
-Backend::Backend(std::string name, int width, int height)
-  : name(name)
-  , width(width)
-  , height(height)
-{}
+Backend::Backend(std::string name, Napi::CallbackInfo& info) : name(name), env(info.Env()) {
+  int width  = 0;
+  int height = 0;
+  if (info[0].IsNumber()) width  = info[0].As<Napi::Number>().Int32Value();
+  if (info[1].IsNumber()) height = info[1].As<Napi::Number>().Int32Value();
+  this->width = width;
+  this->height = height;
+}
 
 Backend::~Backend()
 {
   Backend::destroySurface();
-}
-
-void Backend::init(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-  int width  = 0;
-  int height = 0;
-  if (info[0]->IsNumber()) width  = Nan::To<uint32_t>(info[0]).FromMaybe(0);
-  if (info[1]->IsNumber()) height = Nan::To<uint32_t>(info[1]).FromMaybe(0);
-
-  Backend *backend = construct(width, height);
-
-  backend->Wrap(info.This());
-  info.GetReturnValue().Set(info.This());
 }
 
 void Backend::setCanvas(Canvas* _canvas)

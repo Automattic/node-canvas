@@ -21,27 +21,47 @@
 #include "CanvasRenderingContext2d.h"
 #include "Image.h"
 #include "ImageData.h"
+#include "InstanceData.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-using namespace v8;
+/*
+ * Save some external modules as private references.
+ */
+
+static void
+setDOMMatrix(const Napi::CallbackInfo& info) {
+  InstanceData* data = info.Env().GetInstanceData<InstanceData>();
+  data->DOMMatrixCtor = Napi::Persistent(info[0].As<Napi::Function>());
+}
+
+static void
+setParseFont(const Napi::CallbackInfo& info) {
+  InstanceData* data = info.Env().GetInstanceData<InstanceData>();
+  data->parseFont = Napi::Persistent(info[0].As<Napi::Function>());
+}
 
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
 #endif
 
-NAN_MODULE_INIT(init) {
-  Backends::Initialize(target);
-  Canvas::Initialize(target);
-  Image::Initialize(target);
-  ImageData::Initialize(target);
-  Context2d::Initialize(target);
-  Gradient::Initialize(target);
-  Pattern::Initialize(target);
+Napi::Object init(Napi::Env env, Napi::Object exports) {
+  env.SetInstanceData(new InstanceData());
 
-  Nan::Set(target, Nan::New<String>("cairoVersion").ToLocalChecked(), Nan::New<String>(cairo_version_string()).ToLocalChecked()).Check();
+  Backends::Initialize(env, exports);
+  Canvas::Initialize(env, exports);
+  Image::Initialize(env, exports);
+  ImageData::Initialize(env, exports);
+  Context2d::Initialize(env, exports);
+  Gradient::Initialize(env, exports);
+  Pattern::Initialize(env, exports);
+
+  exports.Set("setDOMMatrix", Napi::Function::New(env, &setDOMMatrix));
+  exports.Set("setParseFont", Napi::Function::New(env, &setParseFont));
+
+  exports.Set("cairoVersion", Napi::String::New(env, cairo_version_string()));
 #ifdef HAVE_JPEG
 
 #ifndef JPEG_LIB_VERSION_MAJOR
@@ -67,28 +87,30 @@ NAN_MODULE_INIT(init) {
   } else {
     snprintf(jpeg_version, 10, "%d", JPEG_LIB_VERSION_MAJOR);
   }
-  Nan::Set(target, Nan::New<String>("jpegVersion").ToLocalChecked(), Nan::New<String>(jpeg_version).ToLocalChecked()).Check();
+  exports.Set("jpegVersion", Napi::String::New(env, jpeg_version));
 #endif
 
 #ifdef HAVE_GIF
 #ifndef GIF_LIB_VERSION
   char gif_version[10];
   snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
-  Nan::Set(target, Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(gif_version).ToLocalChecked()).Check();
+  exports.Set("gifVersion", Napi::String::New(env, gif_version));
 #else
-  Nan::Set(target, Nan::New<String>("gifVersion").ToLocalChecked(), Nan::New<String>(GIF_LIB_VERSION).ToLocalChecked()).Check();
+  exports.Set("gifVersion", Napi::String::New(env, GIF_LIB_VERSION));
 #endif
 #endif
 
 #ifdef HAVE_RSVG
-  Nan::Set(target, Nan::New<String>("rsvgVersion").ToLocalChecked(), Nan::New<String>(LIBRSVG_VERSION).ToLocalChecked()).Check();
+  exports.Set("rsvgVersion", Napi::String::New(env, LIBRSVG_VERSION));
 #endif
 
-  Nan::Set(target, Nan::New<String>("pangoVersion").ToLocalChecked(), Nan::New<String>(PANGO_VERSION_STRING).ToLocalChecked()).Check();
+  exports.Set("pangoVersion", Napi::String::New(env, PANGO_VERSION_STRING));
 
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
-  Nan::Set(target, Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked()).Check();
+  exports.Set("freetypeVersion", Napi::String::New(env, freetype_version));
+
+  return exports;
 }
 
-NODE_MODULE(canvas, init);
+NODE_API_MODULE(canvas, init);
