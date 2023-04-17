@@ -1410,6 +1410,14 @@ describe('Canvas', function () {
     assert.strictEqual(pattern.toString(), '[object CanvasPattern]')
   })
 
+  it('CanvasPattern has class string of `CanvasPattern`', async function () {
+    const img = await loadImage(path.join(__dirname, '/fixtures/checkers.png'));
+    const canvas = createCanvas(20, 20)
+    const ctx = canvas.getContext('2d')
+    const pattern = ctx.createPattern(img)
+    assert.strictEqual(Object.prototype.toString.call(pattern), '[object CanvasPattern]')
+  })
+
   it('Context2d#createLinearGradient()', function () {
     const canvas = createCanvas(20, 1)
     const ctx = canvas.getContext('2d')
@@ -1439,12 +1447,24 @@ describe('Canvas', function () {
     assert.equal(0, imageData.data[i + 2])
     assert.equal(255, imageData.data[i + 3])
   })
+  it('Canvas has class string of `HTMLCanvasElement`', function () {
+    const canvas = createCanvas(20, 1)
+
+    assert.strictEqual(Object.prototype.toString.call(canvas), '[object HTMLCanvasElement]')
+  })
 
   it('CanvasGradient stringifies as [object CanvasGradient]', function () {
     const canvas = createCanvas(20, 1)
     const ctx = canvas.getContext('2d')
     const gradient = ctx.createLinearGradient(1, 1, 19, 1)
     assert.strictEqual(gradient.toString(), '[object CanvasGradient]')
+  })
+
+  it('CanvasGradient has class string of `CanvasGradient`', function () {
+    const canvas = createCanvas(20, 1)
+    const ctx = canvas.getContext('2d')
+    const gradient = ctx.createLinearGradient(1, 1, 19, 1)
+    assert.strictEqual(Object.prototype.toString.call(gradient), '[object CanvasGradient]')
   })
 
   describe('Context2d#putImageData()', function () {
@@ -1943,7 +1963,7 @@ describe('Canvas', function () {
         ctx[k] = v
         ctx.restore()
         assert.strictEqual(ctx[k], old)
-  
+
         // save() doesn't modify the value:
         ctx[k] = v
         old = ctx[k]

@@ -14,6 +14,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 ### Added
+* Added string tags to support class detection
 ### Fixed
 * Fix a case of use-after-free. (#2229)
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
