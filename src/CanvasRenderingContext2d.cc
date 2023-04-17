@@ -45,12 +45,28 @@ constexpr double twoPi = M_PI * 2.;
    pango_context_get_language(pango_layout_get_context(LAYOUT)))
 
 inline static bool checkArgs(const Napi::CallbackInfo&info, double *args, int argsNum, int offset = 0){
-  Napi::Number zero = Napi::Number::New(info.Env(), 0);
-  int argsEnd = offset + argsNum;
+  Napi::Env env = info.Env();
+  int argsEnd = std::min(9, offset + argsNum);
   bool areArgsValid = true;
 
+  napi_value argv[9];
+  size_t argc = 9;
+  napi_get_cb_info(env, static_cast<napi_callback_info>(info), &argc, argv, nullptr, nullptr);
+
   for (int i = offset; i < argsEnd; i++) {
-    double val = info[i].ToNumber().UnwrapOr(zero).DoubleValue();
+    napi_valuetype type;
+    double val = 0;
+
+    napi_typeof(env, argv[i], &type);
+    if (type == napi_number) {
+      // fast path
+      napi_get_value_double(env, argv[i], &val);
+    } else {
+      napi_value num;
+      if (napi_coerce_to_number(env, argv[i], &num) == napi_ok) {
+        napi_get_value_double(env, num, &val);
+      }
+    }
 
     if (areArgsValid) {
       if (!std::isfinite(val)) {
