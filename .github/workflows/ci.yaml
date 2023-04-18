@@ -10,7 +10,7 @@ on:
 jobs:
   Linux:
     name: Test on Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         node: [10, 12, 14, 16, 18, 20]
@@ -18,6 +18,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
@@ -30,7 +31,7 @@ jobs:
 
   Windows:
     name: Test on Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       matrix:
         node: [10, 12, 14, 16, 18, 20]
@@ -38,12 +39,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
           Invoke-WebRequest "https://ftp-osl.osuosl.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -OutFile "gtk.zip"
           Expand-Archive gtk.zip -DestinationPath "C:\GTK"
-          Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
+          Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.1.5.1/libjpeg-turbo-2.1.5.1-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
           .\libjpeg.exe /S
           npm install -g node-gyp@8
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
@@ -54,7 +57,7 @@ jobs:
 
   macOS:
     name: Test on macOS
-    runs-on: macos-latest
+    runs-on: macos-12
     strategy:
       matrix:
         node: [10, 12, 14, 16, 18, 20]
@@ -62,6 +65,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
@@ -75,11 +79,12 @@ jobs:
 
   Lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
+          check-latest: true
       - uses: actions/checkout@v3
       - name: Install
         run: npm install --ignore-scripts
