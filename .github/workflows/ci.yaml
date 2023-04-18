@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
           sudo apt update
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
           Invoke-WebRequest "https://ftp-osl.osuosl.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -OutFile "gtk.zip"
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
           brew update
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 14
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install
         run: npm install --ignore-scripts
       - name: Lint
