@@ -2101,8 +2101,11 @@ Context2d::_setFillColor(Napi::Value arg) {
   short ok;
 
   if (stringValue.IsJust()) {
-    std::string str = stringValue.Unwrap().Utf8Value();
-    uint32_t rgba = rgba_from_string(str.c_str(), &ok);
+    Napi::String str = stringValue.Unwrap();
+    char buf[128] = {0};
+    napi_status status = napi_get_value_string_utf8(env, str, buf, sizeof(buf) - 1, nullptr);
+    if (status != napi_ok) return;
+    uint32_t rgba = rgba_from_string(buf, &ok);
     if (!ok) return;
     state->fillPattern = state->fillGradient = NULL;
     state->fill = rgba_create(rgba);
