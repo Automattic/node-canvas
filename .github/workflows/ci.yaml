@@ -7,13 +7,13 @@ on:
     paths-ignore:
       - ".github/workflows/prebuild.yaml"
 
-jobs: 
+jobs:
   Linux:
     name: Test on Linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18]
+        node: [10, 12, 14, 16, 18, 20]
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18]
+        node: [10, 12, 14, 16, 18, 20]
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -57,7 +57,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18]
+        node: [10, 12, 14, 16, 18, 20]
     steps:
       - uses: actions/setup-node@v3
         with:
