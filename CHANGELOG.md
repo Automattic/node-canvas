@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
+* Add Node.js v16 to CI. (#2237)
 ### Added
 * Added string tags to support class detection
 ### Fixed
