@@ -7,8 +7,8 @@
 class PdfBackend : public Backend
 {
   private:
-    cairo_surface_t* createSurface();
-    cairo_surface_t* recreateSurface();
+    void createSurface();
+    void recreateSurface();
 
   public:
     PdfSvgClosure* _closure = NULL;

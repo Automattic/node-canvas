@@ -30,11 +30,11 @@ void Backend::setCanvas(Canvas* _canvas)
 }
 
 
-cairo_surface_t* Backend::recreateSurface()
+void Backend::recreateSurface()
 {
   this->destroySurface();
 
-  return this->createSurface();
+  this->createSurface();
 }
 
 DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
