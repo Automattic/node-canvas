@@ -1,6 +1,7 @@
 #include "Backend.h"
 #include <string>
 
+
 Backend::Backend(std::string name, int width, int height)
   : name(name)
   , width(width)
