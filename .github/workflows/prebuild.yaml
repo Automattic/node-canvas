@@ -150,6 +150,7 @@ jobs:
     runs-on: macos-latest
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      CANVAS_ARCH_TO_BUILD: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v2
         with:
