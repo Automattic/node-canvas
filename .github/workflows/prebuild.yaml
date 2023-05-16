@@ -175,6 +175,7 @@ jobs:
           . prebuild/macOS/bundle.sh
 
       - name: Test binary
+        if: matrix.arch == 'x64'
         run: |
           brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
           npm test
