@@ -112,7 +112,8 @@ RUN apt-get -y --no-install-recommends install \
         xz-utils \
         bzip2 \
         git \
-        unzip
+        unzip \
+        scanelf
 
 SHELL [ "/bin/bash", "-c" ]
 
