@@ -23,6 +23,7 @@ on: workflow_dispatch
 jobs:
   Linux:
     strategy:
+      fail-fast: false
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
@@ -99,6 +100,7 @@ jobs:
 
   macOS:
     strategy:
+      fail-fast: false
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
@@ -165,6 +167,7 @@ jobs:
 
   Win:
     strategy:
+      fail-fast: false
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
