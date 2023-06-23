@@ -113,7 +113,7 @@ RUN apt-get -y --no-install-recommends install \
         bzip2 \
         git \
         unzip \
-        scanelf
+        pax-utils
 
 SHELL [ "/bin/bash", "-c" ]
 
