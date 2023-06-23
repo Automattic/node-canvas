@@ -20,7 +20,8 @@ RUN apt-get update && \
         meson \
         uuid-dev \
         perl \
-        libxml-parser-perl
+        libxml-parser-perl \
+        xz-utils
 
 SHELL [ "/bin/bash", "-c" ]
 
