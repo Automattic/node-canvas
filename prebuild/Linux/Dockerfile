@@ -1,69 +1,3 @@
-FROM debian:bullseye as pcre
-
-RUN apt-get update
-RUN cp /etc/apt/sources.list /etc/apt/sources.list.d/dev.list
-RUN sed -i 's/^deb/deb-src/g' /etc/apt/sources.list.d/dev.list
-RUN apt-get update
-RUN apt-get -y build-dep libpcre3 libpcre3-dev
-RUN apt-get -y install curl make cmake gcc g++ build-essential clang tar bzip2 pkg-config
-
-WORKDIR /
-
-RUN curl -LO https://download.sourceforge.net/pcre/pcre/8.44/pcre-8.44.tar.bz2 ; \
-    tar -xvf pcre-8.44.tar.bz2 ; \
-    cd pcre-8.44 ; \
-    ./configure \
-        --enable-pcre16 \
-        --enable-pcre32 \
-        --enable-utf \
-        --enable-unicode-properties \
-        --prefix=/pcre-build ; \
-    make ; \
-    make install
-
-RUN tar -czvf /pcre-build.tgz /pcre-build
-
-FROM debian:bullseye as glib
-
-RUN apt-get update
-RUN cp /etc/apt/sources.list /etc/apt/sources.list.d/dev.list
-RUN sed -i 's/^deb/deb-src/g' /etc/apt/sources.list.d/dev.list
-RUN apt-get update
-RUN apt-get -y build-dep libglib2.0-0=2.66.8-1 libglib2.0-dev=2.66.8-1
-RUN apt-get -y install curl make cmake gcc g++ build-essential clang tar bzip2 pkg-config
-
-WORKDIR /
-
-RUN curl -LO https://download.gnome.org/sources/glib/2.67/glib-2.67.1.tar.xz ; \
-    tar -xvf glib-2.67.1.tar.xz ; \
-    cd glib-2.67.1 ; \
-    meson _build --prefix=/glib-build ; \
-    cd _build ; \
-    ninja ; \
-    ninja install
-
-RUN tar -czvf /glib-build.tgz /glib-build
-
-FROM debian:bullseye as fribidi
-
-RUN apt-get update
-RUN cp /etc/apt/sources.list /etc/apt/sources.list.d/dev.list
-RUN sed -i 's/^deb/deb-src/g' /etc/apt/sources.list.d/dev.list
-RUN apt-get update
-RUN apt-get -y build-dep libfribidi0=1.0.8-2+deb11u1 libfribidi-dev=1.0.8-2+deb11u1
-RUN apt-get -y install curl make cmake gcc g++ build-essential clang tar bzip2 pkg-config
-
-WORKDIR /
-
-RUN curl -LO https://github.com/fribidi/fribidi/releases/download/v1.0.10/fribidi-1.0.10.tar.xz ; \
-    tar -xvf fribidi-1.0.10.tar.xz ; \
-    cd fribidi-1.0.10 ; \
-    ./configure --prefix=/fribidi-build ; \
-    make ; \
-    make install
-
-RUN tar -czvf /fribidi-build.tgz /fribidi-build
-
 FROM debian:bullseye as croco
 
 RUN apt-get update
@@ -81,10 +15,8 @@ RUN apt-get -y install \
         tar \
         bzip2 \
         pkg-config \
-        libxml2-dev \
-        libglib2.0-dev
-
-COPY --from=glib /glib-build/* /usr/local
+        libxml2-dev=2.9.10+dfsg-6.7+deb11u4 \
+        libglib2.0-dev=2.66.8-1
 
 WORKDIR /
 
@@ -117,6 +49,9 @@ ARG GETTEXT_VERSION=0.21-4
 ARG INTLTOOL_VERSION=0.51.0-6
 ARG GDK_PIXBUF_VERSION=2.42.2+dfsg-1+deb11u1
 ARG RSVG_VERSION=2.50.3+dfsg-1
+ARG GLIB_VERSION=2.66.8-1
+ARG FRIBIDI_VERSION=1.0.8-2+deb11u1
+ARG PCRE_VERSION=2:8.39-13
 
 ENV TZ=Pacific/Los_Angeles
 ENV DEBIAN_FRONTEND=noninteractive
@@ -157,9 +92,25 @@ RUN apt-get -y --no-install-recommends install \
         libgdk-pixbuf-2.0-dev=${GDK_PIXBUF_VERSION} \
         librsvg2-2=${RSVG_VERSION} \
         librsvg2-dev=${RSVG_VERSION} \
+        libglib2.0-0=${GLIB_VERSION} \
+        libglib2.0-dev=${GLIB_VERSION} \
+        libfribidi0=${FRIBIDI_VERSION} \
+        libfribidi-dev=${FRIBIDI_VERSION} \
+        libpcre3=${PCRE_VERSION} \
+        libpcre3-dev=${PCRE_VERSION} \
         wget \
         curl \
-        bash
+        bash \
+        make \
+        cmake \
+        ninja-build \
+        gcc \
+        g++ \
+        clang \
+        build-essential \
+        tar \
+        xz-utils \
+        bzip2
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -192,21 +143,10 @@ RUN rm -f \
         /jpeg-dev.deb \
         /mime.deb
 
-COPY --from=pcre /pcre-build.tgz /
-COPY --from=glib /glib-build.tgz /
-COPY --from=fribidi /fribidi-build.tgz /
 COPY --from=croco /croco-build.tgz /
 
-RUN tar -xzvf /pcre-build.tgz -C /usr/local --strip-components 1
-RUN tar -xzvf /glib-build.tgz -C /usr/local --strip-components 1
-RUN tar -xzvf /fribidi-build.tgz -C /usr/local --strip-components 1
 RUN tar -xzvf /croco-build.tgz -C /usr/local --strip-components 1
-
-RUN rm -f \
-        pcre-build.tgz \
-        glib-build.tgz \
-        fribidi-build.tgz \
-        croco-build.tgz
+RUN rm -f croco-build.tgz
 
 ENV CARGO_HOME=/opt/cargo
 ENV RUSTUP_HOME=/opt/rustup
