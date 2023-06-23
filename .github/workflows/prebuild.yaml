@@ -21,18 +21,6 @@ on: workflow_dispatch
 #   UPLOAD_TO: "v0.0.1"
 
 jobs:
-  get-repo:
-    name: Get Repo
-    runs-on: ubuntu-latest
-    outputs:
-      lower: steps.case.outputs.lowercase
-      upper: steps.case.outputs.uppercase
-    steps:
-      - id: case
-        uses: ASzc/change-string-case-action@v1
-        with:
-          string: ${{ github.repository }}
-
   Linux:
     strategy:
       matrix:
@@ -41,9 +29,8 @@ jobs:
         arch: ["x64", "arm64"]
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Arch ${{ matrix.arch }}, Linux
     runs-on: ubuntu-latest
-    needs: get-repo
     container:
-      image: ghcr.io/${{ needs.get-repo.outputs.lower }}/prebuild
+      image: ghcr.io/redstonewizard08/node-canvas/prebuild
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
       CANVAS_ARCH_TO_BUILD: ${{ matrix.arch }}
