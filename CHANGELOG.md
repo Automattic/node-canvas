@@ -15,6 +15,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
 * Add AArch64 (Linux/ARM64) builds to CI. (#2261)
+* Switch to a prebuild image using mostly pre-built DEBs.
+* Move the PAX-Utils installation to the Docker image.
 ### Added
 * Added string tags to support class detection
 ### Fixed
