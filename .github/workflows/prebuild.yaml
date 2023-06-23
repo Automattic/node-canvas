@@ -44,21 +44,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build (not Node 9)
-        if: ${{ matrix.node != '9' }}
+      - name: Build
         run: |
-          npm install -g node-gyp
-          npm install --ignore-scripts
-          . prebuild/Linux/preinstall.sh
-          cp prebuild/Linux/binding.gyp binding.gyp
-          node-gyp rebuild -j 2 --arch=${{ matrix.arch }}
-          . prebuild/Linux/bundle.sh
-      
-      # We have to, since node 9 has a bug resolving `npm:*` "URLs".
-      - name: Build (Node 9)
-        if: ${{ matrix.node == '9' }}
-        run: |
-          npm install -g node-gyp@3.6.2
+          apt-get -y --no-install-recommends install jq
+          npm install -g "node-gyp@$(cat "$(dirname "$(dirname "$(realpath "$(which npm)")")")/node_modules/node-gyp/package.json" | jq -r ".version")"
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
