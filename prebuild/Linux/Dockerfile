@@ -110,7 +110,8 @@ RUN apt-get -y --no-install-recommends install \
         build-essential \
         tar \
         xz-utils \
-        bzip2
+        bzip2 \
+        git
 
 SHELL [ "/bin/bash", "-c" ]
 
