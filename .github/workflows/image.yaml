@@ -5,8 +5,6 @@ on: [push]
 jobs:
   docker:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -35,6 +33,4 @@ jobs:
           context: prebuild/Linux
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild:bullseye
-          args: |
-            BASE_OS=debian:bullseye
+          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild
