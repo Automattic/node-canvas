@@ -25,13 +25,15 @@ jobs:
     strategy:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
+        canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
+        arch: ["x64", "arm64"]
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Arch ${{ matrix.arch }}, Linux
     runs-on: ubuntu-latest
     container:
       image: chearon/canvas-prebuilt:7
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      CANVAS_ARCH_TO_BUILD: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -47,10 +49,11 @@ jobs:
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
+          node-gyp rebuild -j 2 --arch=${{ matrix.arch }}
           . prebuild/Linux/bundle.sh
 
       - name: Test binary
+        if: matrix.arch == 'x64'
         run: |
           cd /root/harfbuzz-* && make uninstall
           cd /root/cairo-* && make uninstall
@@ -98,7 +101,7 @@ jobs:
     strategy:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: [] # e.g. "v2.6.1"
+        canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -164,7 +167,7 @@ jobs:
     strategy:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: [] # e.g. "v2.6.1"
+        canvas_tag: ["v2.11.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
