@@ -46,8 +46,7 @@ jobs:
 
       - name: Build
         run: |
-          apt-get -y --no-install-recommends install jq
-          npm install -g "node-gyp@$(cat "$(dirname "$(dirname "$(realpath "$(which npm)")")")/node_modules/node-gyp/package.json" | jq -r ".version")"
+          install-node-gyp
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp

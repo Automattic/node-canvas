@@ -113,7 +113,8 @@ RUN apt-get -y --no-install-recommends install \
         bzip2 \
         git \
         unzip \
-        pax-utils
+        pax-utils \
+        jq
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -163,3 +164,6 @@ ENV PATH="/opt/cargo/bin:$PATH"
 RUN curl -fsSL https://fnm.vercel.app/install | bash -s - --install-dir /opt/fnm
 
 ENV PATH="/opt/fnm:$PATH"
+
+ADD gyp.sh /usr/local/bin/install-node-gyp
+RUN chmod a+rx /usr/local/bin/install-node-gyp
