@@ -111,7 +111,8 @@ RUN apt-get -y --no-install-recommends install \
         tar \
         xz-utils \
         bzip2 \
-        git
+        git \
+        unzip
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -157,3 +158,7 @@ RUN chmod -R a+rwx /opt/cargo
 RUN chmod -R a+rwx /opt/rustup
 
 ENV PATH="/opt/cargo/bin:$PATH"
+
+RUN curl -fsSL https://fnm.vercel.app/install | bash -s - --install-dir /opt/fnm
+
+ENV PATH="/opt/fnm:$PATH"
