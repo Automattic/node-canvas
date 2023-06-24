@@ -21,7 +21,7 @@ docker run -it --rm \
         git clone '$GIT_URL' /canvas && \
         cd /canvas && \
         git checkout '$BRANCH' && \
-        install-node-gyp && \
+        npm install -g node-gyp@7 && \
         npm install --ignore-scripts && \
         . prebuild/Linux/preinstall.sh && \
         cp prebuild/Linux/binding.gyp binding.gyp && \

@@ -66,7 +66,6 @@ ARG OPENSSL_VERSION=1.1.1n-0+deb11u5
 ARG PYTHON_VERSION=3.9.2-1
 ARG LIBPNG_VERSION=1.6.39-2
 ARG FREETYPE_VERSION=2.12.1+dfsg-5
-# ARG HARFBUZZ_VERSION=2.7.4-1
 ARG HARFBUZZ_VERSION=6.0.0+dfsg-3
 ARG LIBEXPAT_VERSION=2.2.10-2+deb11u5
 ARG FONTCONFIG_VERSION=2.14.1-4
@@ -149,7 +148,8 @@ RUN apt-get -y --no-install-recommends install \
         git \
         unzip \
         jq \
-        python-is-python3 \
+        python-is-python3=${PYTHON_VERSION} \
+        python-dev-is-python3=${PYTHON_VERSION} \
         python3-pip \
         python3-pyelftools
 
