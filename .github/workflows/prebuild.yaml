@@ -190,7 +190,7 @@ jobs:
       # is apparently slow to start.
       # https://github.com/msys2/setup-msys2#setup-msys2
       # https://github.com/actions/virtual-environments/pull/632
-      - uses: msys2/setup-msys2@v1
+      - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
           update: true
