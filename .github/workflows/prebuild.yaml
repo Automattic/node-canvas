@@ -193,25 +193,28 @@ jobs:
           ref: ${{ matrix.canvas_tag }}
 
       - name: Build
+        shell: msys2 {0}
         run: |
-          msys2do bash prebuild/Linux/gyp.sh
+          bash prebuild/Linux/gyp.sh
           npm install --ignore-scripts
-          msys2do . prebuild/Windows/preinstall.sh
-          msys2do cp prebuild/Windows/binding.gyp binding.gyp
-          msys2do node-gyp configure
-          msys2do node-gyp rebuild -j 2
+          . prebuild/Windows/preinstall.sh
+          cp prebuild/Windows/binding.gyp binding.gyp
+          node-gyp configure
+          node-gyp rebuild -j 2
 
       - name: Bundle
-        run: msys2do . prebuild/Windows/bundle.sh
+        shell: msys2 {0}
+        run: . prebuild/Windows/bundle.sh
 
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
         run: npm test
 
       - name: Make asset
+        shell: msys2 {0}
         id: make_bundle
         # I can't figure out why this isn't an env var already. It shows up with `env`.
-        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
+        run: UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
 
       - name: Upload
         uses: actions/github-script@0.9.0
