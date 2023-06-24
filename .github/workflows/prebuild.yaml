@@ -176,6 +176,7 @@ jobs:
     runs-on: windows-latest
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
       - uses: msys2/setup-msys2@v1
