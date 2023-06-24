@@ -129,7 +129,7 @@ jobs:
 
       - name: Test binary
         run: |
-          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
           npm test
 
       - name: Make bundle
@@ -178,7 +178,7 @@ jobs:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
       # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
-      - uses: numworks/setup-msys2@v1
+      - uses: msys2/setup-msys2@v1
         with:
           update: true
           path-type: inherit
