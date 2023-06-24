@@ -1,4 +1,4 @@
-FROM debian:bullseye as croco
+FROM debian:bookworm as croco
 
 RUN apt-get update
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.d/dev.list
@@ -29,7 +29,7 @@ RUN curl -LO https://download.gnome.org/sources/libcroco/0.6/libcroco-0.6.13.tar
 
 RUN tar -czvf /croco-build.tgz /croco-build
 
-FROM debian:bullseye
+FROM debian:bookworm
 
 ARG PKG_CONFIG_VERSION=0.29.2-1
 ARG ZLIB_VERSION=1:1.2.11.dfsg-2+deb11u2
@@ -48,7 +48,7 @@ ARG LIBXML_VERSION=2.9.10+dfsg-6.7+deb11u4
 ARG GETTEXT_VERSION=0.21-4
 ARG INTLTOOL_VERSION=0.51.0-6
 ARG GDK_PIXBUF_VERSION=2.42.2+dfsg-1+deb11u1
-ARG RSVG_VERSION=2.50.3+dfsg-1
+ARG RSVG_VERSION=2.54.5+dfsg-1
 ARG GLIB_VERSION=2.66.8-1
 ARG FRIBIDI_VERSION=1.0.8-2+deb11u1
 ARG PCRE_VERSION=2:8.39-13
