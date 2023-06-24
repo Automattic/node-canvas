@@ -56,12 +56,13 @@ jobs:
       - name: Test binary
         if: matrix.arch == 'x64'
         run: |
-          cd /root/harfbuzz-* && make uninstall
-          cd /root/cairo-* && make uninstall
-          cd /root/pango-* && make uninstall
-          cd /root/libpng-* && make uninstall
-          cd /root/libjpeg-* && make uninstall
-          cd /root/giflib-* && make uninstall
+          # These are pre-packaged as debs, and can't be uninstalled like this.
+          # cd /root/harfbuzz-* && make uninstall
+          # cd /root/cairo-* && make uninstall
+          # cd /root/pango-* && make uninstall
+          # cd /root/libpng-* && make uninstall
+          # cd /root/libjpeg-* && make uninstall
+          # cd /root/giflib-* && make uninstall
           cd $GITHUB_WORKSPACE && npm test
 
       - name: Make bundle
