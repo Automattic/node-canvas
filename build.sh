@@ -26,5 +26,7 @@ docker run -it --rm \
         . prebuild/Linux/preinstall.sh && \
         cp prebuild/Linux/binding.gyp binding.gyp && \
         node-gyp rebuild -j 2 --arch=$ARCH && \
-        . prebuild/Linux/bundle.sh \
+        . prebuild/Linux/bundle.sh && \
+        npm test && \
+        . prebuild/tarball.sh \
     "
