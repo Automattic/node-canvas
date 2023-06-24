@@ -1,6 +1,6 @@
 $NPMExecPath = (Resolve-Path (Get-Command npm).Source).Path
 $NPMBasePath = (Resolve-Path "$(Get-Item $NPMExecPath)/../..").Path
-$NodeGYPPackageJson = Join-Path $NPMBasePath "lib\node_modules\node-gyp\package.json"
+$NodeGYPPackageJson = Join-Path $NPMBasePath "lib\node_modules\npm\node_modules\node-gyp\package.json"
 $NodeGYPVersion = (Get-Content $NodeGYPPackageJson | ConvertFrom-Json).version
 
 if (("$(node -v)" -like "v13*") -or ("$(node -v)" -like "v12*") -or ("$(node -v)" -like "v11*") -or ("$(node -v)" -like "v10*")) {
