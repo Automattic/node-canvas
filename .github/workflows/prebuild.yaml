@@ -46,6 +46,7 @@ jobs:
 
       - name: Build
         run: |
+          set -ex
           install-node-gyp
           . $(which cross-env) ${{ matrix.arch }}
           npm install --ignore-scripts
@@ -57,6 +58,7 @@ jobs:
       - name: Test binary
         if: matrix.arch == 'x64'
         run: |
+          set -ex
           # These are pre-packaged as debs, and can't be uninstalled like this.
           # cd /root/harfbuzz-* && make uninstall
           # cd /root/cairo-* && make uninstall
@@ -125,6 +127,7 @@ jobs:
 
       - name: Build
         run: |
+          set -Eeuxo pipefail
           bash prebuild/Linux/gyp.sh
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
