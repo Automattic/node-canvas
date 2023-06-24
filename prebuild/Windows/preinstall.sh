@@ -4,6 +4,8 @@ deps="cairo-2 png16-16 jpeg-8 pango-1.0-0 pangocairo-1.0-0 gobject-2.0-0 glib-2.
 
 # install cairo and tools to create .lib
 
+pacman -S python=3.9.13-1
+
 pacman --noconfirm -S \
   wget \
   unzip \

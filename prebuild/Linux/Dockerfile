@@ -215,8 +215,19 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s - --install-dir /opt/fnm
 
 ENV PATH="/opt/fnm:$PATH"
 
+RUN apt-get -y --no-install-recommends install \
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
+        binutils-aarch64-linux-gnu \
+        gcc-x86-64-linux-gnu \
+        g++-x86-64-linux-gnu \
+        binutils-x86-64-linux-gnu
+
 ADD gyp.sh /usr/local/bin/install-node-gyp
 RUN chmod a+rx /usr/local/bin/install-node-gyp
+
+ADD cross-env.sh /usr/local/bin/cross-env
+RUN chmod a+rx /usr/local/bin/cross-env
 
 FROM scratch
 
