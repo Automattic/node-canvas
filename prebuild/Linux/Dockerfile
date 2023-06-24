@@ -1,7 +1,8 @@
 FROM debian:bookworm as croco
 
-RUN cp /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/dev.sources
-RUN sed -i 's/^Types: deb/Types: deb-src/g' /etc/apt/sources.list.d/dev.sources
+RUN rm /etc/apt/sources.list.d/debian.sources
+ADD sources.list /etc/apt/sources.list
+
 RUN apt-get update
 RUN apt-get -y install \
         curl \
@@ -54,6 +55,9 @@ ARG PCRE_VERSION=2:8.39-13
 
 ENV TZ=Pacific/Los_Angeles
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN rm /etc/apt/sources.list.d/debian.sources
+ADD sources.list /etc/apt/sources.list
 
 RUN apt-get update
 RUN apt-get -y --no-install-recommends install \
