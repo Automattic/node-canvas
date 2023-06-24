@@ -154,6 +154,7 @@ RUN apt-get -y --no-install-recommends install \
         python3-pip \
         python3-pyelftools \
         python3=${PYTHON3_VERSION} \
+        python3-dev=${PYTHON3_VERSION} \
         python3-minimal=${PYTHON3_VERSION} \
         libpython3-stdlib=${PYTHON3_VERSION}
 
