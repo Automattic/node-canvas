@@ -152,11 +152,14 @@ RUN apt-get -y --no-install-recommends install \
         python-is-python3=${PYTHON_VERSION} \
         python-dev-is-python3=${PYTHON_VERSION} \
         python3-pip \
+        python3-distutils=${PYTHON_VERSION} \
+        python3-lib2to3=${PYTHON_VERSION} \
         python3-pyelftools \
         python3=${PYTHON3_VERSION} \
         python3-dev=${PYTHON3_VERSION} \
         python3-minimal=${PYTHON3_VERSION} \
-        libpython3-stdlib=${PYTHON3_VERSION}
+        libpython3-stdlib=${PYTHON3_VERSION} \
+        libpython3-dev=${PYTHON3_VERSION}
 
 SHELL [ "/bin/bash", "-c" ]
 
