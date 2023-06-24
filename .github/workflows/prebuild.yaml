@@ -47,6 +47,7 @@ jobs:
       - name: Build
         run: |
           install-node-gyp
+          source $(which cross-env) ${{ matrix.arch }}
           npm install --ignore-scripts
           . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
