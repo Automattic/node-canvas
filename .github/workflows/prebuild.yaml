@@ -120,10 +120,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      
+
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9" 
+          python-version: "3.9"
 
       - name: Build
         run: |
@@ -207,12 +207,12 @@ jobs:
 
       - name: Build
         run: |
-          msys2 -c ". prebuild/Linux/gyp.sh"
-          msys2 -c "npm prefix -g | % {npm config set node_gyp \"$_\node_modules\node-gyp\bin\node-gyp.js\"}"
-          msys2 -c "npm install --ignore-scripts"
+          ./prebuild/Windows/gyp.ps1
+          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
+          npm install --ignore-scripts
           msys2 -c ". prebuild/Windows/preinstall.sh"
-          msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
-          msys2 -c "npm install --build-from-source"
+          cp prebuild/Windows/binding.gyp binding.gyp
+          npm install --build-from-source
 
       - name: Install Depends
         run: |
