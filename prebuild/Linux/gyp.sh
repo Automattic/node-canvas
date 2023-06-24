@@ -12,7 +12,7 @@ if [[ "$(node -v)" == "v13"* ]] || \
 then
     npm install -g node-gyp@8.4.1
 elif [[ "$(node -v)" == "v9"* ]] || [[ "$(node -v)" == "v8"* ]]; then
-    npm install -g node-gyp@7.1.2
+    npm install -g node-gyp@6
 else
     npm install -g "node-gyp@$NODE_GYP_VERSION"
 fi
