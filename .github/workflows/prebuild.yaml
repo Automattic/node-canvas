@@ -120,7 +120,7 @@ jobs:
 
       - name: Build
         run: |
-          npm install -g node-gyp
+          bash prebuild/Linux/gyp.sh
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
