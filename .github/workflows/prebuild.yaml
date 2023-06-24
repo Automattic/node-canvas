@@ -208,11 +208,11 @@ jobs:
       - name: Build
         run: |
           msys2 -c ". prebuild/Linux/gyp.sh"
-          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
-          npm install --ignore-scripts
+          msys2 -c "npm prefix -g | % {npm config set node_gyp \"$_\node_modules\node-gyp\bin\node-gyp.js\"}"
+          msys2 -c "npm install --ignore-scripts"
           msys2 -c ". prebuild/Windows/preinstall.sh"
           msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
-          npm install --build-from-source
+          msys2 -c "npm install --build-from-source"
 
       - name: Install Depends
         run: |
