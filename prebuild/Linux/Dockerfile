@@ -29,7 +29,7 @@ RUN curl -LO https://download.gnome.org/sources/libcroco/0.6/libcroco-0.6.13.tar
 
 RUN tar -czvf /croco-build.tgz /croco-build
 
-FROM debian:bookworm
+FROM debian:bookworm as main
 
 ARG PKG_CONFIG_VERSION=0.29.2-1
 ARG ZLIB_VERSION=1:1.2.13.dfsg-1
@@ -174,3 +174,12 @@ ENV PATH="/opt/fnm:$PATH"
 
 ADD gyp.sh /usr/local/bin/install-node-gyp
 RUN chmod a+rx /usr/local/bin/install-node-gyp
+
+ADD lddtree.sh /usr/local/bin/lddtree.sh
+RUN chmod a+rx /usr/local/bin/lddtree.sh
+
+FROM scratch
+
+COPY --from=main / /
+
+CMD [ "/bin/bash" ]

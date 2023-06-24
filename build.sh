@@ -9,6 +9,7 @@ docker run -it --rm \
     -u root \
     -e CANVAS_VERSION_TO_BUILD="$BRANCH" \
     -e CANVAS_ARCH_TO_BUILD="$ARCH" \
+    -v "$(pwd)/../build:/canvas" \
     ghcr.io/redstonewizard08/node-canvas/prebuild \
     bash -c "\
         . /root/.bashrc && \
