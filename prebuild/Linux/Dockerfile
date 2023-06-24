@@ -1,8 +1,7 @@
 FROM debian:bookworm as croco
 
-RUN apt-get update
-RUN cp /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/dev.list
-RUN sed -i 's/^deb/deb-src/g' /etc/apt/sources.list.d/dev.list
+RUN cp /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/dev.sources
+RUN sed -i 's/^Types: deb/Types: deb-src/g' /etc/apt/sources.list.d/dev.sources
 RUN apt-get update
 RUN apt-get -y install \
         curl \
