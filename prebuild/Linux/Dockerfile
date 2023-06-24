@@ -15,8 +15,8 @@ RUN apt-get -y install \
         tar \
         bzip2 \
         pkg-config \
-        libxml2-dev=2.9.10+dfsg-6.7+deb11u4 \
-        libglib2.0-dev=2.66.8-1
+        libxml2-dev=2.9.14+dfsg-1.2 \
+        libglib2.0-dev=2.74.6-2
 
 WORKDIR /
 
@@ -32,26 +32,27 @@ RUN tar -czvf /croco-build.tgz /croco-build
 FROM debian:bookworm
 
 ARG PKG_CONFIG_VERSION=0.29.2-1
-ARG ZLIB_VERSION=1:1.2.11.dfsg-2+deb11u2
+ARG ZLIB_VERSION=1:1.2.13.dfsg-1
 ARG LIBFFI_VERSION=3.3-6
 ARG OPENSSL_VERSION=1.1.1n-0+deb11u5
 ARG PYTHON_VERSION=3.9.2-1
-ARG LIBPNG_VERSION=1.6.37-3
-ARG FREETYPE_VERSION=2.10.4+dfsg-1+deb11u1
-ARG HARFBUZZ_VERSION=2.7.4-1
+ARG LIBPNG_VERSION=1.6.39-2
+ARG FREETYPE_VERSION=2.12.1+dfsg-5
+# ARG HARFBUZZ_VERSION=2.7.4-1
+ARG HARFBUZZ_VERSION=6.0.0+dfsg-3
 ARG LIBEXPAT_VERSION=2.2.10-2+deb11u5
-ARG FONTCONFIG_VERSION=2.13.1-4.2
-ARG PIXMAN_VERSION=0.40.0-1.1~deb11u1
-ARG CAIRO_VERSION=1.16.0-5
-ARG PANGO_VERSION=1.46.2-3
-ARG LIBXML_VERSION=2.9.10+dfsg-6.7+deb11u4
-ARG GETTEXT_VERSION=0.21-4
+ARG FONTCONFIG_VERSION=2.14.1-4
+ARG PIXMAN_VERSION=0.42.2-1
+ARG CAIRO_VERSION=1.16.0-7
+ARG PANGO_VERSION=1.50.12+ds-1
+ARG LIBXML_VERSION=2.9.14+dfsg-1.2
+ARG GETTEXT_VERSION=0.21-12
 ARG INTLTOOL_VERSION=0.51.0-6
-ARG GDK_PIXBUF_VERSION=2.42.2+dfsg-1+deb11u1
+ARG GDK_PIXBUF_VERSION=2.42.10+dfsg-1+b1
 ARG RSVG_VERSION=2.54.5+dfsg-1
-ARG GLIB_VERSION=2.66.8-1
-ARG FRIBIDI_VERSION=1.0.8-2+deb11u1
-ARG PCRE_VERSION=2:8.39-13
+ARG GLIB_VERSION=2.74.6-2
+ARG FRIBIDI_VERSION=1.0.8-2.1
+ARG PCRE_VERSION=2:8.39-15
 
 ENV TZ=Pacific/Los_Angeles
 ENV DEBIAN_FRONTEND=noninteractive
@@ -77,6 +78,9 @@ RUN apt-get -y --no-install-recommends install \
         libharfbuzz0b=${HARFBUZZ_VERSION} \
         libharfbuzz-bin=${HARFBUZZ_VERSION} \
         libharfbuzz-dev=${HARFBUZZ_VERSION} \
+        libharfbuzz-icu0=${HARFBUZZ_VERSION} \
+        libharfbuzz-gobject0=${HARFBUZZ_VERSION} \
+        gir1.2-harfbuzz-0.0=${HARFBUZZ_VERSION} \
         libexpat1=${LIBEXPAT_VERSION} \
         libexpat1-dev=${LIBEXPAT_VERSION} \
         libfontconfig1=${FONTCONFIG_VERSION} \
