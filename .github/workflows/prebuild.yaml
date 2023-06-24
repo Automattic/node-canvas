@@ -184,6 +184,7 @@ jobs:
     runs-on: windows-2019
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       # GitHub runners now have msys2 installed, but msys is not on the path and
       # is apparently slow to start.
