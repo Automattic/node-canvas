@@ -5,6 +5,10 @@ NODE_VERSION="${1:-16}"
 BRANCH="${2:-master}"
 ARCH="${3:-arm64}"
 
+if [[ -d "../build" ]]; then
+    sudo rm -rf ../build
+fi
+
 docker run -it --rm \
     -u root \
     -e CANVAS_VERSION_TO_BUILD="$BRANCH" \
@@ -17,7 +21,6 @@ docker run -it --rm \
         git clone '$GIT_URL' /canvas && \
         cd /canvas && \
         git checkout '$BRANCH' && \
-        apt-get -y --no-install-recommends install jq && \
         install-node-gyp && \
         npm install --ignore-scripts && \
         . prebuild/Linux/preinstall.sh && \

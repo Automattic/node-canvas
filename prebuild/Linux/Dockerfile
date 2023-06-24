@@ -29,6 +29,34 @@ RUN curl -LO https://download.gnome.org/sources/libcroco/0.6/libcroco-0.6.13.tar
 
 RUN tar -czvf /croco-build.tgz /croco-build
 
+FROM debian:bookworm as pax
+
+RUN rm /etc/apt/sources.list.d/debian.sources
+ADD sources.list /etc/apt/sources.list
+
+RUN apt-get update
+RUN apt-get -y install \
+        curl \
+        make \
+        cmake \
+        gcc \
+        g++ \
+        build-essential \
+        clang \
+        tar \
+        bzip2 \
+        pkg-config \
+        git \
+        meson
+
+RUN git clone https://anongit.gentoo.org/git/proj/pax-utils.git /pax && \
+    cd /pax && \
+    meson _build --prefix=/pax-build && \
+    ninja -C _build && \
+    ninja -C _build install
+
+RUN tar -czvf /pax-build.tgz /pax-build
+
 FROM debian:bookworm as main
 
 ARG PKG_CONFIG_VERSION=0.29.2-1
@@ -120,7 +148,6 @@ RUN apt-get -y --no-install-recommends install \
         bzip2 \
         git \
         unzip \
-        pax-utils \
         jq
 
 SHELL [ "/bin/bash", "-c" ]
@@ -155,9 +182,14 @@ RUN rm -f \
         /mime.deb
 
 COPY --from=croco /croco-build.tgz /
+COPY --from=pax /pax-build.tgz /
 
 RUN tar -xzvf /croco-build.tgz -C /usr/local --strip-components 1
-RUN rm -f croco-build.tgz
+RUN tar -xzvf /pax-build.tgz -C /usr/local --strip-components 1
+
+RUN rm -f \
+        /croco-build.tgz \
+        /pax-build.tgz
 
 ENV CARGO_HOME=/opt/cargo
 ENV RUSTUP_HOME=/opt/rustup
@@ -174,9 +206,6 @@ ENV PATH="/opt/fnm:$PATH"
 
 ADD gyp.sh /usr/local/bin/install-node-gyp
 RUN chmod a+rx /usr/local/bin/install-node-gyp
-
-ADD lddtree.sh /usr/local/bin/lddtree.sh
-RUN chmod a+rx /usr/local/bin/lddtree.sh
 
 FROM scratch
 
