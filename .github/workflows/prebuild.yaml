@@ -194,7 +194,7 @@ jobs:
 
       - name: Build
         run: |
-          npm install -g node-gyp
+          msys2do bash prebuild/Linux/gyp.sh
           npm install --ignore-scripts
           msys2do . prebuild/Windows/preinstall.sh
           msys2do cp prebuild/Windows/binding.gyp binding.gyp
