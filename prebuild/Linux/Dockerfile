@@ -64,6 +64,7 @@ ARG ZLIB_VERSION=1:1.2.13.dfsg-1
 ARG LIBFFI_VERSION=3.3-6
 ARG OPENSSL_VERSION=1.1.1n-0+deb11u5
 ARG PYTHON_VERSION=3.9.2-1
+ARG PYTHON3_VERSION=3.9.2-3
 ARG LIBPNG_VERSION=1.6.39-2
 ARG FREETYPE_VERSION=2.12.1+dfsg-5
 ARG HARFBUZZ_VERSION=6.0.0+dfsg-3
@@ -151,7 +152,10 @@ RUN apt-get -y --no-install-recommends install \
         python-is-python3=${PYTHON_VERSION} \
         python-dev-is-python3=${PYTHON_VERSION} \
         python3-pip \
-        python3-pyelftools
+        python3-pyelftools \
+        python3=${PYTHON3_VERSION} \
+        python3-minimal=${PYTHON3_VERSION} \
+        libpython3-stdlib=${PYTHON3_VERSION}
 
 SHELL [ "/bin/bash", "-c" ]
 
