@@ -150,7 +150,8 @@ RUN apt-get -y --no-install-recommends install \
         unzip \
         jq \
         python-is-python3 \
-        python3-pip
+        python3-pip \
+        python3-pyelftools
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -208,8 +209,6 @@ ENV PATH="/opt/fnm:$PATH"
 
 ADD gyp.sh /usr/local/bin/install-node-gyp
 RUN chmod a+rx /usr/local/bin/install-node-gyp
-
-RUN pip3 install elftools
 
 FROM scratch
 
