@@ -148,7 +148,8 @@ RUN apt-get -y --no-install-recommends install \
         bzip2 \
         git \
         unzip \
-        jq
+        jq \
+        python-is-python3
 
 SHELL [ "/bin/bash", "-c" ]
 
