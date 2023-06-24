@@ -118,6 +118,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9" 
 
       - name: Build
         run: |
