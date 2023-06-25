@@ -214,7 +214,8 @@ jobs:
           ./prebuild/Windows/gyp.ps1
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
           npm install --ignore-scripts
-          ./prebuild/Windows/preinstall.ps1
+          msys2 -c ". prebuild/Windows/preinstall.sh"
+          msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
           npm install --build-from-source
 
       - name: Install Depends
