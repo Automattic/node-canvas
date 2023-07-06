@@ -1,11 +1,11 @@
-var fs = require('fs')
-var Canvas = require('..')
+const fs = require('fs')
+const Canvas = require('..')
 
-var canvas = Canvas.createCanvas(400, 200, 'svg')
-var ctx = canvas.getContext('2d')
+const canvas = Canvas.createCanvas(400, 200, 'svg')
+const ctx = canvas.getContext('2d')
 
-var y = 80
-var x = 50
+let y = 80
+let x = 50
 
 ctx.font = '22px Helvetica'
 ctx.fillText('node-canvas SVG', x, y)

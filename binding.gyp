@@ -96,7 +96,8 @@
             '<(GTK_Root)/lib/glib-2.0/include'
           ],
           'defines': [
-            '_USE_MATH_DEFINES'  # for M_PI
+            '_USE_MATH_DEFINES',  # for M_PI
+            'NOMINMAX' # allow std::min/max to work
           ],
           'configurations': {
             'Debug': {
@@ -164,8 +165,11 @@
                 '-l<(jpeg_root)/lib/jpeg.lib',
               ]
             }, {
+              'include_dirs': [
+                '<!@(pkg-config libjpeg --cflags-only-I | sed s/-I//g)'
+              ],
               'libraries': [
-                '-ljpeg'
+                '<!@(pkg-config libjpeg --libs)'
               ]
             }]
           ]
@@ -180,7 +184,11 @@
                 '-l<(GTK_Root)/lib/gif.lib'
               ]
             }, {
+              'include_dirs': [
+                '/opt/homebrew/include'
+              ],
               'libraries': [
+                '-L/opt/homebrew/lib',
                 '-lgif'
               ]
             }]

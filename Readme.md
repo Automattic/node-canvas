@@ -23,7 +23,7 @@ For detailed installation information, see the [wiki](https://github.com/Automat
 
 OS | Command
 ----- | -----
-OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg`
+OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman`
 Ubuntu | `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
 Fedora | `sudo yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel`
 Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
@@ -91,7 +91,7 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
 * [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
 * [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
-* [CanvasRenderingContext2D#globalCompositeOperator = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperator--saturate)
+* [CanvasRenderingContext2D#globalCompositeOperation = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperation--saturate)
 * [CanvasRenderingContext2D#antialias](#canvasrenderingcontext2dantialias)
 
 ### createCanvas()

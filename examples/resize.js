@@ -1,22 +1,22 @@
-var fs = require('fs')
-var path = require('path')
-var Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const Canvas = require('..')
 
-var Image = Canvas.Image
+const Image = Canvas.Image
 
-var img = new Image()
-var start = new Date()
+const img = new Image()
+const start = new Date()
 
 img.onerror = function (err) {
   throw err
 }
 
 img.onload = function () {
-  var width = 100
-  var height = 100
-  var canvas = Canvas.createCanvas(width, height)
-  var ctx = canvas.getContext('2d')
-  var out = fs.createWriteStream(path.join(__dirname, 'resize.png'))
+  const width = 100
+  const height = 100
+  const canvas = Canvas.createCanvas(width, height)
+  const ctx = canvas.getContext('2d')
+  const out = fs.createWriteStream(path.join(__dirname, 'resize.png'))
 
   ctx.imageSmoothingEnabled = true
   ctx.drawImage(img, 0, 0, width, height)

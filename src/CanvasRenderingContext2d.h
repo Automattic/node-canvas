@@ -7,11 +7,7 @@
 #include "color.h"
 #include "nan.h"
 #include <pango/pangocairo.h>
-
-typedef enum {
-  TEXT_DRAW_PATHS,
-  TEXT_DRAW_GLYPHS
-} canvas_draw_mode_t;
+#include <stack>
 
 /*
  * State struct.
@@ -20,25 +16,56 @@ typedef enum {
  * cairo's gstate maintains only a single source pattern at a time.
  */
 
-typedef struct {
-  rgba_t fill;
-  rgba_t stroke;
-  cairo_filter_t patternQuality;
-  cairo_pattern_t *fillPattern;
-  cairo_pattern_t *strokePattern;
-  cairo_pattern_t *fillGradient;
-  cairo_pattern_t *strokeGradient;
-  float globalAlpha;
-  short textAlignment;
-  short textBaseline;
-  rgba_t shadow;
-  int shadowBlur;
-  double shadowOffsetX;
-  double shadowOffsetY;
-  canvas_draw_mode_t textDrawingMode;
-  PangoFontDescription *fontDescription;
-  bool imageSmoothingEnabled;
-} canvas_state_t;
+struct canvas_state_t {
+  rgba_t fill = { 0, 0, 0, 1 };
+  rgba_t stroke = { 0, 0, 0, 1 };
+  rgba_t shadow = { 0, 0, 0, 0 };
+  double shadowOffsetX = 0.;
+  double shadowOffsetY = 0.;
+  cairo_pattern_t* fillPattern = nullptr;
+  cairo_pattern_t* strokePattern = nullptr;
+  cairo_pattern_t* fillGradient = nullptr;
+  cairo_pattern_t* strokeGradient = nullptr;
+  PangoFontDescription* fontDescription = nullptr;
+  std::string font = "10px sans-serif";
+  cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
+  float globalAlpha = 1.f;
+  int shadowBlur = 0;
+  text_align_t textAlignment = TEXT_ALIGNMENT_LEFT; // TODO default is supposed to be START
+  text_baseline_t textBaseline = TEXT_BASELINE_ALPHABETIC;
+  canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
+  bool imageSmoothingEnabled = true;
+
+  canvas_state_t() {
+    fontDescription = pango_font_description_from_string("sans");
+    pango_font_description_set_absolute_size(fontDescription, 10 * PANGO_SCALE);
+  }
+
+  canvas_state_t(const canvas_state_t& other) {
+    fill = other.fill;
+    stroke = other.stroke;
+    patternQuality = other.patternQuality;
+    fillPattern = other.fillPattern;
+    strokePattern = other.strokePattern;
+    fillGradient = other.fillGradient;
+    strokeGradient = other.strokeGradient;
+    globalAlpha = other.globalAlpha;
+    textAlignment = other.textAlignment;
+    textBaseline = other.textBaseline;
+    shadow = other.shadow;
+    shadowBlur = other.shadowBlur;
+    shadowOffsetX = other.shadowOffsetX;
+    shadowOffsetY = other.shadowOffsetY;
+    textDrawingMode = other.textDrawingMode;
+    fontDescription = pango_font_description_copy(other.fontDescription);
+    font = other.font;
+    imageSmoothingEnabled = other.imageSmoothingEnabled;
+  }
+
+  ~canvas_state_t() {
+    pango_font_description_free(fontDescription);
+  }
+};
 
 /*
  * Equivalent to a PangoRectangle but holds floats instead of ints
@@ -54,12 +81,9 @@ typedef struct {
   float height;
 } float_rectangle;
 
-void state_assign_fontFamily(canvas_state_t *state, const char *str);
-
-class Context2d: public Nan::ObjectWrap {
+class Context2d : public Nan::ObjectWrap {
   public:
-    short stateno;
-    canvas_state_t *states[CANVAS_MAX_STATES];
+    std::stack<canvas_state_t> states;
     canvas_state_t *state;
     Context2d(Canvas *canvas);
     static Nan::Persistent<v8::Function> _DOMMatrix;
@@ -76,6 +100,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(Translate);
     static NAN_METHOD(Scale);
     static NAN_METHOD(Transform);
+    static NAN_METHOD(GetTransform);
     static NAN_METHOD(ResetTransform);
     static NAN_METHOD(SetTransform);
     static NAN_METHOD(IsPointInPath);
@@ -103,6 +128,7 @@ class Context2d: public Nan::ObjectWrap {
     static NAN_METHOD(StrokeRect);
     static NAN_METHOD(ClearRect);
     static NAN_METHOD(Rect);
+    static NAN_METHOD(RoundRect);
     static NAN_METHOD(Arc);
     static NAN_METHOD(ArcTo);
     static NAN_METHOD(Ellipse);
@@ -178,7 +204,7 @@ class Context2d: public Nan::ObjectWrap {
     void save();
     void restore();
     void setFontFromState();
-    void resetState(bool init = false);
+    void resetState();
     inline PangoLayout *layout(){ return _layout; }
 
   private:
@@ -192,9 +218,6 @@ class Context2d: public Nan::ObjectWrap {
     void _setStrokePattern(v8::Local<v8::Value> arg);
     Nan::Persistent<v8::Value> _fillStyle;
     Nan::Persistent<v8::Value> _strokeStyle;
-    Nan::Persistent<v8::Value> _font;
-    Nan::Persistent<v8::Value> _textBaseline;
-    Nan::Persistent<v8::Value> _textAlign;
     Canvas *_canvas;
     cairo_t *_context;
     cairo_path_t *_path;

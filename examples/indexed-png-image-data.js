@@ -1,13 +1,13 @@
-var Canvas = require('..')
-var fs = require('fs')
-var path = require('path')
-var canvas = Canvas.createCanvas(200, 200)
-var ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
+const Canvas = require('..')
+const fs = require('fs')
+const path = require('path')
+const canvas = Canvas.createCanvas(200, 200)
+const ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
 
 // Matches the "fillStyle" browser test, made by manipulating imageData
-var palette = new Uint8ClampedArray(37 * 4)
-var k = 0
-var i, j
+const palette = new Uint8ClampedArray(37 * 4)
+let k = 0
+let i, j
 // First value is opaque white:
 palette[k++] = 255
 palette[k++] = 255
@@ -21,13 +21,13 @@ for (i = 0; i < 6; i++) {
     palette[k++] = 255
   }
 }
-var idata = ctx.getImageData(0, 0, 200, 200)
+const idata = ctx.getImageData(0, 0, 200, 200)
 for (i = 0; i < 6; i++) {
   for (j = 0; j < 6; j++) {
-    var index = j * 6 + i
+    const index = j * 6 + i
     // fill rect:
-    for (var xr = j * 25; xr < j * 25 + 25; xr++) {
-      for (var yr = i * 25; yr < i * 25 + 25; yr++) {
+    for (let xr = j * 25; xr < j * 25 + 25; xr++) {
+      for (let yr = i * 25; yr < i * 25 + 25; yr++) {
         idata.data[xr * 200 + yr] = index + 1
       }
     }

@@ -1,6 +1,7 @@
 const Canvas = require('./lib/canvas')
 const Image = require('./lib/image')
 const CanvasRenderingContext2D = require('./lib/context2d')
+const CanvasPattern = require('./lib/pattern')
 const parseFont = require('./lib/parse-font')
 const packageJson = require('./package.json')
 const bindings = require('./lib/bindings')
@@ -8,8 +9,7 @@ const fs = require('fs')
 const PNGStream = require('./lib/pngstream')
 const PDFStream = require('./lib/pdfstream')
 const JPEGStream = require('./lib/jpegstream')
-const DOMMatrix = require('./lib/DOMMatrix').DOMMatrix
-const DOMPoint = require('./lib/DOMMatrix').DOMPoint
+const { DOMPoint, DOMMatrix } = require('./lib/DOMMatrix')
 
 function createCanvas (width, height, type) {
   return new Canvas(width, height, type)
@@ -48,39 +48,47 @@ function registerFont (src, fontFace) {
   return Canvas._registerFont(fs.realpathSync(src), fontFace)
 }
 
-module.exports = {
-  Canvas,
-  Context2d: CanvasRenderingContext2D, // Legacy/compat export
-  CanvasRenderingContext2D,
-  CanvasGradient: bindings.CanvasGradient,
-  CanvasPattern: bindings.CanvasPattern,
-  Image,
-  ImageData: bindings.ImageData,
-  PNGStream,
-  PDFStream,
-  JPEGStream,
-  DOMMatrix,
-  DOMPoint,
-
-  registerFont,
-  parseFont,
-
-  createCanvas,
-  createImageData,
-  loadImage,
-
-  backends: bindings.Backends,
-
-  /** Library version. */
-  version: packageJson.version,
-  /** Cairo version. */
-  cairoVersion: bindings.cairoVersion,
-  /** jpeglib version. */
-  jpegVersion: bindings.jpegVersion,
-  /** gif_lib version. */
-  gifVersion: bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined,
-  /** freetype version. */
-  freetypeVersion: bindings.freetypeVersion,
-  /** rsvg version. */
-  rsvgVersion: bindings.rsvgVersion
+/**
+ * Unload all fonts from pango to free up memory
+ */
+function deregisterAllFonts () {
+  return Canvas._deregisterAllFonts()
 }
+
+exports.Canvas = Canvas
+exports.Context2d = CanvasRenderingContext2D // Legacy/compat export
+exports.CanvasRenderingContext2D = CanvasRenderingContext2D
+exports.CanvasGradient = bindings.CanvasGradient
+exports.CanvasPattern = CanvasPattern
+exports.Image = Image
+exports.ImageData = bindings.ImageData
+exports.PNGStream = PNGStream
+exports.PDFStream = PDFStream
+exports.JPEGStream = JPEGStream
+exports.DOMMatrix = DOMMatrix
+exports.DOMPoint = DOMPoint
+
+exports.registerFont = registerFont
+exports.deregisterAllFonts = deregisterAllFonts
+exports.parseFont = parseFont
+
+exports.createCanvas = createCanvas
+exports.createImageData = createImageData
+exports.loadImage = loadImage
+
+exports.backends = bindings.Backends
+
+/** Library version. */
+exports.version = packageJson.version
+/** Cairo version. */
+exports.cairoVersion = bindings.cairoVersion
+/** jpeglib version. */
+exports.jpegVersion = bindings.jpegVersion
+/** gif_lib version. */
+exports.gifVersion = bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined
+/** freetype version. */
+exports.freetypeVersion = bindings.freetypeVersion
+/** rsvg version. */
+exports.rsvgVersion = bindings.rsvgVersion
+/** pango version. */
+exports.pangoVersion = bindings.pangoVersion

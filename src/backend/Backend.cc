@@ -9,7 +9,7 @@ Backend::Backend(std::string name, int width, int height)
 
 Backend::~Backend()
 {
-  this->destroySurface();
+  Backend::destroySurface();
 }
 
 void Backend::init(const Nan::FunctionCallbackInfo<v8::Value> &info) {
@@ -97,16 +97,15 @@ bool Backend::isSurfaceValid(){
 
 BackendOperationNotAvailable::BackendOperationNotAvailable(Backend* backend,
   std::string operation_name)
-  : backend(backend)
-  , operation_name(operation_name)
-{};
+  : operation_name(operation_name)
+{
+  msg = "operation " + operation_name +
+    " not supported by backend " + backend->getName();
+};
 
 BackendOperationNotAvailable::~BackendOperationNotAvailable() throw() {};
 
 const char* BackendOperationNotAvailable::what() const throw()
 {
-  std::string msg = "operation " + this->operation_name +
-    " not supported by backend " + backend->getName();
-
   return msg.c_str();
 };

@@ -16,3 +16,5 @@ package-lock.json
 *.swp
 *.un~
 npm-debug.log
+
+.idea

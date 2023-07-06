@@ -19,10 +19,10 @@ function pdfLink (name) {
 }
 
 function localRendering (name, callback) {
-  var canvas = create('canvas', { width: 200, height: 200, title: name })
-  var tests = window.tests
-  var ctx = canvas.getContext('2d', { alpha: true })
-  var initialFillStyle = ctx.fillStyle
+  const canvas = create('canvas', { width: 200, height: 200, title: name })
+  const tests = window.tests
+  const ctx = canvas.getContext('2d', { alpha: true })
+  const initialFillStyle = ctx.fillStyle
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, 200, 200)
   ctx.fillStyle = initialFillStyle
@@ -36,12 +36,12 @@ function localRendering (name, callback) {
 }
 
 function getDifference (canvas, image, outputCanvas) {
-  var imgCanvas = create('canvas', { width: 200, height: 200 })
-  var ctx = imgCanvas.getContext('2d', { alpha: true })
-  var output = outputCanvas.getContext('2d', { alpha: true }).getImageData(0, 0, 200, 200)
+  const imgCanvas = create('canvas', { width: 200, height: 200 })
+  const ctx = imgCanvas.getContext('2d', { alpha: true })
+  const output = outputCanvas.getContext('2d', { alpha: true }).getImageData(0, 0, 200, 200)
   ctx.drawImage(image, 0, 0, 200, 200)
-  var imageDataCanvas = ctx.getImageData(0, 0, 200, 200).data
-  var imageDataGolden = canvas.getContext('2d', { alpha: true }).getImageData(0, 0, 200, 200).data
+  const imageDataCanvas = ctx.getImageData(0, 0, 200, 200).data
+  const imageDataGolden = canvas.getContext('2d', { alpha: true }).getImageData(0, 0, 200, 200).data
   window.pixelmatch(imageDataCanvas, imageDataGolden, output.data, 200, 200, {
     includeAA: false,
     threshold: 0.15
@@ -51,16 +51,16 @@ function getDifference (canvas, image, outputCanvas) {
 }
 
 function clearTests () {
-  var table = document.getElementById('tests')
+  const table = document.getElementById('tests')
   if (table) document.body.removeChild(table)
 }
 
 function runTests () {
   clearTests()
 
-  var testNames = Object.keys(window.tests)
+  const testNames = Object.keys(window.tests)
 
-  var table = create('table', { id: 'tests' }, [
+  const table = create('table', { id: 'tests' }, [
     create('thead', {}, [
       create('th', { textContent: 'node-canvas' }),
       create('th', { textContent: 'browser canvas' }),
@@ -68,9 +68,9 @@ function runTests () {
       create('th', { textContent: '' })
     ]),
     create('tbody', {}, testNames.map(function (name) {
-      var img = create('img')
-      var canvasOuput = create('canvas', { width: 200, height: 200, title: name })
-      var canvas = localRendering(name, function () {
+      const img = create('img')
+      const canvasOuput = create('canvas', { width: 200, height: 200, title: name })
+      const canvas = localRendering(name, function () {
         img.onload = function () {
           getDifference(canvas, img, canvasOuput)
         }

@@ -225,12 +225,16 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 #define LIGHTNESS(NAME) SATURATION(NAME)
 
 #define ALPHA(NAME) \
-  if (*str >= '1' && *str <= '9') { \
+    if (*str >= '1' && *str <= '9') { \
       NAME = 1; \
     } else { \
-      if ('0' == *str) ++str; \
+      if ('0' == *str) { \
+        NAME = 0; \
+        ++str; \
+      } \
       if ('.' == *str) { \
         ++str; \
+        NAME = 0; \
         float n = .1f; \
         while (*str >= '0' && *str <= '9') { \
           NAME += (*str++ - '0') * n; \
@@ -630,7 +634,7 @@ rgba_from_rgba_string(const char *str, short *ok) {
     str += 5;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
-    float a = 0;
+    float a = 1.f;
     CHANNEL(r);
     WHITESPACE_OR_COMMA;
     CHANNEL(g);

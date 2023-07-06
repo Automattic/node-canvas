@@ -9,15 +9,7 @@
 #include <pango/pangocairo.h>
 #include <v8.h>
 #include <vector>
-
-/*
- * Maxmimum states per context.
- * TODO: remove/resize
- */
-
-#ifndef CANVAS_MAX_STATES
-#define CANVAS_MAX_STATES 64
-#endif
+#include <cstddef>
 
 /*
  * FontFace describes a font file in terms of one PangoFontDescription that
@@ -27,6 +19,30 @@ class FontFace {
   public:
     PangoFontDescription *sys_desc = nullptr;
     PangoFontDescription *user_desc = nullptr;
+    unsigned char file_path[1024];
+};
+
+enum text_baseline_t : uint8_t {
+  TEXT_BASELINE_ALPHABETIC = 0,
+  TEXT_BASELINE_TOP = 1,
+  TEXT_BASELINE_BOTTOM = 2,
+  TEXT_BASELINE_MIDDLE = 3,
+  TEXT_BASELINE_IDEOGRAPHIC = 4,
+  TEXT_BASELINE_HANGING = 5
+};
+
+enum text_align_t : int8_t {
+  TEXT_ALIGNMENT_LEFT = -1,
+  TEXT_ALIGNMENT_CENTER = 0,
+  TEXT_ALIGNMENT_RIGHT = 1,
+  // Currently same as LEFT and RIGHT without RTL support:
+  TEXT_ALIGNMENT_START = -2,
+  TEXT_ALIGNMENT_END = 2
+};
+
+enum canvas_draw_mode_t : uint8_t {
+  TEXT_DRAW_PATHS,
+  TEXT_DRAW_GLYPHS
 };
 
 /*
@@ -49,6 +65,7 @@ class Canvas: public Nan::ObjectWrap {
     static NAN_METHOD(StreamPDFSync);
     static NAN_METHOD(StreamJPEGSync);
     static NAN_METHOD(RegisterFont);
+    static NAN_METHOD(DeregisterAllFonts);
     static v8::Local<v8::Value> Error(cairo_status_t status);
     static void ToPngBufferAsync(uv_work_t *req);
     static void ToJpegBufferAsync(uv_work_t *req);
@@ -63,7 +80,9 @@ class Canvas: public Nan::ObjectWrap {
 
     DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    DLL_PUBLIC inline int nBytes(){ return getHeight() * stride(); }
+    DLL_PUBLIC inline std::size_t nBytes(){
+      return static_cast<std::size_t>(getHeight()) * stride();
+    }
 
     DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
     DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }

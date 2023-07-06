@@ -2,8 +2,6 @@
 
 #include "ImageData.h"
 
-#include "Util.h"
-
 using namespace v8;
 
 Nan::Persistent<FunctionTemplate> ImageData::constructor;
@@ -24,8 +22,8 @@ ImageData::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, NULL, ctor);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight);
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New("ImageData").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
 }
@@ -126,6 +124,10 @@ NAN_METHOD(ImageData::New) {
  */
 
 NAN_GETTER(ImageData::GetWidth) {
+  if (!ImageData::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method ImageData.GetWidth called on incompatible receiver");
+    return;
+  }
   ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(imageData->width()));
 }
@@ -135,6 +137,10 @@ NAN_GETTER(ImageData::GetWidth) {
  */
 
 NAN_GETTER(ImageData::GetHeight) {
+  if (!ImageData::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method ImageData.GetHeight called on incompatible receiver");
+    return;
+  }
   ImageData *imageData = Nan::ObjectWrap::Unwrap<ImageData>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(imageData->height()));
 }

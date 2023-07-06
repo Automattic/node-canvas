@@ -1,13 +1,14 @@
-var query = process.argv[2]
-var fs = require('fs')
-var childProcess = require('child_process')
+const query = process.argv[2]
+const fs = require('fs')
+const childProcess = require('child_process')
 
-var SYSTEM_PATHS = [
+const SYSTEM_PATHS = [
   '/lib',
   '/usr/lib',
   '/usr/lib64',
   '/usr/local/lib',
   '/opt/local/lib',
+  '/opt/homebrew/lib',
   '/usr/lib/x86_64-linux-gnu',
   '/usr/lib/i386-linux-gnu',
   '/usr/lib/arm-linux-gnueabihf',
@@ -22,8 +23,8 @@ var SYSTEM_PATHS = [
  * @return {boolean} exists
  */
 function hasSystemLib (lib) {
-  var libName = 'lib' + lib + '.+(so|dylib)'
-  var libNameRegex = new RegExp(libName)
+  const libName = 'lib' + lib + '.+(so|dylib)'
+  const libNameRegex = new RegExp(libName)
 
   // Try using ldconfig on linux systems
   if (hasLdconfig()) {
@@ -39,7 +40,7 @@ function hasSystemLib (lib) {
   // Try checking common library locations
   return SYSTEM_PATHS.some(function (systemPath) {
     try {
-      var dirListing = fs.readdirSync(systemPath)
+      const dirListing = fs.readdirSync(systemPath)
       return dirListing.some(function (file) {
         return libNameRegex.test(file)
       })
@@ -100,13 +101,14 @@ function hasPkgconfigLib (lib) {
 function main (query) {
   switch (query) {
     case 'gif':
-    case 'jpeg':
     case 'cairo':
       return hasSystemLib(query)
     case 'pango':
       return hasPkgconfigLib(query)
     case 'freetype':
       return hasFreetype()
+    case 'jpeg':
+      return hasPkgconfigLib('libjpeg')
     case 'rsvg':
       return hasPkgconfigLib('librsvg-2.0')
     default:

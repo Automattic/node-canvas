@@ -1,4 +1,7 @@
 import * as Canvas from 'canvas'
+import * as path from "path";
+
+Canvas.registerFont(path.join(__dirname, '../pfennigFont/Pfennig.ttf'), {family: 'pfennigFont'})
 
 Canvas.createCanvas(5, 10)
 Canvas.createCanvas(200, 200, 'pdf')
@@ -16,7 +19,6 @@ ctx.currentTransform = ctx.getTransform()
 
 ctx.quality = 'best'
 ctx.textDrawingMode = 'glyph'
-ctx.globalCompositeOperation = 'saturate'
 
 const grad: Canvas.CanvasGradient = ctx.createLinearGradient(0, 1, 2, 3)
 grad.addColorStop(0.1, 'red')
@@ -40,3 +42,5 @@ img.onload = null;
 const id2: Canvas.ImageData = Canvas.createImageData(new Uint16Array(4), 1)
 
 ctx.drawImage(canv, 0, 0)
+
+Canvas.deregisterAllFonts();

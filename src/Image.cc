@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <node_buffer.h>
-#include "Util.h"
 
 /* Cairo limit:
   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
@@ -60,12 +59,12 @@ Image::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
   // Prototype
   Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
-  SetProtoAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
-  SetProtoAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode, ctor);
+  Nan::SetAccessor(proto, Nan::New("complete").ToLocalChecked(), GetComplete);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
+  Nan::SetAccessor(proto, Nan::New("naturalWidth").ToLocalChecked(), GetNaturalWidth);
+  Nan::SetAccessor(proto, Nan::New("naturalHeight").ToLocalChecked(), GetNaturalHeight);
+  Nan::SetAccessor(proto, Nan::New("dataMode").ToLocalChecked(), GetDataMode, SetDataMode);
 
   ctor->Set(Nan::New("MODE_IMAGE").ToLocalChecked(), Nan::New<Number>(DATA_IMAGE));
   ctor->Set(Nan::New("MODE_MIME").ToLocalChecked(), Nan::New<Number>(DATA_MIME));
@@ -108,6 +107,10 @@ NAN_GETTER(Image::GetComplete) {
  */
 
 NAN_GETTER(Image::GetDataMode) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetDataMode called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->data_mode));
 }
@@ -117,6 +120,10 @@ NAN_GETTER(Image::GetDataMode) {
  */
 
 NAN_SETTER(Image::SetDataMode) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.SetDataMode called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     int mode = Nan::To<uint32_t>(value).FromMaybe(0);
@@ -129,6 +136,10 @@ NAN_SETTER(Image::SetDataMode) {
  */
 
 NAN_GETTER(Image::GetNaturalWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetNaturalWidth called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->naturalWidth));
 }
@@ -138,6 +149,10 @@ NAN_GETTER(Image::GetNaturalWidth) {
  */
 
 NAN_GETTER(Image::GetWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetWidth called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->width));
 }
@@ -147,6 +162,10 @@ NAN_GETTER(Image::GetWidth) {
  */
 
 NAN_SETTER(Image::SetWidth) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.SetWidth called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->width = Nan::To<uint32_t>(value).FromMaybe(0);
@@ -158,6 +177,10 @@ NAN_SETTER(Image::SetWidth) {
  */
 
 NAN_GETTER(Image::GetNaturalHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetNaturalHeight called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->naturalHeight));
 }
@@ -167,6 +190,10 @@ NAN_GETTER(Image::GetNaturalHeight) {
  */
 
 NAN_GETTER(Image::GetHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Image.GetHeight called on incompatible receiver");
+    return;
+  }
   Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(img->height));
 }
@@ -175,6 +202,11 @@ NAN_GETTER(Image::GetHeight) {
  */
 
 NAN_SETTER(Image::SetHeight) {
+  if (!Image::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    // #1534
+    Nan::ThrowTypeError("Method Image.SetHeight called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Image *img = Nan::ObjectWrap::Unwrap<Image>(info.This());
     img->height = Nan::To<uint32_t>(value).FromMaybe(0);
@@ -271,14 +303,14 @@ NAN_METHOD(Image::SetSource){
         argv[0] = Nan::Error(Nan::New(cairo_status_to_string(status)).ToLocalChecked());
       }
       Local<Context> ctx = Nan::GetCurrentContext();
-      Nan::Call(onerrorFn.As<Function>(), ctx->Global(), 1, argv).ToLocalChecked();
+      Nan::Call(onerrorFn.As<Function>(), ctx->Global(), 1, argv);
     }
   } else {
     img->loaded();
     Local<Value> onloadFn = Nan::Get(info.This(), Nan::New("onload").ToLocalChecked()).ToLocalChecked();
     if (onloadFn->IsFunction()) {
       Local<Context> ctx = Nan::GetCurrentContext();
-      Nan::Call(onloadFn.As<Function>(), ctx->Global(), 0, NULL).ToLocalChecked();
+      Nan::Call(onloadFn.As<Function>(), ctx->Global(), 0, NULL);
     }
   }
 }
@@ -1160,11 +1192,13 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  RsvgDimensionData *dims = new RsvgDimensionData();
-  rsvg_handle_get_dimensions(_rsvg, dims);
+  double d_width;
+  double d_height;
 
-  width = naturalWidth = dims->width;
-  height = naturalHeight = dims->height;
+  rsvg_handle_get_intrinsic_size_in_pixels(_rsvg, &d_width, &d_height);
+
+  width = naturalWidth = d_width;
+  height = naturalHeight = d_height;
 
   status = renderSVGToSurface();
   if (status != CAIRO_STATUS_SUCCESS) {
@@ -1200,7 +1234,13 @@ Image::renderSVGToSurface() {
     return status;
   }
 
-  gboolean render_ok = rsvg_handle_render_cairo(_rsvg, cr);
+  RsvgRectangle viewport = {
+    .x = 0,
+    .y = 0,
+    .width = static_cast<double>(width),
+    .height = static_cast<double>(height),
+  };
+  gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
   if (!render_ok) {
     g_object_unref(_rsvg);
     cairo_destroy(cr);
