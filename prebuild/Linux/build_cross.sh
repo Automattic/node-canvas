@@ -1,6 +1,8 @@
 #!/bin/sh
 
-if [ "$1" = "arm64" ]; then
+set -ex
+
+if [ "$ARCH" = "arm64" ]; then
     export CC=aarch64-linux-gnu-gcc
     export CXX=aarch64-linux-gnu-g++
     export AR=aarch64-linux-gnu-ar
@@ -15,3 +17,10 @@ else
     export LD=x86_64-linux-gnu-ld
     export RANLIB=x86_64-linux-gnu-ranlib
 fi
+
+install-node-gyp
+npm install --ignore-scripts
+. prebuild/Linux/preinstall.sh
+cp prebuild/Linux/binding.gyp binding.gyp
+node-gyp rebuild -j 2 "--arch=$ARCH"
+. prebuild/Linux/bundle.sh

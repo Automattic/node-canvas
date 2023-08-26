@@ -45,15 +45,9 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Build
-        run: |
-          set -ex
-          install-node-gyp
-          . prebuild/Linux/cross-env.sh ${{ matrix.arch }}
-          npm install --ignore-scripts
-          . prebuild/Linux/preinstall.sh
-          cp prebuild/Linux/binding.gyp binding.gyp
-          node-gyp rebuild -j 2 --arch=${{ matrix.arch }}
-          . prebuild/Linux/bundle.sh
+        run: sh prebuild/Linux/build_cross.sh
+        env:
+          ARCH: ${{ matrix.arch }}
 
       - name: Test binary
         if: matrix.arch == 'x64'
