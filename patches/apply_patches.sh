@@ -16,3 +16,5 @@ patch -p0 -i "$DIR/patches/zig.patch"
 node-gyp install
 cd ~/.cache
 patch -p0 -t -i "$DIR/patches/v8.patch" || true
+
+cd "$DIR"
