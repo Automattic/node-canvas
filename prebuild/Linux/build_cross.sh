@@ -4,12 +4,12 @@ set -xe
 
 if [ "$ARCH" = "arm64" ]; then
     curl -L \
-        https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.168+a31748b29.tar.xz \
+        https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.170+750998eef.tar.xz \
         -o /tmp/zig.txz
     
     mkdir /tmp/zig
     tar -xJf /tmp/zig.txz -C /tmp/zig
-    ZIG="/tmp/zig/zig-linux-x86_64-0.12.0-dev.168+a31748b29/zig"
+    ZIG="/tmp/zig/zig-linux-x86_64-0.12.0-dev.170+750998eef/zig"
 
     export CC="$ZIG cc -target aarch64-linux-gnu -fno-diagnostics-show-option"
     export CXX="$ZIG c++ -target aarch64-linux-gnu -fno-diagnostics-show-option"
