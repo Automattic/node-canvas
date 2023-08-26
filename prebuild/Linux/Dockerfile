@@ -229,13 +229,13 @@ RUN chmod a+rx /usr/local/bin/install-node-gyp
 ADD cross-env.sh /usr/local/bin/cross-env
 RUN chmod a+rx /usr/local/bin/cross-env
 
-FROM --platform=arm64 main as arm_sysroot
+FROM --platform=arm64 ghcr.io/redstonewizard08/node-canvas/prebuild as arm_sysroot
 
 RUN tar -czf /arm-sysroot.tgz \
         /lib /usr/include /usr/lib \
         /usr/local/lib /usr/local/include
 
-FROM --platform=amd64 ghcr.io/redstonewizard08/node-canvas/prebuild as x86_sysroot
+FROM --platform=amd64 main as x86_sysroot
 
 RUN tar -czf /x86-sysroot.tgz \
         /lib /lib64 /usr/include /usr/lib \
