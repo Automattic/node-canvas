@@ -4,19 +4,19 @@ set -ex
 
 if [ "$ARCH" = "arm64" ]; then
     curl -L \
-        https://developer.arm.com/-/media/Files/downloads/gnu/12.3.rel1/binrel/arm-gnu-toolchain-12.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz \
-        -o arm.txz
+        https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.168+a31748b29.tar.xz \
+        -o /tmp/zig.txz
     
-    mkdir arm-toolchain
-    tar -xJvf arm.txz -C arm-toolchain
-    BIN_DIR="$(pwd)/arm-toolchain/arm-gnu-toolchain-12.3.rel1-x86_64-aarch64-none-linux-gnu/bin/"
+    mkdir /tmp/zig
+    tar -xJvf /tmp/zig.txz -C /tmp/zig
+    ZIG="/tmp/zig/zig-linux-x86_64-0.12.0-dev.168+a31748b29/zig"
 
-    export CC="$BIN_DIR/aarch64-none-linux-gnu-gcc"
-    export CXX="$BIN_DIR/aarch64-none-linux-gnu-g++"
-    export AR="$BIN_DIR/aarch64-none-linux-gnu-ar"
-    export AS="$BIN_DIR/aarch64-none-linux-gnu-as"
-    export LD="$BIN_DIR/aarch64-none-linux-gnu-ld"
-    export RANLIB="$BIN_DIR/aarch64-none-linux-gnu-ranlib"
+    export CC="$ZIG cc"
+    export CXX="$ZIG c++"
+    export AR="$ZIG ar"
+    export AS="aarch64-linux-gnu-as"
+    export LD="aarch64-linux-gnu-ld"
+    export RANLIB="$ZIG ranlib"
 else
     export CC=x86_64-linux-gnu-gcc
     export CXX=x86_64-linux-gnu-g++
