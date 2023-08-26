@@ -10,7 +10,7 @@ if [ "$ARCH" = "arm64" ]; then
     export LD=aarch64-linux-gnu-ld
     export RANLIB=aarch64-linux-gnu-ranlib
 
-    cp /usr/aarch64-linux-gnu/include/gnu/stubs.h /usr/aarch64-linux-gnu/gnu/stubs-32.h
+    cp /usr/aarch64-linux-gnu/include/gnu/stubs.h /usr/aarch64-linux-gnu/include/gnu/stubs-32.h
 else
     export CC=x86_64-linux-gnu-gcc
     export CXX=x86_64-linux-gnu-g++
