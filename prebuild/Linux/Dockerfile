@@ -57,7 +57,7 @@ RUN git clone https://anongit.gentoo.org/git/proj/pax-utils.git /pax && \
 
 RUN tar -czvf /pax-build.tgz /pax-build
 
-FROM debian:bookworm as main
+FROM debian:bookworm
 
 ARG PKG_CONFIG_VERSION=0.29.2-1
 ARG ZLIB_VERSION=1:1.2.13.dfsg-1
