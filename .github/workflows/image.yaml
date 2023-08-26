@@ -33,7 +33,7 @@ jobs:
           context: prebuild/Linux
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-amd64
+          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0-amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
@@ -68,7 +68,7 @@ jobs:
           context: prebuild/Linux
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-arm64
+          tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0-arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
@@ -97,7 +97,7 @@ jobs:
         uses: Noelware/docker-manifest-action@master
         with:
           inputs: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild
-          images: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-amd64,ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-arm64
+          images: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0-amd64,ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0-arm64
           push: true
 
   build-final:
