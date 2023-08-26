@@ -43,6 +43,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+      
+      - name: Install extra dependency
+        run: |
+          apt-get update
+          apt-get -y install libc6-dev-i386
 
       - name: Build
         run: sh prebuild/Linux/build_cross.sh
