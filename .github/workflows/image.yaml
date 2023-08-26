@@ -36,6 +36,7 @@ jobs:
           tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
 
   docker-arm64:
     runs-on: ubuntu-latest
@@ -70,6 +71,7 @@ jobs:
           tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
 
   docker-merge:
     runs-on: ubuntu-latest
@@ -92,18 +94,11 @@ jobs:
           string: ${{ github.repository }}
 
       - name: Merge images
-        run: |
-          docker pull ghcr.io/$REPO/prebuild-stage0:manifest-amd64 --platform linux/amd64
-          docker pull ghcr.io/$REPO/prebuild-stage0:manifest-arm64 --platform linux/arm64
-
-          docker manifest create ghcr.io/$REPO/prebuild-stage0:latest \
-            --amend ghcr.io/$REPO/prebuild-stage0:manifest-amd64 \
-            --amend ghcr.io/$REPO/prebuild-stage0:manifest-arm64
-
-          docker manifest push ghcr.io/$REPO/prebuild-stage0:latest
-
-        env:
-          REPO: ${{ steps.repo.outputs.lowercase }}
+        uses: Noelware/docker-manifest-action@master
+        with:
+          inputs: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild
+          images: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-amd64,ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild-stage0:manifest-arm64
+          push: true
 
   build-final:
     runs-on: ubuntu-latest
