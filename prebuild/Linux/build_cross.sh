@@ -11,8 +11,8 @@ if [ "$ARCH" = "arm64" ]; then
     tar -xJvf /tmp/zig.txz -C /tmp/zig
     ZIG="/tmp/zig/zig-linux-x86_64-0.12.0-dev.168+a31748b29/zig"
 
-    export CC="$ZIG cc"
-    export CXX="$ZIG c++"
+    export CC="$ZIG cc -target aarch64-linux-gnu"
+    export CXX="$ZIG c++ -target aarch64-linux-gnu"
     export AR="$ZIG ar"
     export AS="aarch64-linux-gnu-as"
     export LD="aarch64-linux-gnu-ld"
