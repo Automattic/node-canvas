@@ -2,7 +2,7 @@
 
 TARGET="${1:-arm64}"
 
-if [[ "$TARGET" == "arm64" ]]; then
+if [ "$TARGET" == "arm64" ]; then
     export CC=aarch64-linux-gnu-gcc
     export CXX=aarch64-linux-gnu-g++
     export AR=aarch64-linux-gnu-ar
