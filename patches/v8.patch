@@ -1,0 +1,669 @@
+diff '--color=auto' -crB node-gyp/10.24.1/include/node/v8.h node-gyp.new/10.24.1/include/node/v8.h
+*** node-gyp/10.24.1/include/node/v8.h	2023-08-26 18:32:55.468584596 +0000
+--- node-gyp.new/10.24.1/include/node/v8.h	2023-08-26 18:37:12.493455997 +0000
+***************
+*** 9121,9127 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 9121,9127 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9150,9156 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 9150,9156 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9236,9242 ****
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>(value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+--- 9236,9242 ----
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>((void*) value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+diff '--color=auto' -crB node-gyp/11.15.0/include/node/v8.h node-gyp.new/11.15.0/include/node/v8.h
+*** node-gyp/11.15.0/include/node/v8.h	2023-08-26 18:32:55.492584677 +0000
+--- node-gyp.new/11.15.0/include/node/v8.h	2023-08-26 18:38:29.953718577 +0000
+***************
+*** 198,204 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 198,204 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 228,234 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 228,234 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9444,9450 ****
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>(value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+--- 9444,9450 ----
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>((void*) value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+diff '--color=auto' -crB node-gyp/12.22.12/include/node/v8-internal.h node-gyp.new/12.22.12/include/node/v8-internal.h
+*** node-gyp/12.22.12/include/node/v8-internal.h	2023-08-26 18:32:55.824585803 +0000
+--- node-gyp.new/12.22.12/include/node/v8-internal.h	2023-08-26 18:46:24.167331594 +0000
+***************
+*** 120,126 ****
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 120,126 ----
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 259,265 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+--- 259,265 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+***************
+*** 267,280 ****
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+--- 267,280 ----
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+diff '--color=auto' -crB node-gyp/12.22.12/include/node/v8.h node-gyp.new/12.22.12/include/node/v8.h
+*** node-gyp/12.22.12/include/node/v8.h	2023-08-26 18:32:55.824585803 +0000
+--- node-gyp.new/12.22.12/include/node/v8.h	2023-08-26 18:44:20.738911626 +0000
+***************
+*** 7853,7862 ****
+     private:
+      internal::Isolate* const isolate_;
+      internal::Address previous_stack_height_;
+!     static_assert(sizeof(internal::Address) ==
+!                       sizeof(internal::MicrotaskQueue*) &&
+!                   alignof(internal::Address) ==
+!                       alignof(internal::MicrotaskQueue*),
+                    "The previous_stack_height_ field can replace the "
+                    "microtask_queue_ field ABI-wise");
+  
+--- 7853,7862 ----
+     private:
+      internal::Isolate* const isolate_;
+      internal::Address previous_stack_height_;
+!     static_assert(sizeof((void*) internal::Address) ==
+!                       sizeof((void*) internal::MicrotaskQueue*) &&
+!                   alignof((void*) internal::Address) ==
+!                       alignof((void*) internal::MicrotaskQueue*),
+                    "The previous_stack_height_ field can replace the "
+                    "microtask_queue_ field ABI-wise");
+  
+diff '--color=auto' -crB node-gyp/13.14.0/include/node/v8-internal.h node-gyp.new/13.14.0/include/node/v8-internal.h
+*** node-gyp/13.14.0/include/node/v8-internal.h	2023-08-26 18:32:55.516584758 +0000
+--- node-gyp.new/13.14.0/include/node/v8-internal.h	2023-08-26 18:47:20.779524199 +0000
+***************
+*** 122,128 ****
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 122,128 ----
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 266,272 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+--- 266,272 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+***************
+*** 274,287 ****
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+--- 274,287 ----
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+diff '--color=auto' -crB node-gyp/14.21.3/include/node/v8-internal.h node-gyp.new/14.21.3/include/node/v8-internal.h
+*** node-gyp/14.21.3/include/node/v8-internal.h	2023-08-26 18:32:55.540584840 +0000
+--- node-gyp.new/14.21.3/include/node/v8-internal.h	2023-08-26 18:49:42.056004798 +0000
+***************
+*** 136,142 ****
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 136,142 ----
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 288,294 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+--- 288,294 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+***************
+*** 296,309 ****
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+--- 296,309 ----
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+diff '--color=auto' -crB node-gyp/16.20.1/include/node/v8-internal.h node-gyp.new/16.20.1/include/node/v8-internal.h
+*** node-gyp/16.20.1/include/node/v8-internal.h	2023-08-26 18:32:55.572584948 +0000
+--- node-gyp.new/16.20.1/include/node/v8-internal.h	2023-08-26 18:51:02.084277010 +0000
+***************
+*** 169,175 ****
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 169,175 ----
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 353,359 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+--- 353,359 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+***************
+*** 361,374 ****
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+--- 361,374 ----
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+diff '--color=auto' -crB node-gyp/18.15.0/include/node/v8-internal.h node-gyp.new/18.15.0/include/node/v8-internal.h
+*** node-gyp/18.15.0/include/node/v8-internal.h	2023-08-26 18:32:55.600585043 +0000
+--- node-gyp.new/18.15.0/include/node/v8-internal.h	2023-08-26 18:52:31.596581455 +0000
+***************
+*** 149,155 ****
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 149,155 ----
+  constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+  
+  V8_INLINE static constexpr internal::Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 505,511 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+--- 505,511 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+***************
+*** 513,532 ****
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static void IncrementLongTasksStatsCounter(v8::Isolate* isolate) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateLongTaskStatsCounterOffset;
+      ++(*reinterpret_cast<size_t*>(addr));
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = reinterpret_cast<internal::Address>(isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+--- 513,532 ----
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateEmbedderDataOffset +
+                               slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static void IncrementLongTasksStatsCounter(v8::Isolate* isolate) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateLongTaskStatsCounterOffset;
+      ++(*reinterpret_cast<size_t*>(addr));
+    }
+  
+    V8_INLINE static internal::Address* GetRoot(v8::Isolate* isolate, int index) {
+!     internal::Address addr = *reinterpret_cast<internal::Address*>((void*) isolate) +
+                               kIsolateRootsOffset +
+                               index * kApiSystemPointerSize;
+      return reinterpret_cast<internal::Address*>(addr);
+diff '--color=auto' -crB node-gyp/20.5.1/include/node/v8-internal.h node-gyp.new/20.5.1/include/node/v8-internal.h
+*** node-gyp/20.5.1/include/node/v8-internal.h	2023-08-26 18:32:55.704585396 +0000
+--- node-gyp.new/20.5.1/include/node/v8-internal.h	2023-08-26 18:54:13.768928926 +0000
+***************
+*** 151,157 ****
+  constexpr bool Is64() { return kApiSystemPointerSize == sizeof(int64_t); }
+  
+  V8_INLINE static constexpr Address IntToSmi(int value) {
+!   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+--- 151,157 ----
+  constexpr bool Is64() { return kApiSystemPointerSize == sizeof(int64_t); }
+  
+  V8_INLINE static constexpr Address IntToSmi(int value) {
+!   return ((Address) value << (kSmiTagSize + kSmiShiftSize)) |
+           kSmiTag;
+  }
+  
+***************
+*** 724,749 ****
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     Address addr = reinterpret_cast<Address>(isolate) +
+                     kIsolateEmbedderDataOffset + slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+    }
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     Address addr = reinterpret_cast<Address>(isolate) +
+                     kIsolateEmbedderDataOffset + slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static void IncrementLongTasksStatsCounter(v8::Isolate* isolate) {
+      Address addr =
+!         reinterpret_cast<Address>(isolate) + kIsolateLongTaskStatsCounterOffset;
+      ++(*reinterpret_cast<size_t*>(addr));
+    }
+  
+    V8_INLINE static Address* GetRootSlot(v8::Isolate* isolate, int index) {
+!     Address addr = reinterpret_cast<Address>(isolate) + kIsolateRootsOffset +
+                     index * kApiSystemPointerSize;
+      return reinterpret_cast<Address*>(addr);
+    }
+--- 724,749 ----
+  
+    V8_INLINE static void SetEmbedderData(v8::Isolate* isolate, uint32_t slot,
+                                          void* data) {
+!     Address addr = *reinterpret_cast<Address*>((void*) isolate) +
+                     kIsolateEmbedderDataOffset + slot * kApiSystemPointerSize;
+      *reinterpret_cast<void**>(addr) = data;
+    }
+  
+    V8_INLINE static void* GetEmbedderData(const v8::Isolate* isolate,
+                                           uint32_t slot) {
+!     Address addr = *reinterpret_cast<Address*>((void*) isolate) +
+                     kIsolateEmbedderDataOffset + slot * kApiSystemPointerSize;
+      return *reinterpret_cast<void* const*>(addr);
+    }
+  
+    V8_INLINE static void IncrementLongTasksStatsCounter(v8::Isolate* isolate) {
+      Address addr =
+!         *reinterpret_cast<Address*>((void*) isolate) + kIsolateLongTaskStatsCounterOffset;
+      ++(*reinterpret_cast<size_t*>(addr));
+    }
+  
+    V8_INLINE static Address* GetRootSlot(v8::Isolate* isolate, int index) {
+!     Address addr = *reinterpret_cast<Address*>((void*) isolate) + kIsolateRootsOffset +
+                     index * kApiSystemPointerSize;
+      return reinterpret_cast<Address*>(addr);
+    }
+diff '--color=auto' -crB node-gyp/8.17.0/include/node/v8.h node-gyp.new/8.17.0/include/node/v8.h
+*** node-gyp/8.17.0/include/node/v8.h	2023-08-26 18:32:55.456584555 +0000
+--- node-gyp.new/8.17.0/include/node/v8.h	2023-08-26 18:34:49.056969722 +0000
+***************
+*** 8951,8957 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 8951,8957 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 8980,8986 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 8980,8986 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9066,9072 ****
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>(value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+--- 9066,9072 ----
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>((void*) value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+diff '--color=auto' -crB node-gyp/9.11.2/include/node/v8.h node-gyp.new/9.11.2/include/node/v8.h
+*** node-gyp/9.11.2/include/node/v8.h	2023-08-26 18:32:55.464584582 +0000
+--- node-gyp.new/9.11.2/include/node/v8.h	2023-08-26 18:36:28.841308015 +0000
+***************
+*** 8976,8982 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 8976,8982 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Throw away top 32 bits and shift down (requires >> to be sign extending).
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value)) >> shift_bits;
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9005,9011 ****
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>(value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+--- 9005,9011 ----
+    V8_INLINE static int SmiToInt(const internal::Object* value) {
+      int shift_bits = kSmiTagSize + kSmiShiftSize;
+      // Shift down and throw away top 32 bits.
+!     return static_cast<int>(reinterpret_cast<intptr_t>((void*) value) >> shift_bits);
+    }
+    V8_INLINE static internal::Object* IntToSmi(int value) {
+      return internal::IntToSmi<kSmiShiftSize>(value);
+***************
+*** 9091,9097 ****
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>(value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
+--- 9091,9097 ----
+    }
+  
+    V8_INLINE static bool HasHeapObjectTag(const internal::Object* value) {
+!     return ((reinterpret_cast<intptr_t>((void*) value) & kHeapObjectTagMask) ==
+              kHeapObjectTag);
+    }
+  
