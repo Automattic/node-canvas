@@ -18,9 +18,7 @@ else
     export RANLIB=x86_64-linux-gnu-ranlib
 fi
 
-install-node-gyp
+npm install --global cmake-js
 npm install --ignore-scripts
-. prebuild/Linux/preinstall.sh
-cp prebuild/Linux/binding.gyp binding.gyp
-node-gyp rebuild -j 2 "--arch=$ARCH"
+cmake-js compile
 . prebuild/Linux/bundle.sh
