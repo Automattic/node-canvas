@@ -18,3 +18,5 @@ package-lock.json
 npm-debug.log
 
 .idea
+zigpatch
+
