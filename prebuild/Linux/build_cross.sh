@@ -18,6 +18,10 @@ else
     export RANLIB=x86_64-linux-gnu-ranlib
 fi
 
+export CFLAGS="--disable-multilib"
+export CXXFLAGS="--disable-multilib"
+export LDFLAGS="--disable-multilib"
+
 install-node-gyp
 npm install --ignore-scripts
 . prebuild/Linux/preinstall.sh

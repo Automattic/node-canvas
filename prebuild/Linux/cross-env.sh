@@ -15,3 +15,7 @@ else
     export LD=x86_64-linux-gnu-ld
     export RANLIB=x86_64-linux-gnu-ranlib
 fi
+
+export CFLAGS="--disable-multilib"
+export CXXFLAGS="--disable-multilib"
+export LDFLAGS="--disable-multilib"
