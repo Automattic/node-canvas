@@ -22,5 +22,5 @@ install-node-gyp
 npm install --ignore-scripts
 . prebuild/Linux/preinstall.sh
 cp prebuild/Linux/binding.gyp binding.gyp
-node-gyp rebuild -j 2 "--arch=$ARCH"
+node-gyp rebuild -j 2 "--arch=$ARCH" --verbose
 . prebuild/Linux/bundle.sh
