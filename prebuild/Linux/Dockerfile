@@ -15,7 +15,7 @@ RUN apt-get -y install \
         tar \
         bzip2 \
         pkg-config \
-        libxml2-dev=2.9.14+dfsg-1.2 \
+        libxml2-dev=2.9.14+dfsg-1.3~deb12u1 \
         libglib2.0-dev=2.74.6-2
 
 WORKDIR /
