@@ -1,0 +1,40 @@
+diff '--color=auto' -crB zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/include/__algorithm/shuffle.h zig-linux-x86_64-0.12.0-dev.170+750998eef.new/lib/libcxx/include/__algorithm/shuffle.h
+*** zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/include/__algorithm/shuffle.h	2023-08-26 18:01:14.994135836 +0000
+--- zig-linux-x86_64-0.12.0-dev.170+750998eef.new/lib/libcxx/include/__algorithm/shuffle.h	2023-08-26 18:04:47.146855103 +0000
+***************
+*** 58,64 ****
+      return _LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY_SEED;
+  #else
+      static char __x;
+!     return reinterpret_cast<uintptr_t>(&__x);
+  #endif
+    }
+  };
+--- 58,64 ----
+      return _LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY_SEED;
+  #else
+      static char __x;
+!     return reinterpret_cast<uintptr_t>((void*) &__x);
+  #endif
+    }
+  };
+diff '--color=auto' -crB zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/include/typeinfo zig-linux-x86_64-0.12.0-dev.170+750998eef.new/lib/libcxx/include/typeinfo
+*** zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/include/typeinfo	2023-08-26 18:01:15.018135918 +0000
+--- zig-linux-x86_64-0.12.0-dev.170+750998eef.new/lib/libcxx/include/typeinfo	2023-08-26 18:03:53.746674044 +0000
+***************
+*** 243,249 ****
+      }
+      _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE
+      static __type_name_t __string_to_type_name(const char* __v) _NOEXCEPT {
+!       return reinterpret_cast<__type_name_t>(__v);
+      }
+  
+      _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE
+--- 243,249 ----
+      }
+      _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE
+      static __type_name_t __string_to_type_name(const char* __v) _NOEXCEPT {
+!       return reinterpret_cast<__type_name_t>((void*) __v);
+      }
+  
+      _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE

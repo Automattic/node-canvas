@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex
+set -xe
 
 if [ "$ARCH" = "arm64" ]; then
     curl -L \
@@ -28,6 +28,7 @@ fi
 
 install-node-gyp
 npm install --ignore-scripts
+. patches/apply_patches.sh
 . prebuild/Linux/preinstall.sh
 cp prebuild/Linux/binding.gyp binding.gyp
 node-gyp rebuild -j 2 "--arch=$ARCH"
