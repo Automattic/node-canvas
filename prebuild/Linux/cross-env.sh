@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TARGET="${1}"
+TARGET="$1"
 
 if [ "$TARGET" = "arm64" ]; then
     export CC=aarch64-linux-gnu-gcc
