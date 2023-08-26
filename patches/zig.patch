@@ -14,7 +14,7 @@ diff '--color=auto' -crB zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/in
       return _LIBCPP_DEBUG_RANDOMIZE_UNSPECIFIED_STABILITY_SEED;
   #else
       static char __x;
-!     return reinterpret_cast<uintptr_t>((void*) &__x);
+!     return (uintptr_t) &__x;
   #endif
     }
   };
@@ -34,7 +34,7 @@ diff '--color=auto' -crB zig-linux-x86_64-0.12.0-dev.170+750998eef/lib/libcxx/in
       }
       _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE
       static __type_name_t __string_to_type_name(const char* __v) _NOEXCEPT {
-!       return reinterpret_cast<__type_name_t>((void*) __v);
+!       return (__type_name_t) __v;
       }
   
       _LIBCPP_INLINE_VISIBILITY _LIBCPP_ALWAYS_INLINE
