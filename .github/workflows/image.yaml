@@ -1,6 +1,5 @@
 name: prebuild-image
-
-on: [push]
+on: [workflow_dispatch]
 
 jobs:
   docker-amd64:
