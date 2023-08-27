@@ -3,8 +3,8 @@
 set -xe
 
 if [ "$ARCH" = "arm64" ]; then
-    export CC="clang --target=aarch64-linux-gnu --sysroot=/usr/share/sysroots/aarch64-linux-gnu"
-    export CXX="clang++ --target=aarch64-linux-gnu --sysroot=/usr/share/sysroots/aarch64-linux-gnu"
+    export CC="clang --target=aarch64-linux-gnu --sysroot=/usr/share/sysroots/aarch64-linux-gnu -isystem=/usr/share/sysroots/aarch64-linux-gnu/usr/include -isystem=/usr/share/sysroots/aarch64-linux-gnu/usr/include/aarch64-linux-gnu/gnu"
+    export CXX="clang++ --target=aarch64-linux-gnu --sysroot=/usr/share/sysroots/aarch64-linux-gnu -isystem=/usr/share/sysroots/aarch64-linux-gnu/usr/include -isystem=/usr/share/sysroots/aarch64-linux-gnu/usr/include/aarch64-linux-gnu/gnu"
     export AR=aarch64-linux-gnu-ar
     export AS=aarch64-linux-gnu-as
     export LD=aarch64-linux-gnu-ld
