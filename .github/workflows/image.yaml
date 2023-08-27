@@ -143,7 +143,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: prebuild/Linux
-          file: Dockerfile.finish
+          file: prebuild/Linux/Dockerfile.finish
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/${{ steps.repo.outputs.lowercase }}/prebuild
