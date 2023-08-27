@@ -1,10 +1,10 @@
-FROM --platform=arm64 ghcr.io/redstonewizard08/node-canvas/prebuild-stage0:manifest-arm64 as arm_sysroot
+FROM --platform=arm64 ghcr.io/redstonewizard08/node-canvas/prebuild-stage0-arm64 as arm_sysroot
 
 RUN tar -czf /arm-sysroot.tgz \
         /lib /usr/include /usr/lib \
         /usr/local/lib /usr/local/include
 
-FROM --platform=amd64 ghcr.io/redstonewizard08/node-canvas/prebuild-stage0:manifest-amd64 as x86_sysroot
+FROM --platform=amd64 ghcr.io/redstonewizard08/node-canvas/prebuild-stage0-amd64 as x86_sysroot
 
 RUN tar -czf /x86-sysroot.tgz \
         /lib /lib64 /usr/include /usr/lib \
