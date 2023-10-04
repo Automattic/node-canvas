@@ -8,13 +8,22 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+### Added
+### Fixed
+
+3.0.0
+==================
+
+This release notably changes to using N-API. 🎉
+
+### Changed
+* Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
 * Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
 * Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
 * Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
-* Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
 ### Added
 * Added string tags to support class detection
 ### Fixed
