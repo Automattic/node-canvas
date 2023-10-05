@@ -19,11 +19,17 @@ This release notably changes to using N-API. 🎉
 ### Changed
 * Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
 * Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
-* Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
+* Use a `default` switch case with a null statement if some enum values aren't supposed to be handled, this avoids a compiler warning. (#2229)
 * Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
+* Update actions in the GitHub Actions workflows to their latest versions. (#2231)
+* Pin the platform versions in the GitHub Actions workflows. (#2231)
+* Use the latest Windows runner image in the GitHub Actions workflows. (#2231)
+* Remove action to setup MSYS2 on Windows as it's done by default now. (#2231)
+* Set the `check-latest` field of the `actions/setup-node` action to use the latest specified Node.js version instead of the cached ones. (#2231)
+* Update the libjpeg-turbo version in the Windows GitHub Actions CI test. (#2231)
 ### Added
 * Added string tags to support class detection
 ### Fixed

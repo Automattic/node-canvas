@@ -26,20 +26,21 @@ jobs:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
-    runs-on: ubuntu-latest
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
+    runs-on: ubuntu-22.04
     container:
       image: chearon/canvas-prebuilt:7
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.canvas_tag }}
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
 
       - name: Build
         run: |
@@ -65,7 +66,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           script: |
             const fs = require("fs");
@@ -99,18 +100,19 @@ jobs:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-latest
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, macOS
+    runs-on: macos-12
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.canvas_tag }}
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
 
       - name: Build
         run: |
@@ -131,7 +133,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           script: |
             const fs = require("fs");
@@ -165,22 +167,17 @@ jobs:
       matrix:
         node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
-    runs-on: windows-latest
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-2022
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
-      # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
-      - uses: numworks/setup-msys2@v1
-        with:
-          update: true
-          path-type: inherit
-
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.canvas_tag }}
 
@@ -203,10 +200,10 @@ jobs:
       - name: Make asset
         id: make_bundle
         # I can't figure out why this isn't an env var already. It shows up with `env`.
-        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
+        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD }} . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           script: |
             const fs = require("fs");
