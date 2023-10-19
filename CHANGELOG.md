@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fixed Exif orientation in JPEG files being ignored (#1670)
 
 3.0.0
 ==================
