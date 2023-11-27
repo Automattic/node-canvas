@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Replaced `simple-get ` with ` Node.js builtin` `fetch` (#2309)
 ### Added
 ### Fixed
 
