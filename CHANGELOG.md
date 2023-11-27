@@ -16,6 +16,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 This release notably changes to using N-API. 🎉
 
+### Breaking
+* Dropped support for Node.js 16.x and below.
 ### Changed
 * Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
 * Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
