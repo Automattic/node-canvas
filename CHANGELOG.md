@@ -24,6 +24,7 @@ This release notably changes to using N-API. 🎉
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
+* Replaced `dtslint` with `tsd` (#2313)
 ### Added
 * Added string tags to support class detection
 ### Fixed

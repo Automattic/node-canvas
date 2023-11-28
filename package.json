@@ -5,6 +5,7 @@
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
+  "types": "index.d.ts",
   "contributors": [
     "Nathan Rajlich <nathan@tootallnate.net>",
     "Rod Vagg <r@va.gg>",
@@ -32,7 +33,7 @@
     "generate-wpt": "node ./test/wpt/generate.js",
     "test-wpt": "mocha test/wpt/generated/*.js",
     "install": "node-pre-gyp install --fallback-to-build --update-binary",
-    "dtslint": "dtslint types"
+    "tsd": "tsd"
   },
   "binary": {
     "module_name": "canvas",
@@ -43,12 +44,13 @@
   },
   "files": [
     "binding.gyp",
+    "browser.js",
+    "index.d.ts",
+    "index.js",
     "lib/",
     "src/",
-    "util/",
-    "types/index.d.ts"
+    "util/"
   ],
-  "types": "types/index.d.ts",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.0",
     "node-addon-api": "^7.0.0",
@@ -57,12 +59,12 @@
   "devDependencies": {
     "@types/node": "^10.12.18",
     "assert-rejects": "^1.0.0",
-    "dtslint": "^4.0.7",
     "express": "^4.16.3",
     "js-yaml": "^4.1.0",
     "mocha": "^5.2.0",
     "pixelmatch": "^4.0.2",
     "standard": "^12.0.1",
+    "tsd": "^0.29.0",
     "typescript": "^4.2.2"
   },
   "engines": {
