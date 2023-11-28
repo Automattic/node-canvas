@@ -86,4 +86,4 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Lint Types
-        run: npm run dtslint
+        run: npm run tsd
