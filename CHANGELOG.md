@@ -9,6 +9,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+
+- added a try and catch block in lib/image.js in the setSource function, to prevent unexpected crashing, if an 'Unsupported image type' is provided.
+
 ### Fixed
 
 3.0.0
