@@ -201,6 +201,7 @@ export class CanvasRenderingContext2D {
 	getTransform(): DOMMatrix;
 	resetTransform(): void;
 	setTransform(transform?: DOMMatrix): void;
+	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
 	isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
 	scale(x: number, y: number): void;
 	clip(fillRule?: CanvasFillRule): void;
