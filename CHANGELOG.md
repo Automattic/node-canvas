@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* fix the wrong type of setTransform
 
 3.0.0
 ==================
