@@ -1,0 +1,140 @@
+# node-canvas rewrite progress
+
+- [x] Initialize the project.
+
+## API
+
+Classes:
+- [ ] Canvas
+    - [ ] new()
+        - [ ] new(width: i32, height: i32)
+        - [ ] new(width: i32, height: i32, kind: ImageKind)
+    - [ ] toBuffer()
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer))
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String)
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig)
+        - [ ] toBuffer() -> Buffer
+        - [ ] toBuffer(mime: String) -> Buffer
+        - [ ] toBuffer(mime: String, config: BufferConfig) -> Buffer
+        - [ ] mime = "image/png" (default on non-PDF, non-SVG canvases)
+        - [ ] mime = "image/jpeg"
+        - [ ] mime = "raw" (Unencoded BGRA data on LE, ARGB on BE, top-to-bottom)
+        - [ ] mime = "application/pdf" (only for PDF canvases)
+        - [ ] mime = "image/svg+xml" (only for SVG canvases)
+    - [ ] createPNGStream()
+        - [ ] createPNGStream() -> ReadableStream
+        - [ ] createPNGStream(config: PngConfig) -> ReadableStream
+    - [ ] createJPEGStream()
+        - [ ] createJPEGStream() -> ReadableStream
+        - [ ] createJPEGStream(config: JpegConfig) -> ReadableStream
+    - [ ] createPDFStream()
+        - [ ] createPDFStream() -> ReadableStream
+        - [ ] createPDFStream(config: PdfConfig) -> ReadableStream
+    - [ ] toDateURL()
+        - [ ] toDataURL() -> String
+        - [ ] toDataURL(mime: String) -> String
+        - [ ] toDataURL(mime: String, quality: f32 /* 0 to 1 */) -> String
+        - [ ] toDataURL(cb: fn(Option<Error>, String))
+        - [ ] toDataURL(mime: String, cb: fn(Option<Error>, String))
+        - [ ] toDataURL(mime: String, opts: BufferConfig, cb: fn(Option<Error>, String))
+        - [ ] toDataURL(mime: String, quality: f32 /* 0 to 1 */, cb: fn(Option<Error>, String))
+        - [ ] mime = "image/png"
+        - [ ] mime = "image/jpeg"
+    - [ ] width: i32
+    - [ ] height: i32
+    - [ ] stride: i32
+    - [ ] getContext()
+        - [ ] getContext(id: String)
+        - [ ] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D
+        - [ ] id = "2d"
+        - [ ] id = "webgl"
+        - [ ] id = "webgl2"
+- [ ] CanvasRenderingContext2D
+    - [ ] patternQuality: Quality = Quality::Good
+    - [ ] quality: Quality = Quality::Good
+    - [ ] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
+    - [ ] globalCompositeOperation: String = "saturate" // May be removed since I'm not using Cairo
+    - [ ] antialias: AliasingMode = AliasingMode::Default
+- [ ] Image
+    - [ ] src: Either<String, Buffer>
+    - [ ] dataMode: ImageMode
+
+Types:
+- [ ] enum ImageKind
+    - [ ] Image
+    - [ ] Pdf
+    - [ ] Svg
+- [ ] enum ImageMode (bitflags)
+    - [ ] Image = 0
+    - [ ] Mime = 1
+- [ ] struct FontOptions (builder)
+    - [ ] family: String
+    - [ ] weight: Option<String>,
+    - [ ] style: Option<String>,
+- [ ] enum BufferConfig (builder)
+    - [ ] Jpeg(JpegConfig)
+    - [ ] Png(PngConfig)
+    - [ ] Pdf(PdfConfig)
+- [ ] enum PngFilters (bitflags)
+    - [ ] NoFilters = 0
+    - [ ] All = 1
+    - [ ] None = 2
+    - [ ] Sub = 3
+    - [ ] Up = 4
+    - [ ] Avg = 5
+    - [ ] Paeth = 6
+- [ ] struct JpegConfig
+    - [ ] quality: f32 = 0.75
+    - [ ] progressive: bool = false
+    - [ ] chromaSubsampling: bool = true
+- [ ] struct PngConfig
+    - [ ] compressionLevel: u8 = 6
+    - [ ] filters: u8 = PngFilters::All
+    - [ ] palette: Option<{unknown}>
+    - [ ] backgroundIndex: i32
+    - [ ] resolution: Option<{unknown}>
+- [ ] struct PdfConfig
+    - [ ] title: Option<String>
+    - [ ] author: Option<String>
+    - [ ] subject: Option<String>
+    - [ ] keywords: Option<String>
+    - [ ] creator: Option<String>
+    - [ ] creationDate: Date
+    - [ ] modDate: Option<Date>
+- [ ] enum Quality
+    - [ ] Fast
+    - [ ] Good
+    - [ ] Best
+    - [ ] Nearest
+    - [ ] Bilinear
+- [ ] enum TextDrawingMode
+    - [ ] Path
+    - [ ] Glyph
+- [ ] enum AliasingMode
+    - [ ] Default
+    - [ ] None
+    - [ ] Gray
+    - [ ] Subpixel
+- [ ] enum PixelFormat
+    - [ ] Rgba32
+    - [ ] Rgb24
+    - [ ] A8
+    - [ ] Rgb16_565
+    - [ ] A1
+    - [ ] Rgb30
+ - [ ] struct ContextSettings
+    - [ ] alpha: bool = false
+    - [ ] pixelFormat: Option<PixelFormat>
+
+Functions:
+- [ ] createCanvas()
+    - [ ] createCanvas(width: i32, height: i32) -> Canvas
+    - [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
+- [ ] createImageData()
+    - [ ] createImageData(width: i32, height: i32) -> ImageData
+    - [ ] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData
+    - [ ] createImageData(data: Uint8ClampedArray, width: i32, height: i32) -> ImageData
+    - [ ] createImageData(data: Vec<u16>, width: i32) -> ImageData
+    - [ ] createImageData(data: Vec<u16>, width: i32, height: i32) -> ImageData
+- [ ] async loadImage(url: string) -> Image
+- [ ] registerFont(path: string, opts: FontOptions)
