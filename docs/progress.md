@@ -308,9 +308,9 @@
     - [ ] Image
     - [ ] Pdf
     - [ ] Svg
-- [ ] enum ImageMode (bitflags)
-    - [ ] Image = 0
-    - [ ] Mime = 1
+- [x] enum ImageMode (bitflags)
+    - [x] Image = 0
+    - [x] Mime = 1
 - [ ] struct FontOptions (builder)
     - [ ] family: String
     - [ ] weight: Option<String>,
@@ -366,7 +366,7 @@
     - [ ] Rgb16_565
     - [ ] A1
     - [ ] Rgb30
- - [ ] struct ContextSettings
+- [ ] struct ContextSettings
     - [ ] alpha: bool = false
     - [ ] pixelFormat: Option<PixelFormat>
 - [ ] createCanvas()

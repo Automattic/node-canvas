@@ -4,6 +4,8 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.75"
+bitflags = { version = "2.4.1", features = ["serde"] }
 canvas-macros = { version = "0.0.0", path = "../macros" }
 napi = { version = "2.14.1", features = ["full"] }
 napi-derive = "2.14.3"
