@@ -23,15 +23,17 @@ on: workflow_dispatch
 jobs:
   Linux:
     strategy:
+      fail-fast: false
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
-      image: chearon/canvas-prebuilt:7
+      image: ghcr.io/redstonewizard08/node-canvas/prebuild
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      CANVAS_ARCH_TO_BUILD: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -42,22 +44,21 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Build
-        run: |
-          npm install -g node-gyp
-          npm install --ignore-scripts
-          . prebuild/Linux/preinstall.sh
-          cp prebuild/Linux/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
-          . prebuild/Linux/bundle.sh
+        run: sh prebuild/Linux/build_cross.sh
+        env:
+          ARCH: ${{ matrix.arch }}
 
       - name: Test binary
+        if: matrix.arch == 'x64'
         run: |
-          cd /root/harfbuzz-* && make uninstall
-          cd /root/cairo-* && make uninstall
-          cd /root/pango-* && make uninstall
-          cd /root/libpng-* && make uninstall
-          cd /root/libjpeg-* && make uninstall
-          cd /root/giflib-* && make uninstall
+          set -ex
+          # These are pre-packaged as debs, and can't be uninstalled like this.
+          # cd /root/harfbuzz-* && make uninstall
+          # cd /root/cairo-* && make uninstall
+          # cd /root/pango-* && make uninstall
+          # cd /root/libpng-* && make uninstall
+          # cd /root/libjpeg-* && make uninstall
+          # cd /root/giflib-* && make uninstall
           cd $GITHUB_WORKSPACE && npm test
 
       - name: Make bundle
@@ -65,7 +66,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
@@ -96,6 +97,7 @@ jobs:
 
   macOS:
     strategy:
+      fail-fast: false
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
@@ -112,9 +114,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
       - name: Build
         run: |
-          npm install -g node-gyp
+          set -Eeuxo pipefail
+          bash prebuild/Linux/gyp.sh
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
@@ -123,7 +130,7 @@ jobs:
 
       - name: Test binary
         run: |
-          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
           npm test
 
       - name: Make bundle
@@ -131,7 +138,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
@@ -162,39 +169,65 @@ jobs:
 
   Win:
     strategy:
+      fail-fast: false
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
-    runs-on: windows-latest
+    runs-on: windows-2019
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-      # TODO drop when https://github.com/actions/virtual-environments/pull/632 lands
-      - uses: numworks/setup-msys2@v1
+      # GitHub runners now have msys2 installed, but msys is not on the path and
+      # is apparently slow to start.
+      # https://github.com/msys2/setup-msys2#setup-msys2
+      # https://github.com/actions/virtual-environments/pull/632
+      - uses: msys2/setup-msys2@v2
         with:
+          msystem: UCRT64
           update: true
           path-type: inherit
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.canvas_tag }}
+          fetch-depth: 0
 
       - name: Build
         run: |
-          npm install -g node-gyp
+          ./prebuild/Windows/gyp.ps1
+          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
           npm install --ignore-scripts
-          msys2do . prebuild/Windows/preinstall.sh
-          msys2do cp prebuild/Windows/binding.gyp binding.gyp
-          msys2do node-gyp configure
-          msys2do node-gyp rebuild -j 2
+          msys2 -c ". prebuild/Windows/preinstall.sh"
+          msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
+          npm install --build-from-source
 
-      - name: Bundle
-        run: msys2do . prebuild/Windows/bundle.sh
+      - name: Install Depends
+        run: |
+          Invoke-WebRequest "http://www.dependencywalker.com/depends22_x64.zip" -OutFile depends22_x64.zip
+          7z e depends22_x64.zip
+
+      - name: Bundle pt 2
+        shell: msys2 {0}
+        run: |
+          ./depends.exe -c -oc depends.csv build\\Release\\canvas.node || true
+          [ -f depends.csv ] || { echo "error invoking depends.exe"; exit 1; }
+          copies=$(comm -12 \
+            <(cat depends.csv | cut -d ',' -f2 | sed 's/"//g' | tr '[:upper:]' '[:lower:]' | sort) \
+            <(find /ucrt64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
+          )
+          for dll in $copies; do
+            cp /ucrt64/bin/$dll build/Release
+          done;
 
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
@@ -203,10 +236,10 @@ jobs:
       - name: Make asset
         id: make_bundle
         # I can't figure out why this isn't an env var already. It shows up with `env`.
-        run: msys2do UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh
+        run: msys2 -c "UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh"
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v2
         with:
           script: |
             const fs = require("fs");
