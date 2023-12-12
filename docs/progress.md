@@ -1,10 +1,5 @@
-# node-canvas rewrite progress
+# Implementation Progress
 
-- [x] Initialize the project.
-
-## API
-
-Classes:
 - [ ] Canvas
     - [ ] new()
         - [ ] new(width: i32, height: i32)
@@ -50,16 +45,265 @@ Classes:
         - [ ] id = "webgl"
         - [ ] id = "webgl2"
 - [ ] CanvasRenderingContext2D
+    - [ ] clearRect(x: i32, y: i32, w: i32, h: i32)
+    - [ ] fillRect(x: i32, y: i32, w: i32, h: i32)
+    - [ ] strokeRect(x: i32, y: i32, w: i32, h: i32)
+    - [ ] fillText()
+        - [ ] fillText(text: String, x: i32, y: i32)
+        - [ ] fillText(text: String, x: i32, y: i32, maxWidth: i32)
+    - [ ] strokeText()
+        - [ ] strokeText(text: String, x: i32, y: i32)
+        - [ ] strokeText(text: String, x: i32, y: i32, maxWidth: i32)
+    - [ ] measureText(text: String) -> TextMetrics
+    - [ ] getLineDash() -> Vec<i32>
+    - [ ] setLineDash(segments: Vec<i32>)
+    - [ ] createLinearGradient(x0: i32, y0: i32, x1: i32, y1: i32) -> CanvasGradient
+    - [ ] createRadialGradient(x0: i32, y0: i32, r0: i32, x1: i32, y1: i32, r1: i32) -> CanvasGradient
+    - [ ] createPattern()
+        - [ ] createPattern(image: Either<Canvas, Image>) -> CanvasPattern
+        - [ ] createPattern(image: Either<Canvas, Image>, repetition: Repetition) -> CanvasPattern
+    - [ ] beginPath()
+    - [ ] closePath()
+    - [ ] moveTo(x: i32, y: i32)
+    - [ ] lineTo(x: i32, y: i32)
+    - [ ] quadraticCurveTo(cpx: i32, cpy: i32, x: i32, y: i32)
+    - [ ] bezierCurveTo(cp1x: i32, cp1y: i32, cp2x: i32, cp2y: i32, x: i32, y: i32)
+    - [ ] arc()
+        - [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32)
+        - [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32, counterClockwise: bool)
+    - [ ] arcTo(x1: i32, y1: i32, x2: i32, y2: i32, radius: i32)
+    - [ ] ellipse()
+        - [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32)
+        - [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32, counterclockwise: bool)
+    - [ ] rect(x: i32, y: i32, w: i32, h: i32)
+    - [ ] roundRect()
+        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32)
+        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: i32)
+        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: [i32; 4])
+    - [ ] fill()
+        - [ ] fill()
+        - [ ] fill(fillRule: CanvasFillRule)
+    - [ ] stroke()
+    - [ ] clip()
+        - [ ] clip()
+        - [ ] clip(fillRule: CanvasFillRule)
+    - [ ] isPointInPath()
+        - [ ] isPointInPath(x: i32, y: i32)
+        - [ ] isPointInPath(x: i32, y: i32, fillRule: CanvasFillRule)
+    - [ ] rotate(angle: f32)
+    - [ ] scale(x: f32, y: f32)
+    - [ ] translate(x: i32, y: i32)
+    - [ ] transform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
+    - [ ] setTransform()
+        - [ ] setTransform()
+        - [ ] setTransform(transform: DomMatrix)
+        - [ ] setTransform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
+    - [ ] getTransform() -> DomMatrix
+    - [ ] resetTransform()
+    - [ ] drawImage()
+        - [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32)
+        - [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32, dw: i32, dh: i32)
+        - [ ] drawImage(image: Either<Canvas, Image>, sx: i32, sy: i32, sw: i32, sh: i32, dx: i32, dy: i32, dw: i32, dh: i32)
+    - [ ] createImageData()
+        - [ ] createImageData(sw: i32, sh: i32) -> ImageData
+        - [ ] createImageData(data: ImageData) -> ImageData
+    - [ ] getImageData(sx: i32, sy: i32, sw: i32, sh: i32) -> ImageData
+    - [ ] putImageData()
+        - [ ] putImageData(data: ImageData, dx: i32, dy: i32)
+        - [ ] putImageData(data: ImageData, dx: i32, dy: i32, dirtyX: i32, dirtyY: i32, dirtyWidth: i32, dirtyHeight: i32)
+    - [ ] save()
+    - [ ] restore()
+    - [ ] addPage() /* PDF Only */
+        - [ ] addPage()
+        - [ ] addPage(w: i32)
+        - [ ] addPage(w: i32, h: i32)
     - [ ] patternQuality: Quality = Quality::Good
     - [ ] quality: Quality = Quality::Good
     - [ ] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
-    - [ ] globalCompositeOperation: String = "saturate" // May be removed since I'm not using Cairo
     - [ ] antialias: AliasingMode = AliasingMode::Default
+    - [ ] lineWidth: i32
+    - [ ] lineCap: LineCap
+    - [ ] lineJoin: LineJoin
+    - [ ] miterLimit: i32
+    - [ ] lineDashOffset: i32
+    - [ ] font: String
+    - [ ] textAlign: TextAlign
+    - [ ] textBaseline: TextBaseline
+    - [ ] fillStyle: Either3<String, CanvasGradient, CanvasPattern>
+    - [ ] strokeStyle: Either3<String, CanvasGradient, CanvasPattern>
+    - [ ] shadowBlur: i32
+    - [ ] shadowColor: String
+    - [ ] shadowOffsetX: i32
+    - [ ] shadowOffsetY: i32
+    - [ ] currentTransform: DomMatrix
+    - [ ] globalAlpha: i32
+    - [ ] globalCompositeOperation: GlobalCompositeOperation
+    - [ ] imageSmoothingEnabled: bool
+    - [ ] canvas: Canvas
+- [ ] ImageData
+    - [ ] new()
+        - [ ] new(width: i32, height: i32)
+        - [ ] new(data: Uint8ClampedArray, width: i32)
+        - [ ] new(data: Uint8ClampedArray, width: i32, height: i32)
+    - [ ] data: Uint8ClampedArray
+    - [ ] width: i32
+    - [ ] height: i32
+- [ ] CanvasGradient
+    - [] addColorStop(offset: i32, color: String)
+- [ ] CanvasPattern
+    - [ ] setTransform()
+        - [ ] setTransform()
+        - [ ] setTransform(matrix: DomMatrix)
 - [ ] Image
     - [ ] src: Either<String, Buffer>
     - [ ] dataMode: ImageMode
-
-Types:
+    - [ ] width: i32
+    - [ ] height: i32
+    - [ ] complete: bool
+    - [ ] naturalWidth: i32
+    - [ ] naturalHeight: i32
+- [ ] DomMatrix
+    - [ ] new()
+        - [ ] new(init: String)
+        - [ ] new(init: Vec<i32>)
+    - [ ] toString()
+    - [ ] multiply(other: DomMatrix) -> DomMatrix
+	- [ ] multiplySelf(other: DomMatrix) -> DomMatrix
+	- [ ] preMultiplySelf(other: DomMatrix) -> DomMatrix
+	- [ ] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [ ] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [ ] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] rotateFromVector(x: i32, y: i32) -> DomMatrix
+	- [ ] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
+	- [ ] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [ ] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [ ] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [ ] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [ ] skewX(sx: i32) -> DomMatrix
+	- [ ] skewXSelf(sx: i32) -> DomMatrix
+	- [ ] skewY(sy: i32) -> DomMatrix
+	- [ ] skewYSelf(sy: i32) -> DomMatrix
+	- [ ] flipX() -> DomMatrix
+	- [ ] flipY() -> DomMatrix
+	- [ ] inverse() -> DomMatrix
+	- [ ] invertSelf() -> DomMatrix
+	- [ ] setMatrixValue(transformList: string) -> DomMatrix
+	- [ ] transformPoint(point: DomPoint) -> DomPoint
+	- [ ] toFloat32Array() -> Float32Array
+	- [ ] toFloat64Array() -> Float64Array
+    - [ ] is2D: bool
+    - [ ] isIdentity: bool
+    - [ ] a: i32
+    - [ ] b: i32
+    - [ ] c: i32
+    - [ ] d: i32
+    - [ ] e: i32
+    - [ ] f: i32
+    - [ ] m11: i32
+    - [ ] m12: i32
+    - [ ] m13: i32
+    - [ ] m14: i32
+    - [ ] m21: i32
+    - [ ] m22: i32
+    - [ ] m23: i32
+    - [ ] m24: i32
+    - [ ] m31: i32
+    - [ ] m32: i32
+    - [ ] m33: i32
+    - [ ] m34: i32
+    - [ ] m41: i32
+    - [ ] m42: i32
+    - [ ] m43: i32
+    - [ ] m44: i32
+    - [ ] + Traits:
+        - [ ] std::ops::Mul
+        - [ ] std::ops::MulAssign
+        - [ ] std::ops::Add
+        - [ ] std::ops::AddAssign
+        - [ ] std::ops::Div
+        - [ ] std::ops::DivAssign
+        - [ ] std::ops::Sub
+        - [ ] std::ops::SubAssign
+        - [ ] From<DomMatrix>
+        - [ ] From<Float32Array>
+        - [ ] From<Float64Array>
+- [ ] DomPoint
+    - [ ] w: i32
+    - [ ] x: i32
+    - [ ] y: i32
+    - [ ] z: i32
+- [ ] enum FillRule
+    - [ ] EvenOdd
+    - [ ] NonZero
+- [ ] enum Repetition
+    - [ ] Repeat
+    - [ ] RepeatX
+    - [ ] RepeatY
+    - [ ] NoRepeat
+    - [ ] None
+- [ ] enum TextAlign
+    - [ ] Center
+    - [ ] End
+    - [ ] Left
+    - [ ] Right
+    - [ ] Start
+- [ ] enum TextBaseline
+    - [ ] Alphabetic
+    - [ ] Bottom
+    - [ ] Hanging
+    - [ ] Ideographic
+    - [ ] Middle
+    - [ ] Top
+- [ ] enum LineCap
+    - [ ] Butt
+    - [ ] Round
+    - [ ] Square
+- [ ] enum LineJoin
+    - [ ] Bevel
+    - [ ] Miter
+    - [ ] Round
+- [ ] enum GlobalCompositeOperation
+    - [ ] Clear
+    - [ ] Copy
+    - [ ] Destination
+    - [ ] SourceOver
+    - [ ] DestinationOver
+    - [ ] SourceIn
+    - [ ] DestinationIn
+    - [ ] SourceOut
+    - [ ] DestinationOut
+    - [ ] SourceAtop
+    - [ ] DestinationAtop
+    - [ ] Xor
+    - [ ] Lighter
+    - [ ] Normal
+    - [ ] Multiply
+    - [ ] Screen
+    - [ ] Overlay
+    - [ ] Darken
+    - [ ] Lighten
+    - [ ] ColorDodge
+    - [ ] ColorBurn
+    - [ ] HardLight
+    - [ ] SoftLight
+    - [ ] Difference
+    - [ ] Exclusion
+    - [ ] Hue
+    - [ ] Saturation
+    - [ ] Color
+    - [ ] Luminosity
+    - [ ] Saturate
+- [ ] TextMetrics
+    - [ ] actualBoundingBoxAscent: i32
+    - [ ] actualBoundingBoxDescent: i32
+    - [ ] actualBoundingBoxLeft: i32
+    - [ ] actualBoundingBoxRight: i32
+    - [ ] fontBoundingBoxAscent: i32
+    - [ ] fontBoundingBoxDescent: i32
+    - [ ] width: i32
 - [ ] enum ImageKind
     - [ ] Image
     - [ ] Pdf
@@ -125,8 +369,6 @@ Types:
  - [ ] struct ContextSettings
     - [ ] alpha: bool = false
     - [ ] pixelFormat: Option<PixelFormat>
-
-Functions:
 - [ ] createCanvas()
     - [ ] createCanvas(width: i32, height: i32) -> Canvas
     - [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
