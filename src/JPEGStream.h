@@ -23,18 +23,15 @@ init_closure_destination(j_compress_ptr cinfo){
 
 boolean
 empty_closure_output_buffer(j_compress_ptr cinfo){
-  Nan::HandleScope scope;
-  Nan::AsyncResource async("canvas:empty_closure_output_buffer");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
+  Napi::Env env = dest->closure->canvas->Env();
+  Napi::HandleScope scope(env);
+  Napi::AsyncContext async(env, "canvas:empty_closure_output_buffer");
 
-  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize).ToLocalChecked();
+  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize);
 
   // emit "data"
-  v8::Local<v8::Value> argv[2] = {
-      Nan::Null()
-    , buf
-  };
-  dest->closure->cb.Call(sizeof argv / sizeof *argv, argv, &async);
+  dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
   dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
@@ -44,25 +41,18 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
 
 void
 term_closure_destination(j_compress_ptr cinfo){
-  Nan::HandleScope scope;
-  Nan::AsyncResource async("canvas:term_closure_destination");
   closure_destination_mgr *dest = (closure_destination_mgr *) cinfo->dest;
+  Napi::Env env = dest->closure->canvas->Env();
+  Napi::HandleScope scope(env);
+  Napi::AsyncContext async(env, "canvas:term_closure_destination");
 
   /* emit remaining data */
-  v8::Local<v8::Object> buf = Nan::NewBuffer((char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer).ToLocalChecked();
+  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer);
 
-  v8::Local<v8::Value> data_argv[2] = {
-      Nan::Null()
-    , buf
-  };
-  dest->closure->cb.Call(sizeof data_argv / sizeof *data_argv, data_argv, &async);
+  dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
   // emit "end"
-  v8::Local<v8::Value> end_argv[2] = {
-      Nan::Null()
-    , Nan::Null()
-  };
-  dest->closure->cb.Call(sizeof end_argv / sizeof *end_argv, end_argv, &async);
+  dest->closure->cb.MakeCallback(env.Global(), {env.Null(), env.Null()}, async);
 }
 
 void

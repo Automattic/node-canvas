@@ -5,9 +5,8 @@
 #include <cairo.h>
 #include "CanvasError.h"
 #include <functional>
-#include <nan.h>
+#include <napi.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
-#include <v8.h>
 
 #ifdef HAVE_JPEG
 #include <jpeglib.h>
@@ -34,25 +33,26 @@
 
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
-class Image: public Nan::ObjectWrap {
+class Image : public Napi::ObjectWrap<Image> {
   public:
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
-    static NAN_METHOD(New);
-    static NAN_GETTER(GetComplete);
-    static NAN_GETTER(GetWidth);
-    static NAN_GETTER(GetHeight);
-    static NAN_GETTER(GetNaturalWidth);
-    static NAN_GETTER(GetNaturalHeight);
-    static NAN_GETTER(GetDataMode);
-    static NAN_SETTER(SetDataMode);
-    static NAN_SETTER(SetWidth);
-    static NAN_SETTER(SetHeight);
-    static NAN_METHOD(GetSource);
-    static NAN_METHOD(SetSource);
+    Napi::Env env;
+    static Napi::FunctionReference constructor;
+    static void Initialize(Napi::Env& env, Napi::Object& target);
+    Image(const Napi::CallbackInfo& info);
+    Napi::Value GetComplete(const Napi::CallbackInfo& info);
+    Napi::Value GetWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetDataMode(const Napi::CallbackInfo& info);
+    void SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
+    static Napi::Value GetSource(const Napi::CallbackInfo& info);
+    static void SetSource(const Napi::CallbackInfo& info);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
@@ -90,7 +90,7 @@ class Image: public Nan::ObjectWrap {
     CanvasError errorInfo;
     void loaded();
     cairo_status_t load();
-    Image();
+    ~Image();
 
     enum {
         DEFAULT
@@ -123,5 +123,4 @@ class Image: public Nan::ObjectWrap {
     int _svg_last_width;
     int _svg_last_height;
 #endif
-    ~Image();
 };

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Backend.h"
-#include <v8.h>
+#include <napi.h>
 
-class ImageBackend : public Backend
+class ImageBackend : public Napi::ObjectWrap<ImageBackend>, public Backend
 {
   private:
     cairo_surface_t* createSurface();
@@ -11,16 +11,14 @@ class ImageBackend : public Backend
     cairo_format_t format = DEFAULT_FORMAT;
 
   public:
-    ImageBackend(int width, int height);
-    static Backend *construct(int width, int height);
+    ImageBackend(Napi::CallbackInfo& info);
 
     cairo_format_t getFormat();
     void setFormat(cairo_format_t format);
 
     int32_t approxBytesPerPixel();
 
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Local<v8::Object> target);
-    static NAN_METHOD(New);
+    static Napi::FunctionReference constructor;
+    static void Initialize(Napi::Object target);
     const static cairo_format_t DEFAULT_FORMAT = CAIRO_FORMAT_ARGB32;
 };

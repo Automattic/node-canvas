@@ -1,14 +1,15 @@
 #include "SvgBackend.h"
 
 #include <cairo-svg.h>
+#include <napi.h>
 #include "../Canvas.h"
 #include "../closure.h"
+#include "../InstanceData.h"
 #include <cassert>
 
-using namespace v8;
+using namespace Napi;
 
-SvgBackend::SvgBackend(int width, int height)
-  : Backend("svg", width, height) {
+SvgBackend::SvgBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<SvgBackend>(info), Backend("svg", info) {
   SvgBackend::createSurface();
 }
 
@@ -19,10 +20,6 @@ SvgBackend::~SvgBackend() {
     _closure = nullptr;
   }
   destroySurface();
-}
-
-Backend *SvgBackend::construct(int width, int height){
-  return new SvgBackend(width, height);
 }
 
 cairo_surface_t* SvgBackend::createSurface() {
@@ -42,20 +39,10 @@ cairo_surface_t* SvgBackend::recreateSurface() {
  }
 
 
-Nan::Persistent<FunctionTemplate> SvgBackend::constructor;
-
-void SvgBackend::Initialize(Local<Object> target) {
-  Nan::HandleScope scope;
-
-  Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(SvgBackend::New);
-  SvgBackend::constructor.Reset(ctor);
-  ctor->InstanceTemplate()->SetInternalFieldCount(1);
-  ctor->SetClassName(Nan::New<String>("SvgBackend").ToLocalChecked());
-  Nan::Set(target,
-           Nan::New<String>("SvgBackend").ToLocalChecked(),
-           Nan::GetFunction(ctor).ToLocalChecked()).Check();
-}
-
-NAN_METHOD(SvgBackend::New) {
-  init(info);
+void
+SvgBackend::Initialize(Napi::Object target) {
+  Napi::Env env = target.Env();
+  Napi::Function ctor = DefineClass(env, "SvgBackend", {});
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  data->SvgBackendCtor = Napi::Persistent(ctor);
 }

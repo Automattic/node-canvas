@@ -1,16 +1,14 @@
 #include "ImageBackend.h"
+#include "../InstanceData.h"
+#include <napi.h>
+#include <cassert>
 
-using namespace v8;
-
-ImageBackend::ImageBackend(int width, int height)
-	: Backend("image", width, height)
-	{}
-
-Backend *ImageBackend::construct(int width, int height){
-  return new ImageBackend(width, height);
+ImageBackend::ImageBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageBackend>(info), Backend("image", info)
+{
 }
 
-// This returns an approximate value only, suitable for Nan::AdjustExternalMemory.
+// This returns an approximate value only, suitable for
+// Napi::MemoryManagement:: AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
 int32_t ImageBackend::approxBytesPerPixel() {
   switch (format) {
@@ -35,7 +33,7 @@ cairo_surface_t* ImageBackend::createSurface() {
   assert(!surface);
   surface = cairo_image_surface_create(format, width, height);
   assert(surface);
-  Nan::AdjustExternalMemory(approxBytesPerPixel() * width * height);
+  Napi::MemoryManagement::AdjustExternalMemory(env, approxBytesPerPixel() * width * height);
   return surface;
 }
 
@@ -43,7 +41,7 @@ void ImageBackend::destroySurface() {
   if (surface) {
     cairo_surface_destroy(surface);
     surface = nullptr;
-    Nan::AdjustExternalMemory(-approxBytesPerPixel() * width * height);
+    Napi::MemoryManagement::AdjustExternalMemory(env, -approxBytesPerPixel() * width * height);
   }
 }
 
@@ -55,20 +53,11 @@ void ImageBackend::setFormat(cairo_format_t _format) {
 	this->format = _format;
 }
 
-Nan::Persistent<FunctionTemplate> ImageBackend::constructor;
+Napi::FunctionReference ImageBackend::constructor;
 
-void ImageBackend::Initialize(Local<Object> target) {
-	Nan::HandleScope scope;
-
-	Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(ImageBackend::New);
-	ImageBackend::constructor.Reset(ctor);
-	ctor->InstanceTemplate()->SetInternalFieldCount(1);
-	ctor->SetClassName(Nan::New<String>("ImageBackend").ToLocalChecked());
-  Nan::Set(target,
-           Nan::New<String>("ImageBackend").ToLocalChecked(),
-           Nan::GetFunction(ctor).ToLocalChecked()).Check();
-}
-
-NAN_METHOD(ImageBackend::New) {
-  init(info);
+void ImageBackend::Initialize(Napi::Object target) {
+  Napi::Env env = target.Env();
+	Napi::Function ctor = DefineClass(env, "ImageBackend", {});
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  data->ImageBackendCtor = Napi::Persistent(ctor);
 }

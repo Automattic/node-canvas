@@ -2,12 +2,14 @@
 
 #pragma once
 
+struct Closure;
+
 #include "backend/Backend.h"
+#include "closure.h"
 #include <cairo.h>
 #include "dll_visibility.h"
-#include <nan.h>
+#include <napi.h>
 #include <pango/pangocairo.h>
-#include <v8.h>
 #include <vector>
 #include <cstddef>
 
@@ -49,27 +51,26 @@ enum canvas_draw_mode_t : uint8_t {
  * Canvas.
  */
 
-class Canvas: public Nan::ObjectWrap {
+class Canvas : public Napi::ObjectWrap<Canvas> {
   public:
-    static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
-    static NAN_METHOD(New);
-    static NAN_METHOD(ToBuffer);
-    static NAN_GETTER(GetType);
-    static NAN_GETTER(GetStride);
-    static NAN_GETTER(GetWidth);
-    static NAN_GETTER(GetHeight);
-    static NAN_SETTER(SetWidth);
-    static NAN_SETTER(SetHeight);
-    static NAN_METHOD(StreamPNGSync);
-    static NAN_METHOD(StreamPDFSync);
-    static NAN_METHOD(StreamJPEGSync);
-    static NAN_METHOD(RegisterFont);
-    static NAN_METHOD(DeregisterAllFonts);
-    static v8::Local<v8::Value> Error(cairo_status_t status);
-    static void ToPngBufferAsync(uv_work_t *req);
-    static void ToJpegBufferAsync(uv_work_t *req);
-    static void ToBufferAsyncAfter(uv_work_t *req);
+    Canvas(const Napi::CallbackInfo& info);
+    static void Initialize(Napi::Env& env, Napi::Object& target);
+
+    Napi::Value ToBuffer(const Napi::CallbackInfo& info);
+    Napi::Value GetType(const Napi::CallbackInfo& info);
+    Napi::Value GetStride(const Napi::CallbackInfo& info);
+    Napi::Value GetWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void StreamPNGSync(const Napi::CallbackInfo& info);
+    void StreamPDFSync(const Napi::CallbackInfo& info);
+    void StreamJPEGSync(const Napi::CallbackInfo& info);
+    static void RegisterFont(const Napi::CallbackInfo& info);
+    static void DeregisterAllFonts(const Napi::CallbackInfo& info);
+    Napi::Error CairoError(cairo_status_t status);
+    static void ToPngBufferAsync(Closure* closure);
+    static void ToJpegBufferAsync(Closure* closure);
     static PangoWeight GetWeightFromCSSString(const char *weight);
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
@@ -81,16 +82,18 @@ class Canvas: public Nan::ObjectWrap {
     DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
     DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
     DLL_PUBLIC inline std::size_t nBytes(){
-      return static_cast<std::size_t>(getHeight()) * stride();
+      return static_cast<std::size_t>(backend()->getHeight()) * stride();
     }
 
     DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
     DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
 
-    Canvas(Backend* backend);
-    void resurface(v8::Local<v8::Object> canvas);
+    void resurface(Napi::Object This);
+
+    Napi::Env env;
 
   private:
-    ~Canvas();
     Backend* _backend;
+    Napi::ObjectReference _jsBackend;
+    Napi::FunctionReference ctor;
 };

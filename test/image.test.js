@@ -24,7 +24,7 @@ const bmpDir = path.join(__dirname, '/fixtures/bmp')
 describe('Image', function () {
   it('Prototype and ctor are well-shaped, don\'t hit asserts on accessors (GH-803)', function () {
     const img = new Image()
-    assert.throws(function () { Image.prototype.width }, /incompatible receiver/)
+    assert.throws(function () { Image.prototype.width }, /invalid argument/i)
     assert(!img.hasOwnProperty('width'))
     assert('width' in img)
     assert(Image.prototype.hasOwnProperty('width'))
@@ -182,7 +182,7 @@ describe('Image', function () {
   it('returns a nice, coded error for fopen failures', function (done) {
     const img = new Image()
     img.onerror = err => {
-      assert.equal(err.code, 'ENOENT')
+      assert.equal(err.message, 'No such file or directory')
       assert.equal(err.path, 'path/to/nothing')
       assert.equal(err.syscall, 'fopen')
       assert.strictEqual(img.complete, true)

@@ -303,7 +303,7 @@ get_pango_font_description(unsigned char* filepath) {
         return NULL;
       }
 
-      pango_font_description_set_family_static(desc, family);
+      pango_font_description_set_family(desc, family);
       free(family);
       pango_font_description_set_weight(desc, get_pango_weight(table->usWeightClass));
       pango_font_description_set_stretch(desc, get_pango_stretch(table->usWidthClass));

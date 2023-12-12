@@ -25,10 +25,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: ["master"] # e.g. "v2.6.1"
-        arch: ["x64", "arm64"]
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Arch ${{ matrix.arch }}, Linux
+        node: [18.12.0, 20.9.0]
+        canvas_tag: [] # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/redstonewizard08/node-canvas/prebuild
@@ -100,8 +99,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: ["master"] # e.g. "v2.6.1"
+        node: [18.12.0, 20.9.0]
+        canvas_tag: [] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
     runs-on: macos-latest
     env:
@@ -172,8 +171,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [8, 9, 10, 11, 12, 13, 14, 16, 18, 20]
-        canvas_tag: ["master"] # e.g. "v2.6.1"
+        node: [18.12.0, 20.9.0]
+        canvas_tag: [] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
     env:
