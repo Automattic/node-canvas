@@ -304,10 +304,10 @@
     - [ ] fontBoundingBoxAscent: i32
     - [ ] fontBoundingBoxDescent: i32
     - [ ] width: i32
-- [ ] enum ImageKind
-    - [ ] Image
-    - [ ] Pdf
-    - [ ] Svg
+- [x] enum ImageKind
+    - [x] Image
+    - [x] Pdf
+    - [x] Svg
 - [x] enum ImageMode (bitflags)
     - [x] Image = 0
     - [x] Mime = 1
@@ -319,14 +319,14 @@
     - [ ] Jpeg(JpegConfig)
     - [ ] Png(PngConfig)
     - [ ] Pdf(PdfConfig)
-- [ ] enum PngFilters (bitflags)
-    - [ ] NoFilters = 0
-    - [ ] All = 1
-    - [ ] None = 2
-    - [ ] Sub = 3
-    - [ ] Up = 4
-    - [ ] Avg = 5
-    - [ ] Paeth = 6
+- [x] enum PngFilters (bitflags)
+    - [x] NoFilters = 0
+    - [x] All = 1
+    - [x] None = 2
+    - [x] Sub = 3
+    - [x] Up = 4
+    - [x] Avg = 5
+    - [x] Paeth = 6
 - [ ] struct JpegConfig
     - [ ] quality: f32 = 0.75
     - [ ] progressive: bool = false
@@ -345,27 +345,27 @@
     - [ ] creator: Option<String>
     - [ ] creationDate: Date
     - [ ] modDate: Option<Date>
-- [ ] enum Quality
-    - [ ] Fast
-    - [ ] Good
-    - [ ] Best
-    - [ ] Nearest
-    - [ ] Bilinear
-- [ ] enum TextDrawingMode
-    - [ ] Path
-    - [ ] Glyph
-- [ ] enum AliasingMode
-    - [ ] Default
-    - [ ] None
-    - [ ] Gray
-    - [ ] Subpixel
-- [ ] enum PixelFormat
-    - [ ] Rgba32
-    - [ ] Rgb24
-    - [ ] A8
-    - [ ] Rgb16_565
-    - [ ] A1
-    - [ ] Rgb30
+- [x] enum Quality
+    - [x] Fast
+    - [x] Good
+    - [x] Best
+    - [x] Nearest
+    - [x] Bilinear
+- [x] enum TextDrawingMode
+    - [x] Path
+    - [x] Glyph
+- [x] enum AliasingMode
+    - [x] Default
+    - [x] None
+    - [x] Gray
+    - [x] Subpixel
+- [x] enum PixelFormat
+    - [x] Rgba32
+    - [x] Rgb24
+    - [x] A8
+    - [x] Rgb16_565
+    - [x] A1
+    - [x] Rgb30
 - [ ] struct ContextSettings
     - [ ] alpha: bool = false
     - [ ] pixelFormat: Option<PixelFormat>
