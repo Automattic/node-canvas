@@ -1,5 +1,6 @@
 pub mod canvas;
 pub mod cap;
+pub mod fill;
 pub mod format;
 pub mod gradient;
 pub mod join;

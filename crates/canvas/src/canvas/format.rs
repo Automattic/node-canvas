@@ -1,6 +1,7 @@
 #[napi]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub enum PixelFormat {
+    #[default]
     Rgba32,
     Rgb24,
     A8,

@@ -230,80 +230,80 @@
         - [ ] From<DomMatrix>
         - [ ] From<Float32Array>
         - [ ] From<Float64Array>
-- [ ] DomPoint
-    - [ ] w: i32
-    - [ ] x: i32
-    - [ ] y: i32
-    - [ ] z: i32
-- [ ] enum FillRule
-    - [ ] EvenOdd
-    - [ ] NonZero
-- [ ] enum Repetition
-    - [ ] Repeat
-    - [ ] RepeatX
-    - [ ] RepeatY
-    - [ ] NoRepeat
-    - [ ] None
-- [ ] enum TextAlign
-    - [ ] Center
-    - [ ] End
-    - [ ] Left
-    - [ ] Right
-    - [ ] Start
-- [ ] enum TextBaseline
-    - [ ] Alphabetic
-    - [ ] Bottom
-    - [ ] Hanging
-    - [ ] Ideographic
-    - [ ] Middle
-    - [ ] Top
-- [ ] enum LineCap
-    - [ ] Butt
-    - [ ] Round
-    - [ ] Square
-- [ ] enum LineJoin
-    - [ ] Bevel
-    - [ ] Miter
-    - [ ] Round
-- [ ] enum GlobalCompositeOperation
-    - [ ] Clear
-    - [ ] Copy
-    - [ ] Destination
-    - [ ] SourceOver
-    - [ ] DestinationOver
-    - [ ] SourceIn
-    - [ ] DestinationIn
-    - [ ] SourceOut
-    - [ ] DestinationOut
-    - [ ] SourceAtop
-    - [ ] DestinationAtop
-    - [ ] Xor
-    - [ ] Lighter
-    - [ ] Normal
-    - [ ] Multiply
-    - [ ] Screen
-    - [ ] Overlay
-    - [ ] Darken
-    - [ ] Lighten
-    - [ ] ColorDodge
-    - [ ] ColorBurn
-    - [ ] HardLight
-    - [ ] SoftLight
-    - [ ] Difference
-    - [ ] Exclusion
-    - [ ] Hue
-    - [ ] Saturation
-    - [ ] Color
-    - [ ] Luminosity
-    - [ ] Saturate
-- [ ] TextMetrics
-    - [ ] actualBoundingBoxAscent: i32
-    - [ ] actualBoundingBoxDescent: i32
-    - [ ] actualBoundingBoxLeft: i32
-    - [ ] actualBoundingBoxRight: i32
-    - [ ] fontBoundingBoxAscent: i32
-    - [ ] fontBoundingBoxDescent: i32
-    - [ ] width: i32
+- [x] DomPoint
+    - [x] w: i32
+    - [x] x: i32
+    - [x] y: i32
+    - [x] z: i32
+- [x] enum FillRule
+    - [x] EvenOdd
+    - [x] NonZero
+- [x] enum Repetition
+    - [x] Repeat
+    - [x] RepeatX
+    - [x] RepeatY
+    - [x] NoRepeat
+    - [x] None
+- [x] enum TextAlign
+    - [x] Center
+    - [x] End
+    - [x] Left
+    - [x] Right
+    - [x] Start
+- [x] enum TextBaseline
+    - [x] Alphabetic
+    - [x] Bottom
+    - [x] Hanging
+    - [x] Ideographic
+    - [x] Middle
+    - [x] Top
+- [x] enum LineCap
+    - [x] Butt
+    - [x] Round
+    - [x] Square
+- [x] enum LineJoin
+    - [x] Bevel
+    - [x] Miter
+    - [x] Round
+- [x] enum GlobalCompositeOperation
+    - [x] Clear
+    - [x] Copy
+    - [x] Destination
+    - [x] SourceOver
+    - [x] DestinationOver
+    - [x] SourceIn
+    - [x] DestinationIn
+    - [x] SourceOut
+    - [x] DestinationOut
+    - [x] SourceAtop
+    - [x] DestinationAtop
+    - [x] Xor
+    - [x] Lighter
+    - [x] Normal
+    - [x] Multiply
+    - [x] Screen
+    - [x] Overlay
+    - [x] Darken
+    - [x] Lighten
+    - [x] ColorDodge
+    - [x] ColorBurn
+    - [x] HardLight
+    - [x] SoftLight
+    - [x] Difference
+    - [x] Exclusion
+    - [x] Hue
+    - [x] Saturation
+    - [x] Color
+    - [x] Luminosity
+    - [x] Saturate
+- [x] TextMetrics
+    - [x] actualBoundingBoxAscent: i32
+    - [x] actualBoundingBoxDescent: i32
+    - [x] actualBoundingBoxLeft: i32
+    - [x] actualBoundingBoxRight: i32
+    - [x] fontBoundingBoxAscent: i32
+    - [x] fontBoundingBoxDescent: i32
+    - [x] width: i32
 - [x] enum ImageKind
     - [x] Image
     - [x] Pdf
@@ -366,9 +366,9 @@
     - [x] Rgb16_565
     - [x] A1
     - [x] Rgb30
-- [ ] struct ContextSettings
-    - [ ] alpha: bool = false
-    - [ ] pixelFormat: Option<PixelFormat>
+- [x] struct ContextSettings
+    - [x] alpha: bool = false
+    - [x] pixelFormat: Option<PixelFormat>
 - [ ] createCanvas()
     - [ ] createCanvas(width: i32, height: i32) -> Canvas
     - [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
