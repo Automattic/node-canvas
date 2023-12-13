@@ -1,9 +1,6 @@
-bitflags! {
-    #[napi]
-    #[repr(transparent)]
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-    pub struct ImageMode: u8 {
-        const Image = 0;
-        const Mime = 1;
-    }
-}
+pub mod data;
+pub mod filters;
+pub mod image;
+pub mod kind;
+pub mod mode;
+pub mod quality;
