@@ -1,7 +1,8 @@
 #[napi]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub enum Quality {
     Fast,
+    #[default]
     Good,
     Best,
     Nearest,
