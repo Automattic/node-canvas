@@ -162,7 +162,8 @@ export class DomMatrix {
   
   
   constructor(init: Array<number>)
-  constructor(init: string)
+  static fromArray(init: Array<number>): DomMatrix
+  static fromString(init: string): DomMatrix
   get values(): number[]
   setValues(values: Array<number>): void
   transformPoint(point: DomPoint): DomPoint

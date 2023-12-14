@@ -46,8 +46,13 @@ impl DomMatrix {
         Self::from(init)
     }
 
-    #[napi(constructor)]
-    pub fn new_str(init: String) -> Self {
+    #[napi(factory)]
+    pub fn from_array(init: Vec<f64>) -> Self {
+        Self::from(init)
+    }
+
+    #[napi(factory)]
+    pub fn from_string(init: String) -> Self {
         Self::from(init)
     }
 
