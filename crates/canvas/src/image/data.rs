@@ -1,5 +1,7 @@
 use napi::bindgen_prelude::Uint8ClampedArray;
 
+use crate::napi_class;
+
 #[napi]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ImageData {
@@ -45,3 +47,5 @@ impl ImageData {
         self.data = data.to_vec();
     }
 }
+
+napi_class!(ImageData);

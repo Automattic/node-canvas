@@ -44,7 +44,7 @@
         "postbuild": "node scripts/postbuild.js",
         "benchmark": "node benchmarks/run.js",
         "prepublishOnly": "napi --cargo-cwd crates/canvas prepublish -t npm",
-        "test": "mocha test/*.test.js",
+        "test": "pnpm build && jest",
         "version": "napi version",
         "fmt": "cargo fmt && prettier --write .",
         "test-server": "node test/server.js",

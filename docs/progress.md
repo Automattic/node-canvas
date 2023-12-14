@@ -367,11 +367,11 @@
 - [x] createCanvas()
     - [x] createCanvas(width: i32, height: i32) -> Canvas
     - [x] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
-- [ ] createImageData()
-    - [ ] createImageData(width: i32, height: i32) -> ImageData
-    - [ ] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData
-    - [ ] createImageData(data: Uint8ClampedArray, width: i32, height: i32) -> ImageData
-    - [ ] createImageData(data: Vec<u16>, width: i32) -> ImageData
-    - [ ] createImageData(data: Vec<u16>, width: i32, height: i32) -> ImageData
+- [x] createImageData()
+    - [x] createImageData(width: i32, height: i32) -> ImageData
+    - [x] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData **NOTE: Modified argument order**
+    - [x] createImageData(data: Uint8ClampedArray, width: i32, height: i32) -> ImageData **NOTE: Modified argument order**
+    - [x] createImageData(data: Vec<u16>, width: i32) -> ImageData **NOTE: Modified argument order**
+    - [x] createImageData(data: Vec<u16>, width: i32, height: i32) -> ImageData **NOTE: Modified argument order**
 - [ ] async loadImage(url: string) -> Image
 - [ ] registerFont(path: string, opts: FontOptions)
