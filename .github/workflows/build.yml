@@ -47,6 +47,7 @@ jobs:
 
             - run: cargo install cargo-xwin
             - run: pnpm install
+            - run: pnpm run gen-packages
             - run: pnpm run build --target ${{ matrix.targets }}
 
             - uses: actions/upload-artifact@v3
