@@ -39,12 +39,12 @@
     - [x] height: i32
     - [x] stride: i32
     - [x] type: ImageKind
-    - [ ] getContext()
-        - [ ] getContext(id: String)
-        - [ ] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D
-        - [ ] id = "2d"
-        - [ ] id = "webgl"
-        - [ ] id = "webgl2"
+    - [x] getContext()
+        - [x] getContext(id: String)
+        - [x] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D **NOTE: Removed, see below.**
+        - [x] id = "2d"
+        - [x] id = "webgl"
+        - [x] id = "webgl2"
 - [ ] CanvasRenderingContext2D
     - [x] clearRect(x: i32, y: i32, w: i32, h: i32)
     - [x] fillRect(x: i32, y: i32, w: i32, h: i32)
@@ -163,14 +163,14 @@
     - [x] complete: bool
     - [x] naturalWidth: i32
     - [x] naturalHeight: i32
-- [ ] DomMatrix
+- [x] DomMatrix
     - [x] new()
         - [x] new(init: String)
         - [x] new(init: Vec<i32>)
     - [x] toString()
     - [x] multiply(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::Mul`**
 	- [x] multiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::MulAssign`**
-	- [ ] preMultiplySelf(other: DomMatrix) -> DomMatrix **TODO: Can someone explain why this exists?**
+	- [x] preMultiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Removed, this is redundant.**
 	- [x] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
 	- [x] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Renamed**
 	- [x] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
@@ -361,7 +361,7 @@
     - [x] Rgb16_565
     - [x] A1
     - [x] Rgb30
-- [x] struct ContextSettings
+- [x] struct ContextSettings **NOTE: Removed, it's redundant and doesn't change anything.**
     - [x] alpha: bool = false
     - [x] pixelFormat: Option<PixelFormat>
 - [ ] createCanvas()
