@@ -364,9 +364,9 @@
 - [x] struct ContextSettings **NOTE: Removed, it's redundant and doesn't change anything.**
     - [x] alpha: bool = false
     - [x] pixelFormat: Option<PixelFormat>
-- [ ] createCanvas()
-    - [ ] createCanvas(width: i32, height: i32) -> Canvas
-    - [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
+- [x] createCanvas()
+    - [x] createCanvas(width: i32, height: i32) -> Canvas
+    - [x] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
 - [ ] createImageData()
     - [ ] createImageData(width: i32, height: i32) -> ImageData
     - [ ] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData

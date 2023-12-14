@@ -21,3 +21,4 @@ pub mod format;
 pub mod image;
 pub mod text;
 pub mod util;
+pub mod create;
