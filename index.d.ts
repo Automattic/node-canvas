@@ -85,7 +85,7 @@ export interface PngConfig {
   resolution?: number
 }
 export function createCanvas(width: number, height: number, kind?: ImageKind | undefined | null): Canvas
-export function createImageData(width: number, height?: number | undefined | null, data?: Array<number> | Uint8ClampedArray | undefined | null): ImageData
+export function createImageData(width: number, height?: number | undefined | null, data?: Array<number> | Uint8ClampedArray | Uint16Array | undefined | null): ImageData
 export const enum ImageKind {
   Image = 'Image',
   Pdf = 'Pdf',
@@ -261,7 +261,6 @@ export class ImageData {
   static withData(data: Uint8ClampedArray, width: number, height?: number | undefined | null): ImageData
   get data(): Uint8ClampedArray
   set data(data: Uint8ClampedArray)
-  toString(): string
 }
 export class PngFilters { }
 export class Image {

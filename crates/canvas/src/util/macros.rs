@@ -51,16 +51,3 @@ macro_rules! alias_property_borrow {
         });
     }
 }
-
-#[macro_export]
-macro_rules! napi_class {
-    ($name: ident) => {
-        #[napi]
-        impl $name {
-            #[napi]
-            pub fn to_string(&self) -> String {
-                format!("[object {}]", stringify!($name))
-            }
-        }
-    }
-}

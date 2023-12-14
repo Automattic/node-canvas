@@ -1,7 +1,5 @@
 use napi::bindgen_prelude::Uint8ClampedArray;
 
-use crate::napi_class;
-
 #[napi]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ImageData {
@@ -18,7 +16,7 @@ impl ImageData {
         Self {
             width,
             height,
-            data: Vec::new(),
+            data: Vec::with_capacity((width * height) as usize),
         }
     }
 
@@ -29,7 +27,7 @@ impl ImageData {
             let size = data.len() as i32 / 4;
             size / width
         });
-
+        
         Self {
             data: data.to_vec(),
             width,
@@ -47,5 +45,3 @@ impl ImageData {
         self.data = data.to_vec();
     }
 }
-
-napi_class!(ImageData);
