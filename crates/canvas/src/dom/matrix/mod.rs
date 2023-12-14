@@ -8,7 +8,6 @@ use super::point::DomPoint;
 
 pub mod changes;
 pub mod from;
-pub mod macros;
 pub mod ops;
 pub mod parse;
 pub mod util;

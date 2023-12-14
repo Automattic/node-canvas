@@ -1,13 +1,13 @@
 # Implementation Progress
 
 - [ ] Canvas
-    - [ ] new()
-        - [ ] new(width: i32, height: i32)
-        - [ ] new(width: i32, height: i32, kind: ImageKind)
+    - [x] new()
+        - [x] new(width: i32, height: i32)
+        - [x] new(width: i32, height: i32, kind: ImageKind)
     - [ ] toBuffer()
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer))
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String)
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig)
+        - [x] toBuffer(cb: fn(Option<Error>, Buffer)) **NOTE: Removed, this is redundant.**
+        - [x] toBuffer(cb: fn(Option<Error>, Buffer), mime: String) **NOTE: Removed, this is redundant.**
+        - [x] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig) **NOTE: Removed, this is redundant.**
         - [ ] toBuffer() -> Buffer
         - [ ] toBuffer(mime: String) -> Buffer
         - [ ] toBuffer(mime: String, config: BufferConfig) -> Buffer
@@ -35,9 +35,10 @@
         - [ ] toDataURL(mime: String, quality: f32 /* 0 to 1 */, cb: fn(Option<Error>, String))
         - [ ] mime = "image/png"
         - [ ] mime = "image/jpeg"
-    - [ ] width: i32
-    - [ ] height: i32
-    - [ ] stride: i32
+    - [x] width: i32
+    - [x] height: i32
+    - [x] stride: i32
+    - [x] type: ImageKind
     - [ ] getContext()
         - [ ] getContext(id: String)
         - [ ] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D
@@ -117,29 +118,29 @@
         - [ ] addPage()
         - [ ] addPage(w: i32)
         - [ ] addPage(w: i32, h: i32)
-    - [ ] patternQuality: Quality = Quality::Good
-    - [ ] quality: Quality = Quality::Good
-    - [ ] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
-    - [ ] antialias: AliasingMode = AliasingMode::Default
-    - [ ] lineWidth: i32
-    - [ ] lineCap: LineCap
-    - [ ] lineJoin: LineJoin
-    - [ ] miterLimit: i32
-    - [ ] lineDashOffset: i32
-    - [ ] font: String
-    - [ ] textAlign: TextAlign
-    - [ ] textBaseline: TextBaseline
-    - [ ] fillStyle: Either3<String, CanvasGradient, CanvasPattern>
-    - [ ] strokeStyle: Either3<String, CanvasGradient, CanvasPattern>
-    - [ ] shadowBlur: i32
-    - [ ] shadowColor: String
-    - [ ] shadowOffsetX: i32
-    - [ ] shadowOffsetY: i32
-    - [ ] currentTransform: DomMatrix
-    - [ ] globalAlpha: i32
-    - [ ] globalCompositeOperation: GlobalCompositeOperation
-    - [ ] imageSmoothingEnabled: bool
-    - [ ] canvas: Canvas
+    - [x] patternQuality: Quality = Quality::Good
+    - [x] quality: Quality = Quality::Good
+    - [x] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
+    - [x] antialias: AliasingMode = AliasingMode::Default
+    - [x] lineWidth: i32
+    - [x] lineCap: LineCap
+    - [x] lineJoin: LineJoin
+    - [x] miterLimit: i32
+    - [x] lineDashOffset: i32
+    - [x] font: String
+    - [x] textAlign: TextAlign
+    - [x] textBaseline: TextBaseline
+    - [x] fillStyle: Either3<String, CanvasGradient, CanvasPattern>
+    - [x] strokeStyle: Either3<String, CanvasGradient, CanvasPattern>
+    - [x] shadowBlur: i32
+    - [x] shadowColor: String
+    - [x] shadowOffsetX: i32
+    - [x] shadowOffsetY: i32
+    - [x] currentTransform: DomMatrix
+    - [x] globalAlpha: i32
+    - [x] globalCompositeOperation: GlobalCompositeOperation
+    - [x] imageSmoothingEnabled: bool
+    - [x] canvas: Canvas
 - [x] ImageData
     - [x] new()
         - [x] new(width: i32, height: i32)
@@ -309,10 +310,10 @@
     - [ ] family: String
     - [ ] weight: Option<String>,
     - [ ] style: Option<String>,
-- [ ] enum BufferConfig (builder)
-    - [ ] Jpeg(JpegConfig)
-    - [ ] Png(PngConfig)
-    - [ ] Pdf(PdfConfig)
+- [x] enum BufferConfig (builder) **NOTE: This was changed to be an `Either3`**
+    - [x] Jpeg(JpegConfig)
+    - [x] Png(PngConfig)
+    - [x] Pdf(PdfConfig)
 - [x] enum PngFilters (bitflags)
     - [x] NoFilters = 0
     - [x] All = 1
@@ -321,24 +322,24 @@
     - [x] Up = 4
     - [x] Avg = 5
     - [x] Paeth = 6
-- [ ] struct JpegConfig
-    - [ ] quality: f32 = 0.75
-    - [ ] progressive: bool = false
-    - [ ] chromaSubsampling: bool = true
-- [ ] struct PngConfig
-    - [ ] compressionLevel: u8 = 6
-    - [ ] filters: u8 = PngFilters::All
-    - [ ] palette: Option<{unknown}>
-    - [ ] backgroundIndex: i32
-    - [ ] resolution: Option<{unknown}>
-- [ ] struct PdfConfig
-    - [ ] title: Option<String>
-    - [ ] author: Option<String>
-    - [ ] subject: Option<String>
-    - [ ] keywords: Option<String>
-    - [ ] creator: Option<String>
-    - [ ] creationDate: Date
-    - [ ] modDate: Option<Date>
+- [x] struct JpegConfig
+    - [x] quality: f32 = 0.75
+    - [x] progressive: bool = false
+    - [x] chromaSubsampling: bool = true
+- [x] struct PngConfig
+    - [x] compressionLevel: u8 = 6
+    - [x] filters: u8 = PngFilters::All
+    - [x] palette: Option<Vec<u8>>
+    - [x] backgroundIndex: i32
+    - [x] resolution: Option<u32>
+- [x] struct PdfConfig
+    - [x] title: Option<String>
+    - [x] author: Option<String>
+    - [x] subject: Option<String>
+    - [x] keywords: Option<String>
+    - [x] creator: Option<String>
+    - [x] creationDate: Date
+    - [x] modDate: Option<Date>
 - [x] enum Quality
     - [x] Fast
     - [x] Good

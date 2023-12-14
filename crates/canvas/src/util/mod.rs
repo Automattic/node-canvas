@@ -1,5 +1,7 @@
 use std::{convert::AsMut, ops::Mul};
 
+pub mod macros;
+
 /// See https://stackoverflow.com/a/37679442
 pub fn clone_into_array<A, T>(slice: &[T]) -> A
 where
