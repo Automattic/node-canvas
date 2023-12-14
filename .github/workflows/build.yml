@@ -67,6 +67,7 @@ jobs:
             - run: pnpm install
             - run: pnpm run gen-packages
             - run: pnpm run build --target ${{ matrix.targets }}
+            - run: pnpm run postbuild
 
             - uses: actions/upload-artifact@v3
               with:

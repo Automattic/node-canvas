@@ -41,8 +41,12 @@ pub struct DomMatrix {
 #[napi]
 impl DomMatrix {
     #[napi(constructor)]
-    pub fn new(init: Vec<f64>) -> Self {
-        Self::from(init)
+    pub fn new(init: Option<Vec<f64>>) -> Self {
+        if let Some(init) = init {
+            Self::from(init)
+        } else {
+            Self::default()
+        }
     }
 
     #[napi(factory)]
@@ -63,7 +67,6 @@ impl DomMatrix {
         ]
     }
 
-    // TODO: napi
     #[napi]
     pub fn set_values(&mut self, values: Vec<f64>) {
         self.m11 = values[0];

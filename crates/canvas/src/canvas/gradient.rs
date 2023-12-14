@@ -1,10 +1,8 @@
 use csscolorparser::parse;
-use raqote::{GradientStop, Color};
+use raqote::{Color, GradientStop};
 
 #[napi]
-#[derive(
-    Debug, Clone, Default,
-)]
+#[derive(Debug, Clone, Default)]
 pub struct CanvasGradient {
     stops: Vec<GradientStop>,
 }

@@ -1,4 +1,4 @@
-#[napi]
+#[napi(js_name = "DOMPoint")]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct DomPoint {
     pub w: f64,

@@ -5,3 +5,5 @@ dist
 pkg
 build
 docs
+/index.js
+/index.d.ts

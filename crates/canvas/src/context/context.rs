@@ -1,5 +1,5 @@
 use csscolorparser::parse;
-use raqote::{DrawOptions, DrawTarget, BlendMode, Color, StrokeStyle};
+use raqote::{BlendMode, Color, DrawOptions, DrawTarget, StrokeStyle};
 
 use crate::{
     alias_property_borrow,
@@ -105,7 +105,10 @@ impl CanvasRenderingContext2d {
     }
 
     pub fn get_stroke_color(&self) -> Color {
-        let color = self.stroke_style.clone().unwrap_or(DEFAULT_COLOR.to_string());
+        let color = self
+            .stroke_style
+            .clone()
+            .unwrap_or(DEFAULT_COLOR.to_string());
         let [r, g, b, a] = parse(&color).unwrap().to_rgba8();
 
         Color::new(a, r, g, b)

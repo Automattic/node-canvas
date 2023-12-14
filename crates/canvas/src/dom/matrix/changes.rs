@@ -365,7 +365,7 @@ impl DomMatrix {
 
     #[napi]
     pub fn set_matrix_value(&mut self, transform_list: Vec<f64>) {
-        let temp = DomMatrix::new(transform_list);
+        let temp = DomMatrix::new(Some(transform_list));
 
         self.set_values(temp.values().to_vec());
         self.is_2d = temp.is_2d;

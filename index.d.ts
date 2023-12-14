@@ -84,6 +84,7 @@ export interface PngConfig {
   backgroundIndex: number
   resolution?: number
 }
+export function createCanvas(width: number, height: number, kind?: ImageKind | undefined | null): Canvas
 export const enum ImageKind {
   Image = 'Image',
   Pdf = 'Pdf',
@@ -143,13 +144,44 @@ export class Canvas {
   stride: number
   type: ImageKind
   constructor(width: number, height: number, kind?: ImageKind | undefined | null)
-  toBuffer(mime?: string | undefined | null, config?: BufferConfig | undefined | null): Buffer
-  getContext(id: "2d" | "webgl" | "webgl2"): void
+  toBuffer(mime?: string | undefined | null, config?: PngConfig | JpegConfig | PdfConfig | undefined | null): Buffer
+  getContext(id: "2d" | "webgl" | "webgl2"): CanvasRenderingContext2d
 }
-export class ContextSettings {
-  alpha: boolean
-  pixelFormat?: PixelFormat
-  constructor(alpha?: boolean | undefined | null, pixelFormat?: PixelFormat | undefined | null)
+export class CanvasGradient {
+  constructor()
+  addColorStop(offset: number, color: string): void
+}
+export type CanvasRenderingContext2d = CanvasRenderingContext2D
+export class CanvasRenderingContext2D {
+  patternQuality: Quality
+  quality: Quality
+  textDrawingMode: TextDrawingMode
+  antialias: AliasingMode
+  lineWidth: number
+  lineCap: LineCap
+  lineJoin: LineJoin
+  miterLimit: number
+  lineDashOffset: number
+  font: string
+  textAlign: TextAlign
+  textBaseline: TextBaseline
+  shadowBlur: number
+  shadowColor: string
+  shadowOffsetX: number
+  shadowOffsetY: number
+  globalAlpha: number
+  globalCompositeOperation: GlobalCompositeOperation
+  imageSmoothingEnabled: boolean
+  fillStyle?: string
+  strokeStyle?: string
+  constructor(canvas: Canvas)
+  get currentTransform(): DomMatrix
+  set currentTransform(newVal: DomMatrix)
+  get canvas(): Canvas
+  set canvas(newVal: Canvas)
+  clearRect(x: number, y: number, width: number, height: number): void
+  fillRect(x: number, y: number, width: number, height: number): void
+  strokeRect(x: number, y: number, width: number, height: number): void
 }
 export class DomMatrix {
   is2D: boolean
@@ -191,7 +223,7 @@ export class DomMatrix {
   
   
   
-  constructor(init: Array<number>)
+  constructor(init?: Array<number> | undefined | null)
   static fromArray(init: Array<number>): DomMatrix
   static fromString(init: string): DomMatrix
   get values(): number[]
@@ -200,20 +232,21 @@ export class DomMatrix {
   toFloat32Array(): Float32Array
   toFloat64Array(): Float64Array
   get isIdentity(): boolean
-  get aNapiAlias(): number
-  set aNapiAlias(newVal: number)
-  get bNapiAlias(): number
-  set bNapiAlias(newVal: number)
-  get cNapiAlias(): number
-  set cNapiAlias(newVal: number)
-  get dNapiAlias(): number
-  set dNapiAlias(newVal: number)
-  get eNapiAlias(): number
-  set eNapiAlias(newVal: number)
-  get fNapiAlias(): number
-  set fNapiAlias(newVal: number)
+  get a(): number
+  set a(newVal: number)
+  get b(): number
+  set b(newVal: number)
+  get c(): number
+  set c(newVal: number)
+  get d(): number
+  set d(newVal: number)
+  get e(): number
+  set e(newVal: number)
+  get f(): number
+  set f(newVal: number)
 }
-export class DomPoint {
+export type DomPoint = DOMPoint
+export class DOMPoint {
   w: number
   x: number
   y: number

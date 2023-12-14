@@ -1,4 +1,4 @@
-use crate::{image::kind::ImageKind, canvas::canvas::Canvas};
+use crate::{canvas::canvas::Canvas, image::kind::ImageKind};
 
 #[napi]
 pub fn create_canvas(width: i32, height: i32, kind: Option<ImageKind>) -> Canvas {

@@ -2,8 +2,9 @@ use napi::bindgen_prelude::{Buffer, Either3};
 use raqote::DrawTarget;
 
 use crate::{
-    config::{buffer::BufferConfig, png::PngConfig},
-    image::kind::ImageKind, context::context::CanvasRenderingContext2d,
+    config::{jpeg::JpegConfig, pdf::PdfConfig, png::PngConfig},
+    context::context::CanvasRenderingContext2d,
+    image::kind::ImageKind,
 };
 
 #[napi]
@@ -33,15 +34,23 @@ impl Canvas {
     }
 
     #[napi]
-    pub fn to_buffer(&self, mime: Option<String>, config: Option<BufferConfig>) -> Buffer {
+    pub fn to_buffer(
+        &self,
+        mime: Option<String>,
+        config: Option<Either3<PngConfig, JpegConfig, PdfConfig>>,
+    ) -> Buffer {
         let _mime = mime.unwrap_or(String::from("image/png"));
         let _config = config.unwrap_or(Either3::A(PngConfig::default()));
 
-        todo!()
+        // TODO: Implementation
+        Buffer::from(vec![])
     }
 
     #[napi]
-    pub fn get_context(&self, #[napi(ts_arg_type = "\"2d\" | \"webgl\" | \"webgl2\"")] id: String) -> CanvasRenderingContext2d {
+    pub fn get_context(
+        &self,
+        #[napi(ts_arg_type = "\"2d\" | \"webgl\" | \"webgl2\"")] id: String,
+    ) -> CanvasRenderingContext2d {
         match id.as_str() {
             "2d" => CanvasRenderingContext2d::new(self),
             "webgl" | "webgl2" => panic!("Unsupported context type!"),

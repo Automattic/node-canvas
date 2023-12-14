@@ -252,18 +252,20 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Canvas, LineCap, FillRule, PixelFormat, LineJoin, AliasingMode, GlobalCompositeOperation, ContextSettings, DomMatrix, DomPoint, ImageData, PngFilters, Image, ImageKind, ImageMode, Quality, Repetition, TextAlign, TextBaseline, TextDrawingMode } = nativeBinding
+const { Canvas, LineCap, FillRule, PixelFormat, CanvasGradient, LineJoin, AliasingMode, GlobalCompositeOperation, CanvasRenderingContext2D, createCanvas, DomMatrix, DOMPoint, ImageData, PngFilters, Image, ImageKind, ImageMode, Quality, Repetition, TextAlign, TextBaseline, TextDrawingMode } = nativeBinding
 
 module.exports.Canvas = Canvas
 module.exports.LineCap = LineCap
 module.exports.FillRule = FillRule
 module.exports.PixelFormat = PixelFormat
+module.exports.CanvasGradient = CanvasGradient
 module.exports.LineJoin = LineJoin
 module.exports.AliasingMode = AliasingMode
 module.exports.GlobalCompositeOperation = GlobalCompositeOperation
-module.exports.ContextSettings = ContextSettings
+module.exports.CanvasRenderingContext2D = CanvasRenderingContext2D
+module.exports.createCanvas = createCanvas
 module.exports.DomMatrix = DomMatrix
-module.exports.DomPoint = DomPoint
+module.exports.DOMPoint = DOMPoint
 module.exports.ImageData = ImageData
 module.exports.PngFilters = PngFilters
 module.exports.Image = Image
@@ -274,3 +276,5 @@ module.exports.Repetition = Repetition
 module.exports.TextAlign = TextAlign
 module.exports.TextBaseline = TextBaseline
 module.exports.TextDrawingMode = TextDrawingMode
+
+module.exports.DOMMatrix = DomMatrix;

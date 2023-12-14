@@ -25,8 +25,10 @@
     "license": "MIT",
     "devDependencies": {
         "@napi-rs/cli": "2.16.5",
+        "assert-rejects": "^1.0.0",
         "express": "^4.18.2",
         "glob": "^10.3.10",
+        "jest": "^29.7.0",
         "js-yaml": "^4.1.0",
         "mocha": "^10.2.0",
         "pixelmatch": "^5.3.0",
@@ -39,6 +41,7 @@
         "artifacts": "napi crates/canvas artifacts",
         "build": "napi --cargo-cwd crates/canvas build --platform --release",
         "build:debug": "napi --cargo-cwd crates/canvas build --platform",
+        "postbuild": "node scripts/postbuild.js",
         "benchmark": "node benchmarks/run.js",
         "prepublishOnly": "napi --cargo-cwd crates/canvas prepublish -t npm",
         "test": "mocha test/*.test.js",
