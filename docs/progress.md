@@ -1,382 +1,376 @@
 # Implementation Progress
 
-- [ ] Canvas
-    - [ ] new()
-        - [ ] new(width: i32, height: i32)
-        - [ ] new(width: i32, height: i32, kind: ImageKind)
-    - [ ] toBuffer()
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer))
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String)
-        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig)
-        - [ ] toBuffer() -> Buffer
-        - [ ] toBuffer(mime: String) -> Buffer
-        - [ ] toBuffer(mime: String, config: BufferConfig) -> Buffer
-        - [ ] mime = "image/png" (default on non-PDF, non-SVG canvases)
-        - [ ] mime = "image/jpeg"
-        - [ ] mime = "raw" (Unencoded BGRA data on LE, ARGB on BE, top-to-bottom)
-        - [ ] mime = "application/pdf" (only for PDF canvases)
-        - [ ] mime = "image/svg+xml" (only for SVG canvases)
-    - [ ] createPNGStream()
-        - [ ] createPNGStream() -> ReadableStream
-        - [ ] createPNGStream(config: PngConfig) -> ReadableStream
-    - [ ] createJPEGStream()
-        - [ ] createJPEGStream() -> ReadableStream
-        - [ ] createJPEGStream(config: JpegConfig) -> ReadableStream
-    - [ ] createPDFStream()
-        - [ ] createPDFStream() -> ReadableStream
-        - [ ] createPDFStream(config: PdfConfig) -> ReadableStream
-    - [ ] toDateURL()
-        - [ ] toDataURL() -> String
-        - [ ] toDataURL(mime: String) -> String
-        - [ ] toDataURL(mime: String, quality: f32 /* 0 to 1 */) -> String
-        - [ ] toDataURL(cb: fn(Option<Error>, String))
-        - [ ] toDataURL(mime: String, cb: fn(Option<Error>, String))
-        - [ ] toDataURL(mime: String, opts: BufferConfig, cb: fn(Option<Error>, String))
-        - [ ] toDataURL(mime: String, quality: f32 /* 0 to 1 */, cb: fn(Option<Error>, String))
-        - [ ] mime = "image/png"
-        - [ ] mime = "image/jpeg"
-    - [ ] width: i32
-    - [ ] height: i32
-    - [ ] stride: i32
-    - [ ] getContext()
-        - [ ] getContext(id: String)
-        - [ ] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D
-        - [ ] id = "2d"
-        - [ ] id = "webgl"
-        - [ ] id = "webgl2"
-- [ ] CanvasRenderingContext2D
-    - [ ] clearRect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] fillRect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] strokeRect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] fillText()
-        - [ ] fillText(text: String, x: i32, y: i32)
-        - [ ] fillText(text: String, x: i32, y: i32, maxWidth: i32)
-    - [ ] strokeText()
-        - [ ] strokeText(text: String, x: i32, y: i32)
-        - [ ] strokeText(text: String, x: i32, y: i32, maxWidth: i32)
-    - [ ] measureText(text: String) -> TextMetrics
-    - [ ] getLineDash() -> Vec<i32>
-    - [ ] setLineDash(segments: Vec<i32>)
-    - [ ] createLinearGradient(x0: i32, y0: i32, x1: i32, y1: i32) -> CanvasGradient
-    - [ ] createRadialGradient(x0: i32, y0: i32, r0: i32, x1: i32, y1: i32, r1: i32) -> CanvasGradient
-    - [ ] createPattern()
-        - [ ] createPattern(image: Either<Canvas, Image>) -> CanvasPattern
-        - [ ] createPattern(image: Either<Canvas, Image>, repetition: Repetition) -> CanvasPattern
-    - [ ] beginPath()
-    - [ ] closePath()
-    - [ ] moveTo(x: i32, y: i32)
-    - [ ] lineTo(x: i32, y: i32)
-    - [ ] quadraticCurveTo(cpx: i32, cpy: i32, x: i32, y: i32)
-    - [ ] bezierCurveTo(cp1x: i32, cp1y: i32, cp2x: i32, cp2y: i32, x: i32, y: i32)
-    - [ ] arc()
-        - [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32)
-        - [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32, counterClockwise: bool)
-    - [ ] arcTo(x1: i32, y1: i32, x2: i32, y2: i32, radius: i32)
-    - [ ] ellipse()
-        - [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32)
-        - [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32, counterclockwise: bool)
-    - [ ] rect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] roundRect()
-        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32)
-        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: i32)
-        - [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: [i32; 4])
-    - [ ] fill()
-        - [ ] fill()
-        - [ ] fill(fillRule: CanvasFillRule)
-    - [ ] stroke()
-    - [ ] clip()
-        - [ ] clip()
-        - [ ] clip(fillRule: CanvasFillRule)
-    - [ ] isPointInPath()
-        - [ ] isPointInPath(x: i32, y: i32)
-        - [ ] isPointInPath(x: i32, y: i32, fillRule: CanvasFillRule)
-    - [ ] rotate(angle: f32)
-    - [ ] scale(x: f32, y: f32)
-    - [ ] translate(x: i32, y: i32)
-    - [ ] transform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
-    - [ ] setTransform()
-        - [ ] setTransform()
-        - [ ] setTransform(transform: DomMatrix)
-        - [ ] setTransform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
-    - [ ] getTransform() -> DomMatrix
-    - [ ] resetTransform()
-    - [ ] drawImage()
-        - [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32)
-        - [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32, dw: i32, dh: i32)
-        - [ ] drawImage(image: Either<Canvas, Image>, sx: i32, sy: i32, sw: i32, sh: i32, dx: i32, dy: i32, dw: i32, dh: i32)
-    - [ ] createImageData()
-        - [ ] createImageData(sw: i32, sh: i32) -> ImageData
-        - [ ] createImageData(data: ImageData) -> ImageData
-    - [ ] getImageData(sx: i32, sy: i32, sw: i32, sh: i32) -> ImageData
-    - [ ] putImageData()
-        - [ ] putImageData(data: ImageData, dx: i32, dy: i32)
-        - [ ] putImageData(data: ImageData, dx: i32, dy: i32, dirtyX: i32, dirtyY: i32, dirtyWidth: i32, dirtyHeight: i32)
-    - [ ] save()
-    - [ ] restore()
-    - [ ] addPage() /* PDF Only */
-        - [ ] addPage()
-        - [ ] addPage(w: i32)
-        - [ ] addPage(w: i32, h: i32)
-    - [ ] patternQuality: Quality = Quality::Good
-    - [ ] quality: Quality = Quality::Good
-    - [ ] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
-    - [ ] antialias: AliasingMode = AliasingMode::Default
-    - [ ] lineWidth: i32
-    - [ ] lineCap: LineCap
-    - [ ] lineJoin: LineJoin
-    - [ ] miterLimit: i32
-    - [ ] lineDashOffset: i32
-    - [ ] font: String
-    - [ ] textAlign: TextAlign
-    - [ ] textBaseline: TextBaseline
-    - [ ] fillStyle: Either3<String, CanvasGradient, CanvasPattern>
-    - [ ] strokeStyle: Either3<String, CanvasGradient, CanvasPattern>
-    - [ ] shadowBlur: i32
-    - [ ] shadowColor: String
-    - [ ] shadowOffsetX: i32
-    - [ ] shadowOffsetY: i32
-    - [ ] currentTransform: DomMatrix
-    - [ ] globalAlpha: i32
-    - [ ] globalCompositeOperation: GlobalCompositeOperation
-    - [ ] imageSmoothingEnabled: bool
-    - [ ] canvas: Canvas
-- [ ] ImageData
-    - [ ] new()
-        - [ ] new(width: i32, height: i32)
-        - [ ] new(data: Uint8ClampedArray, width: i32)
-        - [ ] new(data: Uint8ClampedArray, width: i32, height: i32)
-    - [ ] data: Uint8ClampedArray
-    - [ ] width: i32
-    - [ ] height: i32
-- [ ] CanvasGradient
-    - [] addColorStop(offset: i32, color: String)
-- [ ] CanvasPattern
-    - [ ] setTransform()
-        - [ ] setTransform()
-        - [ ] setTransform(matrix: DomMatrix)
-- [ ] Image
-    - [ ] src: Either<String, Buffer>
-    - [ ] dataMode: ImageMode
-    - [ ] width: i32
-    - [ ] height: i32
-    - [ ] complete: bool
-    - [ ] naturalWidth: i32
-    - [ ] naturalHeight: i32
-- [ ] DomMatrix
-    - [ ] new()
-        - [ ] new(init: String)
-        - [ ] new(init: Vec<i32>)
-    - [ ] toString()
-    - [ ] multiply(other: DomMatrix) -> DomMatrix
-	- [ ] multiplySelf(other: DomMatrix) -> DomMatrix
-	- [ ] preMultiplySelf(other: DomMatrix) -> DomMatrix
-	- [ ] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
-	- [ ] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
-	- [ ] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] rotateFromVector(x: i32, y: i32) -> DomMatrix
-	- [ ] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
-	- [ ] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
-	- [ ] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
-	- [ ] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
-	- [ ] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
-	- [ ] skewX(sx: i32) -> DomMatrix
-	- [ ] skewXSelf(sx: i32) -> DomMatrix
-	- [ ] skewY(sy: i32) -> DomMatrix
-	- [ ] skewYSelf(sy: i32) -> DomMatrix
-	- [ ] flipX() -> DomMatrix
-	- [ ] flipY() -> DomMatrix
-	- [ ] inverse() -> DomMatrix
-	- [ ] invertSelf() -> DomMatrix
-	- [ ] setMatrixValue(transformList: string) -> DomMatrix
-	- [ ] transformPoint(point: DomPoint) -> DomPoint
-	- [ ] toFloat32Array() -> Float32Array
-	- [ ] toFloat64Array() -> Float64Array
-    - [ ] is2D: bool
-    - [ ] isIdentity: bool
-    - [ ] a: i32
-    - [ ] b: i32
-    - [ ] c: i32
-    - [ ] d: i32
-    - [ ] e: i32
-    - [ ] f: i32
-    - [ ] m11: i32
-    - [ ] m12: i32
-    - [ ] m13: i32
-    - [ ] m14: i32
-    - [ ] m21: i32
-    - [ ] m22: i32
-    - [ ] m23: i32
-    - [ ] m24: i32
-    - [ ] m31: i32
-    - [ ] m32: i32
-    - [ ] m33: i32
-    - [ ] m34: i32
-    - [ ] m41: i32
-    - [ ] m42: i32
-    - [ ] m43: i32
-    - [ ] m44: i32
-    - [ ] + Traits:
-        - [ ] std::ops::Mul
-        - [ ] std::ops::MulAssign
-        - [ ] std::ops::Add
-        - [ ] std::ops::AddAssign
-        - [ ] std::ops::Div
-        - [ ] std::ops::DivAssign
-        - [ ] std::ops::Sub
-        - [ ] std::ops::SubAssign
-        - [ ] From<DomMatrix>
-        - [ ] From<Float32Array>
-        - [ ] From<Float64Array>
-- [x] DomPoint
-    - [x] w: i32
-    - [x] x: i32
-    - [x] y: i32
-    - [x] z: i32
-- [x] enum FillRule
-    - [x] EvenOdd
-    - [x] NonZero
-- [x] enum Repetition
-    - [x] Repeat
-    - [x] RepeatX
-    - [x] RepeatY
-    - [x] NoRepeat
-    - [x] None
-- [x] enum TextAlign
-    - [x] Center
-    - [x] End
-    - [x] Left
-    - [x] Right
-    - [x] Start
-- [x] enum TextBaseline
-    - [x] Alphabetic
-    - [x] Bottom
-    - [x] Hanging
-    - [x] Ideographic
-    - [x] Middle
-    - [x] Top
-- [x] enum LineCap
-    - [x] Butt
-    - [x] Round
-    - [x] Square
-- [x] enum LineJoin
-    - [x] Bevel
-    - [x] Miter
-    - [x] Round
-- [x] enum GlobalCompositeOperation
-    - [x] Clear
-    - [x] Copy
-    - [x] Destination
-    - [x] SourceOver
-    - [x] DestinationOver
-    - [x] SourceIn
-    - [x] DestinationIn
-    - [x] SourceOut
-    - [x] DestinationOut
-    - [x] SourceAtop
-    - [x] DestinationAtop
-    - [x] Xor
-    - [x] Lighter
-    - [x] Normal
-    - [x] Multiply
-    - [x] Screen
-    - [x] Overlay
-    - [x] Darken
-    - [x] Lighten
-    - [x] ColorDodge
-    - [x] ColorBurn
-    - [x] HardLight
-    - [x] SoftLight
-    - [x] Difference
-    - [x] Exclusion
-    - [x] Hue
-    - [x] Saturation
-    - [x] Color
-    - [x] Luminosity
-    - [x] Saturate
-- [x] TextMetrics
-    - [x] actualBoundingBoxAscent: i32
-    - [x] actualBoundingBoxDescent: i32
-    - [x] actualBoundingBoxLeft: i32
-    - [x] actualBoundingBoxRight: i32
-    - [x] fontBoundingBoxAscent: i32
-    - [x] fontBoundingBoxDescent: i32
-    - [x] width: i32
-- [x] enum ImageKind
-    - [x] Image
-    - [x] Pdf
-    - [x] Svg
-- [x] enum ImageMode (bitflags)
-    - [x] Image = 0
-    - [x] Mime = 1
-- [ ] struct FontOptions (builder)
-    - [ ] family: String
-    - [ ] weight: Option<String>,
-    - [ ] style: Option<String>,
-- [ ] enum BufferConfig (builder)
-    - [ ] Jpeg(JpegConfig)
-    - [ ] Png(PngConfig)
-    - [ ] Pdf(PdfConfig)
-- [x] enum PngFilters (bitflags)
-    - [x] NoFilters = 0
-    - [x] All = 1
-    - [x] None = 2
-    - [x] Sub = 3
-    - [x] Up = 4
-    - [x] Avg = 5
-    - [x] Paeth = 6
-- [ ] struct JpegConfig
-    - [ ] quality: f32 = 0.75
-    - [ ] progressive: bool = false
-    - [ ] chromaSubsampling: bool = true
-- [ ] struct PngConfig
-    - [ ] compressionLevel: u8 = 6
-    - [ ] filters: u8 = PngFilters::All
-    - [ ] palette: Option<{unknown}>
-    - [ ] backgroundIndex: i32
-    - [ ] resolution: Option<{unknown}>
-- [ ] struct PdfConfig
-    - [ ] title: Option<String>
-    - [ ] author: Option<String>
-    - [ ] subject: Option<String>
-    - [ ] keywords: Option<String>
-    - [ ] creator: Option<String>
-    - [ ] creationDate: Date
-    - [ ] modDate: Option<Date>
-- [x] enum Quality
-    - [x] Fast
-    - [x] Good
-    - [x] Best
-    - [x] Nearest
-    - [x] Bilinear
-- [x] enum TextDrawingMode
-    - [x] Path
-    - [x] Glyph
-- [x] enum AliasingMode
-    - [x] Default
-    - [x] None
-    - [x] Gray
-    - [x] Subpixel
-- [x] enum PixelFormat
-    - [x] Rgba32
-    - [x] Rgb24
-    - [x] A8
-    - [x] Rgb16_565
-    - [x] A1
-    - [x] Rgb30
-- [x] struct ContextSettings
-    - [x] alpha: bool = false
-    - [x] pixelFormat: Option<PixelFormat>
-- [ ] createCanvas()
-    - [ ] createCanvas(width: i32, height: i32) -> Canvas
-    - [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
-- [ ] createImageData()
-    - [ ] createImageData(width: i32, height: i32) -> ImageData
-    - [ ] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData
-    - [ ] createImageData(data: Uint8ClampedArray, width: i32, height: i32) -> ImageData
-    - [ ] createImageData(data: Vec<u16>, width: i32) -> ImageData
-    - [ ] createImageData(data: Vec<u16>, width: i32, height: i32) -> ImageData
-- [ ] async loadImage(url: string) -> Image
-- [ ] registerFont(path: string, opts: FontOptions)
+-   [ ] Canvas
+    -   [ ] new()
+        -   [ ] new(width: i32, height: i32)
+        -   [ ] new(width: i32, height: i32, kind: ImageKind)
+    -   [ ] toBuffer()
+        -   [ ] toBuffer(cb: fn(Option<Error>, Buffer))
+        -   [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String)
+        -   [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig)
+        -   [ ] toBuffer() -> Buffer
+        -   [ ] toBuffer(mime: String) -> Buffer
+        -   [ ] toBuffer(mime: String, config: BufferConfig) -> Buffer
+        -   [ ] mime = "image/png" (default on non-PDF, non-SVG canvases)
+        -   [ ] mime = "image/jpeg"
+        -   [ ] mime = "raw" (Unencoded BGRA data on LE, ARGB on BE, top-to-bottom)
+        -   [ ] mime = "application/pdf" (only for PDF canvases)
+        -   [ ] mime = "image/svg+xml" (only for SVG canvases)
+    -   [ ] createPNGStream()
+        -   [ ] createPNGStream() -> ReadableStream
+        -   [ ] createPNGStream(config: PngConfig) -> ReadableStream
+    -   [ ] createJPEGStream()
+        -   [ ] createJPEGStream() -> ReadableStream
+        -   [ ] createJPEGStream(config: JpegConfig) -> ReadableStream
+    -   [ ] createPDFStream()
+        -   [ ] createPDFStream() -> ReadableStream
+        -   [ ] createPDFStream(config: PdfConfig) -> ReadableStream
+    -   [ ] toDateURL()
+        -   [ ] toDataURL() -> String
+        -   [ ] toDataURL(mime: String) -> String
+        -   [ ] toDataURL(mime: String, quality: f32 /_ 0 to 1 _/) -> String
+        -   [ ] toDataURL(cb: fn(Option<Error>, String))
+        -   [ ] toDataURL(mime: String, cb: fn(Option<Error>, String))
+        -   [ ] toDataURL(mime: String, opts: BufferConfig, cb: fn(Option<Error>, String))
+        -   [ ] toDataURL(mime: String, quality: f32 /_ 0 to 1 _/, cb: fn(Option<Error>, String))
+        -   [ ] mime = "image/png"
+        -   [ ] mime = "image/jpeg"
+    -   [ ] width: i32
+    -   [ ] height: i32
+    -   [ ] stride: i32
+    -   [ ] getContext()
+        -   [ ] getContext(id: String)
+        -   [ ] getContext(id: String, attrs: ContextSettings) -> CanvasRenderingContext2D
+        -   [ ] id = "2d"
+        -   [ ] id = "webgl"
+        -   [ ] id = "webgl2"
+-   [ ] CanvasRenderingContext2D
+    -   [ ] clearRect(x: i32, y: i32, w: i32, h: i32)
+    -   [ ] fillRect(x: i32, y: i32, w: i32, h: i32)
+    -   [ ] strokeRect(x: i32, y: i32, w: i32, h: i32)
+    -   [ ] fillText()
+        -   [ ] fillText(text: String, x: i32, y: i32)
+        -   [ ] fillText(text: String, x: i32, y: i32, maxWidth: i32)
+    -   [ ] strokeText()
+        -   [ ] strokeText(text: String, x: i32, y: i32)
+        -   [ ] strokeText(text: String, x: i32, y: i32, maxWidth: i32)
+    -   [ ] measureText(text: String) -> TextMetrics
+    -   [ ] getLineDash() -> Vec<i32>
+    -   [ ] setLineDash(segments: Vec<i32>)
+    -   [ ] createLinearGradient(x0: i32, y0: i32, x1: i32, y1: i32) -> CanvasGradient
+    -   [ ] createRadialGradient(x0: i32, y0: i32, r0: i32, x1: i32, y1: i32, r1: i32) -> CanvasGradient
+    -   [ ] createPattern()
+        -   [ ] createPattern(image: Either<Canvas, Image>) -> CanvasPattern
+        -   [ ] createPattern(image: Either<Canvas, Image>, repetition: Repetition) -> CanvasPattern
+    -   [ ] beginPath()
+    -   [ ] closePath()
+    -   [ ] moveTo(x: i32, y: i32)
+    -   [ ] lineTo(x: i32, y: i32)
+    -   [ ] quadraticCurveTo(cpx: i32, cpy: i32, x: i32, y: i32)
+    -   [ ] bezierCurveTo(cp1x: i32, cp1y: i32, cp2x: i32, cp2y: i32, x: i32, y: i32)
+    -   [ ] arc()
+        -   [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32)
+        -   [ ] arc(x: i32, y: i32, radius: i32, startAngle: i32, endAngle: i32, counterClockwise: bool)
+    -   [ ] arcTo(x1: i32, y1: i32, x2: i32, y2: i32, radius: i32)
+    -   [ ] ellipse()
+        -   [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32)
+        -   [ ] ellipse(x: i32, y: i32, radiusX: i32, radiusY: i32, rotation: i32, startAngle: i32, endAngle: i32, counterclockwise: bool)
+    -   [ ] rect(x: i32, y: i32, w: i32, h: i32)
+    -   [ ] roundRect()
+        -   [ ] roundRect(x: i32, y: i32, w: i32, h: i32)
+        -   [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: i32)
+        -   [ ] roundRect(x: i32, y: i32, w: i32, h: i32, radii: [i32; 4])
+    -   [ ] fill()
+        -   [ ] fill()
+        -   [ ] fill(fillRule: CanvasFillRule)
+    -   [ ] stroke()
+    -   [ ] clip()
+        -   [ ] clip()
+        -   [ ] clip(fillRule: CanvasFillRule)
+    -   [ ] isPointInPath()
+        -   [ ] isPointInPath(x: i32, y: i32)
+        -   [ ] isPointInPath(x: i32, y: i32, fillRule: CanvasFillRule)
+    -   [ ] rotate(angle: f32)
+    -   [ ] scale(x: f32, y: f32)
+    -   [ ] translate(x: i32, y: i32)
+    -   [ ] transform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
+    -   [ ] setTransform()
+        -   [ ] setTransform()
+        -   [ ] setTransform(transform: DomMatrix)
+        -   [ ] setTransform(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32)
+    -   [ ] getTransform() -> DomMatrix
+    -   [ ] resetTransform()
+    -   [ ] drawImage()
+        -   [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32)
+        -   [ ] drawImage(image: Either<Canvas, Image>, dx: i32, dy: i32, dw: i32, dh: i32)
+        -   [ ] drawImage(image: Either<Canvas, Image>, sx: i32, sy: i32, sw: i32, sh: i32, dx: i32, dy: i32, dw: i32, dh: i32)
+    -   [ ] createImageData()
+        -   [ ] createImageData(sw: i32, sh: i32) -> ImageData
+        -   [ ] createImageData(data: ImageData) -> ImageData
+    -   [ ] getImageData(sx: i32, sy: i32, sw: i32, sh: i32) -> ImageData
+    -   [ ] putImageData()
+        -   [ ] putImageData(data: ImageData, dx: i32, dy: i32)
+        -   [ ] putImageData(data: ImageData, dx: i32, dy: i32, dirtyX: i32, dirtyY: i32, dirtyWidth: i32, dirtyHeight: i32)
+    -   [ ] save()
+    -   [ ] restore()
+    -   [ ] addPage() /_ PDF Only _/
+        -   [ ] addPage()
+        -   [ ] addPage(w: i32)
+        -   [ ] addPage(w: i32, h: i32)
+    -   [ ] patternQuality: Quality = Quality::Good
+    -   [ ] quality: Quality = Quality::Good
+    -   [ ] textDrawingMode: TextDrawingMode = TextDrawingMode::Path
+    -   [ ] antialias: AliasingMode = AliasingMode::Default
+    -   [ ] lineWidth: i32
+    -   [ ] lineCap: LineCap
+    -   [ ] lineJoin: LineJoin
+    -   [ ] miterLimit: i32
+    -   [ ] lineDashOffset: i32
+    -   [ ] font: String
+    -   [ ] textAlign: TextAlign
+    -   [ ] textBaseline: TextBaseline
+    -   [ ] fillStyle: Either3<String, CanvasGradient, CanvasPattern>
+    -   [ ] strokeStyle: Either3<String, CanvasGradient, CanvasPattern>
+    -   [ ] shadowBlur: i32
+    -   [ ] shadowColor: String
+    -   [ ] shadowOffsetX: i32
+    -   [ ] shadowOffsetY: i32
+    -   [ ] currentTransform: DomMatrix
+    -   [ ] globalAlpha: i32
+    -   [ ] globalCompositeOperation: GlobalCompositeOperation
+    -   [ ] imageSmoothingEnabled: bool
+    -   [ ] canvas: Canvas
+-   [ ] ImageData
+    -   [ ] new()
+        -   [ ] new(width: i32, height: i32)
+        -   [ ] new(data: Uint8ClampedArray, width: i32)
+        -   [ ] new(data: Uint8ClampedArray, width: i32, height: i32)
+    -   [ ] data: Uint8ClampedArray
+    -   [ ] width: i32
+    -   [ ] height: i32
+-   [ ] CanvasGradient
+    -   [] addColorStop(offset: i32, color: String)
+-   [ ] CanvasPattern
+    -   [ ] setTransform()
+        -   [ ] setTransform()
+        -   [ ] setTransform(matrix: DomMatrix)
+-   [ ] Image
+    -   [ ] src: Either<String, Buffer>
+    -   [ ] dataMode: ImageMode
+    -   [ ] width: i32
+    -   [ ] height: i32
+    -   [ ] complete: bool
+    -   [ ] naturalWidth: i32
+    -   [ ] naturalHeight: i32
+-   [ ] DomMatrix
+    -   [x] new()
+        -   [x] new(init: String)
+        -   [x] new(init: Vec<i32>)
+    -   [x] toString()
+    -   [x] multiply(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::Mul`**
+    -   [x] multiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::MulAssign`**
+    -   [ ] preMultiplySelf(other: DomMatrix) -> DomMatrix **TODO: Can someone explain why this exists?**
+    -   [x] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] rotateFromVector(x: i32, y: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] skewX(sx: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] skewXSelf(sx: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] skewY(sy: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] skewYSelf(sy: i32) -> DomMatrix **NOTE: Renamed**
+    -   [x] flipX() -> DomMatrix
+    -   [x] flipY() -> DomMatrix
+    -   [x] inverse() -> DomMatrix **NOTE: Not implementing, this is redundant.**
+    -   [x] invertSelf() -> DomMatrix **NOTE: Renamed**
+    -   [x] setMatrixValue(transformList: string) -> DomMatrix
+    -   [x] transformPoint(point: DomPoint) -> DomPoint
+    -   [x] toFloat32Array() -> Float32Array
+    -   [x] toFloat64Array() -> Float64Array
+        -   [x] is2D: bool
+        -   [x] isIdentity: bool
+        -   [x] a: i32
+        -   [x] b: i32
+        -   [x] c: i32
+        -   [x] d: i32
+        -   [x] e: i32
+        -   [x] f: i32
+        -   [x] m11: i32
+        -   [x] m12: i32
+        -   [x] m13: i32
+        -   [x] m14: i32
+        -   [x] m21: i32
+        -   [x] m22: i32
+        -   [x] m23: i32
+        -   [x] m24: i32
+        -   [x] m31: i32
+        -   [x] m32: i32
+        -   [x] m33: i32
+        -   [x] m34: i32
+        -   [x] m41: i32
+        -   [x] m42: i32
+        -   [x] m43: i32
+        -   [x] m44: i32
+        -   [ ] -   Traits:
+                -   [x] std::ops::Mul
+                -   [x] std::ops::MulAssign
+                -   [ ] From<DomMatrix>
+                -   [ ] From<Float32Array>
+                -   [ ] From<Float64Array>
+-   [x] DomPoint
+    -   [x] w: i32
+    -   [x] x: i32
+    -   [x] y: i32
+    -   [x] z: i32
+-   [x] enum FillRule
+    -   [x] EvenOdd
+    -   [x] NonZero
+-   [x] enum Repetition
+    -   [x] Repeat
+    -   [x] RepeatX
+    -   [x] RepeatY
+    -   [x] NoRepeat
+    -   [x] None
+-   [x] enum TextAlign
+    -   [x] Center
+    -   [x] End
+    -   [x] Left
+    -   [x] Right
+    -   [x] Start
+-   [x] enum TextBaseline
+    -   [x] Alphabetic
+    -   [x] Bottom
+    -   [x] Hanging
+    -   [x] Ideographic
+    -   [x] Middle
+    -   [x] Top
+-   [x] enum LineCap
+    -   [x] Butt
+    -   [x] Round
+    -   [x] Square
+-   [x] enum LineJoin
+    -   [x] Bevel
+    -   [x] Miter
+    -   [x] Round
+-   [x] enum GlobalCompositeOperation
+    -   [x] Clear
+    -   [x] Copy
+    -   [x] Destination
+    -   [x] SourceOver
+    -   [x] DestinationOver
+    -   [x] SourceIn
+    -   [x] DestinationIn
+    -   [x] SourceOut
+    -   [x] DestinationOut
+    -   [x] SourceAtop
+    -   [x] DestinationAtop
+    -   [x] Xor
+    -   [x] Lighter
+    -   [x] Normal
+    -   [x] Multiply
+    -   [x] Screen
+    -   [x] Overlay
+    -   [x] Darken
+    -   [x] Lighten
+    -   [x] ColorDodge
+    -   [x] ColorBurn
+    -   [x] HardLight
+    -   [x] SoftLight
+    -   [x] Difference
+    -   [x] Exclusion
+    -   [x] Hue
+    -   [x] Saturation
+    -   [x] Color
+    -   [x] Luminosity
+    -   [x] Saturate
+-   [x] TextMetrics
+    -   [x] actualBoundingBoxAscent: i32
+    -   [x] actualBoundingBoxDescent: i32
+    -   [x] actualBoundingBoxLeft: i32
+    -   [x] actualBoundingBoxRight: i32
+    -   [x] fontBoundingBoxAscent: i32
+    -   [x] fontBoundingBoxDescent: i32
+    -   [x] width: i32
+-   [x] enum ImageKind
+    -   [x] Image
+    -   [x] Pdf
+    -   [x] Svg
+-   [x] enum ImageMode (bitflags)
+    -   [x] Image = 0
+    -   [x] Mime = 1
+-   [ ] struct FontOptions (builder)
+    -   [ ] family: String
+    -   [ ] weight: Option<String>,
+    -   [ ] style: Option<String>,
+-   [ ] enum BufferConfig (builder)
+    -   [ ] Jpeg(JpegConfig)
+    -   [ ] Png(PngConfig)
+    -   [ ] Pdf(PdfConfig)
+-   [x] enum PngFilters (bitflags)
+    -   [x] NoFilters = 0
+    -   [x] All = 1
+    -   [x] None = 2
+    -   [x] Sub = 3
+    -   [x] Up = 4
+    -   [x] Avg = 5
+    -   [x] Paeth = 6
+-   [ ] struct JpegConfig
+    -   [ ] quality: f32 = 0.75
+    -   [ ] progressive: bool = false
+    -   [ ] chromaSubsampling: bool = true
+-   [ ] struct PngConfig
+    -   [ ] compressionLevel: u8 = 6
+    -   [ ] filters: u8 = PngFilters::All
+    -   [ ] palette: Option<{unknown}>
+    -   [ ] backgroundIndex: i32
+    -   [ ] resolution: Option<{unknown}>
+-   [ ] struct PdfConfig
+    -   [ ] title: Option<String>
+    -   [ ] author: Option<String>
+    -   [ ] subject: Option<String>
+    -   [ ] keywords: Option<String>
+    -   [ ] creator: Option<String>
+    -   [ ] creationDate: Date
+    -   [ ] modDate: Option<Date>
+-   [x] enum Quality
+    -   [x] Fast
+    -   [x] Good
+    -   [x] Best
+    -   [x] Nearest
+    -   [x] Bilinear
+-   [x] enum TextDrawingMode
+    -   [x] Path
+    -   [x] Glyph
+-   [x] enum AliasingMode
+    -   [x] Default
+    -   [x] None
+    -   [x] Gray
+    -   [x] Subpixel
+-   [x] enum PixelFormat
+    -   [x] Rgba32
+    -   [x] Rgb24
+    -   [x] A8
+    -   [x] Rgb16_565
+    -   [x] A1
+    -   [x] Rgb30
+-   [x] struct ContextSettings
+    -   [x] alpha: bool = false
+    -   [x] pixelFormat: Option<PixelFormat>
+-   [ ] createCanvas()
+    -   [ ] createCanvas(width: i32, height: i32) -> Canvas
+    -   [ ] createCanvas(width: i32, height: i32, kind: ImageKind) -> Canvas
+-   [ ] createImageData()
+    -   [ ] createImageData(width: i32, height: i32) -> ImageData
+    -   [ ] createImageData(data: Uint8ClampedArray, width: i32) -> ImageData
+    -   [ ] createImageData(data: Uint8ClampedArray, width: i32, height: i32) -> ImageData
+    -   [ ] createImageData(data: Vec<u16>, width: i32) -> ImageData
+    -   [ ] createImageData(data: Vec<u16>, width: i32, height: i32) -> ImageData
+-   [ ] async loadImage(url: string) -> Image
+-   [ ] registerFont(path: string, opts: FontOptions)

@@ -1,0 +1,7 @@
+node_modules
+pnpm-lock.yaml
+*.md
+dist
+pkg
+build
+docs

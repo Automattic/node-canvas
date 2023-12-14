@@ -1,0 +1,32 @@
+lockfileVersion: "6.0"
+
+settings:
+    autoInstallPeers: true
+    excludeLinksFromLockfile: false
+
+devDependencies:
+    "@napi-rs/cli":
+        specifier: 2.16.5
+        version: 2.16.5
+    prettier:
+        specifier: ^3.1.1
+        version: 3.1.1
+
+packages:
+    /@napi-rs/cli@2.16.5:
+        resolution:
+            {
+                integrity: sha512-mFEzwrg4IOLngGd2/P6yeqIWgwQNn59Z08n1rndu6kLDq1gg954NH9cM1O9Da0RJuybt46p43lqgSsnAY2mxqA==,
+            }
+        engines: { node: ">= 10" }
+        hasBin: true
+        dev: true
+
+    /prettier@3.1.1:
+        resolution:
+            {
+                integrity: sha512-22UbSzg8luF4UuZtzgiUOfcGM8s4tjBv6dJRT7j275NXsy2jb4aJa4NNveul5x4eqlF1wuhuR2RElK71RvmVaw==,
+            }
+        engines: { node: ">=14" }
+        hasBin: true
+        dev: true
