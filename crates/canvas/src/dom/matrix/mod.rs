@@ -85,7 +85,7 @@ impl DomMatrix {
         self.m44 = values[15];
     }
 
-    #[napi(js_name = "transformPoint")]
+    #[napi]
     pub fn transform_point(&self, point: &DomPoint) -> DomPoint {
         let DomPoint { w, x, y, z } = point;
 

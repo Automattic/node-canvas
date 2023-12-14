@@ -252,7 +252,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { LineCap, FillRule, PixelFormat, LineJoin, AliasingMode, GlobalCompositeOperation, ContextSettings, DomMatrix, DomPoint, PngFilters, ImageKind, ImageMode, Quality, Repetition, TextAlign, TextBaseline, TextDrawingMode } = nativeBinding
+const { LineCap, FillRule, PixelFormat, LineJoin, AliasingMode, GlobalCompositeOperation, ContextSettings, DomMatrix, DomPoint, ImageData, PngFilters, Image, ImageKind, ImageMode, Quality, Repetition, TextAlign, TextBaseline, TextDrawingMode } = nativeBinding
 
 module.exports.LineCap = LineCap
 module.exports.FillRule = FillRule
@@ -263,7 +263,9 @@ module.exports.GlobalCompositeOperation = GlobalCompositeOperation
 module.exports.ContextSettings = ContextSettings
 module.exports.DomMatrix = DomMatrix
 module.exports.DomPoint = DomPoint
+module.exports.ImageData = ImageData
 module.exports.PngFilters = PngFilters
+module.exports.Image = Image
 module.exports.ImageKind = ImageKind
 module.exports.ImageMode = ImageMode
 module.exports.Quality = Quality

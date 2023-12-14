@@ -4,8 +4,6 @@ use crate::canvas::format::PixelFormat;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ContextSettings {
     pub alpha: bool,
-
-    #[napi(js_name = "pixelFormat")]
     pub pixel_format: Option<PixelFormat>,
 }
 

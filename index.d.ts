@@ -190,5 +190,23 @@ export class DomPoint {
   z: number
   constructor(w?: number | undefined | null, x?: number | undefined | null, y?: number | undefined | null, z?: number | undefined | null)
 }
+export class ImageData {
+  width: number
+  height: number
+  constructor(width: number, height: number)
+  static withData(data: Uint8ClampedArray, width: number, height?: number | undefined | null): ImageData
+  get data(): Uint8ClampedArray
+  set data(data: Uint8ClampedArray)
+}
 export class PngFilters { }
+export class Image {
+  dataMode: ImageMode
+  width: number
+  height: number
+  complete: boolean
+  naturalWidth: number
+  naturalHeight: number
+  get src(): string | Buffer
+  set src(val: string | Buffer)
+}
 export class ImageMode { }

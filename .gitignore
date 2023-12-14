@@ -2,4 +2,6 @@ target
 node_modules
 pkg
 dist
-canvas.node
+*.node
+packages/*
+!packages/.gitkeep

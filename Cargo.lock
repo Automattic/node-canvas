@@ -91,6 +91,7 @@ dependencies = [
  "bitflags",
  "canvas-macros",
  "concat-idents",
+ "either",
  "lazy_static",
  "napi",
  "napi-build",
@@ -167,6 +168,15 @@ checksum = "30d2b3721e861707777e3195b0158f950ae6dc4a27e4d02ff9f67e3eb3de199e"
 dependencies = [
  "quote",
  "syn 2.0.40",
+]
+
+[[package]]
+name = "either"
+version = "1.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
