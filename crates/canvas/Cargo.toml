@@ -11,11 +11,13 @@ anyhow = "1.0.75"
 bitflags = { version = "2.4.1", features = ["serde"] }
 canvas-macros = { version = "0.0.0", path = "../macros" }
 concat-idents = "1.1.5"
+csscolorparser = { version = "0.6.2", features = ["rgb", "serde"] }
 either = { version = "1.9.0", features = ["serde"] }
 lazy_static = "1.4.0"
 napi = { version = "2.14.1", features = ["full"] }
 napi-derive = "2.14.3"
 once_cell = "1.19.0"
+raqote = { version = "0.1.0", path = "../raqote" }
 regex = "1.10.2"
 serde = { version = "1.0.193", features = ["derive"] }
 serde_json = "1.0.108"

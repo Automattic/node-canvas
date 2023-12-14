@@ -1,14 +1,13 @@
 use napi::bindgen_prelude::{Buffer, Either3};
+use raqote::DrawTarget;
 
 use crate::{
     config::{buffer::BufferConfig, png::PngConfig},
-    image::kind::ImageKind,
+    image::kind::ImageKind, context::context::CanvasRenderingContext2d,
 };
 
 #[napi]
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone)]
 pub struct Canvas {
     pub width: i32,
     pub height: i32,
@@ -16,6 +15,8 @@ pub struct Canvas {
 
     #[napi(js_name = "type")]
     pub kind: ImageKind,
+
+    pub(crate) target: DrawTarget,
 }
 
 #[napi]
@@ -27,6 +28,7 @@ impl Canvas {
             height,
             kind: kind.unwrap_or_default(),
             stride: 0,
+            target: DrawTarget::new(width, height),
         }
     }
 
@@ -39,11 +41,10 @@ impl Canvas {
     }
 
     #[napi]
-    pub fn get_context(&self, #[napi(ts_arg_type = "\"2d\" | \"webgl\" | \"webgl2\"")] id: String) {
+    pub fn get_context(&self, #[napi(ts_arg_type = "\"2d\" | \"webgl\" | \"webgl2\"")] id: String) -> CanvasRenderingContext2d {
         match id.as_str() {
-            "2d" => (),
-            "webgl" => (),
-            "webgl2" => (),
+            "2d" => CanvasRenderingContext2d::new(self),
+            "webgl" | "webgl2" => panic!("Unsupported context type!"),
 
             _ => panic!("Unknown context ID: {}", id),
         }

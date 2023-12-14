@@ -6,4 +6,4 @@ pub mod gradient;
 pub mod join;
 pub mod mode;
 pub mod operation;
-pub mod pattern;
+pub mod color;

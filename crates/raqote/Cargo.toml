@@ -1,0 +1,17 @@
+[package]
+name = "raqote"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["text", "png"]
+text = ["font-kit", "pathfinder_geometry"]
+
+[dependencies]
+euclid = "0.22.9"
+font-kit = { version = "0.12.0", optional = true }
+lyon_geom = "1.0.4"
+pathfinder_geometry = { version = "0.5.1", optional = true }
+png = { version = "0.17.10", optional = true }
+sw-composite = "0.7.16"
+typed-arena = { version = "2.0.3", path = "../typed-arena" }

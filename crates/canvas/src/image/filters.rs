@@ -1,4 +1,8 @@
-use napi::{sys::{napi_get_value_uint32, napi_env, napi_value}, bindgen_prelude::FromNapiValue, Result};
+use napi::{
+    bindgen_prelude::FromNapiValue,
+    sys::{napi_env, napi_get_value_uint32, napi_value},
+    Result,
+};
 
 bitflags! {
     #[napi]

@@ -1,0 +1,21 @@
+[package]
+name = "typed-arena"
+version = "2.0.3"
+authors = ["The typed-arena developers"]
+license = "MIT"
+description = "The arena, a fast but limited type of allocator."
+documentation = "https://docs.rs/typed-arena"
+repository = "https://github.com/thomcc/rust-typed-arena"
+categories = ["memory-management", "no-std"]
+keywords = ["arena"]
+readme = "./README.md"
+exclude = ["benchmarks"]
+autobenches = false
+
+[lib]
+name = "typed_arena"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = []

@@ -46,9 +46,9 @@
         - [ ] id = "webgl"
         - [ ] id = "webgl2"
 - [ ] CanvasRenderingContext2D
-    - [ ] clearRect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] fillRect(x: i32, y: i32, w: i32, h: i32)
-    - [ ] strokeRect(x: i32, y: i32, w: i32, h: i32)
+    - [x] clearRect(x: i32, y: i32, w: i32, h: i32)
+    - [x] fillRect(x: i32, y: i32, w: i32, h: i32)
+    - [x] strokeRect(x: i32, y: i32, w: i32, h: i32)
     - [ ] fillText()
         - [ ] fillText(text: String, x: i32, y: i32)
         - [ ] fillText(text: String, x: i32, y: i32, maxWidth: i32)
@@ -149,12 +149,12 @@
     - [x] data: Uint8ClampedArray
     - [x] width: i32
     - [x] height: i32
-- [ ] CanvasGradient
-    - [] addColorStop(offset: i32, color: String)
-- [ ] CanvasPattern
-    - [ ] setTransform()
-        - [ ] setTransform()
-        - [ ] setTransform(matrix: DomMatrix)
+- [x] CanvasGradient
+    - [x] addColorStop(offset: i32, color: String)
+- [x] CanvasPattern **NOTE: Removed, `raqote` does not support this, and there are other options.**
+    - [x] setTransform()
+        - [x] setTransform()
+        - [x] setTransform(matrix: DomMatrix)
 - [x] Image
     - [x] src: Either<String, Buffer>
     - [x] dataMode: ImageMode
