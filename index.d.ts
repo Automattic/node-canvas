@@ -86,6 +86,12 @@ export interface PngConfig {
 }
 export function createCanvas(width: number, height: number, kind?: ImageKind | undefined | null): Canvas
 export function createImageData(width: number, height?: number | undefined | null, data?: Array<number> | Uint8ClampedArray | Uint16Array | undefined | null): ImageData
+export interface DomPoint {
+  w?: number
+  x?: number
+  y?: number
+  z?: number
+}
 export const enum ImageKind {
   Image = 'Image',
   Pdf = 'Pdf',
@@ -185,28 +191,11 @@ export class CanvasRenderingContext2D {
   strokeRect(x: number, y: number, width: number, height: number): void
 }
 export class DomMatrix {
-  is2D: boolean
-  m11: number
-  m12: number
-  m13: number
-  m14: number
-  m21: number
-  m22: number
-  m23: number
-  m24: number
-  m31: number
-  m32: number
-  m33: number
-  m34: number
-  m41: number
-  m42: number
-  m43: number
-  m44: number
   translate(tx?: number | undefined | null, ty?: number | undefined | null, tz?: number | undefined | null): void
   scale3D(scale?: number | undefined | null, ox?: number | undefined | null, oy?: number | undefined | null, oz?: number | undefined | null): void
   scale(sx?: number | undefined | null, sy?: number | undefined | null, sz?: number | undefined | null, ox?: number | undefined | null, oy?: number | undefined | null, oz?: number | undefined | null): void
   rotateFromVector(x?: number | undefined | null, y?: number | undefined | null): void
-  rotate(rx?: number | undefined | null, ry?: number | undefined | null, rz?: number | undefined | null): void
+  rotate(rx: number, ry?: number | undefined | null, rz?: number | undefined | null): void
   rotateAxisAngle(x: number | undefined | null, y: number | undefined | null, z: number | undefined | null, angle: number): void
   skewX(sx?: number | undefined | null): void
   skewY(sy?: number | undefined | null): void
@@ -222,37 +211,48 @@ export class DomMatrix {
   
   
   
-  
-  
   constructor(init?: Array<number> | undefined | null)
   static fromArray(init: Array<number>): DomMatrix
   static fromString(init: string): DomMatrix
   get values(): number[]
   setValues(values: Array<number>): void
-  transformPoint(point: DomPoint): DomPoint
+  transformPoint(orig: DomPoint): DomPoint
   toFloat32Array(): Float32Array
   toFloat64Array(): Float64Array
   get isIdentity(): boolean
-  get a(): number
-  set a(newVal: number)
-  get b(): number
-  set b(newVal: number)
-  get c(): number
-  set c(newVal: number)
-  get d(): number
-  set d(newVal: number)
-  get e(): number
-  set e(newVal: number)
-  get f(): number
-  set f(newVal: number)
-}
-export type DomPoint = DOMPoint
-export class DOMPoint {
-  w: number
-  x: number
-  y: number
-  z: number
-  constructor(w?: number | undefined | null, x?: number | undefined | null, y?: number | undefined | null, z?: number | undefined | null)
+  get is2D(): boolean
+  get m11(): number
+  set m11(newVal: number)
+  get m12(): number
+  set m12(newVal: number)
+  get m13(): number
+  set m13(newVal: number)
+  get m14(): number
+  set m14(newVal: number)
+  get m21(): number
+  set m21(newVal: number)
+  get m22(): number
+  set m22(newVal: number)
+  get m23(): number
+  set m23(newVal: number)
+  get m24(): number
+  set m24(newVal: number)
+  get m31(): number
+  set m31(newVal: number)
+  get m32(): number
+  set m32(newVal: number)
+  get m33(): number
+  set m33(newVal: number)
+  get m34(): number
+  set m34(newVal: number)
+  get m41(): number
+  set m41(newVal: number)
+  get m42(): number
+  set m42(newVal: number)
+  get m43(): number
+  set m43(newVal: number)
+  get m44(): number
+  set m44(newVal: number)
 }
 export class ImageData {
   width: number
@@ -274,3 +274,6 @@ export class Image {
   set src(val: string | Buffer)
 }
 export class ImageMode { }
+
+export type DOMMatrix = DomMatrix;
+export type DOMPoint = DomPoint;

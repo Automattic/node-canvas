@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
 
+use euclid::default::{Point2D, Point3D, Transform3D};
 use napi::bindgen_prelude::{Float32Array, Float64Array};
 
 use crate::alias_property;
@@ -8,7 +9,6 @@ use super::point::DomPoint;
 
 pub mod changes;
 pub mod from;
-pub mod ops;
 pub mod parse;
 pub mod util;
 
@@ -16,26 +16,9 @@ pub const DEG_PER_RAD: f64 = 180.0 / PI;
 pub const RAD_PER_DEG: f64 = PI / 180.0;
 
 #[napi]
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct DomMatrix {
-    #[napi(js_name = "is2D")]
-    pub is_2d: bool,
-    pub m11: f64,
-    pub m12: f64,
-    pub m13: f64,
-    pub m14: f64,
-    pub m21: f64,
-    pub m22: f64,
-    pub m23: f64,
-    pub m24: f64,
-    pub m31: f64,
-    pub m32: f64,
-    pub m33: f64,
-    pub m34: f64,
-    pub m41: f64,
-    pub m42: f64,
-    pub m43: f64,
-    pub m44: f64,
+    inner: Transform3D<f64>,
 }
 
 #[napi]
@@ -45,7 +28,9 @@ impl DomMatrix {
         if let Some(init) = init {
             Self::from(init)
         } else {
-            Self::default()
+            Self {
+                inner: Transform3D::identity(),
+            }
         }
     }
 
@@ -62,41 +47,75 @@ impl DomMatrix {
     #[napi(getter)]
     pub fn values(&self) -> [f64; 16] {
         [
-            self.m11, self.m12, self.m13, self.m14, self.m21, self.m22, self.m23, self.m24,
-            self.m31, self.m32, self.m33, self.m34, self.m41, self.m42, self.m43, self.m44,
+            self.get_m11(),
+            self.get_m12(),
+            self.get_m13(),
+            self.get_m14(),
+            self.get_m21(),
+            self.get_m22(),
+            self.get_m23(),
+            self.get_m24(),
+            self.get_m31(),
+            self.get_m32(),
+            self.get_m33(),
+            self.get_m34(),
+            self.get_m41(),
+            self.get_m42(),
+            self.get_m43(),
+            self.get_m44(),
         ]
     }
 
     #[napi]
     pub fn set_values(&mut self, values: Vec<f64>) {
-        self.m11 = values[0];
-        self.m12 = values[1];
-        self.m13 = values[2];
-        self.m14 = values[3];
-        self.m21 = values[4];
-        self.m22 = values[5];
-        self.m23 = values[6];
-        self.m24 = values[7];
-        self.m31 = values[8];
-        self.m32 = values[9];
-        self.m33 = values[10];
-        self.m34 = values[11];
-        self.m41 = values[12];
-        self.m42 = values[13];
-        self.m43 = values[14];
-        self.m44 = values[15];
+        self.set_m11(values[0]);
+        self.set_m12(values[1]);
+        self.set_m13(values[2]);
+        self.set_m14(values[3]);
+        self.set_m21(values[4]);
+        self.set_m22(values[5]);
+        self.set_m23(values[6]);
+        self.set_m24(values[7]);
+        self.set_m31(values[8]);
+        self.set_m32(values[9]);
+        self.set_m33(values[10]);
+        self.set_m34(values[11]);
+        self.set_m41(values[12]);
+        self.set_m42(values[13]);
+        self.set_m43(values[14]);
+        self.set_m44(values[15]);
     }
 
     #[napi]
-    pub fn transform_point(&self, point: &DomPoint) -> DomPoint {
-        let DomPoint { w, x, y, z } = point;
+    pub fn transform_point(&self, orig: DomPoint) -> DomPoint {
+        if self.inner.is_2d()
+            && (orig.z.is_none() || orig.z == Some(0.0) || orig.z == Some(0.0))
+            && (orig.w.is_none() || orig.w == Some(1.0))
+        {
+            let point = Point2D::new(orig.x.unwrap_or(0.0), orig.y.unwrap_or(0.0));
+            let point = self.inner.transform_point2d(point).unwrap();
 
-        let x = self.m11 * x + self.m21 * y + self.m31 * z + self.m41 * w;
-        let y = self.m12 * x + self.m22 * y + self.m32 * z + self.m42 * w;
-        let z = self.m13 * x + self.m23 * y + self.m33 * z + self.m43 * w;
-        let w = self.m14 * x + self.m24 * y + self.m34 * z + self.m44 * w;
+            DomPoint {
+                x: Some(point.x),
+                y: Some(point.y),
+                z: None,
+                w: None,
+            }
+        } else {
+            let point = Point3D::new(
+                orig.x.unwrap_or(0.0),
+                orig.y.unwrap_or(0.0),
+                orig.z.unwrap_or(0.0),
+            );
+            let point = self.inner.transform_point3d(point).unwrap();
 
-        DomPoint { x, y, z, w }
+            DomPoint {
+                x: Some(point.x),
+                y: Some(point.y),
+                z: Some(point.z),
+                w: orig.w,
+            }
+        }
     }
 
     #[napi(js_name = "toFloat32Array")]
@@ -116,28 +135,31 @@ impl DomMatrix {
 
     #[napi(getter, writable = false)]
     pub fn is_identity(&self) -> bool {
-        self.m11 == 1.0
-            && self.m12 == 0.0
-            && self.m13 == 0.0
-            && self.m14 == 0.0
-            && self.m21 == 0.0
-            && self.m22 == 1.0
-            && self.m23 == 0.0
-            && self.m24 == 0.0
-            && self.m31 == 0.0
-            && self.m32 == 0.0
-            && self.m33 == 1.0
-            && self.m34 == 0.0
-            && self.m41 == 0.0
-            && self.m42 == 0.0
-            && self.m43 == 0.0
-            && self.m44 == 1.0
+        self.inner.eq(&Transform3D::identity())
+    }
+
+    #[napi(getter, js_name = "is2D")]
+    pub fn is_2d(&self) -> bool {
+        self.inner.is_2d()
     }
 }
 
-alias_property!(DomMatrix, f64, a, m11);
-alias_property!(DomMatrix, f64, b, m12);
-alias_property!(DomMatrix, f64, c, m21);
-alias_property!(DomMatrix, f64, d, m22);
-alias_property!(DomMatrix, f64, e, m41);
-alias_property!(DomMatrix, f64, f, m42);
+alias_property!(DomMatrix, f64, m11, inner.m11);
+alias_property!(DomMatrix, f64, m12, inner.m12);
+alias_property!(DomMatrix, f64, m13, inner.m13);
+alias_property!(DomMatrix, f64, m14, inner.m14);
+
+alias_property!(DomMatrix, f64, m21, inner.m21);
+alias_property!(DomMatrix, f64, m22, inner.m22);
+alias_property!(DomMatrix, f64, m23, inner.m23);
+alias_property!(DomMatrix, f64, m24, inner.m24);
+
+alias_property!(DomMatrix, f64, m31, inner.m31);
+alias_property!(DomMatrix, f64, m32, inner.m32);
+alias_property!(DomMatrix, f64, m33, inner.m33);
+alias_property!(DomMatrix, f64, m34, inner.m34);
+
+alias_property!(DomMatrix, f64, m41, inner.m41);
+alias_property!(DomMatrix, f64, m42, inner.m42);
+alias_property!(DomMatrix, f64, m43, inner.m43);
+alias_property!(DomMatrix, f64, m44, inner.m44);

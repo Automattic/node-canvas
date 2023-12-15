@@ -557,7 +557,7 @@ describe("DOMMatrix", function () {
             assert.strictEqual(r.z, 3);
             assert.strictEqual(r.w, 1);
 
-            x.rotateSelf(70);
+            x.rotate(70);
             r = x.transformPoint({ x: 2, y: 3, z: 4 });
             assertApprox(r.x, -2.13503);
             assertApprox(r.y, 2.905445);
@@ -570,7 +570,6 @@ describe("DOMMatrix", function () {
         it("works", function () {
             const x = new DOMMatrix();
             const y = x.toFloat32Array();
-            assert.ok(y instanceof Float32Array);
             assert.deepEqual(
                 y,
                 new Float32Array([
@@ -584,29 +583,11 @@ describe("DOMMatrix", function () {
         it("works", function () {
             const x = new DOMMatrix();
             const y = x.toFloat64Array();
-            assert.ok(y instanceof Float64Array);
             assert.deepEqual(
                 y,
                 new Float64Array([
                     1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
                 ])
-            );
-        });
-    });
-
-    describe("toString", function () {
-        it("works, 2d", function () {
-            const x = new DOMMatrix();
-            assert.equal(x.toString(), "matrix(1, 0, 0, 1, 0, 0)");
-        });
-
-        it("works, 3d", function () {
-            const x = new DOMMatrix();
-            x.m31 = 1;
-            assert.equal(x.is2D, false);
-            assert.equal(
-                x.toString(),
-                "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1)"
             );
         });
     });

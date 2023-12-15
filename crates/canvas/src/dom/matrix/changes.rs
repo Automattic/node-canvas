@@ -1,3 +1,7 @@
+use std::f64::consts::FRAC_PI_2;
+
+use euclid::Angle;
+
 use super::{util::multiply_matrices, DomMatrix, DEG_PER_RAD, RAD_PER_DEG};
 
 #[napi]
@@ -17,10 +21,6 @@ impl DomMatrix {
             )
             .to_vec(),
         );
-
-        if tz != 0.0 {
-            self.is_2d = false;
-        }
     }
 
     #[napi]
@@ -65,10 +65,6 @@ impl DomMatrix {
         );
 
         self.translate(Some(-ox), Some(-oy), Some(-oz));
-
-        if sz != 1.0 || oz != 0.0 {
-            self.is_2d = false;
-        }
     }
 
     #[napi]
@@ -81,66 +77,16 @@ impl DomMatrix {
             y.atan2(x) * DEG_PER_RAD
         };
 
-        self.rotate(Some(theta), None, None);
+        self.rotate(theta, None, None);
     }
 
     #[napi]
-    pub fn rotate(&mut self, mut rx: Option<f64>, mut ry: Option<f64>, mut rz: Option<f64>) {
-        if ry.is_none() && rz.is_none() {
-            rz = rx;
-            rx = Some(0.0);
-            ry = Some(0.0);
-        }
-
-        let mut rx = rx.unwrap_or(0.0);
-        let mut ry = ry.unwrap_or(0.0);
-        let mut rz = rz.unwrap_or(0.0);
-
-        if rx != 0.0 || ry != 0.0 {
-            self.is_2d = false;
-        }
-
-        rx *= RAD_PER_DEG;
-        ry *= RAD_PER_DEG;
-        rz *= RAD_PER_DEG;
-
-        let mut c = rz.cos();
-        let mut s = rz.sin();
-
-        self.set_values(
-            multiply_matrices(
-                [
-                    c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-                ],
-                self.values(),
-            )
-            .to_vec(),
-        );
-
-        c = ry.cos();
-        s = ry.sin();
-
-        self.set_values(
-            multiply_matrices(
-                [
-                    c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c, 0.0, 0.0, 0.0, 0.0, 1.0,
-                ],
-                self.values(),
-            )
-            .to_vec(),
-        );
-
-        c = rx.cos();
-        s = rx.sin();
-
-        self.set_values(
-            multiply_matrices(
-                [
-                    1.0, 0.0, 0.0, 0.0, 0.0, c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0,
-                ],
-                self.values(),
-            )
-            .to_vec(),
+    pub fn rotate(&mut self, rx: f64, ry: Option<f64>, rz: Option<f64>) {
+        self.inner = self.inner.pre_rotate(
+            rx,
+            ry.unwrap_or(0.0),
+            rz.unwrap_or(0.0),
+            Angle::radians(FRAC_PI_2),
         );
     }
 
@@ -199,10 +145,6 @@ impl DomMatrix {
             )
             .to_vec(),
         );
-
-        if x != 0.0 || y != 0.0 {
-            self.is_2d = false;
-        }
     }
 
     #[napi]
@@ -292,7 +234,6 @@ impl DomMatrix {
 
         if det == 0.0 {
             self.set_values([f64::NAN; 16].to_vec());
-            self.is_2d = false;
             return;
         }
 
@@ -368,6 +309,5 @@ impl DomMatrix {
         let temp = DomMatrix::new(Some(transform_list));
 
         self.set_values(temp.values().to_vec());
-        self.is_2d = temp.is_2d;
     }
 }
