@@ -27,7 +27,7 @@ impl ImageData {
             let size = data.len() as i32 / 4;
             size / width
         });
-        
+
         Self {
             data: data.to_vec(),
             width,

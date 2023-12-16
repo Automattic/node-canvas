@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! alias_property {
-    ($struct: ident, $type: ident, $alias: ident, $($real: tt).+) => {
+    ($struct: ident, $type: ident, $alias: ident, $($real: expr)+) => {
         concat_idents!(fn_name = get_, $alias {
             #[napi]
             #[allow(non_snake_case)]

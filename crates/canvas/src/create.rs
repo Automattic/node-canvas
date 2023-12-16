@@ -1,4 +1,4 @@
-use napi::bindgen_prelude::{Uint8ClampedArray, Uint16Array, Either3};
+use napi::bindgen_prelude::{Either3, Uint16Array, Uint8ClampedArray};
 
 use crate::{
     canvas::canvas::Canvas,

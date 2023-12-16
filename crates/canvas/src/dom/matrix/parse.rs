@@ -4,8 +4,6 @@ use regex::Regex;
 
 use crate::util::clone_into_array;
 
-use super::{util::multiply_matrices, DomMatrix};
-
 pub static TRANSFORM_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\)\s+").unwrap());
 
 pub fn parse_matrix(data: &str) -> Result<[f64; 16]> {
@@ -56,30 +54,4 @@ pub fn parse_transform(data: &str) -> Result<[f64; 16]> {
 
 pub fn parse_transform_unchecked(data: &str) -> [f64; 16] {
     parse_transform(data).unwrap()
-}
-
-#[napi]
-impl From<String> for DomMatrix {
-    fn from(init: String) -> Self {
-        if init.is_empty() {
-            Self::default()
-        } else {
-            let transforms = TRANSFORM_REGEX
-                .splitn(&init, 20)
-                .map(parse_transform_unchecked)
-                .collect::<Vec<[f64; 16]>>();
-
-            if transforms.len() == 0 {
-                Self::default()
-            } else {
-                let mut init = transforms[0];
-
-                for transform in transforms {
-                    init = multiply_matrices(init, transform);
-                }
-
-                Self::from(init)
-            }
-        }
-    }
 }
