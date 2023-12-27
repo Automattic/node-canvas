@@ -178,7 +178,7 @@ The second argument is an object with properties that resemble the CSS propertie
 > deregisterAllFonts() => void
 > ```
 
-Use deregisterAllFonts If you registered font and need to remove it, for example if you use canvas in tests.
+Use `deregisterAllFonts` to unregister all fonts that have been previously registered. This method is useful when you want to remove all registered fonts, such as when using the canvas in tests
 
 ```ts
 const { registerFont, createCanvas, deregisterAllFonts } = require('canvas')
