@@ -78,6 +78,8 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [createImageData()](#createimagedata)
 * [loadImage()](#loadimage)
 * [registerFont()](#registerfont)
+* [deregisterAllFonts()](#deregisterAllFonts)
+
 
 ### Non-standard APIs
 
@@ -169,6 +171,35 @@ ctx.fillText('Everyone hates this font :(', 250, 10)
 ```
 
 The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional and default to `'normal'`.
+
+### deregisterAllFonts()
+
+> ```ts
+> deregisterAllFonts() => void
+> ```
+
+Use deregisterAllFonts If you registered font and need to remove it, for example if you use canvas in tests.
+
+```ts
+const { registerFont, createCanvas, deregisterAllFonts } = require('canvas')
+
+describe('text rendering', () => {
+    afterEach(() => {
+        deregisterAllFonts();
+    })
+    it('should render text with Comic Sans', () => {
+        registerFont('comicsans.ttf', { family: 'Comic Sans' })
+
+        const canvas = createCanvas(500, 500)
+        const ctx = canvas.getContext('2d')
+        
+        ctx.font = '12px "Comic Sans"'
+        ctx.fillText('Everyone loves this font :)', 250, 10)
+        
+        // assertScreenshot()
+    })
+})
+```
 
 ### Image#src
 
