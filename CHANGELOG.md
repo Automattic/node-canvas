@@ -10,7 +10,6 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
-* fix the wrong type of setTransform
 
 3.0.0
 ==================
@@ -34,6 +33,7 @@ This release notably changes to using N-API. 🎉
 * Fix a case of use-after-free. (#2229)
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
 * Fix a potential memory leak. (#2229)
+* Fix the wrong type of setTransform
 
 2.11.2
 ==================
