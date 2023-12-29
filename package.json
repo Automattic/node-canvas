@@ -32,15 +32,8 @@
     "test-server": "node test/server.js",
     "generate-wpt": "node ./test/wpt/generate.js",
     "test-wpt": "mocha test/wpt/generated/*.js",
-    "install": "node-pre-gyp install --fallback-to-build --update-binary",
+    "install": "prebuild-install -r napi || node-gyp rebuild",
     "tsd": "tsd"
-  },
-  "binary": {
-    "module_name": "canvas",
-    "module_path": "build/Release",
-    "host": "https://github.com/Automattic/node-canvas/releases/download/",
-    "remote_path": "v{version}",
-    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{libc}-{arch}.tar.gz"
   },
   "files": [
     "binding.gyp",
@@ -52,8 +45,8 @@
     "util/"
   ],
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.0",
     "node-addon-api": "^7.0.0",
+    "prebuild-install": "^7.1.1",
     "simple-get": "^3.0.3"
   },
   "devDependencies": {

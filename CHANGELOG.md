@@ -20,6 +20,7 @@ This release notably changes to using N-API. 🎉
 * Dropped support for Node.js 16.x and below.
 ### Changed
 * Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
+* Change from node-pre-gyp to prebuild-install
 * Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
 * Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
 * Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
