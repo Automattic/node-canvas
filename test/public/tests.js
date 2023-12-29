@@ -2752,3 +2752,63 @@ tests['transformed drawimage'] = function (ctx) {
   ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
   ctx.drawImage(ctx.canvas, 0, 0)
 }
+
+tests['clipped image'] = function(ctx, done) {
+  var globalOffset = 0
+  var size = 95
+  var x = size + 10
+  var y = -size
+  var img1 = new Image()
+  img1.onload = function () {
+    ctx.rotate(1.5708)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x + size * Math.cos(0), y + size * Math.sin(0));
+    for (side = 0; side < 7; side++) {
+      ctx.lineTo(x + size * Math.cos(side * 2 * Math.PI / 6), y + size * Math.sin(side * 2 * Math.PI / 6));
+    }
+
+    ctx.fillStyle = "#ffffff"
+    ctx.fill()
+    ctx.clip()
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    ctx.shadowBlur = 10
+    ctx.shadowColor = 'rgba(30,30,30,1)'
+    ctx.rotate(-1.5708)
+    ctx.drawImage(img1, 0, x - size, size * 2, size * 2, 0, 0, size * 2 + 25, size * 2 + 15)
+    ctx.restore()
+
+    ctx.globalCompositeOperation = 'xor'
+
+    ctx.beginPath()
+    for (side = 0; side < 7; side++) {
+      ctx.lineTo(x + size * Math.cos(side * 2 * Math.PI / 6), y + size * Math.sin(side * 2 * Math.PI / 6))
+    }
+    ctx.stroke()
+    ctx.globalCompositeOperation = 'destination-atop'
+    done()
+  }
+  img1.src = imageSrc('clock.png')
+}
+
+tests['gradient with low opacity'] = function(ctx) {
+  function rotate(x, y, a, ctx) {
+    ctx.resetTransform()
+    var cos = Math.cos(a)
+    var sin = Math.sin(a)
+    ctx.transform(cos, sin, -sin, cos, x, y)
+  }
+
+  for (let i = 0; i < 100; i++) {
+    // shifts coordinates and rotates
+    rotate(0 + i * 2, 0, 1, ctx)
+
+    let color = ctx.createLinearGradient(0, 0, 200, 200)
+    ctx.globalAlpha = 0.1
+    color.addColorStop(0, 'rgba(244, 0, 0, 0.2)')
+    color.addColorStop(1, 'rgba(9, 200, 0, 0.2)')
+    ctx.fillStyle = color
+    ctx.fillRect(0, 0, 200, 200)
+  }
+}
