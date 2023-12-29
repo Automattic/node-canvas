@@ -23,7 +23,9 @@
       'defines': [
         'HAVE_GIF',
         'HAVE_JPEG',
-        'HAVE_RSVG'
+        'HAVE_RSVG',
+        'NAPI_DISABLE_CPP_EXCEPTIONS',
+        'NODE_ADDON_API_ENABLE_MAYBE'
       ],
       'libraries': [
         '<!@(pkg-config pixman-1 --libs)',
@@ -36,7 +38,7 @@
         '-lgif'
       ],
       'include_dirs': [
-        '<!(node -e "require(\'nan\')")',
+        '<!(node -p "require(\'node-addon-api\').include_dir")',
         '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)',

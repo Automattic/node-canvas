@@ -26,7 +26,9 @@
         'HAVE_RSVG',
         'HAVE_BOOLEAN', # or jmorecfg.h tries to define it
         '_USE_MATH_DEFINES', # for M_PI
-        'NOMINMAX' # allow std::min/max to work
+        'NOMINMAX', # allow std::min/max to work
+        'NAPI_DISABLE_CPP_EXCEPTIONS',
+        'NODE_ADDON_API_ENABLE_MAYBE'
       ],
       'libraries': [
         'D:/a/_temp/msys64/ucrt64/lib/libcairo-2.lib',
@@ -42,7 +44,7 @@
         'D:/a/_temp/msys64/ucrt64/lib/librsvg-2-2.lib'
       ],
       'include_dirs': [
-        '<!(node -e "require(\'nan\')")',
+        '<!(node -p "require(\'node-addon-api\').include_dir")',
         'D:/a/_temp/msys64/ucrt64/include',
         'D:/a/_temp/msys64/ucrt64/include/harfbuzz',
         'D:/a/_temp/msys64/ucrt64/include/pango-1.0',
