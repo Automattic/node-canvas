@@ -117,6 +117,7 @@ dependencies = [
  "concat-idents",
  "csscolorparser",
  "either",
+ "font-kit",
  "lazy_static",
  "napi",
  "napi-build",

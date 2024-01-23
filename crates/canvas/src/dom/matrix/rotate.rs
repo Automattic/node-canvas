@@ -1,3 +1,5 @@
+use crate::fix_zero;
+
 use super::{DomMatrix, DEG_TO_RAD, PI_360};
 
 impl DomMatrix {
@@ -15,8 +17,6 @@ impl DomMatrix {
             ry = 0.0;
         }
 
-        let mut tmp = Self::identity();
-
         let rad_x = rx * DEG_TO_RAD;
         let rad_y = ry * DEG_TO_RAD;
         let rad_z = rz * DEG_TO_RAD;
@@ -28,22 +28,20 @@ impl DomMatrix {
         let cos_z = rad_z.cos();
         let sin_z = -rad_z.sin();
 
-        let m11 = cos_y * cos_z;
-        let m12 = -cos_y * sin_z;
-        let m21 = sin_x * sin_y * cos_z + cos_x * sin_z;
-        let m22 = cos_x * cos_z - sin_x * sin_y * sin_z;
+        let mut tmp = Self::identity();
 
-        tmp.m11 = m11;
-        tmp.m12 = m12;
-        tmp.m13 = sin_y;
-        tmp.m21 = m21;
-        tmp.m22 = m22;
-        tmp.m23 = -sin_x * cos_y;
-        tmp.m31 = sin_x * sin_z - cos_x * sin_y * cos_z;
-        tmp.m32 = sin_x * cos_z + cos_x * sin_y * sin_z;
-        tmp.m33 = cos_x * cos_y;
+        tmp.m11 = fix_zero!(cos_y * cos_z);
+        tmp.m12 = fix_zero!(-cos_y * sin_z);
+        tmp.m13 = fix_zero!(sin_y);
+        tmp.m21 = fix_zero!(sin_x * sin_y * cos_z + cos_x * sin_z);
+        tmp.m22 = fix_zero!(cos_x * cos_z - sin_x * sin_y * sin_z);
+        tmp.m23 = fix_zero!(-sin_x * cos_y);
+        tmp.m31 = fix_zero!(sin_x * sin_z - cos_x * sin_y * cos_z);
+        tmp.m32 = fix_zero!(sin_x * cos_z + cos_x * sin_y * sin_z);
+        tmp.m33 = fix_zero!(cos_x * cos_y);
 
-        self.multiply_self(tmp)
+        *self *= tmp;
+        *self
     }
 
     pub fn rotate_axis_angle(&self, x: f64, y: f64, z: f64, alpha: f64) -> Self {

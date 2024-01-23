@@ -1,4 +1,4 @@
-#![allow(dropping_references)]
+#![allow(dropping_references, dead_code)]
 
 use super::*;
 use std::cell::Cell;

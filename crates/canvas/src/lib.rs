@@ -22,3 +22,6 @@ pub mod format;
 pub mod image;
 pub mod text;
 pub mod util;
+
+#[cfg(test)]
+pub mod test;
