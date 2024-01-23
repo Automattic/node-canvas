@@ -177,12 +177,12 @@
 	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
 	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
 	- [ ] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] rotateFromVector(x: i32, y: i32) -> DomMatrix
-	- [ ] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
-	- [ ] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
-	- [ ] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
-	- [ ] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
-	- [ ] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [x] rotateFromVector(x: i32, y: i32) -> DomMatrix
+	- [x] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
+	- [x] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [x] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [x] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [x] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
 	- [ ] skewX(sx: i32) -> DomMatrix
 	- [ ] skewXSelf(sx: i32) -> DomMatrix
 	- [ ] skewY(sy: i32) -> DomMatrix
