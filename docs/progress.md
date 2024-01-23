@@ -171,32 +171,32 @@
     - [x] multiply(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::Mul`**
 	- [x] multiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::MulAssign`**
 	- [x] preMultiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Removed, this is redundant.**
-	- [x] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] rotateFromVector(x: i32, y: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] skewX(sx: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] skewXSelf(sx: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] skewY(sy: i32) -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] skewYSelf(sy: i32) -> DomMatrix **NOTE: Renamed**
-	- [x] flipX() -> DomMatrix
-	- [x] flipY() -> DomMatrix
-	- [x] inverse() -> DomMatrix **NOTE: Not implementing, this is redundant.**
-	- [x] invertSelf() -> DomMatrix **NOTE: Renamed**
+	- [ ] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [ ] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [ ] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [ ] rotateFromVector(x: i32, y: i32) -> DomMatrix
+	- [ ] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
+	- [ ] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [ ] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
+	- [ ] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [ ] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
+	- [ ] skewX(sx: i32) -> DomMatrix
+	- [ ] skewXSelf(sx: i32) -> DomMatrix
+	- [ ] skewY(sy: i32) -> DomMatrix
+	- [ ] skewYSelf(sy: i32) -> DomMatrix
+	- [ ] flipX() -> DomMatrix
+	- [ ] flipY() -> DomMatrix
+	- [ ] inverse() -> DomMatrix
+	- [ ] invertSelf() -> DomMatrix
 	- [x] setMatrixValue(transformList: string) -> DomMatrix
 	- [x] transformPoint(point: DomPoint) -> DomPoint
 	- [x] toFloat32Array() -> Float32Array
 	- [x] toFloat64Array() -> Float64Array
-    - [x] is2D: bool
-    - [x] isIdentity: bool
+    - [x] is2D: bool (READ ONLY)
+    - [x] isIdentity: bool (READ ONLY)
     - [x] a: i32
     - [x] b: i32
     - [x] c: i32

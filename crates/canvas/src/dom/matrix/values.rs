@@ -9,7 +9,7 @@ impl DomMatrix {
     }
 
     pub fn set_values(&mut self, values: Vec<f64>) -> Self {
-        if values.len() == 6 {
+        if values.len() == 16 {
             self.m11 = values[0];
             self.m12 = values[1];
             self.m13 = values[2];
@@ -26,13 +26,13 @@ impl DomMatrix {
             self.m42 = values[13];
             self.m43 = values[14];
             self.m44 = values[15];
-        } else if values.len() == 16 {
+        } else if values.len() == 6 {
             self.m11 = values[0];
             self.m12 = values[1];
             self.m21 = values[2];
             self.m22 = values[3];
-            self.m31 = values[4];
-            self.m22 = values[5];
+            self.m41 = values[4];
+            self.m42 = values[5];
         } else {
             panic!("Values must be either 6 or 16 elements long!");
         }

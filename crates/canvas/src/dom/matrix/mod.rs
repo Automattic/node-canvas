@@ -44,7 +44,9 @@ pub struct DomMatrix {
     pub m44: f64,
 }
 
+// #[napi]
 impl DomMatrix {
+    // #[napi(constructor)]
     pub fn new(init: Option<Vec<f64>>) -> Self {
         if let Some(init) = init {
             Self::from(init)
@@ -74,10 +76,12 @@ impl DomMatrix {
         }
     }
 
+    // #[napi(getter)]
     pub fn is_identity(&self) -> bool {
         self.values().eq(&Self::identity().values())
     }
 
+    // #[napi(getter)]
     pub fn is_2d(&self) -> bool {
         self.m31 == 0.0
             && self.m32 == 0.0

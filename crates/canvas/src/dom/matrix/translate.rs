@@ -1,3 +1,5 @@
+use crate::fix_zero;
+
 use super::DomMatrix;
 
 impl DomMatrix {
@@ -10,10 +12,12 @@ impl DomMatrix {
         let z = z.unwrap_or(0.0);
         let mut tmp = Self::identity();
 
-        tmp.m41 = x;
-        tmp.m42 = y;
-        tmp.m43 = z;
+        tmp.m41 = fix_zero!(x);
+        tmp.m42 = fix_zero!(y);
+        tmp.m43 = fix_zero!(z);
 
-        self.multiply_self(tmp)
+        // Apparently MulAssign breaks this...?
+        *self = tmp * *self;
+        *self
     }
 }

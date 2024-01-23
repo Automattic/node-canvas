@@ -40,7 +40,7 @@ impl DomMatrix {
         tmp.m32 = fix_zero!(sin_x * cos_z + cos_x * sin_y * sin_z);
         tmp.m33 = fix_zero!(cos_x * cos_y);
 
-        *self *= tmp;
+        *self = tmp * *self;
         *self
     }
 
