@@ -1,4 +1,6 @@
 pub mod rotate;
+pub mod rotate_vec;
+pub mod rotate_axis;
 pub mod transform;
 pub mod translate;
 

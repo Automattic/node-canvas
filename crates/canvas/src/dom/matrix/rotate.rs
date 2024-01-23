@@ -1,6 +1,6 @@
 use crate::fix_zero;
 
-use super::{DomMatrix, DEG_TO_RAD, PI_360};
+use super::{DomMatrix, DEG_TO_RAD, PI_360, RAD_TO_DEG};
 
 impl DomMatrix {
     pub fn rotate(&self, rx: f64, ry: Option<f64>, rz: Option<f64>) -> Self {
@@ -89,5 +89,20 @@ impl DomMatrix {
         tmp.m33 = 1.0 - 2.0 * (x2 + y2) * sin_a2;
 
         self.multiply_self(tmp)
+    }
+
+    pub fn rotate_from_vector(&self, x: Option<f64>, y: Option<f64>) -> Self {
+        self.clone().rotate_from_vector_self(x, y)
+    }
+
+    pub fn rotate_from_vector_self(&mut self, x: Option<f64>, y: Option<f64>) -> Self {
+        let x = x.unwrap_or(0.0);
+        let y = y.unwrap_or(0.0);
+
+        if x == 0.0 && y == 0.0 {
+            self.rotate_self(0.0, None, None)
+        } else {
+            self.rotate_self(y.atan2(x) * RAD_TO_DEG, None, None)
+        }
     }
 }
