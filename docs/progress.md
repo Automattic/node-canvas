@@ -171,8 +171,8 @@
     - [x] multiply(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::Mul`**
 	- [x] multiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::MulAssign`**
 	- [x] preMultiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Removed, this is redundant.**
-	- [ ] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
-	- [ ] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [x] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
+	- [x] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
 	- [ ] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
 	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
 	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
