@@ -49,10 +49,6 @@ impl DomMatrix {
     }
 
     pub fn rotate_axis_angle_self(&mut self, x: f64, y: f64, z: f64, alpha: f64) -> Self {
-        if [x, y, z, alpha].iter().any(|v| v.abs().is_nan()) {
-            panic!("Values cannot be NaN!");
-        }
-
         let mut tmp = Self::identity();
         let len = (x * x + y * y + z * z).sqrt();
 
@@ -73,22 +69,18 @@ impl DomMatrix {
         let y2 = y * y;
         let z2 = z * z;
 
-        let m11 = 1.0 - 2.0 * (y2 + z2) * sin_a2;
-        let m12 = 2.0 * (x * y * sin_a2 + z * sin_a * cos_a);
-        let m21 = 2.0 * (y * x * sin_a2 - z * sin_a * cos_a);
-        let m22 = 1.0 - 2.0 * (z2 + x2) * sin_a2;
-
-        tmp.m11 = m11;
-        tmp.m12 = m12;
+        tmp.m11 = 1.0 - 2.0 * (y2 + z2) * sin_a2;
+        tmp.m12 = 2.0 * (x * y * sin_a2 + z * sin_a * cos_a);
         tmp.m13 = 2.0 * (x * z * sin_a2 - y * sin_a * cos_a);
-        tmp.m21 = m21;
-        tmp.m22 = m22;
+        tmp.m21 = 2.0 * (y * x * sin_a2 - z * sin_a * cos_a);
+        tmp.m22 = 1.0 - 2.0 * (z2 + x2) * sin_a2;
         tmp.m23 = 2.0 * (y * z * sin_a2 + x * sin_a * cos_a);
         tmp.m31 = 2.0 * (z * x * sin_a2 + y * sin_a * cos_a);
         tmp.m32 = 2.0 * (z * y * sin_a2 - x * sin_a * cos_a);
         tmp.m33 = 1.0 - 2.0 * (x2 + y2) * sin_a2;
 
-        self.multiply_self(tmp)
+        *self = tmp * *self;
+        *self
     }
 
     pub fn rotate_from_vector(&self, x: Option<f64>, y: Option<f64>) -> Self {
