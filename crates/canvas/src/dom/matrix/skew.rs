@@ -40,6 +40,7 @@ impl DomMatrix {
             tmp.m12 = tan_y;
         }
 
-        self.multiply_self(tmp)
+        *self = tmp * *self;
+        *self
     }
 }

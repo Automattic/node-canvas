@@ -183,10 +183,10 @@
 	- [x] rotateSelf(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
 	- [x] rotateAxisAngle(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
 	- [x] rotateAxisAngleSelf(x: i32, y: i32, z: i32, angle: i32) -> DomMatrix
-	- [ ] skewX(sx: i32) -> DomMatrix
-	- [ ] skewXSelf(sx: i32) -> DomMatrix
-	- [ ] skewY(sy: i32) -> DomMatrix
-	- [ ] skewYSelf(sy: i32) -> DomMatrix
+	- [x] skewX(sx: i32) -> DomMatrix
+	- [x] skewXSelf(sx: i32) -> DomMatrix
+	- [x] skewY(sy: i32) -> DomMatrix
+	- [x] skewYSelf(sy: i32) -> DomMatrix
 	- [ ] flipX() -> DomMatrix
 	- [ ] flipY() -> DomMatrix
 	- [ ] inverse() -> DomMatrix
