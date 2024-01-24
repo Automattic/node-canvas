@@ -3,11 +3,20 @@ use std::ops::{Mul, MulAssign};
 use crate::{dom::matrix::DomMatrix, fix_zero};
 
 impl DomMatrix {
-    pub fn multiply(&self, other: DomMatrix) -> DomMatrix {
+    pub fn multiply(&self, other: Self) -> Self {
         self.clone().multiply_self(other)
     }
 
-    pub fn multiply_self(&mut self, other: DomMatrix) -> DomMatrix {
+    pub fn pre_multiply(&self, other: Self) -> Self {
+        self.clone().pre_multiply_self(other)
+    }
+
+    pub fn pre_multiply_self(&mut self, mut other: Self) -> Self {
+        *self = other.multiply_self(*self);
+        *self
+    }
+
+    pub fn multiply_self(&mut self, other: Self) -> Self {
         let m11 = self.m11 * other.m11
             + self.m12 * other.m21
             + self.m13 * other.m31

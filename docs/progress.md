@@ -168,15 +168,15 @@
         - [x] new(init: String)
         - [x] new(init: Vec<i32>)
     - [x] toString()
-    - [x] multiply(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::Mul`**
-	- [x] multiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Implemented with `std::ops::MulAssign`**
-	- [x] preMultiplySelf(other: DomMatrix) -> DomMatrix **NOTE: Removed, this is redundant.**
+    - [x] multiply(other: DomMatrix) -> DomMatrix
+	- [x] multiplySelf(other: DomMatrix) -> DomMatrix
+	- [x] preMultiplySelf(other: DomMatrix) -> DomMatrix
 	- [x] translate(tx: i32, ty: i32, tz: i32) -> DomMatrix
 	- [x] translateSelf(tx: i32, ty: i32, tz: i32) -> DomMatrix
-	- [ ] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
-	- [ ] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [x] scale(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [x] scale3d(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [x] scale3dSelf(scale: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
+	- [x] scaleSelf(scaleX: i32, scaleY: i32, scaleZ: i32, originX: i32, originY: i32, originZ: i32) -> DomMatrix
 	- [x] rotateFromVector(x: i32, y: i32) -> DomMatrix
 	- [x] rotateFromVectorSelf(x: i32, y: i32) -> DomMatrix
 	- [x] rotate(rotX: i32, rotY: i32, rotZ: i32) -> DomMatrix
