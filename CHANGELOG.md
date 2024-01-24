@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Updated simple-get to 4.0.1.
 ### Added
 ### Fixed
 
