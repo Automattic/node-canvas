@@ -35,7 +35,7 @@ pub fn rotate_vec_works_zeros() {
 #[test]
 pub fn rotate_vec_works() {
     let mat = DomMatrix::new(Some(A_VALS.to_vec())).rotate_from_vector(Some(4.0), Some(2.0));
-    
+
     assert_approx_eq!(mat.m11, 3.5777087);
     assert_approx_eq!(mat.m12, 5.8137767);
     assert_approx_eq!(mat.m13, 3.5777087);

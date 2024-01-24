@@ -87,7 +87,7 @@ impl DomMatrix {
             + self.m42 * other.m24
             + self.m43 * other.m34
             + self.m44 * other.m44;
-        
+
         self.m11 = fix_zero!(m11);
         self.m12 = fix_zero!(m12);
         self.m13 = fix_zero!(m13);

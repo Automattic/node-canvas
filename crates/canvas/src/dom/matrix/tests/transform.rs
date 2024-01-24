@@ -1,4 +1,7 @@
-use crate::{assert_approx_eq, dom::{matrix::DomMatrix, point::DomPoint}};
+use crate::{
+    assert_approx_eq,
+    dom::{matrix::DomMatrix, point::DomPoint},
+};
 
 #[test]
 pub fn test_transform_point() {

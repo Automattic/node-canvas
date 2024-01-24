@@ -55,6 +55,10 @@ macro_rules! alias_property_borrow {
 #[macro_export]
 macro_rules! fix_zero {
     ($val: expr) => {
-        if $val == 0.0 || $val == -0.0 { 0.0 } else { $val }
-    }
+        if $val == 0.0 || $val == -0.0 {
+            0.0
+        } else {
+            $val
+        }
+    };
 }

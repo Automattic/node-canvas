@@ -55,6 +55,10 @@ impl DomMatrix {
         }
     }
 
+    pub fn blank() -> Self {
+        Self::default()
+    }
+
     pub fn identity() -> Self {
         Self {
             m11: 1.0,
