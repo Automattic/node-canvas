@@ -187,10 +187,10 @@
 	- [x] skewXSelf(sx: i32) -> DomMatrix
 	- [x] skewY(sy: i32) -> DomMatrix
 	- [x] skewYSelf(sy: i32) -> DomMatrix
-	- [ ] flipX() -> DomMatrix
-	- [ ] flipY() -> DomMatrix
-	- [ ] inverse() -> DomMatrix
-	- [ ] invertSelf() -> DomMatrix
+	- [x] flipX() -> DomMatrix
+	- [x] flipY() -> DomMatrix
+	- [x] inverse() -> DomMatrix
+	- [x] invertSelf() -> DomMatrix
 	- [x] setMatrixValue(transformList: string) -> DomMatrix
 	- [x] transformPoint(point: DomPoint) -> DomPoint
 	- [x] toFloat32Array() -> Float32Array
