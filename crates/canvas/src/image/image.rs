@@ -3,7 +3,7 @@ use napi::bindgen_prelude::Buffer;
 
 use super::mode::ImageMode;
 
-#[napi]
+#[conditional_napi]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Image {
     src: Either<String, Vec<u8>>,
@@ -16,9 +16,9 @@ pub struct Image {
     pub natural_height: i32,
 }
 
-#[napi]
+#[conditional_napi]
 impl Image {
-    #[napi(getter)]
+    #[cfg_attr(feature = "napi", napi(getter))]
     pub fn get_src(&self) -> napi::Either<String, Buffer> {
         match self.clone().src {
             Either::Left(val) => napi::Either::A(val),
@@ -26,7 +26,7 @@ impl Image {
         }
     }
 
-    #[napi(setter)]
+    #[cfg_attr(feature = "napi", napi(setter))]
     pub fn set_src(&mut self, val: napi::Either<String, Buffer>) {
         match val {
             napi::Either::A(val) => self.src = Either::Left(val),

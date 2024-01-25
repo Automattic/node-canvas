@@ -1,6 +1,6 @@
 use crate::image::filters::PngFilters;
 
-#[napi(object)]
+#[conditional_napi(object)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct PngConfig {
     pub compression_level: u8,
@@ -10,7 +10,7 @@ pub struct PngConfig {
     pub resolution: Option<u32>,
 }
 
-#[napi]
+#[conditional_napi]
 impl Default for PngConfig {
     fn default() -> Self {
         Self {

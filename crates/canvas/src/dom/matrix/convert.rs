@@ -64,7 +64,7 @@ impl From<String> for DomMatrix {
                 .map(parse_transform_unchecked)
                 .collect::<Vec<[f64; 16]>>();
 
-            if transforms.len() == 0 {
+            if transforms.is_empty() {
                 Self::default()
             } else {
                 let mut init = DomMatrix::from(transforms[0]);
@@ -73,7 +73,7 @@ impl From<String> for DomMatrix {
                     init.multiply_self(DomMatrix::from(transform));
                 }
 
-                Self::from(init)
+                init
             }
         }
     }

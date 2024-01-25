@@ -1,4 +1,4 @@
-#[napi(object)]
+#[conditional_napi(object)]
 #[derive(Debug, Clone, PartialEq, PartialOrd, Default, Serialize, Deserialize)]
 pub struct PdfConfig {
     pub title: Option<String>,

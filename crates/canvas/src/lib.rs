@@ -1,3 +1,5 @@
+#![allow(clippy::module_inception)]
+
 #[macro_use]
 extern crate anyhow;
 
@@ -11,7 +13,7 @@ extern crate serde;
 extern crate bitflags;
 
 #[macro_use]
-extern crate napi_derive;
+extern crate canvas_macros;
 
 pub mod canvas;
 pub mod config;

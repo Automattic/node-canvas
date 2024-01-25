@@ -1,6 +1,14 @@
 use std::{convert::AsMut, ops::Mul};
 
+use napi::bindgen_prelude::Either3;
+
+use crate::config::{jpeg::JpegConfig, pdf::PdfConfig, png::PngConfig};
+
+pub mod expose;
 pub mod macros;
+
+pub type StringOption = Option<String>;
+pub type BufferConfig = Option<Either3<PngConfig, JpegConfig, PdfConfig>>;
 
 /// See https://stackoverflow.com/a/37679442
 pub fn clone_into_array<A, T>(slice: &[T]) -> A

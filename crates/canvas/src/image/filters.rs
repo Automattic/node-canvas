@@ -5,7 +5,7 @@ use napi::{
 };
 
 bitflags! {
-    #[napi]
+    #[conditional_napi]
     #[repr(transparent)]
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
     pub struct PngFilters: u32 {
@@ -21,7 +21,7 @@ bitflags! {
 
 impl FromNapiValue for PngFilters {
     unsafe fn from_napi_value(env: napi_env, napi_val: napi_value) -> Result<Self> {
-        let mut ret = 0 as u32;
+        let mut ret = 0;
 
         napi_get_value_uint32(env, napi_val, &mut ret);
 

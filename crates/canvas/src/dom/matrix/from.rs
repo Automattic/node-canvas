@@ -9,6 +9,7 @@ impl DomMatrix {
         Self::from(init)
     }
 
+    #[allow(clippy::clone_on_copy)]
     pub fn from_matrix(other: DomMatrix) -> Self {
         other.clone()
     }

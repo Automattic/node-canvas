@@ -1,20 +1,20 @@
 use csscolorparser::parse;
 use raqote::{Color, GradientStop};
 
-#[napi]
+#[conditional_napi]
 #[derive(Debug, Clone, Default)]
 pub struct CanvasGradient {
     stops: Vec<GradientStop>,
 }
 
-#[napi]
+#[conditional_napi]
 impl CanvasGradient {
-    #[napi(constructor)]
+    #[cfg_attr(feature = "napi", napi(constructor))]
     pub fn new() -> Self {
         Self::default()
     }
 
-    #[napi]
+    #[cfg_attr(feature = "napi", napi)]
     pub fn add_color_stop(&mut self, offset: f64, color: String) {
         let offset = offset as f32;
         let [r, g, b, a] = parse(&color).unwrap().to_rgba8();

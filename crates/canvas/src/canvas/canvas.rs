@@ -4,36 +4,33 @@ use raqote::DrawTarget;
 use crate::{
     config::{jpeg::JpegConfig, pdf::PdfConfig, png::PngConfig},
     context::context::CanvasRenderingContext2d,
+    expose_napi,
     image::kind::ImageKind,
 };
 
-#[napi]
+#[conditional_napi]
 #[derive(Debug, Clone)]
 pub struct Canvas {
     pub width: i32,
     pub height: i32,
     pub stride: i32,
-
-    #[napi(js_name = "type")]
-    pub kind: ImageKind,
-
+    pub r#type: ImageKind,
     pub(crate) target: DrawTarget,
 }
 
-#[napi]
+#[conditional_napi]
 impl Canvas {
-    #[napi(constructor)]
+    #[cfg_attr(feature = "napi", napi(constructor))]
     pub fn new(width: i32, height: i32, kind: Option<ImageKind>) -> Self {
         Self {
             width,
             height,
-            kind: kind.unwrap_or_default(),
+            r#type: kind.unwrap_or_default(),
             stride: 0,
             target: DrawTarget::new(width, height),
         }
     }
 
-    #[napi]
     pub fn to_buffer(
         &self,
         mime: Option<String>,
@@ -46,11 +43,7 @@ impl Canvas {
         Buffer::from(vec![])
     }
 
-    #[napi]
-    pub fn get_context(
-        &self,
-        #[napi(ts_arg_type = "\"2d\" | \"webgl\" | \"webgl2\"")] id: String,
-    ) -> CanvasRenderingContext2d {
+    pub fn get_context(&self, id: String) -> CanvasRenderingContext2d {
         match id.as_str() {
             "2d" => CanvasRenderingContext2d::new(self),
             "webgl" | "webgl2" => panic!("Unsupported context type!"),
@@ -59,3 +52,6 @@ impl Canvas {
         }
     }
 }
+
+expose_napi!(Canvas, get_context, getContext, (&self, id: String) -> CanvasRenderingContext2d);
+// expose_napi!(Canvas, to_buffer, toBuffer, (&self, mime: StringOption, config: BufferConfig) -> Buffer);

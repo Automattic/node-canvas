@@ -14,7 +14,7 @@ use crate::{
 
 pub const DEFAULT_COLOR: &str = "black";
 
-#[napi]
+#[conditional_napi]
 #[derive(Debug, Clone)]
 pub struct CanvasRenderingContext2d {
     pub pattern_quality: Quality,
@@ -44,9 +44,9 @@ pub struct CanvasRenderingContext2d {
     pub(crate) target: DrawTarget,
 }
 
-#[napi]
+#[conditional_napi]
 impl CanvasRenderingContext2d {
-    #[napi(constructor)]
+    #[cfg_attr(feature = "napi", napi(constructor))]
     pub fn new(canvas: &Canvas) -> Self {
         Self {
             pattern_quality: Default::default(),
@@ -109,6 +109,7 @@ impl CanvasRenderingContext2d {
             .stroke_style
             .clone()
             .unwrap_or(DEFAULT_COLOR.to_string());
+
         let [r, g, b, a] = parse(&color).unwrap().to_rgba8();
 
         Color::new(a, r, g, b)

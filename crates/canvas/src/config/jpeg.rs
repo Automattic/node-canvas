@@ -1,4 +1,4 @@
-#[napi(object)]
+#[conditional_napi(object)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct JpegConfig {
     pub quality: f64,
@@ -6,7 +6,7 @@ pub struct JpegConfig {
     pub chroma_subsampling: bool,
 }
 
-#[napi]
+#[conditional_napi]
 impl Default for JpegConfig {
     fn default() -> Self {
         Self {

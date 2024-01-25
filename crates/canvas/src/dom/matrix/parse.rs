@@ -8,7 +8,7 @@ pub static TRANSFORM_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\)\s+").unwr
 
 pub fn parse_matrix(data: &str) -> Result<[f64; 16]> {
     let parsed = data.replace("matrix(", "");
-    let parsed = parsed.splitn(7, ",").collect::<Vec<&str>>();
+    let parsed = parsed.splitn(7, ',').collect::<Vec<&str>>();
 
     if parsed.len() != 6 {
         Err(anyhow!("Failed to parse matrix: {}", data))
@@ -27,7 +27,7 @@ pub fn parse_matrix(data: &str) -> Result<[f64; 16]> {
 
 pub fn parse_matrix3d(data: &str) -> Result<[f64; 16]> {
     let parsed = data.replace("matrix3d(", "");
-    let parsed = parsed.splitn(17, ",").collect::<Vec<&str>>();
+    let parsed = parsed.splitn(17, ',').collect::<Vec<&str>>();
 
     if parsed.len() != 16 {
         Err(anyhow!("Failed to parse matrix: {}", data))
@@ -42,8 +42,9 @@ pub fn parse_matrix3d(data: &str) -> Result<[f64; 16]> {
     }
 }
 
+#[allow(clippy::suspicious_splitn)]
 pub fn parse_transform(data: &str) -> Result<[f64; 16]> {
-    let kind = data.splitn(1, "(").nth(0).unwrap();
+    let kind = data.splitn(1, '(').next().unwrap();
 
     match kind {
         "matrix" => parse_matrix(data),
