@@ -1,6 +1,8 @@
 use super::DomMatrix;
 
+#[napi]
 impl DomMatrix {
+    #[napi]
     pub fn scale(
         &self,
         x: Option<f64>,
@@ -13,6 +15,7 @@ impl DomMatrix {
         self.clone().scale_self(x, y, z, ox, oy, oz)
     }
 
+    #[napi]
     pub fn scale_3d(
         &self,
         scale: Option<f64>,
@@ -23,6 +26,7 @@ impl DomMatrix {
         self.clone().scale_3d_self(scale, ox, oy, oz)
     }
 
+    #[napi]
     pub fn scale_3d_self(
         &mut self,
         scale: Option<f64>,
@@ -33,6 +37,7 @@ impl DomMatrix {
         self.scale_self(scale, scale, scale, ox, oy, oz)
     }
 
+    #[napi]
     pub fn scale_self(
         &mut self,
         x: Option<f64>,

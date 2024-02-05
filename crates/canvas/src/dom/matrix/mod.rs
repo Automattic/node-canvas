@@ -8,7 +8,6 @@ pub mod inverse;
 pub mod ops;
 pub mod out;
 pub mod parse;
-pub mod point;
 pub mod rotate;
 pub mod scale;
 pub mod skew;
@@ -55,10 +54,12 @@ impl DomMatrix {
         }
     }
 
+    #[napi]
     pub fn blank() -> Self {
         Self::default()
     }
 
+    #[napi]
     pub fn identity() -> Self {
         Self {
             m11: 1.0,

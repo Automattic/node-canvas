@@ -5,9 +5,9 @@
         - [x] new(width: i32, height: i32)
         - [x] new(width: i32, height: i32, kind: ImageKind)
     - [ ] toBuffer()
-        - [x] toBuffer(cb: fn(Option<Error>, Buffer)) **NOTE: Removed, this is redundant.**
-        - [x] toBuffer(cb: fn(Option<Error>, Buffer), mime: String) **NOTE: Removed, this is redundant.**
-        - [x] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig) **NOTE: Removed, this is redundant.**
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer))
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String)
+        - [ ] toBuffer(cb: fn(Option<Error>, Buffer), mime: String, config: BufferConfig)
         - [ ] toBuffer() -> Buffer
         - [ ] toBuffer(mime: String) -> Buffer
         - [ ] toBuffer(mime: String, config: BufferConfig) -> Buffer
@@ -219,12 +219,12 @@
     - [x] m42: i32
     - [x] m43: i32
     - [x] m44: i32
-    - [ ] + Traits:
+    - [x] + Traits:
         - [x] std::ops::Mul
         - [x] std::ops::MulAssign
-        - [ ] From<DomMatrix>
-        - [ ] From<Float32Array>
-        - [ ] From<Float64Array>
+        - [x] From<DomMatrix>
+        - [x] From<Float32Array>
+        - [x] From<Float64Array>
 - [x] DomPoint
     - [x] w: i32
     - [x] x: i32
@@ -306,10 +306,10 @@
 - [x] enum ImageMode (bitflags)
     - [x] Image = 0
     - [x] Mime = 1
-- [ ] struct FontOptions (builder)
-    - [ ] family: String
-    - [ ] weight: Option<String>,
-    - [ ] style: Option<String>,
+- [x] struct FontOptions (builder)
+    - [x] family: String
+    - [x] weight: Option<String>,
+    - [x] style: Option<String>,
 - [x] enum BufferConfig (builder) **NOTE: This was changed to be an `Either3`**
     - [x] Jpeg(JpegConfig)
     - [x] Png(PngConfig)

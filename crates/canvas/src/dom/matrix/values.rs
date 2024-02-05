@@ -1,6 +1,8 @@
 use super::DomMatrix;
 
+#[napi]
 impl DomMatrix {
+    #[napi]
     pub fn values(&self) -> [f64; 16] {
         [
             self.m11, self.m12, self.m13, self.m14, self.m21, self.m22, self.m23, self.m24,
@@ -8,6 +10,7 @@ impl DomMatrix {
         ]
     }
 
+    #[napi]
     pub fn set_values(&mut self, values: Vec<f64>) -> Self {
         if values.len() == 16 {
             self.m11 = values[0];
@@ -40,6 +43,7 @@ impl DomMatrix {
         *self
     }
 
+    #[napi]
     pub fn set_matrix_value(&mut self, transform_list: Vec<f64>) {
         let temp = DomMatrix::new(Some(transform_list));
 

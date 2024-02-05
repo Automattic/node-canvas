@@ -1,10 +1,13 @@
 use super::DomMatrix;
 
+#[napi]
 impl DomMatrix {
+    #[napi]
     pub fn inverse(&self) -> Self {
         self.clone().invert_self()
     }
 
+    #[napi]
     pub fn invert_self(&mut self) -> Self {
         let mut inv = Self::blank();
 

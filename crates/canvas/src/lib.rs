@@ -15,6 +15,9 @@ extern crate bitflags;
 #[macro_use]
 extern crate napi_derive;
 
+#[macro_use]
+extern crate derive_builder;
+
 pub mod canvas;
 pub mod config;
 pub mod context;

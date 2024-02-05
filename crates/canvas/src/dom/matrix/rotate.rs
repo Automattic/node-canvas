@@ -2,11 +2,14 @@ use crate::fix_zero;
 
 use super::{DomMatrix, DEG_TO_RAD, PI_360, RAD_TO_DEG};
 
+#[napi]
 impl DomMatrix {
+    #[napi]
     pub fn rotate(&self, rx: f64, ry: Option<f64>, rz: Option<f64>) -> Self {
         self.clone().rotate_self(rx, ry, rz)
     }
 
+    #[napi]
     pub fn rotate_self(&mut self, mut rx: f64, o_ry: Option<f64>, o_rz: Option<f64>) -> Self {
         let mut ry = o_ry.unwrap_or(0.0);
         let mut rz = o_rz.unwrap_or(0.0);
@@ -44,10 +47,12 @@ impl DomMatrix {
         *self
     }
 
+    #[napi]
     pub fn rotate_axis_angle(&self, x: f64, y: f64, z: f64, alpha: f64) -> Self {
         self.clone().rotate_axis_angle_self(x, y, z, alpha)
     }
 
+    #[napi]
     pub fn rotate_axis_angle_self(&mut self, x: f64, y: f64, z: f64, alpha: f64) -> Self {
         let mut tmp = Self::identity();
         let len = (x * x + y * y + z * z).sqrt();
@@ -83,10 +88,12 @@ impl DomMatrix {
         *self
     }
 
+    #[napi]
     pub fn rotate_from_vector(&self, x: Option<f64>, y: Option<f64>) -> Self {
         self.clone().rotate_from_vector_self(x, y)
     }
 
+    #[napi]
     pub fn rotate_from_vector_self(&mut self, x: Option<f64>, y: Option<f64>) -> Self {
         let x = x.unwrap_or(0.0);
         let y = y.unwrap_or(0.0);

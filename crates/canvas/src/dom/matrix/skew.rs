@@ -2,27 +2,34 @@ use std::f64::consts::PI;
 
 use super::DomMatrix;
 
+#[napi]
 impl DomMatrix {
+    #[napi]
     pub fn skew_x(&self, angle: f64) -> Self {
         self.clone().skew_x_self(angle)
     }
 
+    #[napi]
     pub fn skew_y(&self, angle: f64) -> Self {
         self.clone().skew_y_self(angle)
     }
 
+    #[napi]
     pub fn skew(&self, angle_x: f64, angle_y: f64) -> Self {
         self.clone().skew_self(angle_x, angle_y)
     }
 
+    #[napi]
     pub fn skew_x_self(&mut self, angle: f64) -> Self {
         self.skew_self(angle, 0.0)
     }
 
+    #[napi]
     pub fn skew_y_self(&mut self, angle: f64) -> Self {
         self.skew_self(0.0, angle)
     }
 
+    #[napi]
     pub fn skew_self(&mut self, angle_x: f64, angle_y: f64) -> Self {
         let mut tmp = Self::identity();
 

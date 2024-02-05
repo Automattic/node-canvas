@@ -1,3 +1,5 @@
+use napi::bindgen_prelude::{Float32Array, Float64Array};
+
 use crate::util::clone_into_array;
 
 use super::{
@@ -70,11 +72,23 @@ impl From<String> for DomMatrix {
                 let mut init = DomMatrix::from(transforms[0]);
 
                 for transform in transforms {
-                    init.multiply_self(DomMatrix::from(transform));
+                    init.multiply_self(&DomMatrix::from(transform));
                 }
 
                 init
             }
         }
+    }
+}
+
+impl From<Float32Array> for DomMatrix {
+    fn from(value: Float32Array) -> Self {
+        Self::from(value.to_vec().iter().map(|v| *v as f64).collect::<Vec<f64>>())
+    }
+}
+
+impl From<Float64Array> for DomMatrix {
+    fn from(value: Float64Array) -> Self {
+        Self::from(value.to_vec())
     }
 }
