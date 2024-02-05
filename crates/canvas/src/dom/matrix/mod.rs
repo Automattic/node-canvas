@@ -23,7 +23,7 @@ pub const RAD_TO_DEG: f64 = 180.0 / PI;
 pub const DEG_TO_RAD: f64 = PI / 180.0;
 pub const PI_360: f64 = PI / 360.0;
 
-#[conditional_napi]
+#[napi]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default, Serialize, Deserialize)]
 pub struct DomMatrix {
     pub m11: f64,
@@ -44,9 +44,9 @@ pub struct DomMatrix {
     pub m44: f64,
 }
 
-#[conditional_napi]
+#[napi]
 impl DomMatrix {
-    #[cfg_attr(feature = "napi", napi(constructor))]
+    #[napi(constructor)]
     pub fn new(init: Option<Vec<f64>>) -> Self {
         if let Some(init) = init {
             Self::from(init)
@@ -80,12 +80,12 @@ impl DomMatrix {
         }
     }
 
-    #[cfg_attr(feature = "napi", napi(getter))]
+    #[napi(getter)]
     pub fn is_identity(&self) -> bool {
         self.values().eq(&Self::identity().values())
     }
 
-    #[cfg_attr(feature = "napi", napi(getter))]
+    #[napi(getter)]
     pub fn is_2d(&self) -> bool {
         self.m31 == 0.0
             && self.m32 == 0.0

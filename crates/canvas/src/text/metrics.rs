@@ -1,4 +1,4 @@
-#[conditional_napi(object)]
+#[napi(object)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct TextMetrics {
     pub actual_bounding_box_ascent: i32,

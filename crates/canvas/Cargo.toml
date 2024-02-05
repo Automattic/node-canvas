@@ -6,10 +6,6 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-default = []
-napi = ["canvas-macros/napi"]
-
 [dependencies]
 anyhow = "1.0.75"
 bitflags = { version = "2.4.1", features = ["serde"] }

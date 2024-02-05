@@ -122,7 +122,7 @@ dependencies = [
  "lazy_static",
  "napi",
  "napi-build",
- "napi-derive 2.14.6",
+ "napi-derive",
  "once_cell",
  "paste",
  "raqote",
@@ -135,7 +135,6 @@ dependencies = [
 name = "canvas-macros"
 version = "0.0.0"
 dependencies = [
- "napi-derive 0.1.0",
  "proc-macro2",
  "quote",
 ]
@@ -587,7 +586,7 @@ dependencies = [
  "chrono",
  "ctor",
  "encoding_rs",
- "napi-derive 2.14.6",
+ "napi-derive",
  "napi-sys",
  "once_cell",
  "serde",
@@ -600,18 +599,6 @@ name = "napi-build"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4b4532cf86bfef556348ac65e561e3123879f0e7566cca6d43a6ff5326f13df"
-
-[[package]]
-name = "napi-derive"
-version = "0.1.0"
-dependencies = [
- "cfg-if",
- "convert_case",
- "napi-derive-backend",
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "napi-derive"

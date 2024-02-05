@@ -13,7 +13,7 @@ extern crate serde;
 extern crate bitflags;
 
 #[macro_use]
-extern crate canvas_macros;
+extern crate napi_derive;
 
 pub mod canvas;
 pub mod config;

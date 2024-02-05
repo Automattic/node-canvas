@@ -8,7 +8,7 @@ use crate::{
     image::kind::ImageKind,
 };
 
-#[conditional_napi]
+#[napi]
 #[derive(Debug, Clone)]
 pub struct Canvas {
     pub width: i32,
@@ -18,9 +18,9 @@ pub struct Canvas {
     pub(crate) target: DrawTarget,
 }
 
-#[conditional_napi]
+#[napi]
 impl Canvas {
-    #[cfg_attr(feature = "napi", napi(constructor))]
+    #[napi(constructor)]
     pub fn new(width: i32, height: i32, kind: Option<ImageKind>) -> Self {
         Self {
             width,

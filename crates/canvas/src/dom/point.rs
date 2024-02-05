@@ -1,4 +1,4 @@
-#[conditional_napi(object)]
+#[napi(object)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct DomPoint {
     pub x: f64,

@@ -1,6 +1,6 @@
 use napi::bindgen_prelude::Uint8ClampedArray;
 
-#[conditional_napi]
+#[napi]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ImageData {
     data: Vec<u8>,
@@ -9,9 +9,9 @@ pub struct ImageData {
     pub height: i32,
 }
 
-#[conditional_napi]
+#[napi]
 impl ImageData {
-    #[cfg_attr(feature = "napi", napi(constructor))]
+    #[napi(constructor)]
     pub fn new(width: i32, height: i32) -> Self {
         Self {
             width,
@@ -20,7 +20,7 @@ impl ImageData {
         }
     }
 
-    #[cfg_attr(feature = "napi", napi(factory))]
+    #[napi(factory)]
     pub fn with_data(data: Uint8ClampedArray, width: i32, height: Option<i32>) -> Self {
         let height = height.unwrap_or_else(|| {
             // Calculate height assuming 4 BPP
@@ -35,12 +35,12 @@ impl ImageData {
         }
     }
 
-    #[cfg_attr(feature = "napi", napi(getter))]
+    #[napi(getter)]
     pub fn get_data(&self) -> Uint8ClampedArray {
         Uint8ClampedArray::new(self.data.clone())
     }
 
-    #[cfg_attr(feature = "napi", napi(setter))]
+    #[napi(setter)]
     pub fn set_data(&mut self, data: Uint8ClampedArray) {
         self.data = data.to_vec();
     }

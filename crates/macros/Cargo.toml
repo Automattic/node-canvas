@@ -6,11 +6,6 @@ edition = "2021"
 [lib]
 proc-macro = true
 
-[features]
-default = []
-napi = []
-
 [dependencies]
-napi-derive = { version = "0.1.0", path = "../napi-derive" }
 proc-macro2 = "1.0.78"
 quote = "1.0.35"

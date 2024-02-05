@@ -5,12 +5,12 @@ use crate::{
     image::{data::ImageData, kind::ImageKind},
 };
 
-#[conditional_napi]
+#[napi]
 pub fn create_canvas(width: i32, height: i32, kind: Option<ImageKind>) -> Canvas {
     Canvas::new(width, height, kind)
 }
 
-#[conditional_napi]
+#[napi]
 pub fn create_image_data(
     width: i32,
     height: Option<i32>,

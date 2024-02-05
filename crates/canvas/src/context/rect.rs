@@ -2,9 +2,9 @@ use raqote::{PathBuilder, SolidSource, Source};
 
 use super::context::CanvasRenderingContext2d;
 
-#[conditional_napi]
+#[napi]
 impl CanvasRenderingContext2d {
-    #[conditional_napi]
+    #[napi]
     pub fn clear_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         self.target.fill_rect(
             x as f32,
@@ -21,7 +21,7 @@ impl CanvasRenderingContext2d {
         );
     }
 
-    #[conditional_napi]
+    #[napi]
     pub fn fill_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         self.target.fill_rect(
             x as f32,
@@ -33,7 +33,7 @@ impl CanvasRenderingContext2d {
         );
     }
 
-    #[conditional_napi]
+    #[napi]
     pub fn stroke_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         let mut path = PathBuilder::new();
 

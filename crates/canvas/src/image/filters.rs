@@ -5,7 +5,7 @@ use napi::{
 };
 
 bitflags! {
-    #[conditional_napi]
+    #[napi]
     #[repr(transparent)]
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
     pub struct PngFilters: u32 {
