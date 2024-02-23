@@ -34,6 +34,7 @@
         '<!@(pkg-config pangocairo --libs)',
         '<!@(pkg-config freetype2 --libs)',
         '<!@(pkg-config librsvg-2.0 --libs)',
+        '-L/opt/homebrew/lib',
         '-ljpeg',
         '-lgif'
       ],
@@ -43,7 +44,8 @@
         '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config pangocairo --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)'
+        '<!@(pkg-config librsvg-2.0 --cflags-only-I | sed s/-I//g)',
+        '/opt/homebrew/include'
       ],
       'cflags+': ['-fvisibility=hidden'],
       'xcode_settings': {
