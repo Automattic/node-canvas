@@ -49,6 +49,7 @@ jobs:
           cp prebuild/Linux/binding.gyp binding.gyp
           node-gyp rebuild -j 2
           . prebuild/Linux/bundle.sh
+
       - name: Test binary
         run: |
           cd /root/harfbuzz-* && make uninstall
@@ -58,6 +59,7 @@ jobs:
           cd /root/libjpeg-* && make uninstall
           cd /root/giflib-* && make uninstall
           cd $GITHUB_WORKSPACE && npm test
+
       - name: Make bundle
         id: make_bundle
         run: . prebuild/tarball.sh
@@ -70,13 +72,16 @@ jobs:
             const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
             const releases = await github.repos.listReleases({owner, repo});
             const release = releases.data.find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
             const oldAsset = release.assets.find(a => a.name === assetName);
             if (oldAsset)
               await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
             const r = await github.repos.uploadReleaseAsset({
@@ -88,6 +93,7 @@ jobs:
               name: assetName,
               data: fs.readFileSync(assetName)
             });
+
   macOS:
     strategy:
       matrix:
@@ -192,6 +198,7 @@ jobs:
           msys2do cp prebuild/Windows/binding.gyp binding.gyp
           msys2do node-gyp configure
           msys2do node-gyp rebuild -j 2
+
       - name: Bundle
         run: msys2do . prebuild/Windows/bundle.sh
 
@@ -212,13 +219,16 @@ jobs:
             const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
             const releases = await github.repos.listReleases({owner, repo});
             const release = releases.data.find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
             const oldAsset = release.assets.find(a => a.name === assetName);
             if (oldAsset)
               await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
             const r = await github.repos.uploadReleaseAsset({
