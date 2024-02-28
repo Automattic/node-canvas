@@ -56,7 +56,7 @@ jobs:
 
       - name: Test binary
         run: |
-          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          brew uninstall --force cairo pango libpng jpeg librsvg giflib harfbuzz pixman
           npm test
 
       - name: Make bundle
