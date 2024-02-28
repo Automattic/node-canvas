@@ -51,7 +51,7 @@ jobs:
           npm install nan
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2 --arch=${{ runner.arch }}
+          node-gyp rebuild -j 2 --arch=${{ matrix.os.arch }}
           . prebuild/macOS/bundle.sh
 
       - name: Test binary
