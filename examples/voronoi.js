@@ -16,7 +16,7 @@ http.createServer(function (req, res) {
   for (let i = 0; i < 340; i++) {
     x = Math.random() * canvas.width
     y = Math.random() * canvas.height
-    voronoi.addSites([{ x: x, y: y }])
+    voronoi.addSites([{ x, y }])
   }
 
   const diagram = voronoi.compute(bbox)

@@ -184,12 +184,12 @@ tests['arc() 2'] = function (ctx) {
 }
 
 tests['arc()() #1736'] = function (ctx) {
-  let centerX = 512
-  let centerY = 512
-  let startAngle = 6.283185307179586 // exactly 2pi
-  let endAngle = 7.5398223686155035
-  let innerRadius = 359.67999999999995
-  let outerRadius = 368.64
+  const centerX = 512
+  const centerY = 512
+  const startAngle = 6.283185307179586 // exactly 2pi
+  const endAngle = 7.5398223686155035
+  const innerRadius = 359.67999999999995
+  const outerRadius = 368.64
 
   ctx.scale(0.2, 0.2)
 
@@ -573,9 +573,9 @@ tests['createPattern() no-repeat'] = function (ctx, done) {
 }
 
 tests['createPattern() then setTransform and fill'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.fillStyle = pattern
     ctx.scale(0.125, 0.125)
 
@@ -595,9 +595,9 @@ tests['createPattern() then setTransform and fill'] = function (ctx, done) {
 }
 
 tests['createPattern() then setTransform and stroke'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
-    var pattern = ctx.createPattern(img, 'repeat')
+    const pattern = ctx.createPattern(img, 'repeat')
     ctx.lineWidth = 150
     ctx.strokeStyle = pattern
     ctx.scale(0.125, 0.125)
@@ -618,9 +618,9 @@ tests['createPattern() then setTransform and stroke'] = function (ctx, done) {
 }
 
 tests['createPattern() then setTransform with no-repeat'] = function (ctx, done) {
-  var img = new Image()
+  const img = new Image()
   img.onload = function () {
-    var pattern = ctx.createPattern(img, 'no-repeat')
+    const pattern = ctx.createPattern(img, 'no-repeat')
     ctx.fillStyle = pattern
     ctx.scale(0.125, 0.125)
 

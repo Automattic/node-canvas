@@ -30,5 +30,5 @@ for (i = 0; i < 6; i++) {
   }
 }
 
-canvas.createPNGStream({ palette: palette })
+canvas.createPNGStream({ palette })
   .pipe(fs.createWriteStream(path.join(__dirname, 'indexed2.png')))

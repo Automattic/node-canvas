@@ -16,7 +16,7 @@ const queue = []
 let running = false
 
 function bm (label, fn) {
-  queue.push({ label: label, fn: fn })
+  queue.push({ label, fn })
   next()
 }
 

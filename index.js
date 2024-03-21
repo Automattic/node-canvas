@@ -9,7 +9,7 @@ const fs = require('fs')
 const PNGStream = require('./lib/pngstream')
 const PDFStream = require('./lib/pdfstream')
 const JPEGStream = require('./lib/jpegstream')
-const { DOMPoint, DOMMatrix } = require('./lib/DOMMatrix')
+const { DOMPoint, DOMMatrix } = require('./lib/dom-matrix')
 
 bindings.setDOMMatrix(DOMMatrix)
 bindings.setParseFont(parseFont)
