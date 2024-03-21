@@ -35,5 +35,5 @@ for (i = 0; i < 6; i++) {
 }
 ctx.putImageData(idata, 0, 0)
 
-canvas.createPNGStream({ palette: palette })
+canvas.createPNGStream({ palette })
   .pipe(fs.createWriteStream(path.join(__dirname, 'indexed.png')))

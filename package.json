@@ -26,7 +26,7 @@
   "scripts": {
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
-    "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js",
+    "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/*.js browser.js index.js",
     "test": "mocha test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
@@ -45,23 +45,23 @@
     "util/"
   ],
   "dependencies": {
-    "node-addon-api": "^7.0.0",
-    "prebuild-install": "^7.1.1",
-    "simple-get": "^3.0.3"
+    "node-addon-api": "^8.0.0",
+    "prebuild-install": "^7.1.2",
+    "simple-get": "^4.0.1"
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
+    "@types/node": "^20.11.30",
     "assert-rejects": "^1.0.0",
-    "express": "^4.16.3",
+    "express": "^4.19.1",
     "js-yaml": "^4.1.0",
-    "mocha": "^5.2.0",
-    "pixelmatch": "^4.0.2",
-    "standard": "^12.0.1",
-    "tsd": "^0.29.0",
-    "typescript": "^4.2.2"
+    "mocha": "^10.3.0",
+    "pixelmatch": "^5.3.0",
+    "standard": "^17.1.0",
+    "tsd": "^0.30.7",
+    "typescript": "^5.4.3"
   },
   "engines": {
-    "node": "^18.12.0 || >= 20.9.0"
+    "node": "^18.12.0 || ^20.9.0 || >= 21"
   },
   "license": "MIT"
 }
