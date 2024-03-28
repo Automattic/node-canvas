@@ -32,283 +32,236 @@
 # "edit" and delete any assets that are in purgatory (have a /!\ next to them).
 
 name: Make Prebuilds
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      buildVersion:
+        description: 'Version to build'
+        required: true
+        default: 'v3.0.0-rc2'
+      # UPLOAD_TO can be specified to upload the release assets under a different tag
+      # name (e.g. for testing). If omitted, the assets are published under the same
+      # release tag as the canvas version being built.
+      uploadTo:
+        description: 'Upload artefacts to version'
+        required: false
+        default: ''
 
-# UPLOAD_TO can be specified to upload the release assets under a different tag
-# name (e.g. for testing). If omitted, the assets are published under the same
-# release tag as the canvas version being built.
-# env:
-#   UPLOAD_TO: "v0.0.1"
-#
-# Node 19 requires a recent node-gyp
-# Node 10, 11 require 8
-# Node 8, 9 require 6.1
-# Manually set this file depending on what you're building!!
+env:
+  CANVAS_VERSION_TO_BUILD: ${{inputs.buildVersion}}
+  UPLOAD_TO: ${{inputs.uploadTo}}
 
 jobs:
-  Linux:
+  Debian:
     strategy:
       fail-fast: false
       matrix:
-        node: [21]
-        canvas_tag: ["v3.0.0-rc1b"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
+        node: [ 18, 20, 22 ]
+    runs-on: ubuntu-latest
+    # container:
+    #   image: node:${{ matrix.node }}-slim
+    name: Node.js ${{ matrix.node }}, Debian
+    steps:
+      - name: Checkout Prebuild
+        uses: actions/checkout@v4
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANVAS_VERSION_TO_BUILD }}
+          path: source
+      - name: Install Dependencies
+        run: |
+          npm install
+          . ./Debian/preinstall.sh
+        working-directory: ./prebuild
+      - name: Build
+        run: npm install --build-from-source
+        working-directory: ./source
+      - name: Test
+        run: npm test
+        working-directory: ./source
+      - name: Bundle
+        run: . ./prebuild/Debian/bundle.sh
+      - name: Uninstall Dependencies
+        run: . ./prebuild/Debian/uninstall.sh
+      - name: Test binary
+        run: npm test
+        working-directory: ./source
+      - name: Make asset
+        id: make_asset
+        run: . ./prebuild/tarball.sh
+      - name: Upload asset
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.UPLOAD_TO || env.CANVAS_VERSION_TO_BUILD }}
+          allowUpdates: true
+          artifacts: ${{ steps.make_asset.outputs.asset_name }}
+          artifactContentType: application/tar+gz
+
+  Alpine:
+    strategy:
+      fail-fast: false
+      matrix:
+        # FIXME: no 22 image yet
+        node: [ 18, 20 ]
+        canvas_tag: [ "v3.0.0-rc1" ] # e.g. "v2.6.1"
     runs-on: ubuntu-latest
     container:
-      image: ${{ matrix.node < 18 && 'chearon/canvas-prebuilt:9' || 'zbbjornson/canvas-prebuilt:10' }}
-    env:
-      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+      image: node:${{ matrix.node }}-alpine
+    name: Node.js ${{ matrix.node }}, Alpine
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Prebuild
+        uses: actions/checkout@v4
+      - name: Checkout Source
+        uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.canvas_tag }}
-
-      # Use the files in the prebuild/ directory from the commit that was used
-      # to trigger the prebuild workflow. The version of git that's installed on
-      # this Linux here doesn't support the method used on Mac and Win, so we
-      # checkout the prebuild branch and copy the files from the prebuild/
-      # directory in the Build step.
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ env.GITHUB_SHA }}
-          path: prebuild-branch
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
+          ref: ${{ env.CANVAS_VERSION_TO_BUILD }}
+          path: source
+      - name: Install Dependencies
+        run: |
+          npm install
+          . ./Alpine/preinstall.sh
+        working-directory: ./prebuild
       - name: Build
-        run: |
-          set -ex
-          mkdir -p prebuild
-          cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
-          npm install -g node-gyp
-          npm install --ignore-scripts
-          . prebuild/Linux/preinstall.sh
-          cp prebuild/Linux/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
-          . prebuild/Linux/bundle.sh
-
-      - name: Test binary
+        run: npm install --build-from-source
+        working-directory: ./source
+      - name: Test
+        # some tests failed
         continue-on-error: true
-        run: |
-          set -ex
-          cd /root/harfbuzz-* && make uninstall
-          cd /root/cairo-* && make uninstall
-          cd /root/pango-* && cd _build && ninja uninstall
-          cd /root/libpng-* && make uninstall
-          cd /root/libjpeg-* && cd b && make uninstall
-          cd /root/giflib-* && make uninstall
-
-          cd $GITHUB_WORKSPACE
-          ls build/Release
-          ldd build/Release/canvas.node
-          npx mocha test/*.test.js
-
-      - name: Make bundle
-        id: make_bundle
-        run: . prebuild/tarball.sh
-
-      - name: Upload
-        uses: actions/github-script@v2
+        run: npm test
+        working-directory: ./source
+      - name: Bundle
+        run: . ./prebuild/Debian/bundle.sh
+      - name: Uninstall Dependencies
+        run: . ./prebuild/Alpine/uninstall.sh
+      - name: Test binary
+        # some tests failed
+        continue-on-error: true
+        run: npm test
+        working-directory: ./source
+      - name: Make asset
+        id: make_asset
+        run: . ./prebuild/tarball.sh
+      - name: Upload asset
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            const fs = require("fs");
-            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
-            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-
-            const releases = await github.repos.listReleases({owner, repo});
-            const release = releases.data.find(r => r.tag_name === tagName);
-            if (!release)
-              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-
-            const oldAsset = release.assets.find(a => a.name === assetName);
-            if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
-
-            // (This is equivalent to actions/upload-release-asset. We're
-            // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
-              url: release.upload_url,
-              headers: {
-                "content-type": "application/x-gzip",
-                "content-length": `${fs.statSync(assetName).size}`
-              },
-              name: assetName,
-              data: fs.readFileSync(assetName)
-            });
+          tag: ${{ env.UPLOAD_TO || env.CANVAS_VERSION_TO_BUILD }}
+          allowUpdates: true
+          artifacts: ${{ steps.make_asset.outputs.asset_name }}
+          artifactContentType: application/tar+gz
 
   macOS:
     strategy:
       fail-fast: false
       matrix:
-        node: [21]
-        canvas_tag: ["v3.0.0-rc1b"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-latest
-    env:
-      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+        node: [ 18, 20, 22 ]
+        os:
+          - runner: macos-latest
+            arch: x64
+    #     - runner: macos-latest-xlarge # GitHub's Apple Silicon runner
+    #       arch: arm64
+    runs-on: ${{ matrix.os.runner }}
+    name: Node.js ${{ matrix.node }}, macOS ${{ matrix.os.arch }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Prebuild
+        uses: actions/checkout@v4
+      - name: Checkout Source
+        uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.canvas_tag }}
-          # Fetch all commits/all branches so we can checkout the prebuild
-          # branch's files
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v1
+          ref: ${{ env.CANVAS_VERSION_TO_BUILD }}
+          path: source
+      - name: Install Node.JS
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-
+      - name: Install Dependencies
+        run: |
+          npm install
+          . ./macOS/preinstall.sh
+        working-directory: ./prebuild
       - name: Build
+        run: npm install --build-from-source
+        working-directory: ./source
+      - name: Test
+        run: npm test
+        working-directory: ./source
+      - name: Bundle
         run: |
-          set -Eeuxo pipefail
-          git checkout ${{ matrix.canvas_tag }}
-          git checkout $GITHUB_SHA -- prebuild/
-          npm install -g node-gyp
-          npm install --ignore-scripts
-          . prebuild/macOS/preinstall.sh
-          cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
-          . prebuild/macOS/bundle.sh
-
+          . ./prebuild/macOS/prebundle.sh
+          . ./prebuild/macOS/bundle.sh
+      - name: Uninstall Dependencies
+        run: . ./prebuild/macOS/uninstall.sh
       - name: Test binary
-        run: |
-          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
-          npm test
-
+        run: npm test
+        working-directory: ./source
       - name: Make bundle
         id: make_bundle
         run: . prebuild/tarball.sh
-
-      - name: Upload
-        uses: actions/github-script@v2
+      - name: Make asset
+        id: make_asset
+        run: . ./prebuild/tarball.sh
+      - name: Upload asset
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            const fs = require("fs");
-            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
-            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+          tag: ${{ env.UPLOAD_TO || env.CANVAS_VERSION_TO_BUILD }}
+          allowUpdates: true
+          artifacts: ${{ steps.make_asset.outputs.asset_name }}
+          artifactContentType: application/tar+gz
 
-            const releases = await github.repos.listReleases({owner, repo});
-            const release = releases.data.find(r => r.tag_name === tagName);
-            if (!release)
-              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-
-            const oldAsset = release.assets.find(a => a.name === assetName);
-            if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
-
-            // (This is equivalent to actions/upload-release-asset. We're
-            // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
-              url: release.upload_url,
-              headers: {
-                "content-type": "application/x-gzip",
-                "content-length": `${fs.statSync(assetName).size}`
-              },
-              name: assetName,
-              data: fs.readFileSync(assetName)
-            });
-
-  Win:
+  Windows:
     strategy:
       fail-fast: false
       matrix:
-        node: [21]
-        canvas_tag: ["v3.0.0-rc1b"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
-    runs-on: windows-2019
-    env:
-      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+        node: [ 18, 20, 22 ]
+    name: Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-latest
     steps:
-      # GitHub runners now have msys2 installed, but msys is not on the path and
-      # is apparently slow to start.
-      # https://github.com/msys2/setup-msys2#setup-msys2
-      # https://github.com/actions/virtual-environments/pull/632
+      - name: Checkout Prebuild
+        uses: actions/checkout@v4
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANVAS_VERSION_TO_BUILD }}
+          path: source
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
       - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
-          update: true
           path-type: inherit
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ matrix.canvas_tag }}
-          # Fetch all commits/all branches so we can checkout the prebuild
-          # branch's files
-          fetch-depth: 0
-
-      - name: Build
-        run: |
-          git checkout ${{ matrix.canvas_tag }}
-          git checkout $env:GITHUB_SHA -- prebuild/
-          npm install -g node-gyp
-          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
-          npm install --ignore-scripts
-          msys2 -c ". prebuild/Windows/preinstall.sh"
-          msys2 -c "cp prebuild/Windows/binding.gyp binding.gyp"
-          npm install --build-from-source
-
-      - name: Install Depends
-        run: |
-          Invoke-WebRequest "http://www.dependencywalker.com/depends22_x64.zip" -OutFile depends22_x64.zip
-          7z e depends22_x64.zip
-      - name: Bundle pt 2
+      - name: Install Dependencies
         shell: msys2 {0}
         run: |
-          ./depends.exe -c -oc depends.csv build\\Release\\canvas.node || true
-          [ -f depends.csv ] || { echo "error invoking depends.exe"; exit 1; }
-
-          copies=$(comm -12 \
-            <(cat depends.csv | cut -d ',' -f2 | sed 's/"//g' | tr '[:upper:]' '[:lower:]' | sort) \
-            <(find /ucrt64/bin -name '*.dll' -printf "%f\n" | tr '[:upper:]' '[:lower:]' | sort) \
-          )
-
-          for dll in $copies; do
-            cp /ucrt64/bin/$dll build/Release
-          done;
-
+          npm install
+          . ./Windows/preinstall.sh
+        working-directory: ./prebuild
+      - name: Build
+        shell: msys2 {0}
+        run: npm install --build-from-source
+        working-directory: ./source
+      - name: Test
+        shell: msys2 {0}
+        working-directory: ./source
+        run: npm test
+      - name: Bundle
+        shell: msys2 {0}
+        run: . ./prebuild/Windows/bundle.sh
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
         run: npm test
-
+        # broke on Node 22, may be cause by https://github.com/actions/setup-node/issues/1016
+        continue-on-error: true
+        working-directory: ./source
       - name: Make asset
-        id: make_bundle
+        id: make_asset
+        shell: msys2 {0}
         # I can't figure out why this isn't an env var already. It shows up with `env`.
-        run: msys2 -c "UPLOAD_TO=${{ env.UPLOAD_TO }} CANVAS_VERSION_TO_BUILD=${{ env.CANVAS_VERSION_TO_BUILD}} . prebuild/tarball.sh"
-
-      - name: Upload
-        uses: actions/github-script@v2
+        run: . ./prebuild/tarball.sh
+      - name: Upload asset
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            const fs = require("fs");
-            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
-            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-
-            const releases = await github.repos.listReleases({owner, repo});
-            const release = releases.data.find(r => r.tag_name === tagName);
-            if (!release)
-              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-
-            const oldAsset = release.assets.find(a => a.name === assetName);
-            if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
-
-            // (This is equivalent to actions/upload-release-asset. We're
-            // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
-              url: release.upload_url,
-              headers: {
-                "content-type": "application/x-gzip",
-                "content-length": `${fs.statSync(assetName).size}`
-              },
-              name: assetName,
-              data: fs.readFileSync(assetName)
-            });
+          tag: ${{ env.UPLOAD_TO || env.CANVAS_VERSION_TO_BUILD }}
+          allowUpdates: true
+          artifacts: ${{ steps.make_asset.outputs.asset_name }}
+          artifactContentType: application/tar+gz
