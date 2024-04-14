@@ -8,6 +8,8 @@ rm -f /usr/local/bin/pydoc3 || :
 rm -f /usr/local/bin/python3 || :
 rm -f /usr/local/bin/python3-config || :
 
-brew install --force pkg-config cairo pango librsvg giflib
+# Overwrite is required to avoid conflicts between dependencies of these packages
+# (namely, 2to3)
+brew install --force --overwrite pkg-config cairo pango librsvg giflib
 
 pip3 install --user macpack
