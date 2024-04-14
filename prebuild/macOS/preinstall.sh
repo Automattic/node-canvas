@@ -12,4 +12,4 @@ rm -f /usr/local/bin/python3-config || :
 # doesn't work to make them ignore conflicts. For now just ignore errors, yolo.
 brew install --force pkg-config cairo pango librsvg giflib || :
 
-pip3 install --user macpack
+pip3 install macpack
