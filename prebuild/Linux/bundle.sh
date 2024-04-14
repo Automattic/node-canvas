@@ -1,8 +1,8 @@
 set -ex
 
-copies=$(lddtree.sh -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d');
+apt install -y patchelf pax-utils
 
-apt install -y patchelf
+copies=$(lddtree -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d');
 
 for so in $copies; do
   cp $so build/Release

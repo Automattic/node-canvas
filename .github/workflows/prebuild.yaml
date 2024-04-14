@@ -39,7 +39,7 @@ on: workflow_dispatch
 # release tag as the canvas version being built.
 # env:
 #   UPLOAD_TO: "v0.0.1"
-#
+
 # Node 19 requires a recent node-gyp
 # Node 10, 11 require 8
 # Node 8, 9 require 6.1
@@ -84,7 +84,6 @@ jobs:
           cp -rfv ./prebuild-branch/prebuild/* ./prebuild/
           npm install -g node-gyp
           npm install --ignore-scripts
-          . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
           node-gyp rebuild -j 2
           . prebuild/Linux/bundle.sh
