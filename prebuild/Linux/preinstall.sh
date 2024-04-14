@@ -1,6 +1,10 @@
 # apt-get-style dependencies aren't done here since the
 # linux build is done on a docker image that has them
 
+# ... except for libseccomp, which could go in the docker image, but for now I
+# don't want to rebuild it.
+apt-get install -y libseccomp-dev
+
 git clone git://anongit.gentoo.org/proj/pax-utils.git
 cd pax-utils
 # the last commit before they changed from make to meson
