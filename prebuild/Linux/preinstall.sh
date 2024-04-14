@@ -3,7 +3,7 @@
 
 # ... except for libseccomp, which could go in the docker image, but for now I
 # don't want to rebuild it.
-apt-get install -y libseccomp libseccomp-dev
+apt-get install -y libseccomp2 libseccomp-dev
 
 git clone git://anongit.gentoo.org/proj/pax-utils.git
 cd pax-utils
