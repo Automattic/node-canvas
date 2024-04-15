@@ -99,8 +99,13 @@ jobs:
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-latest
+        os:
+          - runner: macos-latest
+            arch: x64
+          - runner: macos-latest-xlarge # GitHub's Apple Silicon runner
+            arch: arm64
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS ${{ matrix.os.arch }}
+    runs-on: ${{ matrix.os.runner }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -116,14 +121,15 @@ jobs:
         run: |
           npm install -g node-gyp
           npm install --ignore-scripts
+          npm install nan
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
+          node-gyp rebuild -j 2 --arch=${{ matrix.os.arch }}
           . prebuild/macOS/bundle.sh
 
       - name: Test binary
         run: |
-          brew uninstall --force cairo pango librsvg giflib harfbuzz
+          brew uninstall --ignore-dependencies cairo pango libpng jpeg librsvg giflib harfbuzz pixman
           npm test
 
       - name: Make bundle
