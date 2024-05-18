@@ -35,6 +35,7 @@ This release notably changes to using N-API. 🎉
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
 * Fix a potential memory leak. (#2229)
 * Fix the wrong type of setTransform
+* Fix the improper parsing of rgb functions issue. (#2300)
 
 2.11.2
 ==================
