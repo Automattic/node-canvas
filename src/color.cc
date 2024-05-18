@@ -625,13 +625,15 @@ rgba_from_rgb_string(const char *str, short *ok) {
     str += 4;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
+    float a=1.f;
     CHANNEL(r);
     WHITESPACE_OR_COMMA;
     CHANNEL(g);
     WHITESPACE_OR_COMMA;
     CHANNEL(b);
-    WHITESPACE;
-    return *ok = 1, rgba_from_rgb(r, g, b);
+    WHITESPACE_OR_COMMA_OR_SLASH;
+    ALPHA(a);
+    return *ok = 1, rgba_from_rgba(r, g, b, (int) (255 * a));
   }
   return *ok = 0;
 }
