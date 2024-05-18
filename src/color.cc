@@ -210,6 +210,9 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 #define WHITESPACE_OR_COMMA \
   while (' ' == *str || ',' == *str) ++str;
 
+#define WHITESPACE_OR_COMMA_OR_SLASH \
+  while (' ' == *str || ',' == *str || '/' == *str) ++str;
+
 #define CHANNEL(NAME) \
    if (!parse_rgb_channel(&str, &NAME)) \
     return 0; \
@@ -649,7 +652,7 @@ rgba_from_rgba_string(const char *str, short *ok) {
     CHANNEL(g);
     WHITESPACE_OR_COMMA;
     CHANNEL(b);
-    WHITESPACE_OR_COMMA;
+    WHITESPACE_OR_COMMA_OR_SLASH;
     ALPHA(a);
     WHITESPACE;
     return *ok = 1, rgba_from_rgba(r, g, b, (int) (a * 255));
