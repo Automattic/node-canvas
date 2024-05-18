@@ -226,7 +226,16 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 
 #define ALPHA(NAME) \
     if (*str >= '1' && *str <= '9') { \
-      NAME = 1; \
+      NAME = 0; \
+      float n = .1f; \
+      while(*str >='0' && *str <= '9') { \
+        NAME += (*str - '0') * n; \
+        str++; \
+      } \
+      while(*str == ' ')str++; \
+      if(*str != '%') { \
+        NAME = 1; \
+      } \
     } else { \
       if ('0' == *str) { \
         NAME = 0; \
