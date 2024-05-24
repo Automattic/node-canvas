@@ -39,6 +39,7 @@ This release notably changes to using N-API. 🎉
 * Fix the improper parsing of rgb functions issue. (#2300)
 * Fix issue related to improper parsing of leading and trailing whitespaces in CSS color. (#2301)
 * RGB functions should support real numbers now instead of just integers. (#2339)
+* Allow alternate or properly escaped quotes *within* font-family names
 
 2.11.2
 ==================
