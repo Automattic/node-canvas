@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Readme > Compiling > macOS: added `python@3.12` and `python-setuptools` to prerequisites
 
 3.0.0
 ==================
