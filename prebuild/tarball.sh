@@ -9,7 +9,7 @@ FILENAME=$(
 ).tar.gz;
 
 # Zip up the release
-tar -C build -czvf $FILENAME Release
+tar -czvf $FILENAME build
 
 if [ $? -ne 0 ]; then
   echo "failed to make tarball $FILENAME from node-canvas/build"
