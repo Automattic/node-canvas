@@ -11,9 +11,14 @@ node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation
 $ npm install canvas
 ```
 
-By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
+By default, pre-built binaries will be downloaded if you're on one of the following platforms:
+- macOS x86/64 (*not* Apple silicon)
+- Linux x86/64 (glibc only)
+- Windows x86/64
 
-The minimum version of Node.js required is **10.20.0**.
+If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
+
+The minimum version of Node.js required is **18.12.0**.
 
 ### Compiling
 
