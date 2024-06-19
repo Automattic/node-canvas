@@ -55,7 +55,7 @@ jobs:
     name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
-      image: ${{ matrix.node < 18 && 'chearon/canvas-prebuilt:9' || 'zbbjornson/canvas-prebuilt:10' }}
+      image: ${{ matrix.node < 18 && 'chearon/canvas-prebuilt:9' || 'zbbjornson/canvas-prebuilt:11' }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:

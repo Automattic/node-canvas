@@ -39,5 +39,5 @@ RUN bash -c 'curl -O https://people.freedesktop.org/~hadess/shared-mime-info-1.8
 RUN bash -c 'curl -LO https://download.gnome.org/sources/gdk-pixbuf/2.42/gdk-pixbuf-2.42.2.tar.xz; tar -xvf gdk-pixbuf-2.42.2.tar.xz; cd gdk-pixbuf-2.42.2; meson _build; cd _build; ninja install';
 RUN ldconfig
 RUN bash -c 'curl -LO https://download.gnome.org/sources/libcroco/0.6/libcroco-0.6.13.tar.xz; tar -xvf libcroco-0.6.13.tar.xz; cd libcroco-0.6.13; ./configure; make -j8; make install'
-RUN bash -c 'cd; . .cargo/env; curl -LO https://download.gnome.org/sources/librsvg/2.50/librsvg-2.50.2.tar.xz; tar -xvf librsvg-2.50.2.tar.xz; cd librsvg-2.50.2; ./configure --enable-introspection=no; make -j8; make install'
+RUN bash -c 'cd; . .cargo/env; curl -LO https://download.gnome.org/sources/librsvg/2.52/librsvg-2.52.8.tar.xz; tar -xvf librsvg-2.52.8.tar.xz; cd librsvg-2.52.8; ./configure --enable-introspection=no; make -j8; make install'
 RUN ldconfig
