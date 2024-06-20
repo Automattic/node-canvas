@@ -2479,20 +2479,34 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
   PangoRectangle logical_rect;
   pango_layout_line_get_extents(pango_layout_get_line(layout, 0), NULL, &logical_rect);
 
-  double scale = 1.0 / PANGO_SCALE;
-  double ascent = scale * pango_layout_get_baseline(layout);
-  double descent = scale * logical_rect.height - ascent;
+  double ascent = pango_layout_get_baseline(layout);
+  double descent = logical_rect.height - ascent;
+
+  double adjustment;
 
   switch (baseline) {
   case TEXT_BASELINE_ALPHABETIC:
-    return ascent;
+    adjustment = ascent;
+    break;
   case TEXT_BASELINE_MIDDLE:
-    return (ascent + descent) / 2.0;
+    adjustment = logical_rect.height / 2.0 + (logical_rect.height - ascent) / 2.0;
+    break;
   case TEXT_BASELINE_BOTTOM:
-    return ascent + descent;
+    adjustment = ascent + descent;
+    break;
+  case TEXT_BASELINE_TOP:
+    adjustment = descent;
+    break;
+  case TEXT_BASELINE_HANGING:
+    adjustment = 1.5 * descent;
+    break;
+  case TEXT_BASELINE_IDEOGRAPHIC:
+    adjustment = (ascent + logical_rect.height) / 2.0;
+    break;
   default:
     return 0;
   }
+  return 1.0 / PANGO_SCALE * adjustment;
 }
 
 /*
