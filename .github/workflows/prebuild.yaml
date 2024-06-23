@@ -145,7 +145,7 @@ jobs:
         node: [21]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-latest
+    runs-on: macos-12 # macos-14+ is M1
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
