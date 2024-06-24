@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Allow alternate or properly escaped quotes *within* font-family names
 
 3.0.0
 ==================
