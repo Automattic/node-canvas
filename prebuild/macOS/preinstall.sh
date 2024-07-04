@@ -10,6 +10,6 @@ rm -f /usr/local/bin/python3-config || :
 
 # two or more of these packages have python3 as a dependency, and --overwrite
 # doesn't work to make them ignore conflicts. For now just ignore errors, yolo.
-brew install --force pkg-config cairo pango librsvg giflib || :
+brew install --force pkg-config cairo pango libpng jpeg giflib librsvg pixman || :
 
 pip3 install --user --break-system-packages macpack

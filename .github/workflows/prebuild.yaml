@@ -144,8 +144,9 @@ jobs:
       matrix:
         node: [21]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-12 # macos-14+ is M1
+        macos_version: ["13", "latest"] # macos-14+ is M1
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS ${{ matrix.macos_version }}
+    runs-on: macos-${{ matrix.macos_version }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -174,7 +175,7 @@ jobs:
 
       - name: Test binary
         run: |
-          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
+          brew uninstall --force --ignore-dependencies cairo pango libpng jpeg giflib librsvg pixman harfbuzz
           npm test
 
       - name: Make bundle
