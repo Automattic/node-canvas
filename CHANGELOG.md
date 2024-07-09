@@ -40,6 +40,7 @@ This release notably changes to using N-API. 🎉
 * Fix issue related to improper parsing of leading and trailing whitespaces in CSS color. (#2301)
 * RGB functions should support real numbers now instead of just integers. (#2339)
 * Allow alternate or properly escaped quotes *within* font-family names
+* Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
 
 2.11.2
 ==================
