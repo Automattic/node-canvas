@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* fix TextMetrics type to include `actualBoundingBoxLeft`, `actualBoundingBoxRight`, `fontBoundingBoxAscent`, and `fontBoundingBoxDescent` properties
+
 ### Fixed
 
 3.0.0
