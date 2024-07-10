@@ -739,6 +739,7 @@ rgba_from_hex_string(const char *str, short *ok) {
 
 static int32_t
 rgba_from_name_string(const char *str, short *ok) {
+  WHITESPACE;
   std::string lowered(str);
   std::transform(lowered.begin(), lowered.end(), lowered.begin(), tolower);
   auto color = named_colors.find(lowered);
@@ -765,6 +766,7 @@ rgba_from_name_string(const char *str, short *ok) {
 
 int32_t
 rgba_from_string(const char *str, short *ok) {
+  WHITESPACE;
   if ('#' == str[0])
     return rgba_from_hex_string(++str, ok);
   if (str == strstr(str, "rgba"))
