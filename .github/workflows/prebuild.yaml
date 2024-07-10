@@ -143,7 +143,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [21]
-        canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
+        canvas_tag: ["m1-testing"] # e.g. "v2.6.1"
         os:
           - runner: macos-latest
             arch: x64
