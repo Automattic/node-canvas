@@ -159,8 +159,9 @@ wrap_float(T value, T limit) {
 
 static bool
 parse_rgb_channel(const char** pStr, uint8_t *pChannel) {
-  int channel;
-  if (parse_integer(pStr, &channel)) {
+  float f_channel;
+  if (parse_css_number(pStr, &f_channel)) {
+    int channel = (int) ceil(f_channel);
     *pChannel = clip(channel, 0, 255);
     return true;
   }

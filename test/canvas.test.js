@@ -292,6 +292,17 @@ describe('Canvas', function () {
     ctx.fillStyle = '       rgb( 255 100 90  0.1)'
     assert.equal('rgba(255, 100, 90, 0.10)', ctx.fillStyle)
 
+    ctx.fillStyle = 'rgb(124.00, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb( 255, 200.09, 90, 40%)'
+    assert.equal('rgba(255, 201, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255.00, 199.03, 90, 50 %)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 300.09, 90, 40%)'
+    assert.equal('rgba(255, 255, 90, 0.40)', ctx.fillStyle)
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
