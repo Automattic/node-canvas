@@ -88,7 +88,9 @@ describe('Canvas', function () {
       '20px "new century schoolbook", serif',
       { size: 20, unit: 'px', family: 'new century schoolbook,serif' },
       '20px "Arial bold 300"', // synthetic case with weight keyword inside family
-      { size: 20, unit: 'px', family: 'Arial bold 300', variant: 'normal' }
+      { size: 20, unit: 'px', family: 'Arial bold 300', variant: 'normal' },
+      `50px "Helvetica 'Neue'", "foo \\"bar\\" baz" , "Someone's weird \\'edge\\' case", sans-serif`,
+      { size: 50, unit: 'px', family: `Helvetica 'Neue',foo "bar" baz,Someone's weird 'edge' case,sans-serif` }
     ]
 
     for (let i = 0, len = tests.length; i < len; ++i) {
