@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
+
 ### Fixed
 
 
