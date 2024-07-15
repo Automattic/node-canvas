@@ -163,6 +163,13 @@ describe('Canvas', function () {
     ctx.fillStyle = '#FGG'
     assert.equal('#ff0000', ctx.fillStyle)
 
+    ctx.fillStyle = '      #FCA'
+    assert.equal('#ffccaa', ctx.fillStyle)
+
+    ctx.fillStyle = '         #ffccaa'
+    assert.equal('#ffccaa', ctx.fillStyle)
+
+
     ctx.fillStyle = '#fff'
     ctx.fillStyle = 'afasdfasdf'
     assert.equal('#ffffff', ctx.fillStyle)
@@ -282,7 +289,20 @@ describe('Canvas', function () {
     ctx.fillStyle = 'rgb( 255 200 90  0.1)'
     assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
 
+    ctx.fillStyle = '       rgb( 255 100 90  0.1)'
+    assert.equal('rgba(255, 100, 90, 0.10)', ctx.fillStyle)
 
+    ctx.fillStyle = 'rgb(124.00, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb( 255, 200.09, 90, 40%)'
+    assert.equal('rgba(255, 201, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255.00, 199.03, 90, 50 %)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 300.09, 90, 40%)'
+    assert.equal('rgba(255, 255, 90, 0.40)', ctx.fillStyle)
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
@@ -305,6 +325,9 @@ describe('Canvas', function () {
 
     ctx.fillStyle = 'hsl(237, 76%, 25%)'
     assert.equal('#0f1470', ctx.fillStyle)
+
+    ctx.fillStyle = '      hsl(0, 150%, 150%)'
+    assert.equal('#ffffff', ctx.fillStyle)
 
     ctx.fillStyle = 'hsl(240, 73%, 25%)'
     assert.equal('#11116e', ctx.fillStyle)
