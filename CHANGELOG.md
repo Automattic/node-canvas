@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Added testing on Node.js 22.x and simplified GitHub Actions `ci.yaml`.
 ### Fixed
 
 
