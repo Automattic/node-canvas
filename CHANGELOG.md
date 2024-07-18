@@ -31,6 +31,7 @@ This release notably changes to using N-API. 🎉
 * Replaced `dtslint` with `tsd` (#2313)
 ### Added
 * Added string tags to support class detection
+* Throw Cairo errors in canvas.toBuffer()
 ### Fixed
 * Fix a case of use-after-free. (#2229)
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
