@@ -755,6 +755,11 @@ describe('Canvas', function () {
         assertPixel(0xffff0000, 5, 0, 'first red pixel')
       })
     })
+
+    it('Canvas#toBuffer("application/pdf")', function () {
+      const buf = createCanvas(200, 200, 'pdf').toBuffer('application/pdf')
+      assert.equal('PDF', buf.slice(1, 4).toString())
+    })
   })
 
   describe('#toDataURL()', function () {
@@ -1999,5 +2004,37 @@ describe('Canvas', function () {
         ctx.restore()
       })
     }
+  })
+
+  describe('Context2d#beingTag()/endTag()', function () {
+    before(function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      if (!('beginTag' in ctx)) {
+        this.skip()
+      }
+    })
+
+    it('generates a pdf', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      ctx.beginTag('Link', "uri='http://example.com'")
+      ctx.strokeText('hello', 0, 0)
+      ctx.endTag('Link')
+      const buf = canvas.toBuffer('application/pdf')
+      assert.equal('PDF', buf.slice(1, 4).toString())
+    })
+
+    it('requires tag argument', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      assert.throws(() => { ctx.beginTag() })
+    })
+
+    it('requires attributes to be a string', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      assert.throws(() => { ctx.beginTag('Link', {}) })
+    })
   })
 })

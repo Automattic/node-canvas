@@ -135,6 +135,10 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern", napi_default_method),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient", napi_default_method),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient", napi_default_method),
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
+    InstanceMethod<&Context2d::EndTag>("endTag", napi_default_method),
+    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled", napi_default_jsproperty),
@@ -419,7 +423,7 @@ Context2d::fill(bool preserve) {
         width = cairo_image_surface_get_width(patternSurface);
         height = y2 - y1;
       }
-      
+
       cairo_new_path(_context);
       cairo_rectangle(_context, 0, 0, width, height);
       cairo_clip(_context);
@@ -3348,3 +3352,53 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+void
+Context2d::BeginTag(const Napi::CallbackInfo& info) {
+  std::string tagName = "";
+  std::string attributes = "";
+
+  if (info.Length() == 0) {
+    Napi::TypeError::New(env, "Tag name is required").ThrowAsJavaScriptException();
+    return;
+  } else {
+    if (!info[0].IsString()) {
+      Napi::TypeError::New(env, "Tag name must be a string.").ThrowAsJavaScriptException();
+      return;
+    } else {
+      tagName = info[0].As<Napi::String>().Utf8Value();
+    }
+
+    if (info.Length() > 1) {
+      if (!info[1].IsString()) {
+        Napi::TypeError::New(env, "Attributes must be a string matching Cairo's attribute format").ThrowAsJavaScriptException();
+        return;
+      } else {
+        attributes = info[1].As<Napi::String>().Utf8Value();
+      }
+    }
+  }
+
+  cairo_tag_begin(_context, tagName.c_str(), attributes.c_str());
+}
+
+void
+Context2d::EndTag(const Napi::CallbackInfo& info) {
+  if (info.Length() == 0) {
+    Napi::TypeError::New(env, "Tag name is required").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if (!info[0].IsString()) {
+    Napi::TypeError::New(env, "Tag name must be a string.").ThrowAsJavaScriptException();
+    return;
+  }
+
+  std::string tagName = info[0].As<Napi::String>().Utf8Value();
+
+  cairo_tag_end(_context, tagName.c_str());
+}
+
+#endif

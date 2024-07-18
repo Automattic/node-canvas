@@ -12,6 +12,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * `ctx.font` has a new C++ parser and is 2x-400x faster. Please file an issue if you experience different results, as caching has been removed.
 
 ### Added
+* Support for accessibility and links in PDFs
+
 ### Fixed
 
 3.0.1

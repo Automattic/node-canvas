@@ -515,6 +515,26 @@ ctx.addPage(400, 800)
 ctx.fillText('Hello World 2', 50, 80)
 ```
 
+It is possible to add hyperlinks using `.beginTag()` and `.endTag()`:
+
+```js
+ctx.beginTag('Link', "uri='https://google.com'")
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.endTag('Link')
+```
+
+Or with a defined rectangle:
+
+```js
+ctx.beginTag('Link', "uri='https://google.com' rect=[50 80 100 20]")
+ctx.endTag('Link')
+```
+
+Note that the syntax for attributes is unique to Cairo. See [cairo_tag_begin](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-begin) for the full documentation.
+
+You can create areas on the canvas using the "cairo.dest" tag, and then link to them using the "Link" tag with the `dest=` attribute. You can also define PDF structure for accessibility by using tag names like "P", "H1", and "TABLE". The standard tags are defined in §14.8.4 of the [PDF 1.7](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) specification.
+
 See also:
 
 * [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs
