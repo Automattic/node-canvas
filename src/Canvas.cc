@@ -382,7 +382,15 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
       closure = static_cast<SvgBackend*>(backend())->closure();
     }
 
-    cairo_surface_finish(surface());
+    cairo_surface_t *surf = surface();
+    cairo_surface_finish(surf);
+
+    cairo_status_t status = cairo_surface_status(surf);
+    if (status != CAIRO_STATUS_SUCCESS) {
+      Napi::Error::New(env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
+      return env.Undefined();
+    }
+
     return Napi::Buffer<uint8_t>::Copy(env, &closure->vec[0], closure->vec.size());
   }
 
