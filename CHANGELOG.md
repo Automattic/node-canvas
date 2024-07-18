@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Throw errors in canvas
 ### Fixed
 
 
