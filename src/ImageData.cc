@@ -14,8 +14,8 @@ ImageData::Initialize(Napi::Env& env, Napi::Object& exports) {
   InstanceData *data = env.GetInstanceData<InstanceData>();
 
   Napi::Function ctor = DefineClass(env, "ImageData", {
-    InstanceAccessor<&ImageData::GetWidth>("width"),
-    InstanceAccessor<&ImageData::GetHeight>("height")
+    InstanceAccessor<&ImageData::GetWidth>("width", napi_default_jsproperty),
+    InstanceAccessor<&ImageData::GetHeight>("height", napi_default_jsproperty)
   });
 
   exports.Set("ImageData", ctor);
