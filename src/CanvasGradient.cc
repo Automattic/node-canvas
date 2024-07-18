@@ -18,7 +18,7 @@ Gradient::Initialize(Napi::Env& env, Napi::Object& exports) {
   InstanceData* data = env.GetInstanceData<InstanceData>();
 
   Napi::Function ctor = DefineClass(env, "CanvasGradient", {
-    InstanceMethod<&Gradient::AddColorStop>("addColorStop")
+    InstanceMethod<&Gradient::AddColorStop>("addColorStop", napi_default_method)
   });
 
   exports.Set("CanvasGradient", ctor);

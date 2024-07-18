@@ -50,25 +50,25 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
 
   // Constructor
   Napi::Function ctor = DefineClass(env, "Canvas", {
-    InstanceMethod<&Canvas::ToBuffer>("toBuffer"),
-    InstanceMethod<&Canvas::StreamPNGSync>("streamPNGSync"),
-    InstanceMethod<&Canvas::StreamPDFSync>("streamPDFSync"),
+    InstanceMethod<&Canvas::ToBuffer>("toBuffer", napi_default_method),
+    InstanceMethod<&Canvas::StreamPNGSync>("streamPNGSync", napi_default_method),
+    InstanceMethod<&Canvas::StreamPDFSync>("streamPDFSync", napi_default_method),
 #ifdef HAVE_JPEG
-    InstanceMethod<&Canvas::StreamJPEGSync>("streamJPEGSync"),
+    InstanceMethod<&Canvas::StreamJPEGSync>("streamJPEGSync", napi_default_method),
 #endif
-    InstanceAccessor<&Canvas::GetType>("type"),
-    InstanceAccessor<&Canvas::GetStride>("stride"),
-    InstanceAccessor<&Canvas::GetWidth, &Canvas::SetWidth>("width"),
-    InstanceAccessor<&Canvas::GetHeight, &Canvas::SetHeight>("height"),
-    InstanceValue("PNG_NO_FILTERS", Napi::Number::New(env, PNG_NO_FILTERS)),
-    InstanceValue("PNG_FILTER_NONE", Napi::Number::New(env, PNG_FILTER_NONE)),
-    InstanceValue("PNG_FILTER_SUB", Napi::Number::New(env, PNG_FILTER_SUB)),
-    InstanceValue("PNG_FILTER_UP", Napi::Number::New(env, PNG_FILTER_UP)),
-    InstanceValue("PNG_FILTER_AVG", Napi::Number::New(env, PNG_FILTER_AVG)),
-    InstanceValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH)),
-    InstanceValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS)),
-    StaticMethod<&Canvas::RegisterFont>("_registerFont"),
-    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts")
+    InstanceAccessor<&Canvas::GetType>("type", napi_default_jsproperty),
+    InstanceAccessor<&Canvas::GetStride>("stride", napi_default_jsproperty),
+    InstanceAccessor<&Canvas::GetWidth, &Canvas::SetWidth>("width", napi_default_jsproperty),
+    InstanceAccessor<&Canvas::GetHeight, &Canvas::SetHeight>("height", napi_default_jsproperty),
+    StaticValue("PNG_NO_FILTERS", Napi::Number::New(env, PNG_NO_FILTERS), napi_default_jsproperty),
+    StaticValue("PNG_FILTER_NONE", Napi::Number::New(env, PNG_FILTER_NONE), napi_default_jsproperty),
+    StaticValue("PNG_FILTER_SUB", Napi::Number::New(env, PNG_FILTER_SUB), napi_default_jsproperty),
+    StaticValue("PNG_FILTER_UP", Napi::Number::New(env, PNG_FILTER_UP), napi_default_jsproperty),
+    StaticValue("PNG_FILTER_AVG", Napi::Number::New(env, PNG_FILTER_AVG), napi_default_jsproperty),
+    StaticValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH), napi_default_jsproperty),
+    StaticValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS), napi_default_jsproperty),
+    StaticMethod<&Canvas::RegisterFont>("_registerFont", napi_default_method),
+    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts", napi_default_method)
   });
 
   data->CanvasCtor = Napi::Persistent(ctor);
@@ -382,7 +382,15 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
       closure = static_cast<SvgBackend*>(backend())->closure();
     }
 
-    cairo_surface_finish(surface());
+    cairo_surface_t *surf = surface();
+    cairo_surface_finish(surf);
+
+    cairo_status_t status = cairo_surface_status(surf);
+    if (status != CAIRO_STATUS_SUCCESS) {
+      Napi::Error::New(env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
+      return env.Undefined();
+    }
+
     return Napi::Buffer<uint8_t>::Copy(env, &closure->vec[0], closure->vec.size());
   }
 
@@ -658,7 +666,7 @@ str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_numb
       return strdup(fallback);
     }
   }
-  
+
   return NULL;
 }
 

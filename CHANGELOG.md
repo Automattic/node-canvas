@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix class properties should have defaults as standard js classes would have (#2390)
 
 
 3.0.0
