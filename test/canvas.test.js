@@ -17,7 +17,8 @@ const {
   parseFont,
   registerFont,
   Canvas,
-  deregisterAllFonts
+  deregisterAllFonts,
+  cairoVersion
 } = require('../')
 
 function assertApprox(actual, expected, tol) {
@@ -827,6 +828,11 @@ describe('Canvas', function () {
         canvas.toBuffer('raw') // (side-effect: flushes canvas)
         assertPixel(0xffff0000, 5, 0, 'first red pixel')
       })
+    })
+
+    it('Canvas#toBuffer("application/pdf")', function () {
+      const buf = createCanvas(200, 200, 'pdf').toBuffer('application/pdf')
+      assert.equal('PDF', buf.slice(1, 4).toString())
     })
   })
 
@@ -2072,5 +2078,37 @@ describe('Canvas', function () {
         ctx.restore()
       })
     }
+  })
+
+  describe('Context2d#beingTag()/endTag()', function () {
+    before(function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      if (!('beginTag' in ctx)) {
+        this.skip()
+      }
+    })
+
+    it('generates a pdf', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      ctx.beginTag({ name: 'Link', uri: 'tes\'t' })
+      ctx.strokeText('hello', 0, 0)
+      ctx.closeTag()
+      const buf = canvas.toBuffer('application/pdf')
+      assert.equal('PDF', buf.slice(1, 4).toString())
+    })
+
+    it('must be a link', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      assert.throws(() => { ctx.beginTag({ name: 'other', uri: 'test' }) })
+    })
+
+    it('must be a ascii', function () {
+      const canvas = createCanvas(20, 20, 'pdf')
+      const ctx = canvas.getContext('2d')
+      assert.throws(() => { ctx.beginTag({ name: 'Link', uri: 'має бути ascii' }) })
+    })
   })
 })

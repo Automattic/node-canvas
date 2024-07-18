@@ -178,6 +178,10 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void SetFont(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetTextBaseline(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetTextAlign(const Napi::CallbackInfo& info, const Napi::Value& value);
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    void BeginTag(const Napi::CallbackInfo& info);
+    void CloseTag(const Napi::CallbackInfo& info);
+    #endif
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
