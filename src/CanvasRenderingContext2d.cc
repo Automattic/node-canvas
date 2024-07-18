@@ -134,6 +134,10 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern"),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient"),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient"),
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
+    InstanceMethod<&Context2d::CloseTag>("closeTag", napi_default_method),
+    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat"),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality"),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled"),
@@ -3354,3 +3358,29 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+/*
+ * Open and close a link tag
+ */
+
+void
+Context2d::BeginTag(const Napi::CallbackInfo& info) {
+  Napi::String strValue;
+  if (!info[0].ToString().UnwrapTo(&strValue)) return;
+
+  std::string str = strValue.Utf8Value();
+  std::string uri = "uri='" + str + "'";
+
+  cairo_t *ctx = context();
+  cairo_tag_begin(ctx, CAIRO_TAG_LINK, uri.c_str());
+}
+
+void
+Context2d::CloseTag(const Napi::CallbackInfo& info) {
+  cairo_t *ctx = context();
+  cairo_tag_end(ctx, CAIRO_TAG_LINK);
+}
+
+#endif
