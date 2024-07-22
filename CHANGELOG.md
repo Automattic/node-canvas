@@ -29,6 +29,7 @@ This release notably changes to using N-API. 🎉
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
 * Replaced `dtslint` with `tsd` (#2313)
+* Replaced `simple-get ` with ` Node.js builtin` `fetch` (#2309)
 ### Added
 * Added string tags to support class detection
 ### Fixed
