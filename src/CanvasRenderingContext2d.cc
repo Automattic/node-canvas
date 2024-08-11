@@ -2766,8 +2766,6 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
       x_offset = 0.0;
   }
 
-  cairo_matrix_t matrix;
-  cairo_get_matrix(ctx, &matrix);
   double y_offset = getBaselineAdjustment(layout, state->textBaseline);
 
   obj.Set("width", Napi::Number::New(env, logical_rect.width));
