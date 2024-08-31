@@ -400,10 +400,13 @@ export class DOMPoint {
 	x: number;
 	y: number;
 	z: number;
+	matrixTransform(matrix?: DOMMatrixInit): DOMPoint;
+	toJSON(): any;
+	static fromPoint(other?: DOMPointInit): DOMPoint;
 }
 
 export class DOMMatrix {
-	constructor(init: string | number[]);
+	constructor(init?: string | number[]);
 	toString(): string;
 	multiply(other?: DOMMatrix): DOMMatrix;
 	multiplySelf(other?: DOMMatrix): DOMMatrix;
@@ -414,6 +417,10 @@ export class DOMMatrix {
 	scale3d(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
 	scale3dSelf(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
 	scaleSelf(scaleX?: number, scaleY?: number, scaleZ?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	/**
+	 * @deprecated
+	 */
+	scaleNonUniform(scaleX?: number, scaleY?: number): DOMMatrix;
 	rotateFromVector(x?: number, y?: number): DOMMatrix;
 	rotateFromVectorSelf(x?: number, y?: number): DOMMatrix;
 	rotate(rotX?: number, rotY?: number, rotZ?: number): DOMMatrix;
@@ -430,6 +437,7 @@ export class DOMMatrix {
 	invertSelf(): DOMMatrix;
 	setMatrixValue(transformList: string): DOMMatrix;
 	transformPoint(point?: DOMPoint): DOMPoint;
+	toJSON(): any;
 	toFloat32Array(): Float32Array;
 	toFloat64Array(): Float64Array;
 	readonly is2D: boolean;
