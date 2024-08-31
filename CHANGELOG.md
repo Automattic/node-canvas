@@ -45,6 +45,7 @@ This release notably changes to using N-API. 🎉
 * Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
 * Fix class properties should have defaults as standard js classes (#2390)
 * Fixed Exif orientation in JPEG files being ignored (#1670)
+* Align DOMMatrix/DOMPoint to spec by adding missing methods
 
 2.11.2
 ==================
