@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Align DOMMatrix/DOMPoint to spec by adding missing methods
 
 
 3.0.0
