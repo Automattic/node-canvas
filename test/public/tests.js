@@ -2752,3 +2752,42 @@ tests['transformed drawimage'] = function (ctx) {
   ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
   ctx.drawImage(ctx.canvas, 0, 0)
 }
+
+// https://github.com/noell/jpg-exif-test-images
+for (let n = 1; n <= 8; n++) {
+  tests[`exif orientation ${n}`] = function (ctx, done) {
+    const img = new Image()
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0)
+      done()
+    }
+    img.src = imageSrc(`exif-orientation-f${n}.jpg`)
+  }
+}
+
+tests['invalid exif orientation 9'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fi.jpg`)
+}
+
+tests['two exif orientations, value 1 and value 2'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fm.jpg`)
+}
+
+tests['no exif orientation'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fn.jpg`)
+}
