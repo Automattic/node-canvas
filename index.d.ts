@@ -232,6 +232,8 @@ export class CanvasRenderingContext2D {
 	createPattern(image: Canvas|Image, repetition: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '' | null): CanvasPattern
 	createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
 	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
+	beginTag(config: {name: 'Link', uri: string}): void;
+	closeTag(): void;
 	/**
 	 * _Non-standard_. Defaults to 'good'. Affects pattern (gradient, image,
 	 * etc.) rendering quality.

@@ -134,6 +134,10 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern"),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient"),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient"),
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
+    InstanceMethod<&Context2d::CloseTag>("closeTag", napi_default_method),
+    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat"),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality"),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled"),
@@ -3352,3 +3356,77 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+/*
+ * Open and close a link tag
+ */
+
+void
+replaceAll( std::string &s, const std::string &search, const std::string &replace ) {
+    for( size_t pos = 0; ; pos += replace.length() ) {
+        // Locate the substring to replace
+        pos = s.find( search, pos );
+        if( pos == std::string::npos ) break;
+        // Replace by erasing and inserting
+        s.erase( pos, search.length() );
+        s.insert( pos, replace );
+    }
+}
+
+bool
+containsOnlyASCII(const std::string& str) {
+  for (auto c: str) {
+    if (static_cast<unsigned char>(c) > 127) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void
+Context2d::BeginTag(const Napi::CallbackInfo& info) {
+  if (info.Length() < 1 || !info[0].IsObject()) {
+    Napi::TypeError::New(env, "config must be an object").ThrowAsJavaScriptException();
+    return;
+  }
+
+  Napi::Object config = info[0].As<Napi::Object>();
+
+  Napi::String nameValue;
+  if (!config.Get("name").UnwrapTo(&nameValue)) {
+    Napi::TypeError::New(env, "config must have a name key").ThrowAsJavaScriptException();
+    return;
+  }
+  std::string name = nameValue.Utf8Value();
+  if (name != CAIRO_TAG_LINK) {
+    Napi::TypeError::New(env, "name must be 'Link'").ThrowAsJavaScriptException();
+    return;
+  }
+
+  Napi::String uriValue;
+  if (!config.Get("uri").UnwrapTo(&uriValue)) {
+    Napi::TypeError::New(env, "config must have a uri key").ThrowAsJavaScriptException();
+    return;
+  }
+  std::string uri = uriValue.Utf8Value();
+  if (!containsOnlyASCII(uri)) {
+    Napi::TypeError::New(env, "uri must be ascii only").ThrowAsJavaScriptException();
+    return;
+  }
+
+  replaceAll(uri, "'", "\\'");
+  std::string attrs = "uri='" + uri + "'";
+
+  cairo_t *ctx = context();
+  cairo_tag_begin(ctx, CAIRO_TAG_LINK, attrs.c_str());
+}
+
+void
+Context2d::CloseTag(const Napi::CallbackInfo& info) {
+  cairo_t *ctx = context();
+  cairo_tag_end(ctx, CAIRO_TAG_LINK);
+}
+
+#endif
