@@ -33,7 +33,7 @@ expectType<number>(dm.a)
 
 expectType<Buffer>(canv.toBuffer())
 expectType<Buffer>(canv.toBuffer('application/pdf'))
-canv.toBuffer((err, data) => {}, 'image/png')
+canv.toBuffer((err, data) => {}, 'image/png', {filters: Canvas.Canvas.PNG_ALL_FILTERS})
 expectAssignable<Readable>(canv.createJPEGStream({ quality: 0.5 }))
 expectAssignable<Readable>(canv.createPDFStream({ author: 'octocat' }))
 canv.toDataURL()

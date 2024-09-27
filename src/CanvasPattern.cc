@@ -21,7 +21,7 @@ Pattern::Initialize(Napi::Env& env, Napi::Object& exports) {
 
   // Constructor
   Napi::Function ctor = DefineClass(env, "CanvasPattern", {
-    InstanceMethod<&Pattern::setTransform>("setTransform")
+    InstanceMethod<&Pattern::setTransform>("setTransform", napi_default_method)
   });
 
   // Prototype
