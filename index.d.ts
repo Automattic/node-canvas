@@ -63,19 +63,19 @@ export class Canvas {
 	readonly stride: number;
 
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_NO_FILTERS: number
+	static readonly PNG_NO_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_ALL_FILTERS: number
+	static readonly PNG_ALL_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_NONE: number
+	static readonly PNG_FILTER_NONE: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_SUB: number
+	static readonly PNG_FILTER_SUB: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_UP: number
+	static readonly PNG_FILTER_UP: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_AVG: number
+	static readonly PNG_FILTER_AVG: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_PAETH: number
+	static readonly PNG_FILTER_PAETH: number
 
 	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 

@@ -694,6 +694,11 @@ describe('Canvas', function () {
       assert.equal('PNG', buf.slice(1, 4).toString())
     })
 
+    it('Canvas#toBuffer("image/png", {filters: PNG_ALL_FILTERS})', function () {
+      const buf = createCanvas(200, 200).toBuffer('image/png', { filters: Canvas.PNG_ALL_FILTERS })
+      assert.equal('PNG', buf.slice(1, 4).toString())
+    })
+
     it('Canvas#toBuffer("image/jpeg")', function () {
       const buf = createCanvas(200, 200).toBuffer('image/jpeg')
       assert.equal(buf[0], 0xff)
