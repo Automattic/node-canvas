@@ -78,12 +78,32 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_status_t loadGIF(FILE *stream);
 #endif
 #ifdef HAVE_JPEG
+    enum Orientation {
+        NORMAL,
+        MIRROR_HORIZ,
+        MIRROR_VERT,
+        ROTATE_180,
+        ROTATE_90_CW,
+        ROTATE_270_CW,
+        MIRROR_HORIZ_AND_ROTATE_90_CW,
+        MIRROR_HORIZ_AND_ROTATE_270_CW
+    };
     cairo_status_t loadJPEGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadJPEG(FILE *stream);
     void jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode);
-    cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info);
+    cairo_status_t decodeJPEGIntoSurface(jpeg_decompress_struct *info, Orientation orientation);
     cairo_status_t decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len);
     cairo_status_t assignDataAsMime(uint8_t *data, int len, const char *mime_type);
+
+    class Reader {
+    public:
+      virtual bool hasBytes(unsigned n) const = 0;
+      virtual uint8_t getNext() = 0;
+      virtual void skipBytes(unsigned n) = 0;
+    };
+    Orientation getExifOrientation(Reader& jpeg);
+    void updateDimensionsForOrientation(Orientation orientation);
+    void rotatePixels(uint8_t* pixels, int width, int height, int channels, Orientation orientation);
 #endif
     cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadBMP(FILE *stream);
