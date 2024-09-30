@@ -174,7 +174,7 @@ jobs:
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2 --arch=${{ matrix.os.arch }}
+          node-gyp rebuild -j 2
           . prebuild/macOS/bundle.sh
 
       - name: Test binary
