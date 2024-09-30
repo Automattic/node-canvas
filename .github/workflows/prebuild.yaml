@@ -144,8 +144,13 @@ jobs:
       matrix:
         node: [21]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-12 # macos-14+ is M1
+        os:
+          - runner: macos-12
+            arch: x64
+          - runner: macos-14
+            arch: arm64
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS ${{ matrix.os.arch }}
+    runs-on: ${{ matrix.os.runner }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -176,6 +181,11 @@ jobs:
         run: |
           brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
           npm test
+
+      - name: Sign the executable
+        uses: indygreg/apple-code-sign-action@v1
+        with:
+          input_path: build/Release/canvas.node
 
       - name: Make bundle
         id: make_bundle
