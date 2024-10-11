@@ -12,25 +12,39 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Fixed Exif orientation in JPEG files being ignored (#1670)
 
+
 3.0.0
 ==================
 
 This release notably changes to using N-API. 🎉
 
+### Breaking
+* Dropped support for Node.js 16.x and below.
 ### Changed
 * Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
+* Change from node-pre-gyp to prebuild-install
 * Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
 * Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
 * Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
 * Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
 * Remove unused private field `backend` in the `Backend` class. (#2229)
 * Add Node.js v20 to CI. (#2237)
+* Replaced `dtslint` with `tsd` (#2313)
+* Changed PNG consts to static properties of Canvas class
 ### Added
 * Added string tags to support class detection
+* Throw Cairo errors in canvas.toBuffer()
 ### Fixed
 * Fix a case of use-after-free. (#2229)
 * Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
 * Fix a potential memory leak. (#2229)
+* Fix the wrong type of setTransform
+* Fix the improper parsing of rgb functions issue. (#2300)
+* Fix issue related to improper parsing of leading and trailing whitespaces in CSS color. (#2301)
+* RGB functions should support real numbers now instead of just integers. (#2339)
+* Allow alternate or properly escaped quotes *within* font-family names
+* Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
+* Fix class properties should have defaults as standard js classes (#2390)
 
 2.11.2
 ==================

@@ -63,19 +63,19 @@ export class Canvas {
 	readonly stride: number;
 
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_NO_FILTERS: number
+	static readonly PNG_NO_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_ALL_FILTERS: number
+	static readonly PNG_ALL_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_NONE: number
+	static readonly PNG_FILTER_NONE: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_SUB: number
+	static readonly PNG_FILTER_SUB: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_UP: number
+	static readonly PNG_FILTER_UP: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_AVG: number
+	static readonly PNG_FILTER_AVG: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_PAETH: number
+	static readonly PNG_FILTER_PAETH: number
 
 	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 
@@ -128,10 +128,13 @@ export class Canvas {
 }
 
 export interface TextMetrics {
+	readonly alphabeticBaseline: number;
 	readonly actualBoundingBoxAscent: number;
 	readonly actualBoundingBoxDescent: number;
 	readonly actualBoundingBoxLeft: number;
 	readonly actualBoundingBoxRight: number;
+	readonly emHeightAscent: number;
+	readonly emHeightDescent: number;
 	readonly fontBoundingBoxAscent: number;
 	readonly fontBoundingBoxDescent: number;
 	readonly width: number;
@@ -201,6 +204,7 @@ export class CanvasRenderingContext2D {
 	getTransform(): DOMMatrix;
 	resetTransform(): void;
 	setTransform(transform?: DOMMatrix): void;
+	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
 	isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
 	scale(x: number, y: number): void;
 	clip(fillRule?: CanvasFillRule): void;

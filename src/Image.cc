@@ -53,14 +53,14 @@ Image::Initialize(Napi::Env& env, Napi::Object& exports) {
   Napi::HandleScope scope(env);
 
   Napi::Function ctor = DefineClass(env, "Image", {
-    InstanceAccessor<&Image::GetComplete>("complete"),
-    InstanceAccessor<&Image::GetWidth, &Image::SetWidth>("width"),
-    InstanceAccessor<&Image::GetHeight, &Image::SetHeight>("height"),
-    InstanceAccessor<&Image::GetNaturalWidth>("naturalWidth"),
-    InstanceAccessor<&Image::GetNaturalHeight>("naturalHeight"),
-    InstanceAccessor<&Image::GetDataMode, &Image::SetDataMode>("dataMode"),
-    StaticValue("MODE_IMAGE", Napi::Number::New(env, DATA_IMAGE)),
-    StaticValue("MODE_MIME", Napi::Number::New(env, DATA_MIME))
+    InstanceAccessor<&Image::GetComplete>("complete", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetWidth, &Image::SetWidth>("width", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetHeight, &Image::SetHeight>("height", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetNaturalWidth>("naturalWidth", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetNaturalHeight>("naturalHeight", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetDataMode, &Image::SetDataMode>("dataMode", napi_default_jsproperty),
+    StaticValue("MODE_IMAGE", Napi::Number::New(env, DATA_IMAGE), napi_default_jsproperty),
+    StaticValue("MODE_MIME", Napi::Number::New(env, DATA_MIME), napi_default_jsproperty)
   });
 
   // Used internally in lib/image.js
@@ -1514,10 +1514,10 @@ Image::renderSVGToSurface() {
   }
 
   RsvgRectangle viewport = {
-    .x = 0,
-    .y = 0,
-    .width = static_cast<double>(width),
-    .height = static_cast<double>(height),
+    0, // x
+    0, // y
+    static_cast<double>(width),
+    static_cast<double>(height)
   };
   gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
   if (!render_ok) {

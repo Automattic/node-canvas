@@ -5,15 +5,27 @@
 
 node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation for [Node.js](http://nodejs.org).
 
+> [!TIP]
+> **v3.0.0-rc2 is now available for testing on Linux (x64 glibc), macOS (x64) and Windows (x64)!** It's the first version
+> to use N-API and prebuild-install. Please give it a try and let us know if you run into any issues.
+> ```sh
+> npm install canvas@next
+> ```
+
 ## Installation
 
 ```bash
 $ npm install canvas
 ```
 
-By default, binaries for macOS, Linux and Windows will be downloaded. If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
+By default, pre-built binaries will be downloaded if you're on one of the following platforms:
+- macOS x86/64 (*not* Apple silicon)
+- Linux x86/64 (glibc only)
+- Windows x86/64
 
-The minimum version of Node.js required is **10.20.0**.
+If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
+
+The minimum version of Node.js required is **18.12.0**.
 
 ### Compiling
 
@@ -23,7 +35,7 @@ For detailed installation information, see the [wiki](https://github.com/Automat
 
 OS | Command
 ----- | -----
-OS X | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman`
+macOS | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman python-setuptools`
 Ubuntu | `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
 Fedora | `sudo yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel`
 Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
@@ -78,6 +90,8 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [createImageData()](#createimagedata)
 * [loadImage()](#loadimage)
 * [registerFont()](#registerfont)
+* [deregisterAllFonts()](#deregisterAllFonts)
+
 
 ### Non-standard APIs
 
@@ -169,6 +183,35 @@ ctx.fillText('Everyone hates this font :(', 250, 10)
 ```
 
 The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional and default to `'normal'`.
+
+### deregisterAllFonts()
+
+> ```ts
+> deregisterAllFonts() => void
+> ```
+
+Use `deregisterAllFonts` to unregister all fonts that have been previously registered. This method is useful when you want to remove all registered fonts, such as when using the canvas in tests
+
+```ts
+const { registerFont, createCanvas, deregisterAllFonts } = require('canvas')
+
+describe('text rendering', () => {
+    afterEach(() => {
+        deregisterAllFonts();
+    })
+    it('should render text with Comic Sans', () => {
+        registerFont('comicsans.ttf', { family: 'Comic Sans' })
+
+        const canvas = createCanvas(500, 500)
+        const ctx = canvas.getContext('2d')
+        
+        ctx.font = '12px "Comic Sans"'
+        ctx.fillText('Everyone loves this font :)', 250, 10)
+        
+        // assertScreenshot()
+    })
+})
+```
 
 ### Image#src
 

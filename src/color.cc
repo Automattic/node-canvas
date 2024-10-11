@@ -159,8 +159,9 @@ wrap_float(T value, T limit) {
 
 static bool
 parse_rgb_channel(const char** pStr, uint8_t *pChannel) {
-  int channel;
-  if (parse_integer(pStr, &channel)) {
+  float f_channel;
+  if (parse_css_number(pStr, &f_channel)) {
+    int channel = (int) ceil(f_channel);
     *pChannel = clip(channel, 0, 255);
     return true;
   }
@@ -210,6 +211,9 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 #define WHITESPACE_OR_COMMA \
   while (' ' == *str || ',' == *str) ++str;
 
+#define WHITESPACE_OR_COMMA_OR_SLASH \
+  while (' ' == *str || ',' == *str || '/' == *str) ++str;
+
 #define CHANNEL(NAME) \
    if (!parse_rgb_channel(&str, &NAME)) \
     return 0; \
@@ -226,7 +230,16 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 
 #define ALPHA(NAME) \
     if (*str >= '1' && *str <= '9') { \
-      NAME = 1; \
+      NAME = 0; \
+      float n = .1f; \
+      while(*str >='0' && *str <= '9') { \
+        NAME += (*str - '0') * n; \
+        str++; \
+      } \
+      while(*str == ' ')str++; \
+      if(*str != '%') { \
+        NAME = 1; \
+      } \
     } else { \
       if ('0' == *str) { \
         NAME = 0; \
@@ -613,13 +626,15 @@ rgba_from_rgb_string(const char *str, short *ok) {
     str += 4;
     WHITESPACE;
     uint8_t r = 0, g = 0, b = 0;
+    float a=1.f;
     CHANNEL(r);
     WHITESPACE_OR_COMMA;
     CHANNEL(g);
     WHITESPACE_OR_COMMA;
     CHANNEL(b);
-    WHITESPACE;
-    return *ok = 1, rgba_from_rgb(r, g, b);
+    WHITESPACE_OR_COMMA_OR_SLASH;
+    ALPHA(a);
+    return *ok = 1, rgba_from_rgba(r, g, b, (int) (255 * a));
   }
   return *ok = 0;
 }
@@ -640,7 +655,7 @@ rgba_from_rgba_string(const char *str, short *ok) {
     CHANNEL(g);
     WHITESPACE_OR_COMMA;
     CHANNEL(b);
-    WHITESPACE_OR_COMMA;
+    WHITESPACE_OR_COMMA_OR_SLASH;
     ALPHA(a);
     WHITESPACE;
     return *ok = 1, rgba_from_rgba(r, g, b, (int) (a * 255));
@@ -725,6 +740,7 @@ rgba_from_hex_string(const char *str, short *ok) {
 
 static int32_t
 rgba_from_name_string(const char *str, short *ok) {
+  WHITESPACE;
   std::string lowered(str);
   std::transform(lowered.begin(), lowered.end(), lowered.begin(), tolower);
   auto color = named_colors.find(lowered);
@@ -751,6 +767,7 @@ rgba_from_name_string(const char *str, short *ok) {
 
 int32_t
 rgba_from_string(const char *str, short *ok) {
+  WHITESPACE;
   if ('#' == str[0])
     return rgba_from_hex_string(++str, ok);
   if (str == strstr(str, "rgba"))

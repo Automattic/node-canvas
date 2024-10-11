@@ -14,4 +14,4 @@ var ctx = canvas.getContext('2d');
 
 ## Your Environment
 * Version of node-canvas (output of `npm list canvas` or `yarn list canvas`):
-* Environment (e.g. node 4.2.0 on Mac OS X 10.8):
+* Environment (e.g. node 20.9.0 on macOS 14.1.1):

@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18, 20]
+        node: [18.12.0, 20.9.0]
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         run: |
           sudo apt update
@@ -33,12 +33,16 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18, 20]
+        # FIXME: Node.js 20.9.0 is currently broken on Windows, in the `registerFont` test:
+        # ENOENT: no such file or directory, lstat 'D:\a\node-canvas\node-canvas\examples\pfennigFont\pfennigMultiByte🚀.ttf'
+        # ref: https://github.com/nodejs/node/issues/48673
+        # ref: https://github.com/nodejs/node/pull/50650
+        node: [18.12.0]
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         run: |
           Invoke-WebRequest "https://ftp-osl.osuosl.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip" -OutFile "gtk.zip"
@@ -54,20 +58,21 @@ jobs:
 
   macOS:
     name: Test on macOS
-    runs-on: macos-latest
+    runs-on: macos-12
     strategy:
       matrix:
-        node: [10, 12, 14, 16, 18, 20]
+        node: [18.12.0, 20.9.0]
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         run: |
           brew update
           brew install python3 || : # python doesn't need to be linked
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
+          pip install setuptools
       - name: Install
         run: npm install --build-from-source
       - name: Test
@@ -77,13 +82,13 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 14
-      - uses: actions/checkout@v3
+          node-version: 20.9.0
+      - uses: actions/checkout@v4
       - name: Install
         run: npm install --ignore-scripts
       - name: Lint
         run: npm run lint
       - name: Lint Types
-        run: npm run dtslint
+        run: npm run tsd

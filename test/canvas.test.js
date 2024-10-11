@@ -88,7 +88,9 @@ describe('Canvas', function () {
       '20px "new century schoolbook", serif',
       { size: 20, unit: 'px', family: 'new century schoolbook,serif' },
       '20px "Arial bold 300"', // synthetic case with weight keyword inside family
-      { size: 20, unit: 'px', family: 'Arial bold 300', variant: 'normal' }
+      { size: 20, unit: 'px', family: 'Arial bold 300', variant: 'normal' },
+      `50px "Helvetica 'Neue'", "foo \\"bar\\" baz" , "Someone's weird \\'edge\\' case", sans-serif`,
+      { size: 50, unit: 'px', family: `Helvetica 'Neue',foo "bar" baz,Someone's weird 'edge' case,sans-serif` }
     ]
 
     for (let i = 0, len = tests.length; i < len; ++i) {
@@ -163,6 +165,13 @@ describe('Canvas', function () {
     ctx.fillStyle = '#FGG'
     assert.equal('#ff0000', ctx.fillStyle)
 
+    ctx.fillStyle = '      #FCA'
+    assert.equal('#ffccaa', ctx.fillStyle)
+
+    ctx.fillStyle = '         #ffccaa'
+    assert.equal('#ffccaa', ctx.fillStyle)
+
+
     ctx.fillStyle = '#fff'
     ctx.fillStyle = 'afasdfasdf'
     assert.equal('#ffffff', ctx.fillStyle)
@@ -213,6 +222,89 @@ describe('Canvas', function () {
     ctx.fillStyle = 'rgba(124, 58, 26, 0)';
     assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
 
+    ctx.fillStyle = 'rgba( 255, 200, 90, 40%)'
+    assert.equal('rgba(255, 200, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90, 50 %)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90, 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90, 10 %)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90 / 40%)'
+    assert.equal('rgba(255, 200, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90 / 0.5)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90 / 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255, 200, 90 / 0.1)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255 200 90 / 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba( 255 200 90  0.1)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(0, 0, 0, 42.42)'
+    assert.equal('#000000', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(255, 250, 255)';
+    assert.equal('#fffaff', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb(124, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb( 255, 200, 90, 40%)'
+    assert.equal('rgba(255, 200, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90, 50 %)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90, 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90, 10 %)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90 / 40%)'
+    assert.equal('rgba(255, 200, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90 / 0.5)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90 / 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 200, 90 / 0.1)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255 200 90 / 10%)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255 200 90  0.1)'
+    assert.equal('rgba(255, 200, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = '       rgb( 255 100 90  0.1)'
+    assert.equal('rgba(255, 100, 90, 0.10)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(124.00, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgb( 255, 200.09, 90, 40%)'
+    assert.equal('rgba(255, 201, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255.00, 199.03, 90, 50 %)'
+    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 300.09, 90, 40%)'
+    assert.equal('rgba(255, 255, 90, 0.40)', ctx.fillStyle)
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
@@ -235,6 +327,9 @@ describe('Canvas', function () {
 
     ctx.fillStyle = 'hsl(237, 76%, 25%)'
     assert.equal('#0f1470', ctx.fillStyle)
+
+    ctx.fillStyle = '      hsl(0, 150%, 150%)'
+    assert.equal('#ffffff', ctx.fillStyle)
 
     ctx.fillStyle = 'hsl(240, 73%, 25%)'
     assert.equal('#11116e', ctx.fillStyle)
@@ -596,6 +691,11 @@ describe('Canvas', function () {
 
     it('Canvas#toBuffer("image/png", {compressionLevel: 5})', function () {
       const buf = createCanvas(200, 200).toBuffer('image/png', { compressionLevel: 5 })
+      assert.equal('PNG', buf.slice(1, 4).toString())
+    })
+
+    it('Canvas#toBuffer("image/png", {filters: PNG_ALL_FILTERS})', function () {
+      const buf = createCanvas(200, 200).toBuffer('image/png', { filters: Canvas.PNG_ALL_FILTERS })
       assert.equal('PNG', buf.slice(1, 4).toString())
     })
 
