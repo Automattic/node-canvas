@@ -772,7 +772,11 @@ public:
 
   bool hasBytes(unsigned n) const override { return (_idx + n - 1 < _len); }
 
-  uint8_t getNext() override { return _buf[_idx++]; }
+  uint8_t getNext() override {
+    if (_idx < _len) {
+      return _buf[_idx++];
+    }
+  }
 
   void skipBytes(unsigned n) override { _idx += n; }
 

@@ -10,7 +10,6 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
-* Fixed Exif orientation in JPEG files being ignored (#1670)
 
 
 3.0.0
@@ -45,6 +44,7 @@ This release notably changes to using N-API. 🎉
 * Allow alternate or properly escaped quotes *within* font-family names
 * Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
 * Fix class properties should have defaults as standard js classes (#2390)
+* Fixed Exif orientation in JPEG files being ignored (#1670)
 
 2.11.2
 ==================
