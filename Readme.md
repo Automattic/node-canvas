@@ -24,10 +24,10 @@ By default, pre-built binaries will be downloaded if you're on one of the follow
 - Windows x86/64
 
 If you want to build from source, 
-use `npm_config_build_from_source=true yarn install`
 
-or with npm:
-use `npm install --build-from-source`
+For npm, use: `npm install --build-from-source`
+
+or with yarn, use: `npm_config_build_from_source=true yarn install` 
 
 and see the **Compiling** section below.
 
@@ -595,11 +595,9 @@ Notes and caveats:
 First make sure you've built the latest version. Get all the deps you need (see [compiling](#compiling) above), and run:
 
 ```
-npm_config_build_from_source=true yarn install
+For npm, use: `npm install --build-from-source`
 
-or with npm:
-
-npm install --build-from-source
+or with yarn, use: `npm_config_build_from_source=true yarn install`
 ```
 
 For visual tests: `npm run test-server` and point your browser to http://localhost:4000.
