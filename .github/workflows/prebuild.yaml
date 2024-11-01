@@ -261,6 +261,8 @@ jobs:
       - name: Bundle pt 2
         shell: msys2 {0}
         run: |
+          # removes object files and debug
+          . prebuild/Windows/bundle.sh
           ./depends.exe -c -oc depends.csv build\\Release\\canvas.node || true
           [ -f depends.csv ] || { echo "error invoking depends.exe"; exit 1; }
 
@@ -272,7 +274,7 @@ jobs:
           for dll in $copies; do
             cp /ucrt64/bin/$dll build/Release
           done;
-
+          
       - name: Test binary
         # By not running in msys2, this doesn't have access to the msys2 libs
         run: npm test
