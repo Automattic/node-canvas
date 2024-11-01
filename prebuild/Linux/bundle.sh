@@ -13,3 +13,5 @@ for so in $copies; do
   # Set the run_path for all dependencies.
   patchelf --set-rpath '$ORIGIN' build/Release/$(basename $so)
 done;
+
+find "./build/Release" -type f -name "*.so*" -exec strip --strip-unneeded {} \;
