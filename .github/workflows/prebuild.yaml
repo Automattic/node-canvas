@@ -234,7 +234,7 @@ jobs:
       matrix:
         node: [22]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOSarm64
     runs-on: macos-latest # macos-14+ is M1
     if: contains(fromJson(inputs.os), 'macos-latest')
     env:
@@ -309,7 +309,7 @@ jobs:
         node: [22]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
-    runs-on: target-latest
+    runs-on: windows-latest
     if: contains(fromJson(inputs.os), 'windows-latest')
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
