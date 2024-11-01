@@ -152,6 +152,80 @@ jobs:
               name: assetName,
               data: fs.readFileSync(assetName)
             });
+  macOSarm:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22]
+        canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOSarm64
+    runs-on: macos-latest # macos-14+ is M1
+    if: contains(fromJson(inputs.os), 'macos-latest')
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          set -Eeuxo pipefail
+          git checkout ${{ matrix.canvas_tag }}
+          git checkout $GITHUB_SHA -- prebuild/
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          . prebuild/macOS/preinstall.sh
+          cp prebuild/macOS/binding.gyp binding.gyp
+          node-gyp rebuild -j 2
+          . prebuild/macOS/bundle.sh
+
+      - name: Test binary
+        run: |
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
+          npm test
+
+      - name: Make bundle
+        id: make_bundle
+        run: . prebuild/tarball.sh
+
+      - name: Upload
+        uses: actions/github-script@v2
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
+            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({owner, repo});
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release)
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset)
+              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+
+            // (This is equivalent to actions/upload-release-asset. We're
+            // already in a script, so might as well do it here.)
+            const r = await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetName)
+            });
+
 
   macOS:
     strategy:
@@ -228,80 +302,6 @@ jobs:
             });
 
             
-  macOSarm:
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [22]
-        canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOSarm64
-    runs-on: macos-latest # macos-14+ is M1
-    if: contains(fromJson(inputs.os), 'macos-latest')
-    env:
-      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ matrix.canvas_tag }}
-          # Fetch all commits/all branches so we can checkout the prebuild
-          # branch's files
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Build
-        run: |
-          set -Eeuxo pipefail
-          git checkout ${{ matrix.canvas_tag }}
-          git checkout $GITHUB_SHA -- prebuild/
-          npm install -g node-gyp
-          npm install --ignore-scripts
-          . prebuild/macOS/preinstall.sh
-          cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
-          . prebuild/macOS/bundle.sh
-
-      - name: Test binary
-        run: |
-          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
-          npm test
-
-      - name: Make bundle
-        id: make_bundle
-        run: . prebuild/tarball.sh
-
-      - name: Upload
-        uses: actions/github-script@v2
-        with:
-          script: |
-            const fs = require("fs");
-            const assetName = "${{ steps.make_bundle.outputs.asset_name }}";
-            const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-
-            const releases = await github.repos.listReleases({owner, repo});
-            const release = releases.data.find(r => r.tag_name === tagName);
-            if (!release)
-              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-
-            const oldAsset = release.assets.find(a => a.name === assetName);
-            if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
-
-            // (This is equivalent to actions/upload-release-asset. We're
-            // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
-              url: release.upload_url,
-              headers: {
-                "content-type": "application/x-gzip",
-                "content-length": `${fs.statSync(assetName).size}`
-              },
-              name: assetName,
-              data: fs.readFileSync(assetName)
-            });
-
   Win:
     strategy:
       fail-fast: false
