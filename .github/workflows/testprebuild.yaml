@@ -19,11 +19,16 @@ on:
         description: 'Target node-canvas version'
         required: true
         type: choice
+        # add releases here.  e.g.
+        #options:
+        #  - '["vdev"]'
+        #  - '["v3.0.0-rc2"]'
+        #  - '["vdev", "v3.0.0-rc2"]'
+        #default: '["vdev", "v3.0.0-rc2"]'
+        
         options:
-          - '["vdev"]'
           - '["v3.0.0-rc2"]'
-          - '["vdev", "v3.0.0-rc2"]'
-        default: '["vdev", "v3.0.0-rc2"]'
+        default: '["v3.0.0-rc2"]'
       node:
         description: 'Target node version'
         required: true
