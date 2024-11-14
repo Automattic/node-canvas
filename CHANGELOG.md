@@ -44,6 +44,7 @@ This release notably changes to using N-API. 🎉
 * Allow alternate or properly escaped quotes *within* font-family names
 * Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
 * Fix class properties should have defaults as standard js classes (#2390)
+* Fixed Exif orientation in JPEG files being ignored (#1670)
 
 2.11.2
 ==================
