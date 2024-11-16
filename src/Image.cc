@@ -773,9 +773,7 @@ public:
   bool hasBytes(unsigned n) const override { return (_idx + n - 1 < _len); }
 
   uint8_t getNext() override {
-    if (_idx < _len) {
-      return _buf[_idx++];
-    }
+    return _buf[_idx++];
   }
 
   void skipBytes(unsigned n) override { _idx += n; }
@@ -789,9 +787,9 @@ private:
 class StreamReader : public Image::Reader {
 public:
   StreamReader(FILE *stream) : _stream(stream), _len(0), _idx(0) {
-    fseeko(_stream, 0, SEEK_END);
-    _len = ftello(_stream);
-    fseeko(_stream, 0, SEEK_SET);
+    fseek(_stream, 0, SEEK_END);
+    _len = ftell(_stream);
+    fseek(_stream, 0, SEEK_SET);
   }
 
   bool hasBytes(unsigned n) const override { return (_idx + n - 1 < _len); }
@@ -803,13 +801,13 @@ public:
 
   void skipBytes(unsigned n) override {
     _idx += n;
-    fseeko(_stream, _idx, SEEK_SET);
+    fseek(_stream, _idx, SEEK_SET);
   }
 
 private:
   FILE* _stream;
-  off_t _len;
-  off_t _idx;
+  unsigned _len;
+  unsigned _idx;
 };
 
 void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
@@ -1289,8 +1287,12 @@ Image::getExifOrientation(Reader& jpeg) {
     };
     // The first two bytes of TIFF header are "II" if little-endian ("Intel")
     // and "MM" if big-endian ("Motorola")
-    auto readUint32 = (isLE ? readUint32Little : readUint32Big);
-    auto readUint16 = (isLE ? readUint16Little : readUint16Big);
+    auto readUint32 = [readUint32Little, readUint32Big, isLE](Reader &jpeg) -> uint32_t {
+      return isLE ? readUint32Little(jpeg) : readUint32Big(jpeg);
+    };
+    auto readUint16 = [readUint16Little, readUint16Big, isLE](Reader &jpeg) -> uint32_t {
+      return isLE ? readUint16Little(jpeg) : readUint16Big(jpeg);
+    };
     // offset to the IFD0 (offset from beginning of TIFF header, II/MM,
     // which is 8 bytes before where we are after reading the uint32)
     jpeg.skipBytes(readUint32(jpeg) - 8);
