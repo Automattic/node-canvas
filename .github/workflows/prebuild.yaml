@@ -164,7 +164,7 @@ jobs:
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.canvas_tag }}
           # Fetch all commits/all branches so we can checkout the prebuild
