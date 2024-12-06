@@ -156,7 +156,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22]
+        node: [latest]
         canvas_tag: ["v3.0.0-rc2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOSarm64
     runs-on: macos-latest # macos-14+ is M1
