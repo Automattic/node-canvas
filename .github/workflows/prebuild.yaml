@@ -197,7 +197,7 @@ jobs:
         run: . prebuild/tarball.sh
 
       - name: Upload
-        uses: actions/github-script@v2
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require("fs");
