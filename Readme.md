@@ -521,6 +521,22 @@ ctx.addPage(400, 800)
 ctx.fillText('Hello World 2', 50, 80)
 ```
 
+It is possible to add hyperlinks use `.beginTag()` and `.closeTag()`:
+
+```js
+ctx.beginTag({name: 'Link', uri: 'https://google.com'})
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.closeTag()
+```
+
+Or with a defined rectangle:
+
+```js
+ctx.beginTag({name: 'Link', uri: 'https://google.com', rect: { x: 50, y: 80, width: 100, height: 20 }})
+ctx.closeTag()
+```
+
 See also:
 
 * [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs

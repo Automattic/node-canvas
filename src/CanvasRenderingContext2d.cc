@@ -19,6 +19,7 @@
 #include <string>
 #include "Util.h"
 #include <vector>
+#include <iostream>
 
 /*
  * Rectangle arg assertions.
@@ -134,6 +135,10 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern", napi_default_method),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient", napi_default_method),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient", napi_default_method),
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
+    InstanceMethod<&Context2d::CloseTag>("closeTag", napi_default_method),
+    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled", napi_default_jsproperty),
@@ -418,7 +423,7 @@ Context2d::fill(bool preserve) {
         width = cairo_image_surface_get_width(patternSurface);
         height = y2 - y1;
       }
-      
+
       cairo_new_path(_context);
       cairo_rectangle(_context, 0, 0, width, height);
       cairo_clip(_context);
@@ -3352,3 +3357,103 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+/*
+ * Open and close a link tag
+ */
+
+void
+replaceAll( std::string &s, const std::string &search, const std::string &replace ) {
+    for( size_t pos = 0; ; pos += replace.length() ) {
+        // Locate the substring to replace
+        pos = s.find( search, pos );
+        if( pos == std::string::npos ) break;
+        // Replace by erasing and inserting
+        s.erase( pos, search.length() );
+        s.insert( pos, replace );
+    }
+}
+
+bool
+containsOnlyASCII(const std::string& str) {
+  for (auto c: str) {
+    if (static_cast<unsigned char>(c) > 127) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void
+Context2d::BeginTag(const Napi::CallbackInfo& info) {
+  if (info.Length() < 1 || !info[0].IsObject()) {
+    Napi::TypeError::New(env, "config must be an object").ThrowAsJavaScriptException();
+    return;
+  }
+
+  Napi::Object config = info[0].As<Napi::Object>();
+
+  Napi::String nameValue;
+  if (!config.Get("name").UnwrapTo(&nameValue) || nameValue.IsUndefined()) {
+    Napi::TypeError::New(env, "config must have a name key").ThrowAsJavaScriptException();
+    return;
+  }
+  std::string name = nameValue.Utf8Value();
+  if (name != CAIRO_TAG_LINK) {
+    Napi::TypeError::New(env, "name must be 'Link'").ThrowAsJavaScriptException();
+    return;
+  }
+
+  Napi::String uriValue;
+  if (!config.Get("uri").UnwrapTo(&uriValue) || uriValue.IsUndefined()) {
+    Napi::TypeError::New(env, "config must have a uri key").ThrowAsJavaScriptException();
+    return;
+  }
+  std::string uri = uriValue.Utf8Value();
+  if (!containsOnlyASCII(uri)) {
+    Napi::TypeError::New(env, "uri must be ascii only").ThrowAsJavaScriptException();
+    return;
+  }
+
+  std::string rectAttr;
+  Napi::Object rect;
+  if (config.Get("rect").UnwrapTo(&rect) && !rect.IsUndefined()) {
+    if (!rect.IsObject()) {
+      Napi::TypeError::New(env, "rect must be an object").ThrowAsJavaScriptException();
+      return;
+    }
+
+    Napi::Number x, y, width, height;
+    if (!rect.Get("x").UnwrapTo(&x) || x.IsUndefined() ||
+        !rect.Get("y").UnwrapTo(&y) || y.IsUndefined() ||
+        !rect.Get("width").UnwrapTo(&width) || width.IsUndefined() ||
+        !rect.Get("height").UnwrapTo(&height) || height.IsUndefined()) {
+      Napi::TypeError::New(env, "rect must contain x, y, width, height").ThrowAsJavaScriptException();
+      return;
+    }
+
+    float xF = x.FloatValue(), yF = y.FloatValue(), widthF = width.FloatValue(), heightF = height.FloatValue();
+    if (xF <= 0 || yF <= 0 || widthF <= 0 || heightF <= 0) {
+      Napi::TypeError::New(env, "rect values must be positive").ThrowAsJavaScriptException();
+      return;
+    }
+
+    rectAttr = " rect=[" + std::to_string(xF) + " " + std::to_string(yF) + " " + std::to_string(widthF) + " " + std::to_string(heightF) + "]";
+  }
+
+  replaceAll(uri, "'", "\\'");
+  std::string attrs = "uri='" + uri + "'" + rectAttr;
+
+  cairo_t *ctx = context();
+  cairo_tag_begin(ctx, CAIRO_TAG_LINK, attrs.c_str());
+}
+
+void
+Context2d::CloseTag(const Napi::CallbackInfo& info) {
+  cairo_t *ctx = context();
+  cairo_tag_end(ctx, CAIRO_TAG_LINK);
+}
+
+#endif
