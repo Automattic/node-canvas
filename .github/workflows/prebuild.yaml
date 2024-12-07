@@ -145,10 +145,8 @@ jobs:
         node: [21]
         canvas_tag: ["v3.0.0-rc3"] # e.g. "v2.6.1"
         os:
-          - runner: macos-12
-            arch: x64
-          - runner: macos-14
-            arch: arm64
+          - runner: macos-15-large
+          - runner: macos-15
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS ${{ matrix.os.arch }}
     runs-on: ${{ matrix.os.runner }}
     env:
