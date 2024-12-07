@@ -2,7 +2,7 @@
 FILENAME=$(
   node -e "
     var p = process, v = p.versions, libc = require('detect-libc').familySync() || 'unknown';
-    if (libc === 'glibc') libc = '';
+    if (p.platform !== 'linux' || libc === 'glibc') libc = '';
     const tagName = p.env.UPLOAD_TO || p.env.CANVAS_VERSION_TO_BUILD;
     console.log('canvas-' + tagName + '-napi-v7-' + p.platform + libc + '-' + p.arch);
   "
