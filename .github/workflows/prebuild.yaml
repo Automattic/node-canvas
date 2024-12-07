@@ -6,8 +6,8 @@
 #    for git@github.com:Automattic/node-canvas.git).
 # 4. Create a draft release manually using the GitHub UI for the new tag.
 # 5. Switch to the prebuilds branch.
-# 6. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
-#    to build for.
+# 6. If necessary, update `jobs.*.strategy.matrix.node` to change the node
+#    version used to build
 # 7. Set the `jobs.*.strategy.matrix.canvas_tag` arrays to the set of Canvas
 #    tags to build. (Usually this is a single tag, but can be an array when a
 #    new version of Node.js is released and older versions of Canvas need to be
