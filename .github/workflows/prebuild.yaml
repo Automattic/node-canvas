@@ -181,9 +181,10 @@ jobs:
           npm test
 
       - name: Sign the executable
-        uses: indygreg/apple-code-sign-action@v1
-        with:
-          input_path: build/Release/canvas.node
+        run: |
+          for file in $(ls build/Release);
+          do codesign --deep --force --sign - build/Release/$file;
+          done;
 
       - name: Make bundle
         id: make_bundle
