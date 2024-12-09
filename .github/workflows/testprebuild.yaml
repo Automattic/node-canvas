@@ -1,0 +1,204 @@
+# This workflow just installs canvas and tests it.
+
+name: Test Prebuilds
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Target os'
+        required: true
+        type: choice
+        options:
+          - '["ubuntu-latest"]'
+          - '["windows-latest"]'
+          - '["macos-13"]'
+          - '["macos-latest"]'
+          - '["ubuntu-latest", "windows-latest", "macos-13", "macos-latest"]'
+        default: '["ubuntu-latest", "windows-latest", "macos-13", "macos-latest"]'
+      canvas:
+        description: 'Target node-canvas version'
+        required: true
+        type: choice
+        # add releases here.  e.g.
+        #options:
+        #  - '["vdev"]'
+        #  - '["v3.0.0-rc2"]'
+        #  - '["vdev", "v3.0.0-rc2"]'
+        #default: '["vdev", "v3.0.0-rc2"]'
+        
+        options:
+          - '["v3.0.0-rc2"]'
+        default: '["v3.0.0-rc2"]'
+      node:
+        description: 'Target node version'
+        required: true
+        type: choice
+        options:
+          - '["18"]'
+          - '["20"]'
+          - '["21"]'
+          - '["22"]'
+          - '["18", "20", "22"]'
+        default: '["18", "20", "22"]'
+        
+
+        
+# UPLOAD_TO can be specified to upload the release assets under a different tag
+# name (e.g. for testing). If omitted, the assets are published under the same
+# release tag as the canvas version being built.
+# env:
+#   UPLOAD_TO: "v0.0.1"
+
+# Node 19 requires a recent node-gyp
+# Node 10, 11 require 8
+# Node 8, 9 require 6.1
+# Manually set this file depending on what you're building!!
+
+jobs:
+  Linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJson(inputs.node) }}
+        canvas_tag: ${{ fromJson(inputs.canvas) }} # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
+    runs-on: ubuntu-latest
+    if: contains(fromJson(inputs.os), 'ubuntu-latest')
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install
+
+      - name: Test binary
+        continue-on-error: true
+        run: |
+          set -ex
+          cd /root/harfbuzz-* && make uninstall
+          cd /root/cairo-* && make uninstall
+          cd /root/pango-* && cd _build && ninja uninstall
+          cd /root/libpng-* && make uninstall
+          cd /root/libjpeg-* && cd b && make uninstall
+          cd /root/giflib-* && make uninstall
+
+          cd $GITHUB_WORKSPACE
+          npx mocha test/*.test.js
+
+  macOSarm:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJson(inputs.node) }}
+        canvas_tag: ${{ fromJson(inputs.canvas) }} # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOSarm64
+    runs-on: macos-latest # macos-14+ is M1
+    if: contains(fromJson(inputs.os), 'macos-latest')
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          set -Eeuxo pipefail
+          git checkout ${{ matrix.canvas_tag }}
+          npm install
+
+      - name: Test binary
+        run: |
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
+          npm test
+
+  macOS:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJson(inputs.node) }}
+        canvas_tag: ${{ fromJson(inputs.canvas) }} # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
+    runs-on: macos-13 # macos-14+ is M1
+    if: contains(fromJson(inputs.os), 'macos-13')
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          set -Eeuxo pipefail
+          git checkout ${{ matrix.canvas_tag }}
+          npm install
+
+      - name: Test binary
+        run: |
+          brew uninstall --force --ignore-dependencies cairo pango librsvg giflib harfbuzz
+          npm test
+            
+  Win:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJson(inputs.node) }}
+        canvas_tag: ${{ fromJson(inputs.canvas) }} # e.g. "v2.6.1"
+    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-latest
+    if: contains(fromJson(inputs.os), 'windows-latest')
+    env:
+      CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
+    steps:
+      # GitHub runners now have msys2 installed, but msys is not on the path and
+      # is apparently slow to start.
+      # https://github.com/msys2/setup-msys2#setup-msys2
+      # https://github.com/actions/virtual-environments/pull/632
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.canvas_tag }}
+          # Fetch all commits/all branches so we can checkout the prebuild
+          # branch's files
+          fetch-depth: 0
+
+      - name: Build
+        run: |
+          git checkout ${{ matrix.canvas_tag }}
+          npm install
+          
+      - name: Test binary
+        # By not running in msys2, this doesn't have access to the msys2 libs
+        run: npm test
