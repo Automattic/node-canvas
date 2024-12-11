@@ -19,7 +19,8 @@ $ npm install canvas
 ```
 
 By default, pre-built binaries will be downloaded if you're on one of the following platforms:
-- macOS x86/64 (*not* Apple silicon)
+- macOS x86/64
+- macOS aarch64 (aka Apple silicon)
 - Linux x86/64 (glibc only)
 - Windows x86/64
 
