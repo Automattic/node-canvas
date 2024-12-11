@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [18.12.0, 20.9.0]
+        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0]
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -33,11 +33,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        # FIXME: Node.js 20.9.0 is currently broken on Windows, in the `registerFont` test:
-        # ENOENT: no such file or directory, lstat 'D:\a\node-canvas\node-canvas\examples\pfennigFont\pfennigMultiByte🚀.ttf'
-        # ref: https://github.com/nodejs/node/issues/48673
-        # ref: https://github.com/nodejs/node/pull/50650
-        node: [18.12.0]
+        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0]
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -61,7 +57,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        node: [18.12.0, 20.9.0]
+        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0]
     steps:
       - uses: actions/setup-node@v4
         with:
