@@ -4,6 +4,11 @@ import { Readable } from 'stream'
 
 import * as Canvas from './index'
 
+expectType<typeof DOMMatrix>(Canvas.DOMMatrix)
+expectType<DOMMatrix>(new Canvas.DOMMatrix())
+expectType<typeof DOMPoint>(Canvas.DOMPoint)
+expectType<DOMPoint>(new Canvas.DOMPoint())
+
 Canvas.registerFont(path.join(__dirname, '../pfennigFont/Pfennig.ttf'), {family: 'pfennigFont'})
 
 Canvas.createCanvas(5, 10)
