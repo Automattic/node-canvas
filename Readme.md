@@ -5,13 +5,6 @@
 
 node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation for [Node.js](http://nodejs.org).
 
-> [!TIP]
-> **v3.0.0-rc2 is now available for testing on Linux (x64 glibc), macOS (x64) and Windows (x64)!** It's the first version
-> to use N-API and prebuild-install. Please give it a try and let us know if you run into any issues.
-> ```sh
-> npm install canvas@next
-> ```
-
 ## Installation
 
 ```bash
