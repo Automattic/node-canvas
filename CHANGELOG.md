@@ -30,6 +30,8 @@ This release notably changes to using N-API. 🎉
 * Add Node.js v20 to CI. (#2237)
 * Replaced `dtslint` with `tsd` (#2313)
 * Changed PNG consts to static properties of Canvas class
+* Reverted improved font matching on Linux (#1572) because it doesn't work if fonts are installed. If you experience degraded font selection, please file an issue and use v3.0.0-rc3 in the meantime.
+
 ### Added
 * Added string tags to support class detection
 * Throw Cairo errors in canvas.toBuffer()

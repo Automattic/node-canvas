@@ -1,6 +1,5 @@
 #include "register_font.h"
 
-#include <string>
 #include <pango/pangocairo.h>
 #include <pango/pango-fontmap.h>
 #include <pango/pango.h>
@@ -12,7 +11,6 @@
 #include <memory>
 #else
 #include <fontconfig/fontconfig.h>
-#include <pango/pangofc-fontmap.h>
 #endif
 
 #include <ft2build.h>
@@ -35,29 +33,11 @@
 #define PREFERRED_ENCODING_ID TT_MS_ID_UNICODE_CS
 #endif
 
-// With PangoFcFontMaps (the pango font module on Linux) we're able to add a
-// hook that lets us get perfect matching. Tie the conditions for enabling that
-// feature to one variable
-#if !defined(__APPLE__) && !defined(_WIN32) && PANGO_VERSION_CHECK(1, 47, 0)
-#define PERFECT_MATCHES_ENABLED
-#endif
-
 #define IS_PREFERRED_ENC(X) \
   X.platform_id == PREFERRED_PLATFORM_ID && X.encoding_id == PREFERRED_ENCODING_ID
 
-#ifdef PERFECT_MATCHES_ENABLED
-// On Linux-like OSes using FontConfig, the PostScript name ranks higher than
-// preferred family and family name since we'll use it to get perfect font
-// matching (see fc_font_map_substitute_hook)
 #define GET_NAME_RANK(X) \
-  ((IS_PREFERRED_ENC(X) ? 1 : 0) << 2) | \
-  ((X.name_id == TT_NAME_ID_PS_NAME ? 1 : 0) << 1) | \
-  (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
-#else
-#define GET_NAME_RANK(X) \
-  ((IS_PREFERRED_ENC(X) ? 1 : 0) << 1) | \
-  (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
-#endif
+  (IS_PREFERRED_ENC(X) ? 1 : 0) + (X.name_id == TT_NAME_ID_PREFERRED_FAMILY ? 1 : 0)
 
 /*
  * Return a UTF-8 encoded string given a TrueType name buf+len
@@ -125,31 +105,15 @@ get_family_name(FT_Face face) {
   for (unsigned i = 0; i < FT_Get_Sfnt_Name_Count(face); ++i) {
     FT_Get_Sfnt_Name(face, i, &name);
 
-    if (
-      name.name_id == TT_NAME_ID_FONT_FAMILY ||
-#ifdef PERFECT_MATCHES_ENABLED
-      name.name_id == TT_NAME_ID_PS_NAME ||
-#endif
-      name.name_id == TT_NAME_ID_PREFERRED_FAMILY
-    ) {
-      int rank = GET_NAME_RANK(name);
+    if (name.name_id == TT_NAME_ID_FONT_FAMILY || name.name_id == TT_NAME_ID_PREFERRED_FAMILY) {
+      char *buf = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
 
-      if (rank > best_rank) {
-        char *buf = to_utf8(name.string, name.string_len, name.platform_id, name.encoding_id);
-        if (buf) {
+      if (buf) {
+        int rank = GET_NAME_RANK(name);
+        if (rank > best_rank) {
           best_rank = rank;
           if (best_buf) free(best_buf);
           best_buf = buf;
-
-#ifdef PERFECT_MATCHES_ENABLED
-          // Prepend an '@' to the postscript name
-          if (name.name_id == TT_NAME_ID_PS_NAME) {
-            std::string best_buf_modified = "@";
-            best_buf_modified += best_buf;
-            free(best_buf);
-            best_buf = strdup(best_buf_modified.c_str());
-          }
-#endif
         } else {
           free(buf);
         }
@@ -320,21 +284,6 @@ get_pango_font_description(unsigned char* filepath) {
   return NULL;
 }
 
-#ifdef PERFECT_MATCHES_ENABLED
-static void
-fc_font_map_substitute_hook(FcPattern *pat, gpointer data) {
-  FcChar8 *family;
-
-  for (int i = 0; FcPatternGetString(pat, FC_FAMILY, i, &family) == FcResultMatch; i++) {
-    if (family[0] == '@') {
-      FcPatternAddString(pat, FC_POSTSCRIPT_NAME, (FcChar8 *)family + 1);
-      FcPatternRemove(pat, FC_FAMILY, i);
-      i -= 1;
-    }
-  }
-}
-#endif
-
 /*
  * Register font with the OS
  */
@@ -364,12 +313,6 @@ register_font(unsigned char *filepath) {
   // has the effect of registering the new font in Pango by re-looking up all
   // font families.
   pango_cairo_font_map_set_default(NULL);
-
-#ifdef PERFECT_MATCHES_ENABLED
-  PangoFontMap* map = pango_cairo_font_map_get_default();
-  PangoFcFontMap* fc_map = PANGO_FC_FONT_MAP(map);
-  pango_fc_font_map_set_default_substitute(fc_map, fc_font_map_substitute_hook, NULL, NULL);
-#endif
 
   return true;
 }
