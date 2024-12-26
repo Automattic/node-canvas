@@ -21,6 +21,7 @@
 #include "Util.h"
 #include <vector>
 #include "node_buffer.h"
+#include "FontParser.h"
 
 #ifdef HAVE_JPEG
 #include "JPEGStream.h"
@@ -68,7 +69,8 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
     StaticValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH), napi_default_jsproperty),
     StaticValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS), napi_default_jsproperty),
     StaticMethod<&Canvas::RegisterFont>("_registerFont", napi_default_method),
-    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts", napi_default_method)
+    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts", napi_default_method),
+    StaticMethod<&Canvas::ParseFont>("parseFont", napi_default_method)
   });
 
   data->CanvasCtor = Napi::Persistent(ctor);
@@ -694,6 +696,7 @@ Canvas::RegisterFont(const Napi::CallbackInfo& info) {
   // now check the attrs, there are many ways to be wrong
   Napi::Object js_user_desc = info[1].As<Napi::Object>();
 
+  // TODO: use FontParser on these values just like the FontFace API works
   char *family = str_value(js_user_desc.Get("family"), NULL, false);
   char *weight = str_value(js_user_desc.Get("weight"), "normal", true);
   char *style = str_value(js_user_desc.Get("style"), "normal", false);
@@ -747,6 +750,40 @@ Canvas::DeregisterAllFonts(const Napi::CallbackInfo& info) {
 
   font_face_list.clear();
   if (!success) Napi::Error::New(env, "Could not deregister one or more fonts").ThrowAsJavaScriptException();
+}
+
+/*
+ * Do not use! This is only exported for testing
+ */
+Napi::Value
+Canvas::ParseFont(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+
+  if (info.Length() != 1) return env.Undefined();
+
+  Napi::String str;
+  if (!info[0].ToString().UnwrapTo(&str)) return env.Undefined();
+
+  bool ok;
+  auto props = FontParser::parse(str, &ok);
+  if (!ok) return env.Undefined();
+
+  Napi::Object obj = Napi::Object::New(env);
+  obj.Set("size", Napi::Number::New(env, props.fontSize));
+  Napi::Array families = Napi::Array::New(env);
+  obj.Set("families", families);
+
+  unsigned int index = 0;
+
+  for (auto& family : props.fontFamily) {
+    families[index++] = Napi::String::New(env, family);
+  }
+
+  obj.Set("weight", Napi::Number::New(env, props.fontWeight));
+  obj.Set("variant", Napi::Number::New(env, static_cast<int>(props.fontVariant)));
+  obj.Set("style", Napi::Number::New(env, static_cast<int>(props.fontStyle)));
+
+  return obj;
 }
 
 /*
