@@ -9,6 +9,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "InstanceData.h"
+#include "FontParser.h"
 #include <cmath>
 #include <cstdlib>
 #include "Image.h"
@@ -2575,34 +2576,29 @@ Context2d::GetFont(const Napi::CallbackInfo& info) {
 
 void
 Context2d::SetFont(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  InstanceData* data = env.GetInstanceData<InstanceData>();
-
   if (!value.IsString()) return;
 
-  if (!value.As<Napi::String>().Utf8Value().length()) return;
+  std::string str = value.As<Napi::String>().Utf8Value();
+  if (!str.length()) return;
 
-  Napi::Value mparsed;
-
-  // parseFont returns undefined for invalid CSS font strings
-  if (!data->parseFont.Call({ value }).UnwrapTo(&mparsed) || mparsed.IsUndefined()) return;
-
-  Napi::Object font = mparsed.As<Napi::Object>();
-
-  Napi::String empty = Napi::String::New(env, "");
-  Napi::Number zero = Napi::Number::New(env, 0);
-
-  std::string weight = font.Get("weight").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  std::string style = font.Get("style").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  double size = font.Get("size").UnwrapOr(zero).ToNumber().UnwrapOr(zero).DoubleValue();
-  std::string unit = font.Get("unit").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  std::string family = font.Get("family").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
+  bool success;
+  auto props = FontParser::parse(str, &success);
+  if (!success) return;
 
   PangoFontDescription *desc = pango_font_description_copy(state->fontDescription);
   pango_font_description_free(state->fontDescription);
 
-  pango_font_description_set_style(desc, Canvas::GetStyleFromCSSString(style.c_str()));
-  pango_font_description_set_weight(desc, Canvas::GetWeightFromCSSString(weight.c_str()));
+  PangoStyle style = props.fontStyle == FontStyle::Italic ? PANGO_STYLE_ITALIC
+    : props.fontStyle == FontStyle::Oblique ? PANGO_STYLE_OBLIQUE
+    : PANGO_STYLE_NORMAL;
+  pango_font_description_set_style(desc, style);
 
+  pango_font_description_set_weight(desc, static_cast<PangoWeight>(props.fontWeight));
+
+  std::string family = props.fontFamily.empty() ? "" : props.fontFamily[0];
+  for (size_t i = 1; i < props.fontFamily.size(); i++) {
+    family += "," + props.fontFamily[i];
+  }
   if (family.length() > 0) {
     // See #1643 - Pango understands "sans" whereas CSS uses "sans-serif"
     std::string s1(family);
@@ -2617,12 +2613,12 @@ Context2d::SetFont(const Napi::CallbackInfo& info, const Napi::Value& value) {
   PangoFontDescription *sys_desc = Canvas::ResolveFontDescription(desc);
   pango_font_description_free(desc);
 
-  if (size > 0) pango_font_description_set_absolute_size(sys_desc, size * PANGO_SCALE);
+  if (props.fontSize > 0) pango_font_description_set_absolute_size(sys_desc, props.fontSize * PANGO_SCALE);
 
   state->fontDescription = sys_desc;
   pango_layout_set_font_description(_layout, sys_desc);
 
-  state->font = value.As<Napi::String>().Utf8Value().c_str();
+  state->font = str;
 }
 
 /*
