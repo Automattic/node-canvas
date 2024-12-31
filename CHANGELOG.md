@@ -10,8 +10,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
-* Fixed accidental depenency on ambient DOM types
 
+3.0.1
+==================
+### Fixed
+* Fixed accidental depenency on ambient DOM types
 
 3.0.0
 ==================
