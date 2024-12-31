@@ -395,6 +395,16 @@ export class JPEGStream extends Readable {}
 /** This class must not be constructed directly; use `canvas.createPDFStream()`. */
 export class PDFStream extends Readable {}
 
+// TODO: this is wrong. See matrixTransform in lib/DOMMatrix.js
+type DOMMatrixInit = DOMMatrix | string | number[];
+
+interface DOMPointInit {
+  w?: number;
+  x?: number;
+  y?: number;
+  z?: number;
+}
+
 export class DOMPoint {
 	w: number;
 	x: number;
