@@ -68,6 +68,7 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     void StreamJPEGSync(const Napi::CallbackInfo& info);
     static void RegisterFont(const Napi::CallbackInfo& info);
     static void DeregisterAllFonts(const Napi::CallbackInfo& info);
+    static Napi::Value ParseFont(const Napi::CallbackInfo& info);
     Napi::Error CairoError(cairo_status_t status);
     static void ToPngBufferAsync(Closure* closure);
     static void ToJpegBufferAsync(Closure* closure);

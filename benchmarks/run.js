@@ -64,6 +64,22 @@ function done (benchmark, times, start, isAsync) {
 
 // node-canvas
 
+function fontName () {
+  return String.fromCharCode(0x61 + Math.floor(Math.random() * 26)) +
+    String.fromCharCode(0x61 + Math.floor(Math.random() * 26)) +
+    String.fromCharCode(0x61 + Math.floor(Math.random() * 26)) +
+    String.fromCharCode(0x61 + Math.floor(Math.random() * 26))
+}
+
+bm('font setter', function () {
+  ctx.font = `12px ${fontName()}`
+  ctx.font = `400 6px ${fontName()}`
+  ctx.font = `1px ${fontName()}`
+  ctx.font = `normal normal bold 12cm ${fontName()}`
+  ctx.font = `italic 9mm ${fontName}, "Times New Roman", "Apple Color Emoji", "Comic Sans"`
+  ctx.font = `small-caps oblique 44px/44px ${fontName()}, "The Quick Brown", "Fox Jumped", "Over", "The", "Lazy Dog"`
+})
+
 bm('save/restore', function () {
   for (let i = 0; i < 1000; i++) {
     const max = i & 15
