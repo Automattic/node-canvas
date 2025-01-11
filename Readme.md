@@ -163,7 +163,7 @@ const myimg = await loadImage('http://server.com/image.png')
 > registerFont(path: string, { family: string, weight?: string, style?: string }) => void
 > ```
 
-To use a font file that is not installed as a system font, use `registerFont()` to register the font with Canvas. *This must be done before the Canvas is created.*
+To use a font file that is not installed as a system font, use `registerFont()` to register the font with Canvas.
 
 ```js
 const { registerFont, createCanvas } = require('canvas')

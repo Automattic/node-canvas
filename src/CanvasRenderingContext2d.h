@@ -220,6 +220,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void _setFillPattern(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
     void _setStrokePattern(Napi::Value arg);
+    void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
     Napi::Reference<Napi::Value> _fillStyle;
     Napi::Reference<Napi::Value> _strokeStyle;
@@ -227,4 +228,5 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     cairo_t *_context = nullptr;
     cairo_path_t *_path;
     PangoLayout *_layout = nullptr;
+    int fontSerial = 1;
 };

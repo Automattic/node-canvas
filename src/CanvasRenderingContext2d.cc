@@ -2450,8 +2450,24 @@ get_text_scale(PangoLayout *layout, double maxWidth) {
   }
 }
 
+/*
+ * Make sure the layout's font list is up-to-date
+ */
 void
-Context2d::paintText(const Napi::CallbackInfo&info, bool stroke) {
+Context2d::checkFonts() {
+  // If fonts have been registered, the PangoContext is using an outdated FontMap
+  if (canvas()->fontSerial != fontSerial) {
+    pango_context_set_font_map(
+      pango_layout_get_context(_layout),
+      pango_cairo_font_map_get_default()
+    );
+
+    fontSerial = canvas()->fontSerial;
+  }
+}
+
+void
+Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
 
   if (argsNum == 3 && info[3].IsUndefined())
@@ -2472,6 +2488,7 @@ Context2d::paintText(const Napi::CallbackInfo&info, bool stroke) {
 
   PangoLayout *layout = this->layout();
 
+  checkFonts();
   pango_layout_set_text(layout, str.c_str(), -1);
   pango_cairo_update_layout(context(), layout);
 
@@ -2775,6 +2792,7 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
   PangoFontMetrics *metrics;
   PangoLayout *layout = this->layout();
 
+  checkFonts();
   pango_layout_set_text(layout, str.Utf8Value().c_str(), -1);
   pango_cairo_update_layout(ctx, layout);
 
