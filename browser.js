@@ -1,9 +1,5 @@
 /* globals document, ImageData */
 
-const parseFont = require('./lib/parse-font')
-
-exports.parseFont = parseFont
-
 exports.createCanvas = function (width, height) {
   return Object.assign(document.createElement('canvas'), { width: width, height: height })
 }

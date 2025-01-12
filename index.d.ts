@@ -489,9 +489,6 @@ export class ImageData {
 	readonly width: number;
 }
 
-// This is marked private, but is exported...
-// export function parseFont(description: string): object
-
 // Not documented: backends
 
 /** Library version. */
