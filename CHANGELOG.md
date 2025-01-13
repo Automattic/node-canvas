@@ -9,7 +9,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
-* Keep GitHub Actions up to date with GitHub's Dependabot
+
 ### Fixed
 
 
