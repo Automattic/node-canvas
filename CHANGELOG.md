@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Support for accessibility and links in PDFs
+* Keep GitHub Actions up to date with GitHub's Dependabot
 
 ### Fixed
 * Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
