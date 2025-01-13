@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "3.0.0-rc3",
+  "version": "3.0.1",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -46,8 +46,7 @@
   ],
   "dependencies": {
     "node-addon-api": "^7.0.0",
-    "prebuild-install": "^7.1.1",
-    "simple-get": "^3.0.3"
+    "prebuild-install": "^7.1.1"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",

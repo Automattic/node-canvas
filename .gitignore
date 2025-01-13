@@ -4,6 +4,7 @@ build
 test/images/*.png
 examples/*.png
 examples/*.jpg
+examples/*.pdf
 testing
 out.png
 out.pdf

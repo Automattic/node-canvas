@@ -8,10 +8,21 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Replaced `simple-get ` with ` Node.js builtin` `fetch` (#2309)
+* `ctx.font` has a new C++ parser and is 2x-400x faster. Please file an issue if you experience different results, as caching has been removed.
+
 ### Added
+* Support for accessibility and links in PDFs
+* Keep GitHub Actions up to date with GitHub's Dependabot
 
 ### Fixed
+* Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
+* Fix `getImageData` cropping the resulting `ImageData` when the given rectangle is partly outside the canvas. ([#1849](https://github.com/Automattic/node-canvas/issues/1849))
 
+3.0.1
+==================
+### Fixed
+* Fixed accidental depenency on ambient DOM types
 
 3.0.0
 ==================
@@ -31,6 +42,8 @@ This release notably changes to using N-API. 🎉
 * Add Node.js v20 to CI. (#2237)
 * Replaced `dtslint` with `tsd` (#2313)
 * Changed PNG consts to static properties of Canvas class
+* Reverted improved font matching on Linux (#1572) because it doesn't work if fonts are installed. If you experience degraded font selection, please file an issue and use v3.0.0-rc3 in the meantime.
+
 ### Added
 * Added string tags to support class detection
 * Throw Cairo errors in canvas.toBuffer()
@@ -46,6 +59,7 @@ This release notably changes to using N-API. 🎉
 * Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
 * Fix class properties should have defaults as standard js classes (#2390)
 * Fixed Exif orientation in JPEG files being ignored (#1670)
+* Align DOMMatrix/DOMPoint to spec by adding missing methods
 
 2.11.2
 ==================

@@ -9,6 +9,7 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "InstanceData.h"
+#include "FontParser.h"
 #include <cmath>
 #include <cstdlib>
 #include "Image.h"
@@ -134,6 +135,10 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern", napi_default_method),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient", napi_default_method),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient", napi_default_method),
+    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+    InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
+    InstanceMethod<&Context2d::EndTag>("endTag", napi_default_method),
+    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled", napi_default_jsproperty),
@@ -418,7 +423,7 @@ Context2d::fill(bool preserve) {
         width = cairo_image_surface_get_width(patternSurface);
         height = y2 - y1;
       }
-      
+
       cairo_new_path(_context);
       cairo_rectangle(_context, 0, 0, width, height);
       cairo_clip(_context);
@@ -1006,21 +1011,26 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     sh = -sh;
   }
 
-  if (sx + sw > width) sw = width - sx;
-  if (sy + sh > height) sh = height - sy;
+  // Width and height to actually copy
+  int cw = sw;
+  int ch = sh;
+  // Offsets in the destination image
+  int ox = 0;
+  int oy = 0;
 
-  // WebKit/moz functionality. node-canvas used to return in either case.
-  if (sw <= 0) sw = 1;
-  if (sh <= 0) sh = 1;
+  // Clamp the copy width and height if the copy would go outside the image
+  if (sx + sw > width) cw = width - sx;
+  if (sy + sh > height) ch = height - sy;
 
-  // Non-compliant. "Pixels outside the canvas must be returned as transparent
-  // black." This instead clips the returned array to the canvas area.
+  // Clamp the copy origin if the copy would go outside the image
   if (sx < 0) {
-    sw += sx;
+    ox = -sx;
+    cw += sx;
     sx = 0;
   }
   if (sy < 0) {
-    sh += sy;
+    oy = -sy;
+    ch += sy;
     sy = 0;
   }
 
@@ -1042,13 +1052,16 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
 
   uint8_t *dst = (uint8_t *)buffer.Data();
 
+  if (!(cw > 0 && ch > 0)) goto return_empty;
+
   switch (canvas->backend()->getFormat()) {
   case CAIRO_FORMAT_ARGB32: {
+    dst += oy * dstStride + ox * 4;
     // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
     // and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
+    for (int y = 0; y < ch; ++y) {
       uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-      for (int x = 0; x < sw; ++x) {
+      for (int x = 0; x < cw; ++x) {
         int bx = x * 4;
         uint32_t *pixel = row + x + sx;
         uint8_t a = *pixel >> 24;
@@ -1077,10 +1090,11 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_RGB24: {
+    dst += oy * dstStride + ox * 4;
   // Rearrange alpha (argb -> rgba) and store in big-endian format
-    for (int y = 0; y < sh; ++y) {
+    for (int y = 0; y < ch; ++y) {
     uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
-    for (int x = 0; x < sw; ++x) {
+    for (int x = 0; x < cw; ++x) {
       int bx = x * 4;
       uint32_t *pixel = row + x + sx;
       uint8_t r = *pixel >> 16;
@@ -1097,9 +1111,10 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_A8: {
-    for (int y = 0; y < sh; ++y) {
+    dst += oy * dstStride + ox;
+    for (int y = 0; y < ch; ++y) {
       uint8_t *row = (uint8_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
+      memcpy(dst, row + sx, cw);
       dst += dstStride;
     }
     break;
@@ -1111,9 +1126,10 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     break;
   }
   case CAIRO_FORMAT_RGB16_565: {
-    for (int y = 0; y < sh; ++y) {
+    dst += oy * dstStride + ox * 2;
+    for (int y = 0; y < ch; ++y) {
       uint16_t *row = (uint16_t *)(src + srcStride * (y + sy));
-      memcpy(dst, row + sx, dstStride);
+      memcpy(dst, row + sx, cw * 2);
       dst += dstStride;
     }
     break;
@@ -1133,6 +1149,7 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   }
   }
 
+return_empty:
   Napi::Number swHandle = Napi::Number::New(env, sw);
   Napi::Number shHandle = Napi::Number::New(env, sh);
   Napi::Function ctor = env.GetInstanceData<InstanceData>()->ImageDataCtor.Value();
@@ -2575,34 +2592,29 @@ Context2d::GetFont(const Napi::CallbackInfo& info) {
 
 void
 Context2d::SetFont(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  InstanceData* data = env.GetInstanceData<InstanceData>();
-
   if (!value.IsString()) return;
 
-  if (!value.As<Napi::String>().Utf8Value().length()) return;
+  std::string str = value.As<Napi::String>().Utf8Value();
+  if (!str.length()) return;
 
-  Napi::Value mparsed;
-
-  // parseFont returns undefined for invalid CSS font strings
-  if (!data->parseFont.Call({ value }).UnwrapTo(&mparsed) || mparsed.IsUndefined()) return;
-
-  Napi::Object font = mparsed.As<Napi::Object>();
-
-  Napi::String empty = Napi::String::New(env, "");
-  Napi::Number zero = Napi::Number::New(env, 0);
-
-  std::string weight = font.Get("weight").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  std::string style = font.Get("style").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  double size = font.Get("size").UnwrapOr(zero).ToNumber().UnwrapOr(zero).DoubleValue();
-  std::string unit = font.Get("unit").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
-  std::string family = font.Get("family").UnwrapOr(empty).ToString().UnwrapOr(empty).Utf8Value();
+  bool success;
+  auto props = FontParser::parse(str, &success);
+  if (!success) return;
 
   PangoFontDescription *desc = pango_font_description_copy(state->fontDescription);
   pango_font_description_free(state->fontDescription);
 
-  pango_font_description_set_style(desc, Canvas::GetStyleFromCSSString(style.c_str()));
-  pango_font_description_set_weight(desc, Canvas::GetWeightFromCSSString(weight.c_str()));
+  PangoStyle style = props.fontStyle == FontStyle::Italic ? PANGO_STYLE_ITALIC
+    : props.fontStyle == FontStyle::Oblique ? PANGO_STYLE_OBLIQUE
+    : PANGO_STYLE_NORMAL;
+  pango_font_description_set_style(desc, style);
 
+  pango_font_description_set_weight(desc, static_cast<PangoWeight>(props.fontWeight));
+
+  std::string family = props.fontFamily.empty() ? "" : props.fontFamily[0];
+  for (size_t i = 1; i < props.fontFamily.size(); i++) {
+    family += "," + props.fontFamily[i];
+  }
   if (family.length() > 0) {
     // See #1643 - Pango understands "sans" whereas CSS uses "sans-serif"
     std::string s1(family);
@@ -2617,12 +2629,12 @@ Context2d::SetFont(const Napi::CallbackInfo& info, const Napi::Value& value) {
   PangoFontDescription *sys_desc = Canvas::ResolveFontDescription(desc);
   pango_font_description_free(desc);
 
-  if (size > 0) pango_font_description_set_absolute_size(sys_desc, size * PANGO_SCALE);
+  if (props.fontSize > 0) pango_font_description_set_absolute_size(sys_desc, props.fontSize * PANGO_SCALE);
 
   state->fontDescription = sys_desc;
   pango_layout_set_font_description(_layout, sys_desc);
 
-  state->font = value.As<Napi::String>().Utf8Value().c_str();
+  state->font = str;
 }
 
 /*
@@ -3352,3 +3364,53 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
+
+void
+Context2d::BeginTag(const Napi::CallbackInfo& info) {
+  std::string tagName = "";
+  std::string attributes = "";
+
+  if (info.Length() == 0) {
+    Napi::TypeError::New(env, "Tag name is required").ThrowAsJavaScriptException();
+    return;
+  } else {
+    if (!info[0].IsString()) {
+      Napi::TypeError::New(env, "Tag name must be a string.").ThrowAsJavaScriptException();
+      return;
+    } else {
+      tagName = info[0].As<Napi::String>().Utf8Value();
+    }
+
+    if (info.Length() > 1) {
+      if (!info[1].IsString()) {
+        Napi::TypeError::New(env, "Attributes must be a string matching Cairo's attribute format").ThrowAsJavaScriptException();
+        return;
+      } else {
+        attributes = info[1].As<Napi::String>().Utf8Value();
+      }
+    }
+  }
+
+  cairo_tag_begin(_context, tagName.c_str(), attributes.c_str());
+}
+
+void
+Context2d::EndTag(const Napi::CallbackInfo& info) {
+  if (info.Length() == 0) {
+    Napi::TypeError::New(env, "Tag name is required").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if (!info[0].IsString()) {
+    Napi::TypeError::New(env, "Tag name must be a string.").ThrowAsJavaScriptException();
+    return;
+  }
+
+  std::string tagName = info[0].As<Napi::String>().Utf8Value();
+
+  cairo_tag_end(_context, tagName.c_str());
+}
+
+#endif

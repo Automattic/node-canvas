@@ -5,13 +5,6 @@
 
 node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation for [Node.js](http://nodejs.org).
 
-> [!TIP]
-> **v3.0.0-rc2 is now available for testing on Linux (x64 glibc), macOS (x64) and Windows (x64)!** It's the first version
-> to use N-API and prebuild-install. Please give it a try and let us know if you run into any issues.
-> ```sh
-> npm install canvas@next
-> ```
-
 ## Installation
 
 ```bash
@@ -19,7 +12,8 @@ $ npm install canvas
 ```
 
 By default, pre-built binaries will be downloaded if you're on one of the following platforms:
-- macOS x86/64 (*not* Apple silicon)
+- macOS x86/64
+- macOS aarch64 (aka Apple silicon)
 - Linux x86/64 (glibc only)
 - Windows x86/64
 
@@ -520,6 +514,26 @@ ctx.addPage(400, 800)
 
 ctx.fillText('Hello World 2', 50, 80)
 ```
+
+It is possible to add hyperlinks using `.beginTag()` and `.endTag()`:
+
+```js
+ctx.beginTag('Link', "uri='https://google.com'")
+ctx.font = '22px Helvetica'
+ctx.fillText('Hello World', 50, 80)
+ctx.endTag('Link')
+```
+
+Or with a defined rectangle:
+
+```js
+ctx.beginTag('Link', "uri='https://google.com' rect=[50 80 100 20]")
+ctx.endTag('Link')
+```
+
+Note that the syntax for attributes is unique to Cairo. See [cairo_tag_begin](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-begin) for the full documentation.
+
+You can create areas on the canvas using the "cairo.dest" tag, and then link to them using the "Link" tag with the `dest=` attribute. You can also define PDF structure for accessibility by using tag names like "P", "H1", and "TABLE". The standard tags are defined in §14.8.4 of the [PDF 1.7](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) specification.
 
 See also:
 
