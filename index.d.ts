@@ -290,6 +290,7 @@ export class CanvasRenderingContext2D {
 	textBaseline: CanvasTextBaseline;
 	textAlign: CanvasTextAlign;
 	canvas: Canvas;
+	direction: 'ltr' | 'rtl';
 }
 
 export class CanvasGradient {

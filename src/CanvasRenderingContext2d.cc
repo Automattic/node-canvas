@@ -161,7 +161,8 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceAccessor<&Context2d::GetStrokeStyle, &Context2d::SetStrokeStyle>("strokeStyle", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetFont, &Context2d::SetFont>("font", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetTextBaseline, &Context2d::SetTextBaseline>("textBaseline", napi_default_jsproperty),
-    InstanceAccessor<&Context2d::GetTextAlign, &Context2d::SetTextAlign>("textAlign", napi_default_jsproperty)
+    InstanceAccessor<&Context2d::GetTextAlign, &Context2d::SetTextAlign>("textAlign", napi_default_jsproperty),
+    InstanceAccessor<&Context2d::GetDirection, &Context2d::SetDirection>("direction", napi_default_jsproperty)
   });
 
   exports.Set("CanvasRenderingContext2d", ctor);
@@ -229,6 +230,8 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
 #if PANGO_VERSION_CHECK(1, 44, 0)
   pango_context_set_round_glyph_positions(pango_layout_get_context(_layout), FALSE);
 #endif
+
+  pango_layout_set_auto_dir(_layout, FALSE);
 
   states.emplace();
   state = &states.top();
@@ -760,6 +763,27 @@ Context2d::AddPage(const Napi::CallbackInfo& info) {
   if (width < 1) width = canvas()->getWidth();
   if (height < 1) height = canvas()->getHeight();
   cairo_pdf_surface_set_size(canvas()->surface(), width, height);
+}
+
+/*
+ * Get text direction.
+ */
+Napi::Value
+Context2d::GetDirection(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, state->direction);
+}
+
+/*
+ * Set text direction.
+ */
+void
+Context2d::SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (!value.IsString()) return;
+
+  std::string dir = value.As<Napi::String>();
+  if (dir != "ltr" && dir != "rtl") return;
+
+  state->direction = dir;
 }
 
 /*
@@ -2451,6 +2475,9 @@ Context2d::paintText(const Napi::CallbackInfo&info, bool stroke) {
   pango_layout_set_text(layout, str.c_str(), -1);
   pango_cairo_update_layout(context(), layout);
 
+  PangoDirection pango_dir = state->direction == "ltr" ? PANGO_DIRECTION_LTR : PANGO_DIRECTION_RTL;
+  pango_context_set_base_dir(pango_layout_get_context(_layout), pango_dir);
+
   if (argsNum == 3) {
     scaled_by = get_text_scale(layout, args[2]);
     cairo_save(context());
@@ -2522,18 +2549,26 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 void
 Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
+  text_align_t alignment = state->textAlignment;
 
-  switch (state->textAlignment) {
+  // Convert start/end to left/right based on direction
+  if (alignment == TEXT_ALIGNMENT_START) {
+    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_RIGHT : TEXT_ALIGNMENT_LEFT;
+  } else if (alignment == TEXT_ALIGNMENT_END) {
+    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_LEFT : TEXT_ALIGNMENT_RIGHT;
+  }
+
+  switch (alignment) {
     case TEXT_ALIGNMENT_CENTER:
       pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width / 2;
       break;
-    case TEXT_ALIGNMENT_END:
     case TEXT_ALIGNMENT_RIGHT:
       pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
       x -= logical_rect.width;
       break;
-    default: ;
+    default: // TEXT_ALIGNMENT_LEFT
+      break;
   }
 
   y -= getBaselineAdjustment(_layout, state->textBaseline);
@@ -2687,13 +2722,12 @@ Napi::Value
 Context2d::GetTextAlign(const Napi::CallbackInfo& info) {
   const char* align;
   switch (state->textAlignment) {
-    default:
-    // TODO the default is supposed to be "start"
     case TEXT_ALIGNMENT_LEFT: align = "left"; break;
     case TEXT_ALIGNMENT_START: align = "start"; break;
     case TEXT_ALIGNMENT_CENTER: align = "center"; break;
     case TEXT_ALIGNMENT_RIGHT: align = "right"; break;
     case TEXT_ALIGNMENT_END: align = "end"; break;
+    default: align = "start";
   }
   return Napi::String::New(env, align);
 }
