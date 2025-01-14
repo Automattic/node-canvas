@@ -37,7 +37,6 @@ enum text_align_t : int8_t {
   TEXT_ALIGNMENT_LEFT = -1,
   TEXT_ALIGNMENT_CENTER = 0,
   TEXT_ALIGNMENT_RIGHT = 1,
-  // Currently same as LEFT and RIGHT without RTL support:
   TEXT_ALIGNMENT_START = -2,
   TEXT_ALIGNMENT_END = 2
 };

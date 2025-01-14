@@ -569,8 +569,6 @@ describe('Canvas', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
 
-    assert.equal('left', ctx.textAlign) // default TODO wrong default
-    ctx.textAlign = 'start'
     assert.equal('start', ctx.textAlign)
     ctx.textAlign = 'center'
     assert.equal('center', ctx.textAlign)

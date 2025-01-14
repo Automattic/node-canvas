@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Support for accessibility and links in PDFs
+* `ctx.direction` is implemented: `'rtl'` or `'ltr'` set the base direction of text
+* `ctx.textAlign` `'start'` and `'end'` are now `'right'` and `'left'` when `ctx.direction === 'rtl'`
 
 ### Fixed
 * Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
