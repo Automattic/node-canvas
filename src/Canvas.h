@@ -91,9 +91,11 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     void resurface(Napi::Object This);
 
     Napi::Env env;
+    static int fontSerial;
 
   private:
     Backend* _backend;
     Napi::ObjectReference _jsBackend;
     Napi::FunctionReference ctor;
+    static std::vector<FontFace> font_face_list;
 };
