@@ -8,6 +8,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+### Added
+### Fixed
+
+3.1.0
+==================
 * Replaced `simple-get ` with ` Node.js builtin` `fetch` (#2309)
 * `ctx.font` has a new C++ parser and is 2x-400x faster. Please file an issue if you experience different results, as caching has been removed.
 * The restriction of registering fonts before a canvas is created has been removed. You can now register a font as late as right before the `fillText` call ([#1921](https://github.com/Automattic/node-canvas/issues/1921))
