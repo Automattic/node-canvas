@@ -31,10 +31,11 @@ struct canvas_state_t {
   cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
   float globalAlpha = 1.f;
   int shadowBlur = 0;
-  text_align_t textAlignment = TEXT_ALIGNMENT_LEFT; // TODO default is supposed to be START
+  text_align_t textAlignment = TEXT_ALIGNMENT_START;
   text_baseline_t textBaseline = TEXT_BASELINE_ALPHABETIC;
   canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
   bool imageSmoothingEnabled = true;
+  std::string direction = "ltr";
 
   canvas_state_t() {
     fontDescription = pango_font_description_from_string("sans");
@@ -182,6 +183,8 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void BeginTag(const Napi::CallbackInfo& info);
     void EndTag(const Napi::CallbackInfo& info);
     #endif
+    Napi::Value GetDirection(const Napi::CallbackInfo& info);
+    void SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
@@ -217,6 +220,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void _setFillPattern(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
     void _setStrokePattern(Napi::Value arg);
+    void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
     Napi::Reference<Napi::Value> _fillStyle;
     Napi::Reference<Napi::Value> _strokeStyle;
@@ -224,4 +228,5 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     cairo_t *_context = nullptr;
     cairo_path_t *_path;
     PangoLayout *_layout = nullptr;
+    int fontSerial = 1;
 };

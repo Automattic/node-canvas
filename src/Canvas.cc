@@ -38,7 +38,10 @@
 
 using namespace std;
 
-std::vector<FontFace> font_face_list;
+std::vector<FontFace> Canvas::font_face_list;
+
+// Increases each time a font is (de)registered
+int Canvas::fontSerial = 1;
 
 /*
  * Initialize Canvas.
@@ -734,6 +737,7 @@ Canvas::RegisterFont(const Napi::CallbackInfo& info) {
   free(family);
   free(weight);
   free(style);
+  fontSerial++;
 }
 
 void
@@ -749,6 +753,7 @@ Canvas::DeregisterAllFonts(const Napi::CallbackInfo& info) {
   });
 
   font_face_list.clear();
+  fontSerial++;
   if (!success) Napi::Error::New(env, "Could not deregister one or more fonts").ThrowAsJavaScriptException();
 }
 
