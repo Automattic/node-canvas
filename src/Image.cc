@@ -1470,8 +1470,6 @@ cairo_status_t
 Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   _is_svg = true;
 
-  cairo_status_t status;
-
   if (NULL == (_rsvg = rsvg_handle_new_from_data(buf, len, nullptr))) {
     return CAIRO_STATUS_READ_ERROR;
   }
@@ -1484,13 +1482,7 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = d_width;
   height = naturalHeight = d_height;
 
-  status = renderSVGToSurface();
-  if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(_rsvg);
-    return status;
-  }
-
-  return CAIRO_STATUS_SUCCESS;
+  return renderSVGToSurface();
 }
 
 /*

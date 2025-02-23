@@ -9,7 +9,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+
 ### Fixed
+* Fix a crash when SVGs without width or height are loaded (#2486)
 
 3.1.0
 ==================

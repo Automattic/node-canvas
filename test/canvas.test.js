@@ -2513,4 +2513,13 @@ describe('Canvas', function () {
       assert.throws(() => { ctx.beginTag('Link', {}) })
     })
   })
+
+  describe('loadImage', function () {
+    it('doesn\'t crash when you don\'t specify width and height', async function () {
+      await assert.rejects(async () => {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`;
+        await loadImage(Buffer.from(svg));
+      });
+    });
+  });
 })
