@@ -1482,6 +1482,11 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   width = naturalWidth = d_width;
   height = naturalHeight = d_height;
 
+  if (width <= 0 || height <= 0) {
+    this->errorInfo.set("Width and height must be set on the svg element");
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
   return renderSVGToSurface();
 }
 
