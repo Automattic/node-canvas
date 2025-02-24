@@ -21,6 +21,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Support for accessibility and links in PDFs
+* Keep GitHub Actions up to date with GitHub's Dependabot
 * `ctx.direction` is implemented: `'rtl'` or `'ltr'` set the base direction of text
 * `ctx.textAlign` `'start'` and `'end'` are now `'right'` and `'left'` when `ctx.direction === 'rtl'`
 
