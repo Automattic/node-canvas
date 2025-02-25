@@ -91,4 +91,8 @@ NAN_MODULE_INIT(init) {
   Nan::Set(target, Nan::New<String>("freetypeVersion").ToLocalChecked(), Nan::New<String>(freetype_version).ToLocalChecked()).Check();
 }
 
-NODE_MODULE(canvas, init);
+#if NODE_MAJOR_VERSION >= 10
+  NAN_MODULE_WORKER_ENABLED(canvas, init);
+#else
+  NODE_MODULE(canvas, init);
+#endif
