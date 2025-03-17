@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Fix a crash when SVGs without width or height are loaded (#2486)
 * Fix fetching prebuilds during installation on certain newer versions of Node (#2497)
+* Fixed issue with fillText that was breaking subsequent fillText calls (#2171)
 
 3.1.0
 ==================
