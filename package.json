@@ -46,7 +46,7 @@
   ],
   "dependencies": {
     "node-addon-api": "^7.0.0",
-    "prebuild-install": "^7.1.1"
+    "prebuild-install": "^7.1.3"
   },
   "devDependencies": {
     "@types/node": "^10.12.18",
