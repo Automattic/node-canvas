@@ -2496,6 +2496,7 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
   pango_context_set_base_dir(pango_layout_get_context(_layout), pango_dir);
 
   if (argsNum == 3) {
+    if (args[2] <= 0) return;
     scaled_by = get_text_scale(layout, args[2]);
     cairo_save(context());
     cairo_scale(context(), scaled_by, 1);
