@@ -1506,9 +1506,6 @@ Image::renderSVGToSurface() {
   }
 
   cairo_t *cr = cairo_create(_surface);
-  cairo_scale(cr,
-    (double)width / (double)naturalWidth,
-    (double)height / (double)naturalHeight);
   status = cairo_status(cr);
   if (status != CAIRO_STATUS_SUCCESS) {
     g_object_unref(_rsvg);
