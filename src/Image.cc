@@ -1518,8 +1518,8 @@ Image::renderSVGToSurface() {
   RsvgRectangle viewport = {
     0, // x
     0, // y
-    static_cast<double>(width),
-    static_cast<double>(height)
+    static_cast<double>(naturalWidth),
+    static_cast<double>(naturalHeight)
   };
   gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
   if (!render_ok) {
