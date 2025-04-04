@@ -368,7 +368,6 @@ static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
 
 Napi::Value
 Canvas::ToBuffer(const Napi::CallbackInfo& info) {
-  EncodingWorker *worker = new EncodingWorker(info.Env());
   cairo_status_t status;
 
   // Vector canvases, sync only
@@ -434,7 +433,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
       CairoError(ex).ThrowAsJavaScriptException();
     } catch (const char* ex) {
       Napi::Error::New(env, ex).ThrowAsJavaScriptException();
-
     }
 
     return env.Undefined();
@@ -461,6 +459,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
 
     // Make sure the surface exists since we won't have an isolate context in the async block:
     surface();
+    EncodingWorker* worker = new EncodingWorker(env);
     worker->Init(&ToPngBufferAsync, closure);
     worker->Queue();
 
@@ -498,6 +497,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
 
     // Make sure the surface exists since we won't have an isolate context in the async block:
     surface();
+    EncodingWorker* worker = new EncodingWorker(env);
     worker->Init(&ToJpegBufferAsync, closure);
     worker->Queue();
     return env.Undefined();
