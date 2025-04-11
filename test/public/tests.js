@@ -3,6 +3,8 @@ let Image
 let imageSrc
 const tests = {}
 
+/* global btoa */
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = tests
   Image = require('../../').Image
@@ -2812,4 +2814,21 @@ tests['no exif orientation'] = function (ctx, done) {
     done()
   }
   img.src = imageSrc(`exif-orientation-fn.jpg`)
+}
+
+tests['scaling SVGs'] = function (ctx, done) {
+  const img = new Image()
+
+  img.onload = function () {
+    img.width = 200
+    img.height = 200
+    ctx.drawImage(img, 0, 0, 200, 200)
+    done()
+  }
+
+  img.src = 'data:image/svg+xml;base64,' + btoa(`
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+      <circle fill="#ff0000" cx="50" cy="50" r="50"/>
+    </svg>
+  `)
 }
