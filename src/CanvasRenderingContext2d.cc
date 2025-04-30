@@ -2816,16 +2816,23 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
 
   metrics = PANGO_LAYOUT_GET_METRICS(layout);
 
+  text_align_t alignment = state->textAlignment;
+
+  // Convert start/end to left/right based on direction
+  if (alignment == TEXT_ALIGNMENT_START) {
+    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_RIGHT : TEXT_ALIGNMENT_LEFT;
+  } else if (alignment == TEXT_ALIGNMENT_END) {
+    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_LEFT : TEXT_ALIGNMENT_RIGHT;
+  }
+
   double x_offset;
-  switch (state->textAlignment) {
+  switch (alignment) {
     case TEXT_ALIGNMENT_CENTER:
       x_offset = logical_rect.width / 2.;
       break;
-    case TEXT_ALIGNMENT_END:
     case TEXT_ALIGNMENT_RIGHT:
       x_offset = logical_rect.width;
       break;
-    case TEXT_ALIGNMENT_START:
     case TEXT_ALIGNMENT_LEFT:
     default:
       x_offset = 0.0;
