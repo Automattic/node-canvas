@@ -907,7 +907,8 @@ Canvas::resurface(Napi::Object This) {
   Napi::Value context;
 
   if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
-    backend()->recreateSurface();
+    backend()->destroySurface();
+    backend()->createSurface();
     // Reset context
     Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
     cairo_t *prev = context2d->context();

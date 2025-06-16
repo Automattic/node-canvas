@@ -22,13 +22,6 @@ void Backend::setCanvas(Canvas* _canvas)
 }
 
 
-cairo_surface_t* Backend::recreateSurface()
-{
-  this->destroySurface();
-
-  return this->createSurface();
-}
-
 DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
   if (!surface) createSurface();
   return surface;
@@ -55,8 +48,9 @@ int Backend::getWidth()
 }
 void Backend::setWidth(int width_)
 {
+  this->destroySurface();
   this->width = width_;
-  this->recreateSurface();
+  this->createSurface();
 }
 
 int Backend::getHeight()
@@ -65,8 +59,9 @@ int Backend::getHeight()
 }
 void Backend::setHeight(int height_)
 {
+  this->destroySurface();
   this->height = height_;
-  this->recreateSurface();
+  this->createSurface();
 }
 
 bool Backend::isSurfaceValid(){

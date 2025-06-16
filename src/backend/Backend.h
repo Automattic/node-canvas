@@ -30,7 +30,6 @@ class Backend
     void setCanvas(Canvas* canvas);
 
     virtual cairo_surface_t* createSurface() = 0;
-    virtual cairo_surface_t* recreateSurface();
 
     DLL_PUBLIC cairo_surface_t* getSurface();
     virtual void destroySurface();
