@@ -1026,6 +1026,39 @@ describe('Canvas', function () {
       assertApprox(rm.actualBoundingBoxLeft, 19, 6)
       assertApprox(rm.actualBoundingBoxRight, 1, 6)
     })
+
+    it('resolves text alignment wrt Context2d#direction #2508', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+
+      ctx.textAlign = "left";
+      const leftMetrics = ctx.measureText('hello');
+      assert(leftMetrics.actualBoundingBoxLeft < leftMetrics.actualBoundingBoxRight, "leftMetrics.actualBoundingBoxLeft < leftMetrics.actualBoundingBoxRight");
+      
+      ctx.textAlign = "right";
+      const rightMetrics = ctx.measureText('hello');
+      assert(rightMetrics.actualBoundingBoxLeft > rightMetrics.actualBoundingBoxRight, "metrics.actualBoundingBoxLeft > metrics.actualBoundingBoxRight");
+      
+      ctx.textAlign = "start";
+      
+      ctx.direction = "ltr";
+      const ltrStartMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(ltrStartMetrics, leftMetrics, "ltr start metrics should equal left metrics");
+        
+      ctx.direction = "rtl";
+      const rtlStartMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(rtlStartMetrics, rightMetrics, "rtl start metrics should equal right metrics");
+      
+      ctx.textAlign = "end";
+      
+      ctx.direction = "ltr";
+      const ltrEndMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(ltrEndMetrics, rightMetrics, "ltr end metrics should equal right metrics");
+        
+      ctx.direction = "rtl";
+      const rtlEndMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(rtlEndMetrics, leftMetrics, "rtl end metrics should equal left metrics");
+    })
   })
 
   it('Context2d#fillText()', function () {

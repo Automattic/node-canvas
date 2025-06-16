@@ -2557,6 +2557,20 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
   }
 }
 
+text_align_t
+Context2d::resolveTextAlignment() {
+  text_align_t alignment = state->textAlignment;
+
+  // Convert start/end to left/right based on direction
+  if (alignment == TEXT_ALIGNMENT_START) {
+    return (state->direction == "rtl") ? TEXT_ALIGNMENT_RIGHT : TEXT_ALIGNMENT_LEFT;
+  } else if (alignment == TEXT_ALIGNMENT_END) {
+    return (state->direction == "rtl") ? TEXT_ALIGNMENT_LEFT : TEXT_ALIGNMENT_RIGHT;
+  }
+
+  return alignment;
+}
+
 /*
  * Set text path for the string in the layout at (x, y).
  * This function is called by paintText and won't behave correctly
@@ -2567,14 +2581,7 @@ inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
 void
 Context2d::setTextPath(double x, double y) {
   PangoRectangle logical_rect;
-  text_align_t alignment = state->textAlignment;
-
-  // Convert start/end to left/right based on direction
-  if (alignment == TEXT_ALIGNMENT_START) {
-    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_RIGHT : TEXT_ALIGNMENT_LEFT;
-  } else if (alignment == TEXT_ALIGNMENT_END) {
-    alignment = (state->direction == "rtl") ? TEXT_ALIGNMENT_LEFT : TEXT_ALIGNMENT_RIGHT;
-  }
+  text_align_t alignment = resolveTextAlignment();
 
   switch (alignment) {
     case TEXT_ALIGNMENT_CENTER:
@@ -2816,16 +2823,16 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
 
   metrics = PANGO_LAYOUT_GET_METRICS(layout);
 
+  text_align_t alignment = resolveTextAlignment();
+
   double x_offset;
-  switch (state->textAlignment) {
+  switch (alignment) {
     case TEXT_ALIGNMENT_CENTER:
       x_offset = logical_rect.width / 2.;
       break;
-    case TEXT_ALIGNMENT_END:
     case TEXT_ALIGNMENT_RIGHT:
       x_offset = logical_rect.width;
       break;
-    case TEXT_ALIGNMENT_START:
     case TEXT_ALIGNMENT_LEFT:
     default:
       x_offset = 0.0;

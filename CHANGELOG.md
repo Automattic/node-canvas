@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix fetching prebuilds during installation on certain newer versions of Node (#2497)
 * Fixed issue with fillText that was breaking subsequent fillText calls (#2171)
 * Fix svg rendering when the image is resized (#2498)
+* Fix measureText with direction rtl textAlign start/end
 
 3.1.0
 ==================

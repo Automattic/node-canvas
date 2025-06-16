@@ -222,6 +222,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void _setStrokePattern(Napi::Value arg);
     void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
+    text_align_t resolveTextAlignment();
     Napi::Reference<Napi::Value> _fillStyle;
     Napi::Reference<Napi::Value> _strokeStyle;
     Canvas *_canvas;
