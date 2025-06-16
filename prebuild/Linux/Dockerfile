@@ -4,7 +4,7 @@ RUN apt-get update && apt-get -y install curl git cmake make gcc g++ nasm wget g
 RUN bash -c 'cd; curl -LO https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz; tar -xvf pkg-config-0.29.2.tar.gz; cd pkg-config-0.29.2; ./configure --with-internal-glib; make -j8; make install'
 RUN bash -c 'cd; curl -O https://zlib.net/fossils/zlib-1.2.11.tar.gz; tar -xvf zlib-1.2.11.tar.gz; cd zlib-1.2.11; ./configure; make -j8; make install'
 RUN bash -c 'cd; curl -LO https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz; tar -xvf libffi-3.3.tar.gz; cd libffi-3.3; ./configure; make -j8; make install'
-RUN bash -c 'cd; curl -O https://www.openssl.org/source/openssl-1.1.1i.tar.gz; tar -xvf openssl-1.1.1i.tar.gz; cd openssl-1.1.1i; ./config; make -j8; make install'
+RUN bash -c 'cd; curl -fLO https://www.openssl.org/source/old/1.1.1/openssl-1.1.1i.tar.gz && tar -xvzf openssl-1.1.1i.tar.gz && cd openssl-1.1.1i && ./config && make -j$(nproc) && make install'
 RUN ldconfig
 RUN bash -c 'cd; curl -O https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz; tar -xvf Python-3.9.1.tgz; cd Python-3.9.1; ./configure --enable-shared --with-ensurepip=yes; make -j8; make install'
 RUN ldconfig
