@@ -16,6 +16,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fixed issue with fillText that was breaking subsequent fillText calls (#2171)
 * Fix svg rendering when the image is resized (#2498)
 * Fix measureText with direction rtl textAlign start/end
+* Fix a crash in Node 24, due to external memory API change (#2514)
 
 3.1.0
 ==================
