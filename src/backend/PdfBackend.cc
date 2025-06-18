@@ -1,6 +1,7 @@
 #include "PdfBackend.h"
 
 #include <cairo-pdf.h>
+#include <cassert>
 #include "../InstanceData.h"
 #include "../Canvas.h"
 #include "../closure.h"
@@ -23,10 +24,9 @@ void PdfBackend::destroySurface() {
   if (surface) {
     cairo_surface_destroy(surface);
     surface = nullptr;
-    if (_closure) {
-      delete _closure;
-      _closure = nullptr;
-    }
+    assert(_closure);
+    delete _closure;
+    _closure = nullptr;
   }
 }
 

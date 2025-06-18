@@ -28,10 +28,9 @@ void SvgBackend::destroySurface() {
   if (surface) {
     cairo_surface_destroy(surface);
     surface = nullptr;
-    if (_closure) {
-      delete _closure;
-      _closure = nullptr;
-    }
+    assert(_closure);
+    delete _closure;
+    _closure = nullptr;
   }
  }
 
