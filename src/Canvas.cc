@@ -131,12 +131,12 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
     if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
   }
 
+  backend->setCanvas(this);
+
   if (!backend->isSurfaceValid()) {
     Napi::Error::New(env, backend->getError()).ThrowAsJavaScriptException();
     return;
   }
-
-  backend->setCanvas(this);
 
   // Note: the backend gets destroyed when the jsBackend is GC'd. The cleaner
   // way would be to only store the jsBackend and unwrap it when the c++ ref is
@@ -908,7 +908,7 @@ Canvas::resurface(Napi::Object This) {
 
   if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
     backend()->destroySurface();
-    backend()->createSurface();
+    backend()->ensureSurface();
     // Reset context
     Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
     cairo_t *prev = context2d->context();

@@ -9,35 +9,31 @@
 
 using namespace Napi;
 
-SvgBackend::SvgBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<SvgBackend>(info), Backend("svg", info) {
-  SvgBackend::createSurface();
-}
+SvgBackend::SvgBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<SvgBackend>(info), Backend("svg", info) {}
 
 SvgBackend::~SvgBackend() {
-  cairo_surface_finish(surface);
-  if (_closure) {
-    delete _closure;
-    _closure = nullptr;
-  }
   destroySurface();
 }
 
-cairo_surface_t* SvgBackend::createSurface() {
-  assert(!_closure);
-  _closure = new PdfSvgClosure(canvas);
-  surface = cairo_svg_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
+cairo_surface_t* SvgBackend::ensureSurface() {
+  if (!surface) {
+    assert(!_closure);
+     _closure = new PdfSvgClosure(canvas);
+    surface = cairo_svg_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
+  }
   return surface;
 }
 
-cairo_surface_t* SvgBackend::recreateSurface() {
-  cairo_surface_finish(surface);
-  delete _closure;
-  _closure = nullptr;
-  cairo_surface_destroy(surface);
-
-  return createSurface();
+void SvgBackend::destroySurface() {
+  if (surface) {
+    cairo_surface_destroy(surface);
+    surface = nullptr;
+    if (_closure) {
+      delete _closure;
+      _closure = nullptr;
+    }
+  }
  }
-
 
 void
 SvgBackend::Initialize(Napi::Object target) {

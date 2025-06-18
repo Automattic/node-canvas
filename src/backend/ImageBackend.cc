@@ -3,8 +3,10 @@
 #include <napi.h>
 #include <cassert>
 
-ImageBackend::ImageBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageBackend>(info), Backend("image", info)
-{
+ImageBackend::ImageBackend(Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageBackend>(info), Backend("image", info) {}
+
+ImageBackend::~ImageBackend() {
+    destroySurface();
 }
 
 // This returns an approximate value only, suitable for
@@ -29,11 +31,12 @@ int32_t ImageBackend::approxBytesPerPixel() {
   }
 }
 
-cairo_surface_t* ImageBackend::createSurface() {
-  assert(!surface);
-  surface = cairo_image_surface_create(format, width, height);
-  assert(surface);
-  Napi::MemoryManagement::AdjustExternalMemory(env, approxBytesPerPixel() * width * height);
+cairo_surface_t* ImageBackend::ensureSurface() {
+  if (!surface) {
+    surface = cairo_image_surface_create(format, width, height);
+    assert(surface);
+    Napi::MemoryManagement::AdjustExternalMemory(env, approxBytesPerPixel() * width * height);
+  }
   return surface;
 }
 
@@ -50,7 +53,8 @@ cairo_format_t ImageBackend::getFormat() {
 }
 
 void ImageBackend::setFormat(cairo_format_t _format) {
-	this->format = _format;
+    this->destroySurface();
+    this->format = _format;
 }
 
 Napi::FunctionReference ImageBackend::constructor;

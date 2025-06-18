@@ -76,7 +76,7 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
     DLL_PUBLIC inline Backend* backend() { return _backend; }
-    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->getSurface(); }
+    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->ensureSurface(); }
     cairo_t* createCairoContext();
 
     DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }

@@ -11,30 +11,11 @@ Backend::Backend(std::string name, Napi::CallbackInfo& info) : name(name), env(i
   this->height = height;
 }
 
-Backend::~Backend()
-{
-  Backend::destroySurface();
-}
-
 void Backend::setCanvas(Canvas* _canvas)
 {
   this->canvas = _canvas;
 }
 
-
-DLL_PUBLIC cairo_surface_t* Backend::getSurface() {
-  if (!surface) createSurface();
-  return surface;
-}
-
-void Backend::destroySurface()
-{
-  if(this->surface)
-  {
-    cairo_surface_destroy(this->surface);
-    this->surface = NULL;
-  }
-}
 
 
 std::string Backend::getName()
@@ -50,7 +31,6 @@ void Backend::setWidth(int width_)
 {
   this->destroySurface();
   this->width = width_;
-  this->createSurface();
 }
 
 int Backend::getHeight()
@@ -61,22 +41,17 @@ void Backend::setHeight(int height_)
 {
   this->destroySurface();
   this->height = height_;
-  this->createSurface();
 }
 
-bool Backend::isSurfaceValid(){
-  bool hadSurface = surface != NULL;
+bool Backend::isSurfaceValid() {
   bool isValid = true;
 
-  cairo_status_t status = cairo_surface_status(getSurface());
+  cairo_status_t status = cairo_surface_status(ensureSurface());
 
   if (status != CAIRO_STATUS_SUCCESS) {
     error = cairo_status_to_string(status);
     isValid = false;
   }
-
-  if (!hadSurface)
-    destroySurface();
 
   return isValid;
 }

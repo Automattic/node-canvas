@@ -7,8 +7,9 @@
 class PdfBackend : public Napi::ObjectWrap<PdfBackend>, public Backend
 {
   private:
-    cairo_surface_t* createSurface();
-    cairo_surface_t* recreateSurface();
+    cairo_surface_t* ensureSurface();
+    void destroySurface();
+    cairo_surface_t* surface = nullptr;
 
   public:
     PdfSvgClosure* _closure = NULL;

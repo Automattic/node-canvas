@@ -17,7 +17,6 @@ class Backend
   protected:
     int width;
     int height;
-    cairo_surface_t* surface = nullptr;
     Canvas* canvas = nullptr;
 
     Backend(std::string name, Napi::CallbackInfo& info);
@@ -25,14 +24,10 @@ class Backend
   public:
     Napi::Env env;
 
-    virtual ~Backend();
-
     void setCanvas(Canvas* canvas);
 
-    virtual cairo_surface_t* createSurface() = 0;
-
-    DLL_PUBLIC cairo_surface_t* getSurface();
-    virtual void destroySurface();
+    virtual cairo_surface_t* ensureSurface() = 0;
+    virtual void destroySurface() = 0;
 
     DLL_PUBLIC std::string getName();
 
