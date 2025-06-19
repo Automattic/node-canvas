@@ -52,11 +52,11 @@ jobs:
       matrix:
         node: [21]
         canvas_tag: ["v3.1.1"] # e.g. "v2.6.1"
-        os: ["ubuntu-latest", "ubuntu-latest-arm"]
+        os: ["ubuntu-24.04", "ubuntu-24.04-arm"]
     name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
-    runs-on: matrix.os
+    runs-on: ${{ matrix.os }}
     container:
-      image: ${{ matrix.os == 'ubuntu-latest-arm' && 'chearon/canvas-prebuilt-arm:1' || 'zbbjornson/canvas-prebuilt:11' }}
+      image: ${{ matrix.os == 'ubuntu-24.04-arm' && 'chearon/canvas-prebuilt-arm:1' || 'zbbjornson/canvas-prebuilt:11' }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
