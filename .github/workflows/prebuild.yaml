@@ -237,6 +237,7 @@ jobs:
       # https://github.com/msys2/setup-msys2#setup-msys2
       # https://github.com/actions/virtual-environments/pull/632
       - uses: msys2/setup-msys2@v2
+        id: msys2
         with:
           msystem: UCRT64
           update: true
@@ -255,6 +256,7 @@ jobs:
 
       - name: Build
         run: |
+          echo "MSYS2 LOCATION: ${{steps.msys2.outputs.msys2-location}}"
           git checkout ${{ matrix.canvas_tag }}
           git checkout $env:GITHUB_SHA -- prebuild/
           npm install -g node-gyp
