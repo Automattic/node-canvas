@@ -74,7 +74,6 @@
         'src/Image.cc',
         'src/ImageData.cc',
         'src/init.cc',
-        'src/register_font.cc',
         'src/FontParser.cc'
       ],
       'conditions': [

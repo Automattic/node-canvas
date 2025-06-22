@@ -77,8 +77,6 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [createCanvas()](#createcanvas)
 * [createImageData()](#createimagedata)
 * [loadImage()](#loadimage)
-* [registerFont()](#registerfont)
-* [deregisterAllFonts()](#deregisterAllFonts)
 
 
 ### Non-standard APIs
@@ -149,56 +147,6 @@ myimg.then(() => {
 // or with async/await:
 const myimg = await loadImage('http://server.com/image.png')
 // do something with image
-```
-
-### registerFont()
-
-> ```ts
-> registerFont(path: string, { family: string, weight?: string, style?: string }) => void
-> ```
-
-To use a font file that is not installed as a system font, use `registerFont()` to register the font with Canvas.
-
-```js
-const { registerFont, createCanvas } = require('canvas')
-registerFont('comicsans.ttf', { family: 'Comic Sans' })
-
-const canvas = createCanvas(500, 500)
-const ctx = canvas.getContext('2d')
-
-ctx.font = '12px "Comic Sans"'
-ctx.fillText('Everyone hates this font :(', 250, 10)
-```
-
-The second argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight`, and `style` are optional and default to `'normal'`.
-
-### deregisterAllFonts()
-
-> ```ts
-> deregisterAllFonts() => void
-> ```
-
-Use `deregisterAllFonts` to unregister all fonts that have been previously registered. This method is useful when you want to remove all registered fonts, such as when using the canvas in tests
-
-```ts
-const { registerFont, createCanvas, deregisterAllFonts } = require('canvas')
-
-describe('text rendering', () => {
-    afterEach(() => {
-        deregisterAllFonts();
-    })
-    it('should render text with Comic Sans', () => {
-        registerFont('comicsans.ttf', { family: 'Comic Sans' })
-
-        const canvas = createCanvas(500, 500)
-        const ctx = canvas.getContext('2d')
-        
-        ctx.font = '12px "Comic Sans"'
-        ctx.fillText('Everyone loves this font :)', 250, 10)
-        
-        // assertScreenshot()
-    })
-})
 ```
 
 ### Image#src
