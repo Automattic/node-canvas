@@ -13,7 +13,6 @@
 #include <ctime>
 #include <glib.h>
 #include "PNG.h"
-#include "register_font.h"
 #include <sstream>
 #include <stdlib.h>
 #include <string>
@@ -31,17 +30,7 @@
 #include "backend/PdfBackend.h"
 #include "backend/SvgBackend.h"
 
-#define GENERIC_FACE_ERROR \
-  "The second argument to registerFont is required, and should be an object " \
-  "with at least a family (string) and optionally weight (string/number) " \
-  "and style (string)."
-
 using namespace std;
-
-std::vector<FontFace> Canvas::font_face_list;
-
-// Increases each time a font is (de)registered
-int Canvas::fontSerial = 1;
 
 /*
  * Initialize Canvas.
@@ -71,8 +60,6 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
     StaticValue("PNG_FILTER_AVG", Napi::Number::New(env, PNG_FILTER_AVG), napi_default_jsproperty),
     StaticValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH), napi_default_jsproperty),
     StaticValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS), napi_default_jsproperty),
-    StaticMethod<&Canvas::RegisterFont>("_registerFont", napi_default_method),
-    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts", napi_default_method),
     StaticMethod<&Canvas::ParseFont>("parseFont", napi_default_method)
   });
 
@@ -675,88 +662,6 @@ str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_numb
   return NULL;
 }
 
-void
-Canvas::RegisterFont(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  if (!info[0].IsString()) {
-    Napi::Error::New(env, "Wrong argument type").ThrowAsJavaScriptException();
-    return;
-  } else if (!info[1].IsObject()) {
-    Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
-    return;
-  }
-
-  std::string filePath = info[0].As<Napi::String>();
-  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *)(filePath.c_str()));
-
-  if (!sys_desc) {
-    Napi::Error::New(env, "Could not parse font file").ThrowAsJavaScriptException();
-    return;
-  }
-
-  PangoFontDescription *user_desc = pango_font_description_new();
-
-  // now check the attrs, there are many ways to be wrong
-  Napi::Object js_user_desc = info[1].As<Napi::Object>();
-
-  // TODO: use FontParser on these values just like the FontFace API works
-  char *family = str_value(js_user_desc.Get("family"), NULL, false);
-  char *weight = str_value(js_user_desc.Get("weight"), "normal", true);
-  char *style = str_value(js_user_desc.Get("style"), "normal", false);
-
-  if (family && weight && style) {
-    pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
-    pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
-    pango_font_description_set_family(user_desc, family);
-
-    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
-      return pango_font_description_equal(f.sys_desc, sys_desc);
-    });
-
-    if (found != font_face_list.end()) {
-      pango_font_description_free(found->user_desc);
-      found->user_desc = user_desc;
-    } else if (register_font((unsigned char *) filePath.c_str())) {
-      FontFace face;
-      face.user_desc = user_desc;
-      face.sys_desc = sys_desc;
-      strncpy((char *)face.file_path, (char *) filePath.c_str(), 1023);
-      font_face_list.push_back(face);
-    } else {
-      pango_font_description_free(user_desc);
-      Napi::Error::New(env, "Could not load font to the system's font host").ThrowAsJavaScriptException();
-
-    }
-  } else {
-    pango_font_description_free(user_desc);
-    if (!env.IsExceptionPending()) {
-      Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
-    }
-  }
-
-  free(family);
-  free(weight);
-  free(style);
-  fontSerial++;
-}
-
-void
-Canvas::DeregisterAllFonts(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  // Unload all fonts from pango to free up memory
-  bool success = true;
-
-  std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
-    if (!deregister_font( (unsigned char *)f.file_path )) success = false;
-    pango_font_description_free(f.user_desc);
-    pango_font_description_free(f.sys_desc);
-  });
-
-  font_face_list.clear();
-  fontSerial++;
-  if (!success) Napi::Error::New(env, "Could not deregister one or more fonts").ThrowAsJavaScriptException();
-}
-
 /*
  * Do not use! This is only exported for testing
  */
@@ -791,111 +696,6 @@ Canvas::ParseFont(const Napi::CallbackInfo& info) {
   return obj;
 }
 
-/*
- * Get a PangoStyle from a CSS string (like "italic")
- */
-
-PangoStyle
-Canvas::GetStyleFromCSSString(const char *style) {
-  PangoStyle s = PANGO_STYLE_NORMAL;
-
-  if (strlen(style) > 0) {
-    if (0 == strcmp("italic", style)) {
-      s = PANGO_STYLE_ITALIC;
-    } else if (0 == strcmp("oblique", style)) {
-      s = PANGO_STYLE_OBLIQUE;
-    }
-  }
-
-  return s;
-}
-
-/*
- * Get a PangoWeight from a CSS string ("bold", "100", etc)
- */
-
-PangoWeight
-Canvas::GetWeightFromCSSString(const char *weight) {
-  PangoWeight w = PANGO_WEIGHT_NORMAL;
-
-  if (strlen(weight) > 0) {
-    if (0 == strcmp("bold", weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("100", weight)) {
-      w = PANGO_WEIGHT_THIN;
-    } else if (0 == strcmp("200", weight)) {
-      w = PANGO_WEIGHT_ULTRALIGHT;
-    } else if (0 == strcmp("300", weight)) {
-      w = PANGO_WEIGHT_LIGHT;
-    } else if (0 == strcmp("400", weight)) {
-      w = PANGO_WEIGHT_NORMAL;
-    } else if (0 == strcmp("500", weight)) {
-      w = PANGO_WEIGHT_MEDIUM;
-    } else if (0 == strcmp("600", weight)) {
-      w = PANGO_WEIGHT_SEMIBOLD;
-    } else if (0 == strcmp("700", weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("800", weight)) {
-      w = PANGO_WEIGHT_ULTRABOLD;
-    } else if (0 == strcmp("900", weight)) {
-      w = PANGO_WEIGHT_HEAVY;
-    }
-  }
-
-  return w;
-}
-
-/*
- * Given a user description, return a description that will select the
- * font either from the system or @font-face
- */
-
-PangoFontDescription *
-Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
-  // One of the user-specified families could map to multiple SFNT family names
-  // if someone registered two different fonts under the same family name.
-  // https://drafts.csswg.org/css-fonts-3/#font-style-matching
-  FontFace best;
-  istringstream families(pango_font_description_get_family(desc));
-  unordered_set<string> seen_families;
-  string resolved_families;
-  bool first = true;
-
-  for (string family; getline(families, family, ','); ) {
-    string renamed_families;
-    for (auto& ff : font_face_list) {
-      string pangofamily = string(pango_font_description_get_family(ff.user_desc));
-      if (streq_casein(family, pangofamily)) {
-        const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
-        bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
-        bool better = best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc);
-
-        // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
-        // https://bugzilla.gnome.org/show_bug.cgi?id=762873
-        if (unseen) {
-          seen_families.insert(sys_desc_family_name);
-
-          if (better) {
-            renamed_families = string(sys_desc_family_name) + (renamed_families.size() ? "," : "") + renamed_families;
-          } else {
-            renamed_families = renamed_families + (renamed_families.size() ? "," : "") + sys_desc_family_name;
-          }
-        }
-
-        if (first && better) best = ff;
-      }
-    }
-
-    if (resolved_families.size()) resolved_families += ',';
-    resolved_families += renamed_families.size() ? renamed_families : family;
-    first = false;
-  }
-
-  PangoFontDescription* ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
-  pango_font_description_set_family(ret, resolved_families.c_str());
-
-  return ret;
-}
 
 /*
  * Re-alloc the surface, destroying the previous.
