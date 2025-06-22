@@ -1,10 +1,7 @@
 import { expectAssignable, expectType } from 'tsd'
-import * as path from 'path'
 import { Readable } from 'stream'
 
 import * as Canvas from './index'
-
-Canvas.registerFont(path.join(__dirname, '../pfennigFont/Pfennig.ttf'), {family: 'pfennigFont'})
 
 Canvas.createCanvas(5, 10)
 Canvas.createCanvas(200, 200, 'pdf')
@@ -22,7 +19,6 @@ expectType<number>(id.width)
 ctx.currentTransform = ctx.getTransform()
 
 ctx.quality = 'best'
-ctx.textDrawingMode = 'glyph'
 
 const grad = ctx.createLinearGradient(0, 1, 2, 3)
 expectType<Canvas.CanvasGradient>(grad)
@@ -49,5 +45,3 @@ expectType<Canvas.ImageData>(id2)
 ctx.putImageData(id2, 0, 0)
 
 ctx.drawImage(canv, 0, 0)
-
-Canvas.deregisterAllFonts()
