@@ -23,14 +23,6 @@
   #endif
 #endif
 
-#ifdef HAVE_RSVG
-#include <librsvg/rsvg.h>
-  // librsvg <= 2.36.1, identified by undefined macro, needs an extra include
-  #ifndef LIBRSVG_CHECK_VERSION
-  #include <librsvg/rsvg-cairo.h>
-  #endif
-#endif
-
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
 class Image : public Napi::ObjectWrap<Image> {
@@ -58,7 +50,6 @@ class Image : public Napi::ObjectWrap<Image> {
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
-    static int isSVG(uint8_t *data, unsigned len);
     static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     inline int isComplete(){ return COMPLETE == state; }
@@ -68,11 +59,6 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();
-#ifdef HAVE_RSVG
-    cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
-    cairo_status_t loadSVG(FILE *stream);
-    cairo_status_t renderSVGToSurface();
-#endif
 #ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadGIF(FILE *stream);
@@ -128,7 +114,6 @@ class Image : public Napi::ObjectWrap<Image> {
       , GIF
       , JPEG
       , PNG
-      , SVG
     } type;
 
     static type extension(const char *filename);
@@ -137,10 +122,4 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_surface_t *_surface;
     uint8_t *_data = nullptr;
     int _data_len;
-#ifdef HAVE_RSVG
-    RsvgHandle *_rsvg;
-    bool _is_svg;
-    int _svg_last_width;
-    int _svg_last_height;
-#endif
 };

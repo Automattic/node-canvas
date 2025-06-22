@@ -86,11 +86,6 @@ Image::Image(const Napi::CallbackInfo& info) : ObjectWrap<Image>(info), env(info
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
-#ifdef HAVE_RSVG
-  _rsvg = NULL;
-  _is_svg = false;
-  _svg_last_width = _svg_last_height = 0;
-#endif
 }
 
 /*
@@ -210,13 +205,6 @@ Image::clearData() {
   free(filename);
   filename = NULL;
 
-#ifdef HAVE_RSVG
-  if (_rsvg != NULL) {
-    g_object_unref(_rsvg);
-    _rsvg = NULL;
-  }
-#endif
-
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
@@ -310,18 +298,6 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 #endif
   }
 
-  // confirm svg using first 1000 chars
-  // if a very long comment precedes the root <svg> tag, isSVG returns false
-  unsigned head_len = (len < 1000 ? len : 1000);
-  if (isSVG(buf, head_len)) {
-#ifdef HAVE_RSVG
-    return loadSVGFromBuffer(buf, len);
-#else
-    this->errorInfo.set("node-canvas was built without SVG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
-  }
-
   if (isBMP(buf, len))
     return loadBMPFromBuffer(buf, len);
 
@@ -397,22 +373,6 @@ Image::loaded() {
  * Returns this image's surface.
  */
 cairo_surface_t *Image::surface() {
-#ifdef HAVE_RSVG
-  if (_is_svg && (_svg_last_width != width || _svg_last_height != height)) {
-    if (_surface != NULL) {
-      cairo_surface_destroy(_surface);
-      _surface = NULL;
-    }
-
-    cairo_status_t status = renderSVGToSurface();
-    if (status != CAIRO_STATUS_SUCCESS) {
-      g_object_unref(_rsvg);
-      Napi::Error::New(env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
-
-      return NULL;
-    }
-  }
-#endif
   return _surface;
 }
 
@@ -462,31 +422,8 @@ Image::loadSurface() {
 #endif
   }
 
-  // confirm svg using first 1000 chars
-  // if a very long comment precedes the root <svg> tag, isSVG returns false
-  uint8_t head[1000] = {0};
-  fseek(stream, 0 , SEEK_END);
-  long len = ftell(stream);
-  unsigned head_len = (len < 1000 ? len : 1000);
-  unsigned head_size = head_len * sizeof(uint8_t);
-  rewind(stream);
-  if (head_size != fread(&head, 1, head_size, stream)) {
-    fclose(stream);
-    return CAIRO_STATUS_READ_ERROR;
-  }
-  rewind(stream);
-  if (isSVG(head, head_len)) {
-#ifdef HAVE_RSVG
-    return loadSVG(stream);
-#else
-    this->errorInfo.set("node-canvas was built without SVG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
-  }
-
   if (isBMP(buf, 2))
     return loadBMP(stream);
-
   fclose(stream);
 
   this->errorInfo.set("Unsupported image type");
@@ -1460,115 +1397,6 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
 
 #endif /* HAVE_JPEG */
 
-#ifdef HAVE_RSVG
-
-/*
- * Load SVG from buffer
- */
-
-cairo_status_t
-Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
-  _is_svg = true;
-
-  if (NULL == (_rsvg = rsvg_handle_new_from_data(buf, len, nullptr))) {
-    return CAIRO_STATUS_READ_ERROR;
-  }
-
-  double d_width;
-  double d_height;
-
-  rsvg_handle_get_intrinsic_size_in_pixels(_rsvg, &d_width, &d_height);
-
-  width = naturalWidth = d_width;
-  height = naturalHeight = d_height;
-
-  if (width <= 0 || height <= 0) {
-    this->errorInfo.set("Width and height must be set on the svg element");
-    return CAIRO_STATUS_READ_ERROR;
-  }
-
-  return renderSVGToSurface();
-}
-
-/*
- * Renders the Rsvg handle to this image's surface
- */
-cairo_status_t
-Image::renderSVGToSurface() {
-  cairo_status_t status;
-
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-
-  status = cairo_surface_status(_surface);
-  if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(_rsvg);
-    return status;
-  }
-
-  cairo_t *cr = cairo_create(_surface);
-  status = cairo_status(cr);
-  if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(_rsvg);
-    return status;
-  }
-
-  RsvgRectangle viewport = {
-    0, // x
-    0, // y
-    static_cast<double>(width),
-    static_cast<double>(height)
-  };
-  gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
-  if (!render_ok) {
-    g_object_unref(_rsvg);
-    cairo_destroy(cr);
-    return CAIRO_STATUS_READ_ERROR; // or WRITE?
-  }
-
-  cairo_destroy(cr);
-
-  _svg_last_width = width;
-  _svg_last_height = height;
-
-  return status;
-}
-
-/*
- * Load SVG
- */
-
-cairo_status_t
-Image::loadSVG(FILE *stream) {
-  _is_svg = true;
-
-  struct stat s;
-  int fd = fileno(stream);
-
-  // stat
-  if (fstat(fd, &s) < 0) {
-    fclose(stream);
-    return CAIRO_STATUS_READ_ERROR;
-  }
-
-  uint8_t *buf = (uint8_t *) malloc(s.st_size);
-
-  if (!buf) {
-    fclose(stream);
-    return CAIRO_STATUS_NO_MEMORY;
-  }
-
-  size_t read = fread(buf, s.st_size, 1, stream);
-  fclose(stream);
-
-  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
-  if (1 == read) result = loadSVGFromBuffer(buf, s.st_size);
-  free(buf);
-
-  return result;
-}
-
-#endif /* HAVE_RSVG */
-
 /*
  * Load BMP from buffer.
  */
@@ -1641,7 +1469,7 @@ cairo_status_t Image::loadBMP(FILE *stream){
 }
 
 /*
- * Return UNKNOWN, SVG, GIF, JPEG, or PNG based on the filename.
+ * Return UNKNOWN, GIF, JPEG, or PNG based on the filename.
  */
 
 Image::type
@@ -1652,7 +1480,6 @@ Image::extension(const char *filename) {
   if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return Image::GIF;
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
-  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return Image::SVG;
   return Image::UNKNOWN;
 }
 
@@ -1681,27 +1508,6 @@ Image::isGIF(uint8_t *data) {
 int
 Image::isPNG(uint8_t *data) {
   return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
-}
-
-/*
- * Skip "<?" and "<!" tags to test if root tag starts "<svg"
- */
-int
-Image::isSVG(uint8_t *data, unsigned len) {
-  for (unsigned i = 3; i < len; i++) {
-    if ('<' == data[i-3]) {
-      switch (data[i-2]) {
-        case '?':
-        case '!':
-          break;
-        case 's':
-          return ('v' == data[i-1] && 'g' == data[i]);
-        default:
-          return false;
-      }
-    }
-  }
-  return false;
 }
 
 /*
