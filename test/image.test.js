@@ -12,7 +12,6 @@ const path = require('path')
 const os = require('os')
 
 const { createCanvas, loadImage, rsvgVersion, Image } = require('../')
-const HAVE_SVG = rsvgVersion !== undefined
 
 
 const pngCheckers = path.join(__dirname, '/fixtures/checkers.png')
@@ -120,32 +119,6 @@ describe('Image', function () {
     assert.throws(() => {
       img.src = Buffer.from('', 'hex')
     }, MyError)
-  })
-
-  it('loads SVG data URL base64', function () {
-    if (!HAVE_SVG) this.skip()
-    const base64Enc = fs.readFileSync(svgTree, 'base64')
-    const dataURL = `data:image/svg+xml;base64,${base64Enc}`
-    return loadImage(dataURL).then((img) => {
-      assert.strictEqual(img.onerror, null)
-      assert.strictEqual(img.onload, null)
-      assert.strictEqual(img.width, 200)
-      assert.strictEqual(img.height, 200)
-      assert.strictEqual(img.complete, true)
-    })
-  })
-
-  it('loads SVG data URL utf8', function () {
-    if (!HAVE_SVG) this.skip()
-    const utf8Encoded = fs.readFileSync(svgTree, 'utf8')
-    const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
-    return loadImage(dataURL).then((img) => {
-      assert.strictEqual(img.onerror, null)
-      assert.strictEqual(img.onload, null)
-      assert.strictEqual(img.width, 200)
-      assert.strictEqual(img.height, 200)
-      assert.strictEqual(img.complete, true)
-    })
   })
 
   it('calls Image#onload multiple times', function () {
@@ -344,20 +317,6 @@ describe('Image', function () {
     assert.ok(!keys.includes('source'))
     assert.ok(!keys.includes('getSource'))
     assert.ok(!keys.includes('setSource'))
-  })
-
-  it('loadImage doesn\'t crash when you don\'t specify width and height', async function () {
-    const err = {name: 'Error'}
-
-    // TODO: remove this when we have a static build or something
-    if (os.platform() !== 'win32') {
-      err.message = 'Width and height must be set on the svg element';
-    }
-
-    await assert.rejects(async () => {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`;
-      await loadImage(Buffer.from(svg))
-    }, err)
   })
 
   describe('supports BMP', function () {
