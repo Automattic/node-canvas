@@ -99,10 +99,6 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
 #endif
 #endif
 
-#ifdef HAVE_RSVG
-  exports.Set("rsvgVersion", Napi::String::New(env, LIBRSVG_VERSION));
-#endif
-
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
   exports.Set("freetypeVersion", Napi::String::New(env, freetype_version));
