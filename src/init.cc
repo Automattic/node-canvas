@@ -1,7 +1,6 @@
 // Copyright (c) 2010 LearnBoost <tj@learnboost.com>
 
 #include <cstdio>
-#include <pango/pango.h>
 
 #include <cairo.h>
 #if CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 10, 0)
@@ -103,8 +102,6 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
 #ifdef HAVE_RSVG
   exports.Set("rsvgVersion", Napi::String::New(env, LIBRSVG_VERSION));
 #endif
-
-  exports.Set("pangoVersion", Napi::String::New(env, PANGO_VERSION_STRING));
 
   char freetype_version[10];
   snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
