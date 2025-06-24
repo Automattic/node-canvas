@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* fix: reject loadImage when src is null or invalid
 
 3.1.2
 ==================
