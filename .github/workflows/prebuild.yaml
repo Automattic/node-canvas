@@ -51,7 +51,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [21]
-        canvas_tag: ["v3.1.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v3.1.2"] # e.g. "v2.6.1"
         os: ["ubuntu-24.04", "ubuntu-24.04-arm"]
     name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ${{ matrix.os }}
@@ -144,7 +144,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [21]
-        canvas_tag: ["v3.1.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v3.1.2"] # e.g. "v2.6.1"
         os:
           - runner: macos-15-large
           - runner: macos-15
@@ -226,7 +226,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [21]
-        canvas_tag: ["v3.1.1"] # e.g. "v2.6.1"
+        canvas_tag: ["v3.1.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-2019
     env:
