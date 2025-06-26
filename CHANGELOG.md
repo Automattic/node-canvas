@@ -11,6 +11,11 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 
+3.1.2
+==================
+### Fixed
+* Fix crash when setting width/height on PDF, SVG canvas (#2520)
+
 3.1.1
 ==================
 ### Fixed
