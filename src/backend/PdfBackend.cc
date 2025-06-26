@@ -22,6 +22,7 @@ cairo_surface_t* PdfBackend::ensureSurface() {
 
 void PdfBackend::destroySurface() {
   if (surface) {
+    cairo_surface_finish(surface);
     cairo_surface_destroy(surface);
     surface = nullptr;
     assert(_closure);

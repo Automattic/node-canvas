@@ -26,6 +26,7 @@ cairo_surface_t* SvgBackend::ensureSurface() {
 
 void SvgBackend::destroySurface() {
   if (surface) {
+    cairo_surface_finish(surface);
     cairo_surface_destroy(surface);
     surface = nullptr;
     assert(_closure);
