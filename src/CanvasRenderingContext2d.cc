@@ -162,7 +162,8 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceAccessor<&Context2d::GetFont, &Context2d::SetFont>("font", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetTextBaseline, &Context2d::SetTextBaseline>("textBaseline", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetTextAlign, &Context2d::SetTextAlign>("textAlign", napi_default_jsproperty),
-    InstanceAccessor<&Context2d::GetDirection, &Context2d::SetDirection>("direction", napi_default_jsproperty)
+    InstanceAccessor<&Context2d::GetDirection, &Context2d::SetDirection>("direction", napi_default_jsproperty),
+    InstanceAccessor<&Context2d::GetLanguage, &Context2d::SetLanguage>("lang", napi_default_jsproperty)
   });
 
   exports.Set("CanvasRenderingContext2d", ctor);
@@ -784,6 +785,28 @@ Context2d::SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value
   if (dir != "ltr" && dir != "rtl") return;
 
   state->direction = dir;
+}
+
+/*
+ * Get language.
+ */
+Napi::Value
+Context2d::GetLanguage(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, state->lang);
+}
+
+/*
+ * Set language.
+ */
+void
+Context2d::SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (!value.IsString()) return;
+
+  std::string lang = value.As<Napi::String>();
+  state->lang = lang;
+
+  pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(lang.c_str()));
+  pango_cairo_update_layout(context(), _layout);
 }
 
 /*
