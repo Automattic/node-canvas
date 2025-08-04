@@ -792,7 +792,12 @@ Context2d::SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value
  */
 Napi::Value
 Context2d::GetLanguage(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env, state->lang);
+  PangoLanguage* lang = pango_context_get_language(pango_layout_get_context(_layout));
+  if (!lang) {
+    return Napi::String::New(env, "");
+  }
+  std::string langCode = pango_language_to_string(lang);
+  return Napi::String::New(env, langCode);
 }
 
 /*
@@ -803,10 +808,7 @@ Context2d::SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value)
   if (!value.IsString()) return;
 
   std::string lang = value.As<Napi::String>();
-  state->lang = lang;
-
   pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(lang.c_str()));
-  pango_cairo_update_layout(context(), _layout);
 }
 
 /*
