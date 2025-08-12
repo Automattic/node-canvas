@@ -1,6 +1,7 @@
 #include "BMPParser.h"
 
 #include <cassert>
+#include <cstring>
 
 using namespace std;
 using namespace BMPParser;
@@ -384,7 +385,8 @@ string Parser::getErrMsg() const{
 template <typename T, bool check> inline T Parser::get(){
   if(check)
     CHECK_OVERRUN(ptr, sizeof(T), T);
-  T val = *(T*)ptr;
+  T val;
+  std::memcpy(&val, ptr, sizeof(T));
   ptr += sizeof(T);
   return val;
 }
