@@ -13,7 +13,6 @@
 #error("cairo v1.10.0 or later is required")
 #endif
 
-#include "Backends.h"
 #include "Canvas.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
@@ -49,7 +48,6 @@ setParseFont(const Napi::CallbackInfo& info) {
 Napi::Object init(Napi::Env env, Napi::Object exports) {
   env.SetInstanceData(new InstanceData());
 
-  Backends::Initialize(env, exports);
   Canvas::Initialize(env, exports);
   Image::Initialize(env, exports);
   ImageData::Initialize(env, exports);

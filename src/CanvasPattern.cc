@@ -55,7 +55,7 @@ Pattern::Pattern(const Napi::CallbackInfo& info) : ObjectWrap<Pattern>(info), en
   // Canvas
   } else if (obj.InstanceOf(data->CanvasCtor.Value()).UnwrapOr(false)) {
     Canvas *canvas = Canvas::Unwrap(obj);
-    surface = canvas->surface();
+    surface = canvas->ensureSurface();
   // Invalid
   } else {
     if (!env.IsExceptionPending()) {

@@ -3,7 +3,6 @@
 #include "CanvasRenderingContext2d.h"
 
 #include <algorithm>
-#include "backend/ImageBackend.h"
 #include <cairo-pdf.h>
 #include "Canvas.h"
 #include "CanvasGradient.h"
@@ -174,9 +173,8 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
 
   _canvas = Canvas::Unwrap(obj);
 
-  bool isImageBackend = _canvas->backend()->getName() == "image";
-  if (isImageBackend) {
-    cairo_format_t format = ImageBackend::DEFAULT_FORMAT;
+  if (_canvas->isImage()) {
+    cairo_format_t format = CAIRO_FORMAT_ARGB32;
 
     if (info[1].IsObject()) {
       Napi::Object ctxAttributes = info[1].As<Napi::Object>();
@@ -202,7 +200,7 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
       }
     }
 
-    static_cast<ImageBackend *>(_canvas->backend())->setFormat(format);
+    _canvas->setFormat(format);
   }
 
   _context = _canvas->createCairoContext();
@@ -702,7 +700,7 @@ Context2d::blur(cairo_surface_t *surface, int radius) {
 Napi::Value
 Context2d::GetFormat(const Napi::CallbackInfo& info) {
   std::string pixelFormatString;
-  switch (canvas()->backend()->getFormat()) {
+  switch (canvas()->getFormat()) {
   case CAIRO_FORMAT_ARGB32: pixelFormatString = "RGBA32"; break;
   case CAIRO_FORMAT_RGB24: pixelFormatString = "RGB24"; break;
   case CAIRO_FORMAT_A8: pixelFormatString = "A8"; break;
@@ -722,7 +720,7 @@ Context2d::GetFormat(const Napi::CallbackInfo& info) {
 
 void
 Context2d::AddPage(const Napi::CallbackInfo& info) {
-  if (canvas()->backend()->getName() != "pdf") {
+  if (!canvas()->isPDF()) {
     Napi::Error::New(env, "only PDF canvases support .addPage()").ThrowAsJavaScriptException();
     return;
   }
@@ -732,7 +730,7 @@ Context2d::AddPage(const Napi::CallbackInfo& info) {
   int height = info[1].ToNumber().UnwrapOr(zero).Int32Value();
   if (width < 1) width = canvas()->getWidth();
   if (height < 1) height = canvas()->getHeight();
-  cairo_pdf_surface_set_size(canvas()->surface(), width, height);
+  cairo_pdf_surface_set_size(canvas()->ensureSurface(), width, height);
 }
 
 /*
@@ -763,6 +761,11 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
 
   uint8_t *src = imageData->data();
   uint8_t *dst = canvas()->data();
+
+  if (dst == nullptr) {
+    Napi::Error::New(env, "Not an image canvas").ThrowAsJavaScriptException();
+    return;
+  }
 
   int dstStride = canvas()->stride();
   int Bpp = dstStride / canvas()->getWidth();
@@ -818,7 +821,7 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
 
   if (cols <= 0 || rows <= 0) return;
 
-  switch (canvas()->backend()->getFormat()) {
+  switch (canvas()->getFormat()) {
   case CAIRO_FORMAT_ARGB32: {
     src += sy * srcStride + sx * 4;
     dst += dstStride * dy + 4 * dx;
@@ -922,13 +925,13 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   }
 #endif
   default: {
-    Napi::Error::New(env, "Invalid pixel format or not an image canvas").ThrowAsJavaScriptException();
+    Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
     return;
   }
   }
 
   cairo_surface_mark_dirty_rectangle(
-      canvas()->surface()
+      canvas()->ensureSurface()
     , dx
     , dy
     , cols
@@ -1013,11 +1016,16 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   int dstStride = sw * bpp;
 
   uint8_t *src = canvas->data();
+  
+  if (src == nullptr) {
+    Napi::Error::New(env, "Not an image canvas").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   Napi::ArrayBuffer buffer = Napi::ArrayBuffer::New(env, size);
   Napi::TypedArray dataArray;
 
-  if (canvas->backend()->getFormat() == CAIRO_FORMAT_RGB16_565) {
+  if (canvas->getFormat() == CAIRO_FORMAT_RGB16_565) {
     dataArray = Napi::Uint16Array::New(env, size >> 1, buffer, 0);
   } else {
     dataArray = Napi::Uint8Array::New(env, size, buffer, 0, napi_uint8_clamped_array);
@@ -1027,7 +1035,7 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
 
   if (!(cw > 0 && ch > 0)) goto return_empty;
 
-  switch (canvas->backend()->getFormat()) {
+  switch (canvas->getFormat()) {
   case CAIRO_FORMAT_ARGB32: {
     dst += oy * dstStride + ox * 4;
     // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
@@ -1117,7 +1125,7 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
 #endif
   default: {
     // Unlikely
-    Napi::Error::New(env, "Invalid pixel format or not an image canvas").ThrowAsJavaScriptException();
+    Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
     return env.Null();
   }
   }
@@ -1158,7 +1166,7 @@ Context2d::CreateImageData(const Napi::CallbackInfo& info){
   Napi::ArrayBuffer ab = Napi::ArrayBuffer::New(env, nBytes);
   Napi::Value arr;
 
-  if (canvas->backend()->getFormat() == CAIRO_FORMAT_RGB16_565)
+  if (canvas->getFormat() == CAIRO_FORMAT_RGB16_565)
     arr = Napi::Uint16Array::New(env, nBytes / 2, ab, 0);
   else
     arr = Napi::Uint8Array::New(env, nBytes, ab, 0, napi_uint8_clamped_array);
@@ -1241,7 +1249,7 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
     Canvas *canvas = Canvas::Unwrap(obj);
     source_w = sw = canvas->getWidth();
     source_h = sh = canvas->getHeight();
-    surface = canvas->surface();
+    surface = canvas->ensureSurface();
 
   // Invalid
   } else {
@@ -1302,7 +1310,7 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
   double fy = dh / sh * current_scale_y; // transforms[2] is scale on X
   bool needScale = dw != sw || dh != sh;
   bool needCut = sw != source_w || sh != source_h || sx < 0 || sy < 0;
-  bool sameCanvas = surface == canvas()->surface();
+  bool sameCanvas = surface == canvas()->ensureSurface();
   bool needsExtraSurface = sameCanvas || needCut || needScale;
   cairo_surface_t *surfTemp = NULL;
   cairo_t *ctxTemp = NULL;

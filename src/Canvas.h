@@ -4,7 +4,6 @@
 
 struct Closure;
 
-#include "backend/Backend.h"
 #include "closure.h"
 #include <cairo.h>
 #include "dll_visibility.h"
@@ -13,12 +12,23 @@ struct Closure;
 #include <cstddef>
 
 /*
+ * Canvas types.
+ */
+
+typedef enum {
+  CANVAS_TYPE_IMAGE,
+  CANVAS_TYPE_PDF,
+  CANVAS_TYPE_SVG
+} canvas_type_t;
+
+/*
  * Canvas.
  */
 
 class Canvas : public Napi::ObjectWrap<Canvas> {
   public:
     Canvas(const Napi::CallbackInfo& info);
+    ~Canvas();
     static void Initialize(Napi::Env& env, Napi::Object& target);
 
     Napi::Value ToBuffer(const Napi::CallbackInfo& info);
@@ -35,26 +45,41 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     Napi::Error CairoError(cairo_status_t status);
     static void ToPngBufferAsync(Closure* closure);
     static void ToJpegBufferAsync(Closure* closure);
+    
+    inline bool isPDF() { return type == CANVAS_TYPE_PDF; }
+    inline bool isSVG() { return type == CANVAS_TYPE_SVG; }
+    inline bool isImage() { return type == CANVAS_TYPE_IMAGE; }
+    inline void *closure() { return _closure; }
 
-    DLL_PUBLIC inline Backend* backend() { return _backend; }
-    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->ensureSurface(); }
     cairo_t* createCairoContext();
 
-    DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
-    DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    DLL_PUBLIC inline std::size_t nBytes(){
-      return static_cast<std::size_t>(backend()->getHeight()) * stride();
+    DLL_PUBLIC inline uint8_t *data() { return cairo_image_surface_get_data(ensureSurface()); }
+    DLL_PUBLIC inline int stride() { return cairo_image_surface_get_stride(ensureSurface()); }
+    DLL_PUBLIC inline std::size_t nBytes() {
+      return static_cast<std::size_t>(height * stride());
     }
 
-    DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
-    DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
+    DLL_PUBLIC inline int getWidth() { return width; }
+    DLL_PUBLIC inline int getHeight() { return height; }
 
+    int32_t approxBytesPerPixel();
+    void setFormat(cairo_format_t format);
+    cairo_format_t getFormat();
     void resurface(Napi::Object This);
+    cairo_surface_t *ensureSurface();
+    void destroySurface();
 
     Napi::Env env;
 
   private:
-    Backend* _backend;
-    Napi::ObjectReference _jsBackend;
+
+    cairo_surface_t *_surface;
+    Closure *_closure;
+  
     Napi::FunctionReference ctor;
+    
+    int width;
+    int height;
+    canvas_type_t type;
+    cairo_format_t format;
 };

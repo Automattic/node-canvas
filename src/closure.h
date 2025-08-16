@@ -2,9 +2,14 @@
 
 #pragma once
 
+class Canvas;
+#include <cairo.h>
+
 #include "Canvas.h"
 
 #ifdef HAVE_JPEG
+#include <stddef.h>
+#include <stdio.h>
 #include <jpeglib.h>
 #endif
 
