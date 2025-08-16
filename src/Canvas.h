@@ -3,8 +3,8 @@
 #pragma once
 
 struct Closure;
+struct PdfSvgClosure;
 
-#include "backend/Backend.h"
 #include "closure.h"
 #include <cairo.h>
 #include "dll_visibility.h"
@@ -12,6 +12,17 @@ struct Closure;
 #include <pango/pangocairo.h>
 #include <vector>
 #include <cstddef>
+
+/*
+ * Canvas types.
+ */
+
+typedef enum {
+  CANVAS_TYPE_IMAGE,
+  CANVAS_TYPE_PDF,
+  CANVAS_TYPE_SVG
+} canvas_type_t;
+
 
 /*
  * FontFace describes a font file in terms of one PangoFontDescription that
@@ -53,6 +64,7 @@ enum canvas_draw_mode_t : uint8_t {
 class Canvas : public Napi::ObjectWrap<Canvas> {
   public:
     Canvas(const Napi::CallbackInfo& info);
+    ~Canvas();
     static void Initialize(Napi::Env& env, Napi::Object& target);
 
     Napi::Value ToBuffer(const Napi::CallbackInfo& info);
@@ -75,27 +87,42 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     static PangoStyle GetStyleFromCSSString(const char *style);
     static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
-    DLL_PUBLIC inline Backend* backend() { return _backend; }
-    DLL_PUBLIC inline cairo_surface_t* surface(){ return backend()->ensureSurface(); }
+    inline bool isPDF() { return type == CANVAS_TYPE_PDF; }
+    inline bool isSVG() { return type == CANVAS_TYPE_SVG; }
+    inline bool isImage() { return type == CANVAS_TYPE_IMAGE; }
+    inline void *closure() { return _closure; }
+
     cairo_t* createCairoContext();
 
-    DLL_PUBLIC inline uint8_t *data(){ return cairo_image_surface_get_data(surface()); }
-    DLL_PUBLIC inline int stride(){ return cairo_image_surface_get_stride(surface()); }
-    DLL_PUBLIC inline std::size_t nBytes(){
-      return static_cast<std::size_t>(backend()->getHeight()) * stride();
+    DLL_PUBLIC inline uint8_t *data() { return cairo_image_surface_get_data(ensureSurface()); }
+    DLL_PUBLIC inline int stride() { return cairo_image_surface_get_stride(ensureSurface()); }
+    DLL_PUBLIC inline std::size_t nBytes() {
+      return static_cast<std::size_t>(height) * stride();
     }
 
-    DLL_PUBLIC inline int getWidth() { return backend()->getWidth(); }
-    DLL_PUBLIC inline int getHeight() { return backend()->getHeight(); }
+    DLL_PUBLIC inline int getWidth() { return width; }
+    DLL_PUBLIC inline int getHeight() { return height; }
 
+    int32_t approxBytesPerPixel();
+    void setFormat(cairo_format_t format);
+    cairo_format_t getFormat();
     void resurface(Napi::Object This);
+    cairo_surface_t *ensureSurface();
+    void destroySurface();
 
     Napi::Env env;
     static int fontSerial;
 
   private:
-    Backend* _backend;
-    Napi::ObjectReference _jsBackend;
+
+    cairo_surface_t *_surface;
+    PdfSvgClosure *_closure;
+
     Napi::FunctionReference ctor;
     static std::vector<FontFace> font_face_list;
+
+    int width;
+    int height;
+    canvas_type_t type;
+    cairo_format_t format;
 };
