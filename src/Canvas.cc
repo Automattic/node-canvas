@@ -26,9 +26,10 @@
 #include "JPEGStream.h"
 #endif
 
-#include "backend/ImageBackend.h"
-#include "backend/PdfBackend.h"
-#include "backend/SvgBackend.h"
+#define GENERIC_FACE_ERROR \
+  "The second argument to registerFont is required, and should be an object " \
+  "with at least a family (string) and optionally weight (string/number) " \
+  "and style (string)."
 
 using namespace std;
 
@@ -74,63 +75,45 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
 Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info), env(info.Env()) {
   InstanceData* data = env.GetInstanceData<InstanceData>();
   ctor = Napi::Persistent(data->CanvasCtor.Value());
-  Backend* backend = NULL;
-  Napi::Object jsBackend;
+  
+  _surface = nullptr;
+  _closure = nullptr;
+  format = CAIRO_FORMAT_ARGB32;
 
   if (info[0].IsNumber()) {
-    Napi::Number width = info[0].As<Napi::Number>();
-    Napi::Number height = Napi::Number::New(env, 0);
+    width = info[0].As<Napi::Number>().Int32Value();
+    height = 0;
 
-    if (info[1].IsNumber()) height = info[1].As<Napi::Number>();
+    if (info[1].IsNumber()) height = info[1].As<Napi::Number>().Int32Value();
 
     if (info[2].IsString()) {
       std::string str = info[2].As<Napi::String>();
       if (str == "pdf") {
-        Napi::Maybe<Napi::Object> instance = data->PdfBackendCtor.New({ width, height });
-        if (instance.IsJust()) backend = PdfBackend::Unwrap(jsBackend = instance.Unwrap());
+        type = CANVAS_TYPE_PDF;
       } else if (str == "svg") {
-        Napi::Maybe<Napi::Object> instance = data->SvgBackendCtor.New({ width, height });
-        if (instance.IsJust()) backend = SvgBackend::Unwrap(jsBackend = instance.Unwrap());
+        type = CANVAS_TYPE_SVG;
       } else {
-        Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
-        if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
+        type = CANVAS_TYPE_IMAGE;
       }
     } else {
-      Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
-      if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
-    }
-  } else if (info[0].IsObject()) {
-    jsBackend = info[0].As<Napi::Object>();
-    if (jsBackend.InstanceOf(data->ImageBackendCtor.Value()).UnwrapOr(false)) {
-      backend = ImageBackend::Unwrap(jsBackend);
-    } else if (jsBackend.InstanceOf(data->PdfBackendCtor.Value()).UnwrapOr(false)) {
-      backend = PdfBackend::Unwrap(jsBackend);
-    } else if (jsBackend.InstanceOf(data->SvgBackendCtor.Value()).UnwrapOr(false)) {
-      backend = SvgBackend::Unwrap(jsBackend);
-    } else {
-      Napi::TypeError::New(env, "Invalid arguments").ThrowAsJavaScriptException();
-      return;
+      type = CANVAS_TYPE_IMAGE;
     }
   } else {
-    Napi::Number width = Napi::Number::New(env, 0);
-    Napi::Number height = Napi::Number::New(env, 0);
-    Napi::Maybe<Napi::Object> instance = data->ImageBackendCtor.New({ width, height });
-    if (instance.IsJust()) backend = ImageBackend::Unwrap(jsBackend = instance.Unwrap());
+    width = 0;
+    height = 0;
+    type = CANVAS_TYPE_IMAGE;
   }
 
-  backend->setCanvas(this);
+  cairo_status_t status = cairo_surface_status(ensureSurface());
 
-  if (!backend->isSurfaceValid()) {
-    Napi::Error::New(env, backend->getError()).ThrowAsJavaScriptException();
+  if (status != CAIRO_STATUS_SUCCESS) {
+    Napi::Error::New(env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
     return;
   }
+}
 
-  // Note: the backend gets destroyed when the jsBackend is GC'd. The cleaner
-  // way would be to only store the jsBackend and unwrap it when the c++ ref is
-  // needed, but that's slower and a burden. The _backend might be null if we
-  // returned early, but since an exception was thrown it gets destroyed soon.
-  _backend = backend;
-  _jsBackend = Napi::Persistent(jsBackend);
+Canvas::~Canvas() {
+  destroySurface();
 }
 
 /*
@@ -139,7 +122,14 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
 
 Napi::Value
 Canvas::GetType(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env, backend()->getName());
+  switch (type) {
+    case CANVAS_TYPE_PDF:
+      return Napi::String::New(env, "pdf");
+    case CANVAS_TYPE_SVG:
+      return Napi::String::New(env, "svg");
+    default:
+      return Napi::String::New(env, "image");
+  }
 }
 
 /*
@@ -147,7 +137,7 @@ Canvas::GetType(const Napi::CallbackInfo& info) {
  */
 Napi::Value
 Canvas::GetStride(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, stride());
+  return Napi::Number::New(env, cairo_image_surface_get_stride(ensureSurface()));
 }
 
 /*
@@ -166,7 +156,7 @@ Canvas::GetWidth(const Napi::CallbackInfo& info) {
 void
 Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    backend()->setWidth(value.As<Napi::Number>().Uint32Value());
+    width = value.As<Napi::Number>().Uint32Value();
     resurface(info.This().As<Napi::Object>());
   }
 }
@@ -187,7 +177,7 @@ Canvas::GetHeight(const Napi::CallbackInfo& info) {
 void
 Canvas::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    backend()->setHeight(value.As<Napi::Number>().Uint32Value());
+    height = value.As<Napi::Number>().Uint32Value();
     resurface(info.This().As<Napi::Object>());
   }
 }
@@ -201,7 +191,7 @@ Canvas::ToPngBufferAsync(Closure* base) {
   PngClosure* closure = static_cast<PngClosure*>(base);
 
   closure->status = canvas_write_to_png_stream(
-    closure->canvas->surface(),
+    closure->canvas->ensureSurface(),
     PngClosure::writeVec,
     closure);
 }
@@ -210,7 +200,7 @@ Canvas::ToPngBufferAsync(Closure* base) {
 void
 Canvas::ToJpegBufferAsync(Closure* base) {
   JpegClosure* closure = static_cast<JpegClosure*>(base);
-  write_to_jpeg_buffer(closure->canvas->surface(), closure);
+  write_to_jpeg_buffer(closure->canvas->ensureSurface(), closure);
 }
 #endif
 
@@ -314,7 +304,7 @@ static inline void setPdfMetaDate(cairo_surface_t* surf, Napi::Object opts,
 }
 
 static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
-  cairo_surface_t* surf = canvas->surface();
+  cairo_surface_t* surf = canvas->ensureSurface();
 
   setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_TITLE, "title");
   setPdfMetaStr(surf, opts, CAIRO_PDF_METADATA_AUTHOR, "author");
@@ -358,22 +348,18 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
   cairo_status_t status;
 
   // Vector canvases, sync only
-  const std::string name = backend()->getName();
-  if (name == "pdf" || name == "svg") {
+  if (isPDF() || isSVG()) {
     // mime type may be present, but it's not checked
-    PdfSvgClosure* closure;
-    if (name == "pdf") {
-      closure = static_cast<PdfBackend*>(backend())->closure();
+    PdfSvgClosure* closure = static_cast<PdfSvgClosure*>(_closure);
+    if (isPDF()) {
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
       if (info[1].IsObject()) { // toBuffer("application/pdf", config)
         setPdfMetadata(this, info[1].As<Napi::Object>());
       }
 #endif // CAIRO 16+
-    } else {
-      closure = static_cast<SvgBackend*>(backend())->closure();
     }
 
-    cairo_surface_t *surf = surface();
+    cairo_surface_t *surf = ensureSurface();
     cairo_surface_finish(surf);
 
     cairo_status_t status = cairo_surface_status(surf);
@@ -387,7 +373,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
 
   // Raw ARGB data -- just a memcpy()
   if (info[0].StrictEquals(Napi::String::New(env, "raw"))) {
-    cairo_surface_t *surface = this->surface();
+    cairo_surface_t *surface = ensureSurface();
     cairo_surface_flush(surface);
     if (nBytes() > node::Buffer::kMaxLength) {
       Napi::Error::New(env, "Data exceeds maximum buffer length.").ThrowAsJavaScriptException();
@@ -406,7 +392,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
         return env.Undefined();
       }
 
-      status = canvas_write_to_png_stream(surface(), PngClosure::writeVec, &closure);
+      status = canvas_write_to_png_stream(ensureSurface(), PngClosure::writeVec, &closure);
 
       if (!env.IsExceptionPending()) {
         if (status) {
@@ -445,7 +431,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     closure->cb = Napi::Persistent(info[0].As<Napi::Function>());
 
     // Make sure the surface exists since we won't have an isolate context in the async block:
-    surface();
+    ensureSurface();
     EncodingWorker* worker = new EncodingWorker(env);
     worker->Init(&ToPngBufferAsync, closure);
     worker->Queue();
@@ -461,7 +447,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
       JpegClosure closure(this);
       parseJPEGArgs(info[1], closure);
 
-      write_to_jpeg_buffer(surface(), &closure);
+      write_to_jpeg_buffer(ensureSurface(), &closure);
 
       if (!env.IsExceptionPending()) {
         // TODO it's possible to avoid this copy.
@@ -483,7 +469,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     closure->cb = Napi::Persistent(info[0].As<Napi::Function>());
 
     // Make sure the surface exists since we won't have an isolate context in the async block:
-    surface();
+    ensureSurface();
     EncodingWorker* worker = new EncodingWorker(env);
     worker->Init(&ToJpegBufferAsync, closure);
     worker->Queue();
@@ -526,7 +512,7 @@ Canvas::StreamPNGSync(const Napi::CallbackInfo& info) {
 
   closure.cb = Napi::Persistent(info[0].As<Napi::Function>());
 
-  cairo_status_t status = canvas_write_to_png_stream(surface(), streamPNG, &closure);
+  cairo_status_t status = canvas_write_to_png_stream(ensureSurface(), streamPNG, &closure);
 
   if (!env.IsExceptionPending()) {
     if (status) {
@@ -589,7 +575,7 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
     return;
   }
 
-  if (backend()->getName() != "pdf") {
+  if (!isPDF()) {
     Napi::TypeError::New(env, "wrong canvas type").ThrowAsJavaScriptException();
     return;
   }
@@ -600,16 +586,16 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
   }
 #endif
 
-  cairo_surface_finish(surface());
+  cairo_surface_finish(ensureSurface());
 
-  PdfSvgClosure* closure = static_cast<PdfBackend*>(backend())->closure();
+  PdfSvgClosure *closure = static_cast<PdfSvgClosure *>(_closure);
   Napi::Function fn = info[0].As<Napi::Function>();
   PdfStreamInfo streaminfo;
   streaminfo.fn = fn;
   streaminfo.data = &closure->vec[0];
   streaminfo.len = closure->vec.size();
 
-  cairo_status_t status = canvas_write_to_pdf_stream(surface(), streamPDF, &streaminfo);
+  cairo_status_t status = canvas_write_to_pdf_stream(ensureSurface(), streamPDF, &streaminfo);
 
   if (!env.IsExceptionPending()) {
     if (status) {
@@ -643,7 +629,7 @@ Canvas::StreamJPEGSync(const Napi::CallbackInfo& info) {
   closure.cb = Napi::Persistent(info[1].As<Napi::Function>());
 
   uint32_t bufsize = getSafeBufSize(this);
-  write_to_jpeg_stream(surface(), bufsize, &closure);
+  write_to_jpeg_stream(ensureSurface(), bufsize, &closure);
 }
 #endif
 
@@ -697,6 +683,42 @@ Canvas::ParseFont(const Napi::CallbackInfo& info) {
 }
 
 
+// This returns an approximate value only, suitable for
+// Napi::MemoryManagement:: AdjustExternalMemory.
+// The formats that don't map to intrinsic types (RGB30, A1) round up.
+int32_t
+Canvas::approxBytesPerPixel() {
+  switch (format) {
+  case CAIRO_FORMAT_ARGB32:
+  case CAIRO_FORMAT_RGB24:
+    return 4;
+#ifdef CAIRO_FORMAT_RGB30
+  case CAIRO_FORMAT_RGB30:
+    return 3;
+#endif
+  case CAIRO_FORMAT_RGB16_565:
+    return 2;
+  case CAIRO_FORMAT_A8:
+  case CAIRO_FORMAT_A1:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+void
+Canvas::setFormat(cairo_format_t format) {
+  if (this->format != format) {
+    this->format = format;
+    destroySurface();
+  }
+}
+
+cairo_format_t
+Canvas::getFormat() {
+  return format;
+}
+
 /*
  * Re-alloc the surface, destroying the previous.
  */
@@ -707,8 +729,8 @@ Canvas::resurface(Napi::Object This) {
   Napi::Value context;
 
   if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
-    backend()->destroySurface();
-    backend()->ensureSurface();
+    destroySurface();
+    ensureSurface();
     // Reset context
     Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
     cairo_t *prev = context2d->context();
@@ -718,13 +740,47 @@ Canvas::resurface(Napi::Object This) {
   }
 }
 
+cairo_surface_t *
+Canvas::ensureSurface() {
+  if (_surface) {
+      return _surface;
+  }
+
+  assert(!_closure);
+
+  if (type == CANVAS_TYPE_PDF) {
+    _closure = new PdfSvgClosure(this);
+    _surface = cairo_pdf_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
+  } else if (type == CANVAS_TYPE_SVG) {
+    _closure = new PdfSvgClosure(this);
+    _surface = cairo_svg_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
+  } else {
+    _surface = cairo_image_surface_create(format, width, height);
+    Napi::MemoryManagement::AdjustExternalMemory(env, approxBytesPerPixel() * width * height);
+  }
+
+  assert(_surface);
+  return _surface;
+}
+
+void
+Canvas::destroySurface() {
+  if (_surface) {
+    if (type == CANVAS_TYPE_IMAGE) {
+        Napi::MemoryManagement::AdjustExternalMemory(env, -approxBytesPerPixel() * width * height);
+    }
+    cairo_surface_destroy(_surface);
+    _surface = nullptr;
+  }
+}
+
 /**
  * Wrapper around cairo_create()
  * (do not call cairo_create directly, call this instead)
  */
 cairo_t*
 Canvas::createCairoContext() {
-  cairo_t* ret = cairo_create(surface());
+  cairo_t* ret = cairo_create(ensureSurface());
   cairo_set_line_width(ret, 1); // Cairo defaults to 2
   return ret;
 }
