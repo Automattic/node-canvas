@@ -960,7 +960,7 @@ Canvas::ensureSurface() {
     _surface = cairo_svg_surface_create_for_stream(PdfSvgClosure::writeVec, _closure, width, height);
   } else {
     _surface = cairo_image_surface_create(format, width, height);
-    Napi::MemoryManagement::AdjustExternalMemory(env, approxBytesPerPixel() * width * height);
+    Napi::MemoryManagement::AdjustExternalMemory(env, (int64_t)approxBytesPerPixel() * width * height);
   }
 
   assert(_surface);
@@ -973,7 +973,7 @@ Canvas::destroySurface() {
     // flush any operations that may use the closure that is freed below
     cairo_surface_finish(_surface);
     if (type == CANVAS_TYPE_IMAGE) {
-      Napi::MemoryManagement::AdjustExternalMemory(env, -approxBytesPerPixel() * width * height);
+      Napi::MemoryManagement::AdjustExternalMemory(env, -(int64_t)approxBytesPerPixel() * width * height);
     }
     cairo_surface_destroy(_surface);
     _surface = nullptr;
