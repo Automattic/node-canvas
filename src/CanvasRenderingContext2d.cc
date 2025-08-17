@@ -43,7 +43,7 @@ constexpr double twoPi = M_PI * 2.;
 #define PANGO_LAYOUT_GET_METRICS(LAYOUT) pango_context_get_metrics( \
    pango_layout_get_context(LAYOUT), \
    pango_layout_get_font_description(LAYOUT), \
-   pango_context_get_language(pango_layout_get_context(LAYOUT)))
+   pango_language_from_string(state->lang.c_str()))
 
 inline static bool checkArgs(const Napi::CallbackInfo&info, double *args, int argsNum, int offset = 0){
   Napi::Env env = info.Env();
@@ -162,7 +162,8 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceAccessor<&Context2d::GetFont, &Context2d::SetFont>("font", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetTextBaseline, &Context2d::SetTextBaseline>("textBaseline", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetTextAlign, &Context2d::SetTextAlign>("textAlign", napi_default_jsproperty),
-    InstanceAccessor<&Context2d::GetDirection, &Context2d::SetDirection>("direction", napi_default_jsproperty)
+    InstanceAccessor<&Context2d::GetDirection, &Context2d::SetDirection>("direction", napi_default_jsproperty),
+    InstanceAccessor<&Context2d::GetLanguage, &Context2d::SetLanguage>("lang", napi_default_jsproperty)
   });
 
   exports.Set("CanvasRenderingContext2d", ctor);
@@ -784,6 +785,25 @@ Context2d::SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value
   if (dir != "ltr" && dir != "rtl") return;
 
   state->direction = dir;
+}
+
+/*
+ * Get language.
+ */
+Napi::Value
+Context2d::GetLanguage(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, state->lang);
+}
+
+/*
+ * Set language.
+ */
+void
+Context2d::SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (!value.IsString()) return;
+
+  std::string lang = value.As<Napi::String>();
+  state->lang = lang;
 }
 
 /*
@@ -2490,6 +2510,9 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
 
   checkFonts();
   pango_layout_set_text(layout, str.c_str(), -1);
+  if (state->lang != "") {
+    pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(state->lang.c_str()));
+  }
   pango_cairo_update_layout(context(), layout);
 
   PangoDirection pango_dir = state->direction == "ltr" ? PANGO_DIRECTION_LTR : PANGO_DIRECTION_RTL;
@@ -2802,6 +2825,9 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
 
   checkFonts();
   pango_layout_set_text(layout, str.Utf8Value().c_str(), -1);
+  if (state->lang != "") {
+    pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(state->lang.c_str()));
+  }
   pango_cairo_update_layout(ctx, layout);
 
   // Normally you could use pango_layout_get_pixel_extents and be done, or use

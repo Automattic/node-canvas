@@ -291,6 +291,7 @@ export class CanvasRenderingContext2D {
 	textAlign: CanvasTextAlign;
 	canvas: Canvas;
 	direction: 'ltr' | 'rtl';
+	lang: string;
 }
 
 export class CanvasGradient {

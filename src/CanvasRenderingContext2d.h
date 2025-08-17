@@ -36,6 +36,7 @@ struct canvas_state_t {
   canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
   bool imageSmoothingEnabled = true;
   std::string direction = "ltr";
+  std::string lang = "";
 
   canvas_state_t() {
     fontDescription = pango_font_description_from_string("sans");
@@ -61,6 +62,7 @@ struct canvas_state_t {
     fontDescription = pango_font_description_copy(other.fontDescription);
     font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
+    lang = other.lang;
   }
 
   ~canvas_state_t() {
@@ -157,6 +159,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value GetFont(const Napi::CallbackInfo& info);
     Napi::Value GetTextBaseline(const Napi::CallbackInfo& info);
     Napi::Value GetTextAlign(const Napi::CallbackInfo& info);
+    Napi::Value GetLanguage(const Napi::CallbackInfo& info);
     void SetPatternQuality(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetImageSmoothingEnabled(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetGlobalCompositeOperation(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -179,6 +182,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void SetFont(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetTextBaseline(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetTextAlign(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value);
     #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
     void BeginTag(const Napi::CallbackInfo& info);
     void EndTag(const Napi::CallbackInfo& info);

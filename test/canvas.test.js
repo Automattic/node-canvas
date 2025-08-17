@@ -2490,7 +2490,8 @@ describe('Canvas', function () {
       ['patternQuality', 'best'],
       // ['quality', 'best'], // doesn't do anything, TODO remove
       ['textDrawingMode', 'glyph'],
-      ['antialias', 'gray']
+      ['antialias', 'gray'],
+      ['lang', 'eu']
     ]
 
     for (const [k, v] of state) {
