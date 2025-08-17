@@ -9,8 +9,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
-* Added `ctx.lang` to set the ISO language code for text
 ### Fixed
+
+3.2.0
+==================
+### Added
+* Added `ctx.lang` to set the ISO language code for text
 
 3.1.2
 ==================
