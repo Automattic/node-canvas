@@ -228,7 +228,7 @@ jobs:
         node: [21]
         canvas_tag: ["v3.1.2"] # e.g. "v2.6.1"
     name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
-    runs-on: windows-2019
+    runs-on: windows-2025
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -256,6 +256,7 @@ jobs:
 
       - name: Build
         run: |
+          winget install --accept-source-agreements --id=Microsoft.VCRedist.2010.x64 -e
           echo "MSYS2 LOCATION: ${{steps.msys2.outputs.msys2-location}}"
           git checkout ${{ matrix.canvas_tag }}
           git checkout $env:GITHUB_SHA -- prebuild/
