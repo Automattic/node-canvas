@@ -33,6 +33,8 @@
 
 using namespace std;
 
+#define CAIRO_MAX_SIZE 32767
+
 /*
  * Initialize Canvas.
  */
@@ -79,6 +81,11 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
   _surface = nullptr;
   _closure = nullptr;
   format = CAIRO_FORMAT_ARGB32;
+  this->width = 0;
+  this->height = 0;
+
+  int32_t width;
+  int32_t height;
 
   if (info[0].IsNumber()) {
     width = info[0].As<Napi::Number>().Int32Value();
@@ -103,6 +110,21 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
     height = 0;
     type = CANVAS_TYPE_IMAGE;
   }
+
+  if (width > CAIRO_MAX_SIZE || width < 0) {
+    std::string msg = "Canvas width must be between 0 and " + std::to_string(CAIRO_MAX_SIZE);
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+    return;
+  }
+
+  if (height > CAIRO_MAX_SIZE || height < 0) {
+    std::string msg = "Canvas height must be between 0 and " + std::to_string(CAIRO_MAX_SIZE);
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+    return;
+  }
+
+  this->width = width;
+  this->height = height;
 
   cairo_status_t status = cairo_surface_status(ensureSurface());
 
@@ -156,8 +178,11 @@ Canvas::GetWidth(const Napi::CallbackInfo& info) {
 void
 Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    width = value.As<Napi::Number>().Uint32Value();
-    resurface(info.This().As<Napi::Object>());
+    int32_t width = value.As<Napi::Number>().Int32Value();
+    if (width >= 0 && width <= CAIRO_MAX_SIZE) {
+      this->width = width;
+      resurface(info.This().As<Napi::Object>());
+    }
   }
 }
 
@@ -177,8 +202,11 @@ Canvas::GetHeight(const Napi::CallbackInfo& info) {
 void
 Canvas::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    height = value.As<Napi::Number>().Uint32Value();
-    resurface(info.This().As<Napi::Object>());
+    int32_t height = value.As<Napi::Number>().Uint32Value();
+    if (height >= 0 && height <= CAIRO_MAX_SIZE) {
+      this->height = height;
+      resurface(info.This().As<Napi::Object>());
+    }
   }
 }
 
