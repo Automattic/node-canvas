@@ -806,7 +806,6 @@ Context2d::SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value)
   state->lang = lang;
 
   pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(lang.c_str()));
-  pango_cairo_update_layout(context(), _layout);
 }
 
 /*
