@@ -1,5 +1,6 @@
 set -ex
 
+apt-get update
 apt install -y patchelf pax-utils
 
 copies=$(lddtree -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d');
