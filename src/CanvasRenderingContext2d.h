@@ -36,6 +36,7 @@ struct canvas_state_t {
   canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
   bool imageSmoothingEnabled = true;
   std::string direction = "ltr";
+  std::string lang = "";
 
   canvas_state_t() {
     fontDescription = pango_font_description_from_string("sans");
