@@ -22,6 +22,8 @@ function createImageData (array, width, height) {
 
 function loadImage (src) {
   return new Promise((resolve, reject) => {
+    if (!src) return reject(new Error("Invalid image source"));
+
     const image = new Image()
 
     function cleanup () {
