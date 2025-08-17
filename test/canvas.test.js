@@ -486,24 +486,6 @@ describe('Canvas', function () {
     assert.equal(ctx.font, '15px Arial, sans-serif')
   })
 
-  it('Context2d#lang=', function () {
-    const canvas1 = createCanvas(200, 200)
-    const ctx1 = canvas1.getContext('2d')
-    assert.equal(ctx1.lang, '')
-    ctx1.font = '20px sans-serif';
-    ctx1.lang = 'ja'
-    assert.equal(ctx1.lang, 'ja')
-    ctx1.fillText('门', 10, 10)
-
-    const canvas2 = createCanvas(200, 200)
-    const ctx2 = canvas2.getContext('2d')
-    ctx2.font = '20px sans-serif';
-    ctx2.lang = 'zh'
-    ctx2.fillText('门', 10, 10)
-
-    assert.notDeepEqual(ctx1.getImageData(10, 10, 40, 40), ctx2.getImageData(10, 10, 40, 40))
-  })
-
   it('Context2d#lineWidth=', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
@@ -2508,7 +2490,8 @@ describe('Canvas', function () {
       ['patternQuality', 'best'],
       // ['quality', 'best'], // doesn't do anything, TODO remove
       ['textDrawingMode', 'glyph'],
-      ['antialias', 'gray']
+      ['antialias', 'gray'],
+      ['lang', 'eu']
     ]
 
     for (const [k, v] of state) {

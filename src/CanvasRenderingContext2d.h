@@ -62,6 +62,7 @@ struct canvas_state_t {
     fontDescription = pango_font_description_copy(other.fontDescription);
     font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
+    lang = other.lang;
   }
 
   ~canvas_state_t() {
