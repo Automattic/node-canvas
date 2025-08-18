@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* TextBaseline `top`, `middle` and `hanging` did not align with javascript canvas api
 
 3.2.0
 ==================
