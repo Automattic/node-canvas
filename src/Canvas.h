@@ -7,10 +7,12 @@ struct PdfSvgClosure;
 
 #include "closure.h"
 #include <cairo.h>
-#include "dll_visibility.h"
 #include <napi.h>
 #include <vector>
 #include <cstddef>
+
+#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 /*
  * Canvas types.

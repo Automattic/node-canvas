@@ -10,11 +10,6 @@
 #include <map>
 #include <string>
 
-// Compatibility with Visual Studio versions prior to VS2015
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-
 /*
  * Parse integer value
  */
