@@ -122,10 +122,8 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern", napi_default_method),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient", napi_default_method),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient", napi_default_method),
-    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
     InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
     InstanceMethod<&Context2d::EndTag>("endTag", napi_default_method),
-    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled", napi_default_jsproperty),
@@ -187,9 +185,7 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
         else if (utf8PixelFormat == "A8") format = CAIRO_FORMAT_A8;
         else if (utf8PixelFormat == "RGB16_565") format = CAIRO_FORMAT_RGB16_565;
         else if (utf8PixelFormat == "A1") format = CAIRO_FORMAT_A1;
-#ifdef CAIRO_FORMAT_RGB30
         else if (utf8PixelFormat == "RGB30") format = CAIRO_FORMAT_RGB30;
-#endif
       }
 
       // alpha: false forces use of RGB24
@@ -706,9 +702,7 @@ Context2d::GetFormat(const Napi::CallbackInfo& info) {
   case CAIRO_FORMAT_A8: pixelFormatString = "A8"; break;
   case CAIRO_FORMAT_A1: pixelFormatString = "A1"; break;
   case CAIRO_FORMAT_RGB16_565: pixelFormatString = "RGB16_565"; break;
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: pixelFormatString = "RGB30"; break;
-#endif
   default: return env.Null();
   }
   return Napi::String::New(env, pixelFormatString);
@@ -916,14 +910,12 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
     }
     break;
   }
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO
     Napi::Error::New(env, "putImageData for CANVAS_FORMAT_RGB30 is not yet implemented").ThrowAsJavaScriptException();
 
     break;
   }
-#endif
   default: {
     Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
     return;
@@ -1115,14 +1107,12 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     }
     break;
   }
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO
     Napi::Error::New(env, "getImageData for CANVAS_FORMAT_RGB30 is not yet implemented").ThrowAsJavaScriptException();
 
     break;
   }
-#endif
   default: {
     // Unlikely
     Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
@@ -2953,8 +2943,6 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   cairo_set_matrix(ctx, &save_matrix);
 }
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-
 void
 Context2d::BeginTag(const Napi::CallbackInfo& info) {
   std::string tagName = "";
@@ -3000,5 +2988,3 @@ Context2d::EndTag(const Napi::CallbackInfo& info) {
 
   cairo_tag_end(_context, tagName.c_str());
 }
-
-#endif

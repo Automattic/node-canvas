@@ -1,0 +1,29 @@
+.{
+    .name = .canvas,
+    .fingerprint = 0xa59f6c18a5521654,
+    .version = "0.0.0",
+    .paths = .{""},
+    .minimum_zig_version = "0.14.1",
+    .dependencies = .{
+        .node_api = .{
+            .url = "https://github.com/chearon/node-api-zig/archive/3cd9daa2b106b09c49c41cf1b2891fe2ae6772c0.tar.gz",
+            .hash = "node_api-0.0.0-AAAAAGEJAADMiSIVkdw0hLN-cLeBOmUKsOHRcGFH0lvZ",
+        },
+        .cairo = .{
+            .url = "https://github.com/chearon/cairo.zig/archive/c01cb19aa51fc9273bf5903128fe3860d44348bb.tar.gz",
+            .hash = "cairo_zig-1.18.4-GbxI8TBbAQDGDv0FIcsc53byOSnHbZxlMUvYlPBGziPQ",
+        },
+        .libpng = .{
+            .url = "https://github.com/bandithedoge/libpng/archive/33f96680cfcbbf563f95efc6b6577374c15708eb.tar.gz",
+            .hash = "libpng-1.6.43-oiaFGlwqAAC_FTbIqUxyNhS5-yP_0h-YabxhZZ8w95No",
+        },
+        .libjpeg_turbo = .{
+            .url = "https://github.com/chearon/libjpeg-turbo/archive/bd2ea4edde09d782ee034d2657c8f8e44c1a22af.tar.gz",
+            .hash = "libjpeg_turbo-3.1.1-1-iiYWsji1TQAAxX1Xo53J0znsi-9vDk1r6wOwmOT9dJe7",
+        },
+        .giflib = .{
+            .url = "https://github.com/chearon/giflib/archive/5ccc84d2971be8d4246d7ec72f9b5e31c9c83214.tar.gz",
+            .hash = "giflib-5.2.2-TakyOl4KIwBDDoT2N1O2wTMMGqgBlKpk4X01QlY5Vc2h",
+        }
+    },
+}

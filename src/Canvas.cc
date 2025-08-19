@@ -11,7 +11,6 @@
 #include <cstring>
 #include <cctype>
 #include <ctime>
-#include <glib.h>
 #include "PNG.h"
 #include <sstream>
 #include <stdlib.h>
@@ -19,12 +18,8 @@
 #include <unordered_set>
 #include "Util.h"
 #include <vector>
-#include "node_buffer.h"
 #include "FontParser.h"
-
-#ifdef HAVE_JPEG
 #include "JPEGStream.h"
-#endif
 
 #define GENERIC_FACE_ERROR \
   "The second argument to registerFont is required, and should be an object " \
@@ -49,9 +44,7 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Canvas::ToBuffer>("toBuffer", napi_default_method),
     InstanceMethod<&Canvas::StreamPNGSync>("streamPNGSync", napi_default_method),
     InstanceMethod<&Canvas::StreamPDFSync>("streamPDFSync", napi_default_method),
-#ifdef HAVE_JPEG
     InstanceMethod<&Canvas::StreamJPEGSync>("streamJPEGSync", napi_default_method),
-#endif
     InstanceAccessor<&Canvas::GetType>("type", napi_default_jsproperty),
     InstanceAccessor<&Canvas::GetStride>("stride", napi_default_jsproperty),
     InstanceAccessor<&Canvas::GetWidth, &Canvas::SetWidth>("width", napi_default_jsproperty),
@@ -84,8 +77,8 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
   this->width = 0;
   this->height = 0;
 
-  int32_t width;
-  int32_t height;
+  uint32_t width;
+  uint32_t height;
 
   if (info[0].IsNumber()) {
     width = info[0].As<Napi::Number>().Int32Value();
@@ -224,13 +217,11 @@ Canvas::ToPngBufferAsync(Closure* base) {
     closure);
 }
 
-#ifdef HAVE_JPEG
 void
 Canvas::ToJpegBufferAsync(Closure* base) {
   JpegClosure* closure = static_cast<JpegClosure*>(base);
   write_to_jpeg_buffer(closure->canvas->ensureSurface(), closure);
 }
-#endif
 
 static void
 parsePNGArgs(Napi::Value arg, PngClosure& pngargs) {
@@ -275,7 +266,6 @@ parsePNGArgs(Napi::Value arg, PngClosure& pngargs) {
   }
 }
 
-#ifdef HAVE_JPEG
 static void parseJPEGArgs(Napi::Value arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
   // user agent must use its default quality value, as if the quality argument
@@ -307,9 +297,6 @@ static void parseJPEGArgs(Napi::Value arg, JpegClosure& jpegargs) {
     }
   }
 }
-#endif
-
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
 
 static inline void setPdfMetaStr(cairo_surface_t* surf, Napi::Object opts,
   cairo_pdf_metadata_t t, const char* propName) {
@@ -342,8 +329,6 @@ static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
   setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_CREATE_DATE, "creationDate");
   setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_MOD_DATE, "modDate");
 }
-
-#endif // CAIRO 16+
 
 /*
  * Converts/encodes data to a Buffer. Async when a callback function is passed.
@@ -380,11 +365,9 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     // mime type may be present, but it's not checked
     PdfSvgClosure* closure = static_cast<PdfSvgClosure*>(_closure);
     if (isPDF()) {
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
       if (info[1].IsObject()) { // toBuffer("application/pdf", config)
         setPdfMetadata(this, info[1].As<Napi::Object>());
       }
-#endif // CAIRO 16+
     }
 
     cairo_surface_t *surf = ensureSurface();
@@ -403,10 +386,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
   if (info[0].StrictEquals(Napi::String::New(env, "raw"))) {
     cairo_surface_t *surface = ensureSurface();
     cairo_surface_flush(surface);
-    if (nBytes() > node::Buffer::kMaxLength) {
-      Napi::Error::New(env, "Data exceeds maximum buffer length.").ThrowAsJavaScriptException();
-      return env.Undefined();
-    }
     return Napi::Buffer<uint8_t>::Copy(env, cairo_image_surface_get_data(surface), nBytes());
   }
 
@@ -467,7 +446,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     return env.Undefined();
   }
 
-#ifdef HAVE_JPEG
   // Sync JPEG
   Napi::Value jpegStr = Napi::String::New(env, "image/jpeg");
   if (info[0].StrictEquals(jpegStr)) {
@@ -503,7 +481,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     worker->Queue();
     return env.Undefined();
   }
-#endif
 
   return env.Undefined();
 }
@@ -608,11 +585,9 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
     return;
   }
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
   if (info[1].IsObject()) {
     setPdfMetadata(this, info[1].As<Napi::Object>());
   }
-#endif
 
   cairo_surface_finish(ensureSurface());
 
@@ -638,7 +613,6 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
  * Stream JPEG data synchronously.
  */
 
-#ifdef HAVE_JPEG
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
@@ -659,7 +633,6 @@ Canvas::StreamJPEGSync(const Napi::CallbackInfo& info) {
   uint32_t bufsize = getSafeBufSize(this);
   write_to_jpeg_stream(ensureSurface(), bufsize, &closure);
 }
-#endif
 
 char *
 str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_number) {
@@ -714,16 +687,14 @@ Canvas::ParseFont(const Napi::CallbackInfo& info) {
 // This returns an approximate value only, suitable for
 // Napi::MemoryManagement:: AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
-int32_t
+uint32_t
 Canvas::approxBytesPerPixel() {
   switch (format) {
   case CAIRO_FORMAT_ARGB32:
   case CAIRO_FORMAT_RGB24:
     return 4;
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30:
     return 3;
-#endif
   case CAIRO_FORMAT_RGB16_565:
     return 2;
   case CAIRO_FORMAT_A8:

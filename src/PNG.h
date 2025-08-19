@@ -8,14 +8,6 @@
 #include <png.h>
 #include <pngconf.h>
 
-#if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)
-#define likely(expr) (__builtin_expect (!!(expr), 1))
-#define unlikely(expr) (__builtin_expect (!!(expr), 0))
-#else
-#define likely(expr) (expr)
-#define unlikely(expr) (expr)
-#endif
-
 static void canvas_png_flush(png_structp png_ptr) {
     /* Do nothing; fflush() is said to be just a waste of energy. */
     (void) png_ptr;   /* Stifle compiler warning */
@@ -87,11 +79,9 @@ struct canvas_png_write_closure_t {
     PngClosure* closure;
 };
 
-#ifdef PNG_SETJMP_SUPPORTED
 bool setjmp_wrapper(png_structp png) {
     return setjmp(png_jmpbuf(png));
 }
-#endif
 
 static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr write_func, canvas_png_write_closure_t *closure) {
     unsigned int i;
@@ -119,7 +109,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     }
 
     rows = (png_bytep *) malloc(height * sizeof (png_byte*));
-    if (unlikely(rows == NULL)) {
+    if (rows == NULL) [[unlikely]] {
         status = CAIRO_STATUS_NO_MEMORY;
         return status;
     }
@@ -129,20 +119,16 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         rows[i] = (png_byte *) data + i * stride;
     }
 
-#ifdef PNG_USER_MEM_SUPPORTED
      png = png_create_write_struct_2(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL, NULL, NULL, NULL);
-#else
-    png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-#endif
 
-    if (unlikely(png == NULL)) {
+    if (png == NULL) [[unlikely]] {
         status = CAIRO_STATUS_NO_MEMORY;
         free(rows);
         return status;
     }
 
     info = png_create_info_struct (png);
-    if (unlikely(info == NULL)) {
+    if (info == NULL) [[unlikely]] {
         status = CAIRO_STATUS_NO_MEMORY;
         png_destroy_write_struct(&png, &info);
         free(rows);
@@ -150,13 +136,11 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
 
     }
 
-#ifdef PNG_SETJMP_SUPPORTED
     if (setjmp_wrapper(png)) {
         png_destroy_write_struct(&png, &info);
         free(rows);
         return status;
     }
-#endif
 
     png_set_write_fn(png, closure, write_func, canvas_png_flush);
     png_set_compression_level(png, closure->closure->compressionLevel);
@@ -173,12 +157,10 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         break;
-#ifdef CAIRO_FORMAT_RGB30
     case CAIRO_FORMAT_RGB30:
         bpc = 10;
         png_color_type = PNG_COLOR_TYPE_RGB;
         break;
-#endif
     case CAIRO_FORMAT_RGB24:
         bpc = 8;
         png_color_type = PNG_COLOR_TYPE_RGB;
@@ -269,7 +251,7 @@ static void canvas_stream_write_func(png_structp png, png_bytep data, png_size_t
 
     png_closure = (struct canvas_png_write_closure_t *) png_get_io_ptr(png);
     status = png_closure->write_func(png_closure->closure, data, size);
-    if (unlikely(status)) {
+    if (status) [[unlikely]] {
         cairo_status_t *error = (cairo_status_t *) png_get_error_ptr(png);
         if (*error == CAIRO_STATUS_SUCCESS) {
             *error = status;
