@@ -1,5 +1,14 @@
 set -ex
 
+# ChatGPT gave me this. I'm doing the lazy thing instead of properly updating
+# the dockerfile because I'm almost done with a zig cross build
+sed -i '
+  s|deb.debian.org/debian|archive.debian.org/debian|g;
+  s|security.debian.org/debian-security|archive.debian.org/debian-security|g;
+' /etc/apt/sources.list
+apt-get -o Acquire::Check-Valid-Until=false update
+# end ChatGPT
+
 apt-get update
 apt install -y patchelf pax-utils
 
