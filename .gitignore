@@ -19,3 +19,5 @@ package-lock.json
 npm-debug.log
 
 .idea
+
+.zig-cache/

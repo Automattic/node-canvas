@@ -8,7 +8,6 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <node_buffer.h>
 #include <sys/stat.h>
 
 /* Cairo limit:
@@ -16,22 +15,18 @@
   */
 static constexpr int canvas_max_side = (1 << 15) - 1;
 
-#ifdef HAVE_GIF
 typedef struct {
   uint8_t *buf;
   unsigned len;
   unsigned pos;
 } gif_data_t;
-#endif
 
-#ifdef HAVE_JPEG
 #include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
     Image* image;
     jmp_buf setjmp_buffer;
 };
-#endif
 
 /*
  * Read closure used by loadFromBuffer.
@@ -276,16 +271,12 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   if (isPNG(data)) return loadPNGFromBuffer(buf);
 
   if (isGIF(data)) {
-#ifdef HAVE_GIF
     return loadGIFFromBuffer(buf, len);
-#else
     this->errorInfo.set("node-canvas was built without GIF support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isJPEG(data)) {
-#ifdef HAVE_JPEG
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
     if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
     if ((DATA_IMAGE | DATA_MIME) == data_mode) {
@@ -294,10 +285,6 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
       if (status) return status;
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
-#else // HAVE_JPEG
-    this->errorInfo.set("node-canvas was built without JPEG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isBMP(buf, len))
@@ -407,21 +394,15 @@ Image::loadSurface() {
 
 
   if (isGIF(buf)) {
-#ifdef HAVE_GIF
     return loadGIF(stream);
-#else
     this->errorInfo.set("node-canvas was built without GIF support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isJPEG(buf)) {
-#ifdef HAVE_JPEG
     return loadJPEG(stream);
-#else
     this->errorInfo.set("node-canvas was built without JPEG support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isBMP(buf, 2))
@@ -443,8 +424,6 @@ Image::loadPNG() {
 }
 
 // GIF support
-
-#ifdef HAVE_GIF
 
 /*
  * Return the alpha color for `gif` at `frame`, or -1.
@@ -519,14 +498,9 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   gif_data_t gifd = { buf, len, 0 };
 
-#if GIFLIB_MAJOR >= 5
   int errorcode;
   if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory, &errorcode)) == NULL)
     return CAIRO_STATUS_READ_ERROR;
-#else
-  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
-    return CAIRO_STATUS_READ_ERROR;
-#endif
 
   if (GIF_OK != DGifSlurp(gif)) {
     GIF_CLOSE_FILE(gif);
@@ -655,15 +629,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   return CAIRO_STATUS_SUCCESS;
 }
-#endif /* HAVE_GIF */
 
 // JPEG support
-
-#ifdef HAVE_JPEG
-
-// libjpeg 6.2 does not have jpeg_mem_src; define it ourselves here unless
-// libjpeg 8 is installed.
-#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 
 /* Read JPEG image from a memory segment */
 static void
@@ -702,8 +669,6 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
   src->bytes_in_buffer = nbytes;
   src->next_input_byte = (JOCTET*)buffer;
 }
-
-#endif
 
 class BufferReader : public Image::Reader {
 public:
@@ -1036,11 +1001,7 @@ cairo_status_t
 Image::loadJPEG(FILE *stream) {
   cairo_status_t status;
 
-#if defined(_MSC_VER)
-  if (false) { // Force using loadJPEGFromBuffer
-#else
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
-#endif
     Orientation orientation = NORMAL;
     {
     StreamReader reader(stream);
@@ -1104,11 +1065,6 @@ Image::loadJPEG(FILE *stream) {
     } else if (DATA_MIME == data_mode) {
       status = decodeJPEGBufferIntoMimeSurface(buf, len);
     }
-#if defined(_MSC_VER)
-    else if (DATA_IMAGE == data_mode) {
-      status = loadJPEGFromBuffer(buf, len);
-    }
-#endif
     else {
       status = CAIRO_STATUS_READ_ERROR;
     }
@@ -1396,8 +1352,6 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
       break;
   }
 }
-
-#endif /* HAVE_JPEG */
 
 /*
  * Load BMP from buffer.
