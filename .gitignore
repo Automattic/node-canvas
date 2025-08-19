@@ -1,4 +1,4 @@
-build
+bin
 .DS_Store
 .lock-wscript
 test/images/*.png
@@ -19,3 +19,5 @@ package-lock.json
 npm-debug.log
 
 .idea
+
+.zig-cache/

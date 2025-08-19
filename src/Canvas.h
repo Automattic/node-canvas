@@ -7,10 +7,12 @@ struct PdfSvgClosure;
 
 #include "closure.h"
 #include <cairo.h>
-#include "dll_visibility.h"
 #include <napi.h>
 #include <vector>
 #include <cstddef>
+
+#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 /*
  * Canvas types.
@@ -63,7 +65,7 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     DLL_PUBLIC inline int getWidth() { return width; }
     DLL_PUBLIC inline int getHeight() { return height; }
 
-    int32_t approxBytesPerPixel();
+    uint32_t approxBytesPerPixel();
     void setFormat(cairo_format_t format);
     cairo_format_t getFormat();
     void resurface(Napi::Object This);
