@@ -1,0 +1,15 @@
+{
+  "name": "canvas-linux-arm64-gnu",
+  "version": "3.2.3",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "canvas.node",
+  "files": [
+    "canvas.node"
+  ],
+  "description": "Canvas graphics API backed by Cairo"
+}

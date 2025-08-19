@@ -1,0 +1,13 @@
+.{
+    .name = .giflib,
+    .version = "5.2.2",
+    .fingerprint = 0x7812c17c3a32a94d,
+    .minimum_zig_version = "0.15.2",
+    .dependencies = .{
+        .giflib = .{
+            .url = "https://downloads.sourceforge.net/project/giflib/giflib-5.x/giflib-5.2.2.tar.gz",
+            .hash = "N-V-__8AAI4GIwD_4QAQ2PcKUSZ8F2XH_vDa4da8cUxuuOU9",
+        },
+    },
+    .paths = .{""},
+}

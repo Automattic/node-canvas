@@ -1,10 +1,5 @@
 #pragma once
 
-#ifdef ERROR
-#define ERROR_ ERROR
-#undef ERROR
-#endif
-
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <string>
 
@@ -53,8 +48,3 @@ namespace BMPParser{
     std::string getErr() const;
   };
 }
-
-#ifdef ERROR_
-#define ERROR ERROR_
-#undef ERROR_
-#endif
