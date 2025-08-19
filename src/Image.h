@@ -8,20 +8,11 @@
 #include <napi.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 
-#ifdef HAVE_JPEG
 #include <jpeglib.h>
 #include <jerror.h>
-#endif
 
-#ifdef HAVE_GIF
 #include <gif_lib.h>
-
-  #if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
-    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
-  #else
-    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
-  #endif
-#endif
+#define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
 
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
@@ -59,11 +50,8 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();
-#ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadGIF(FILE *stream);
-#endif
-#ifdef HAVE_JPEG
     enum Orientation {
         NORMAL,
         MIRROR_HORIZ,
@@ -90,7 +78,6 @@ class Image : public Napi::ObjectWrap<Image> {
     Orientation getExifOrientation(Reader& jpeg);
     void updateDimensionsForOrientation(Orientation orientation);
     void rotatePixels(uint8_t* pixels, int width, int height, int channels, Orientation orientation);
-#endif
     cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadBMP(FILE *stream);
     CanvasError errorInfo;
