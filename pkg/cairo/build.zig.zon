@@ -1,0 +1,52 @@
+.{
+    .name = .cairo_zig,
+    .version = "1.18.4",
+    .fingerprint = 0x71e19aedf148bc19,
+    .minimum_zig_version = "0.15.1",
+
+    .dependencies = .{
+        .cairo = .{
+            .url = "https://www.cairographics.org/releases/cairo-1.18.4.tar.xz",
+            .hash = "N-V-__8AAFW9nwOvQAmLG664NOHF67FmS00qy_Lhg72aEv9Q",
+        },
+
+        .pixman = .{
+            .path = "../pixman",
+        },
+
+        .freetype = .{
+            .url = "https://github.com/allyourcodebase/freetype/archive/9d847affbd224cf6a7303ad6d98715e3675ef78c.tar.gz",
+            .hash = "freetype-2.13.3-C3-WdeyJAAD9z8BeYYQ8N3gNlPI9NvHRxg5039S5vhz7",
+            .lazy = true,
+        },
+
+        .zlib = .{
+            .url = "https://github.com/allyourcodebase/zlib/archive/61e7df7e996ec5a5f13a653db3c419adb340d6ef.tar.gz",
+            .hash = "zlib-1.3.1-ZZQ7lbYMAAB1hTSOKSXAKAgHsfDcyWNH_37ojw5WSpgR",
+            .lazy = true,
+        },
+
+        .libpng = .{
+            .url = "https://github.com/allyourcodebase/libpng/archive/d512607515687aa60b975d6a191aef9a692dac87.zip",
+            .hash = "libpng-1.6.50-oiaFGt4qAAB_vzrtvz9hA7_UiBW4arSaMVGc7ekKMCZ2",
+            .lazy = true,
+        },
+
+        .fontconfig = .{
+            .path = "../fontconfig",
+        },
+
+        .expat = .{
+            .url = "https://github.com/allyourcodebase/libexpat/archive/2f2954d71f91142359fbbb158145bda7d36783d7.tar.gz",
+            .hash = "libexpat-2.7.1-y_akI-g7AABOKMRAFAL1BU60IqpRNHZXrUB_2Hu16Vsl",
+            .lazy = true,
+        },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "sources.zig",
+        "pkg",
+    },
+}

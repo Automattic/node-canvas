@@ -7,20 +7,16 @@ class Canvas;
 
 #include "Canvas.h"
 
-#ifdef HAVE_JPEG
 #include <stddef.h>
 #include <stdio.h>
 #include <jpeglib.h>
-#endif
 
 #include <napi.h>
 #include <png.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
 #include <vector>
 
-#ifndef PAGE_SIZE
-  #define PAGE_SIZE 4096
-#endif
+#define PAGE_SIZE 4096
 
 /*
  * Image encoding closures.
@@ -61,7 +57,6 @@ struct PngClosure : Closure {
   PngClosure(Canvas* canvas) : Closure(canvas) {};
 };
 
-#ifdef HAVE_JPEG
 struct JpegClosure : Closure {
   uint32_t quality = 75;
   uint32_t chromaSubsampling = 2;
@@ -83,7 +78,6 @@ struct JpegClosure : Closure {
     delete jpeg_dest_mgr;
   }
 };
-#endif
 
 class EncodingWorker : public Napi::AsyncWorker {
   public:

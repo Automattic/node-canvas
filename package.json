@@ -24,15 +24,15 @@
   "homepage": "https://github.com/Automattic/node-canvas",
   "repository": "git://github.com/Automattic/node-canvas.git",
   "scripts": {
-    "prebenchmark": "node-gyp build",
+    "prebenchmark": "zig build",
     "benchmark": "node benchmarks/run.js",
     "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js",
     "test": "mocha test/*.test.js",
-    "pretest-server": "node-gyp build",
+    "pretest-server": "zig build",
     "test-server": "node test/server.js",
     "generate-wpt": "node ./test/wpt/generate.js",
     "test-wpt": "mocha test/wpt/generated/*.js",
-    "install": "prebuild-install -r napi || node-gyp rebuild",
+    "install": "zig build",
     "tsd": "tsd"
   },
   "files": [

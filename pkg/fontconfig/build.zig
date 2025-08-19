@@ -1,0 +1,189 @@
+const std = @import("std");
+const NativeTargetInfo = std.zig.system.NativeTargetInfo;
+
+pub fn build(b: *std.Build) !void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const lib = b.addLibrary(.{
+        .name = "fontconfig",
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
+        .linkage = .static,
+    });
+
+    lib.link_data_sections = true;
+    lib.link_function_sections = true;
+    lib.linkLibC();
+    lib.linkSystemLibrary("pthread");
+
+    var flags = std.ArrayList([]const u8).empty;
+    defer flags.deinit(b.allocator);
+    try flags.appendSlice(b.allocator, &.{
+        "-DHAVE_DIRENT_H",
+        "-DHAVE_FCNTL_H",
+        "-DHAVE_STDLIB_H",
+        "-DHAVE_STRING_H",
+        "-DHAVE_UNISTD_H",
+        "-DHAVE_SYS_PARAM_H",
+
+        "-DHAVE_MKSTEMP",
+        //"-DHAVE_GETPROGNAME",
+        //"-DHAVE_GETEXECNAME",
+        "-DHAVE_RAND",
+        //"-DHAVE_RANDOM_R",
+        "-DHAVE_VPRINTF",
+
+        "-DHAVE_FT_GET_BDF_PROPERTY",
+        "-DHAVE_FT_GET_PS_FONT_INFO",
+        "-DHAVE_FT_HAS_PS_GLYPH_NAMES",
+        "-DHAVE_FT_GET_X11_FONT_FORMAT",
+        "-DHAVE_FT_DONE_MM_VAR",
+
+        "-DHAVE_POSIX_FADVISE",
+
+        //"-DHAVE_STRUCT_STATVFS_F_BASETYPE",
+        // "-DHAVE_STRUCT_STATVFS_F_FSTYPENAME",
+        // "-DHAVE_STRUCT_STATFS_F_FLAGS",
+        // "-DHAVE_STRUCT_STATFS_F_FSTYPENAME",
+        // "-DHAVE_STRUCT_DIRENT_D_TYPE",
+
+        "-DFLEXIBLE_ARRAY_MEMBER",
+
+        "-DHAVE_STDATOMIC_PRIMITIVES",
+
+        "-DFC_GPERF_SIZE_T=size_t",
+
+        // Default errors that fontconfig can't handle
+        "-Wno-implicit-function-declaration",
+        "-Wno-int-conversion",
+
+        // https://gitlab.freedesktop.org/fontconfig/fontconfig/-/merge_requests/231
+        "-fno-sanitize=undefined",
+        "-fno-sanitize-trap=undefined",
+    });
+
+    switch (target.result.ptrBitWidth()) {
+        32 => try flags.appendSlice(b.allocator, &.{
+            "-DSIZEOF_VOID_P=4",
+            "-DALIGNOF_VOID_P=4",
+        }),
+
+        64 => try flags.appendSlice(b.allocator, &.{
+            "-DSIZEOF_VOID_P=8",
+            "-DALIGNOF_VOID_P=8",
+        }),
+
+        else => @panic("unsupported arch"),
+    }
+
+    try flags.appendSlice(b.allocator, &.{
+        "-DHAVE_FSTATFS",
+        "-DHAVE_FSTATVFS",
+        "-DHAVE_GETOPT",
+        "-DHAVE_GETOPT_LONG",
+        "-DHAVE_LINK",
+        "-DHAVE_LRAND48",
+        "-DHAVE_LSTAT",
+        "-DHAVE_MKDTEMP",
+        "-DHAVE_MKOSTEMP",
+        "-DHAVE__MKTEMP_S",
+        "-DHAVE_MMAP",
+        "-DHAVE_PTHREAD",
+        "-DHAVE_RANDOM",
+        "-DHAVE_RAND_R",
+        "-DHAVE_READLINK",
+        "-DHAVE_SYS_MOUNT_H",
+        "-DHAVE_SYS_STATVFS_H",
+
+        "-DFC_CACHEDIR=\"/var/cache/fontconfig\"",
+        "-DFC_DEFAULT_FONTS=\"<dir>/usr/share/fonts</dir><dir>/usr/local/share/fonts</dir>\"",
+    });
+
+    if (target.result.os.tag == .freebsd) {
+        try flags.appendSlice(b.allocator, &.{
+            "-DFC_TEMPLATEDIR=\"/usr/local/etc/fonts/conf.avail\"",
+            "-DFONTCONFIG_PATH=\"/usr/local/etc/fonts\"",
+            "-DCONFIGDIR=\"/usr/local/etc/fonts/conf.d\"",
+        });
+    } else {
+        try flags.appendSlice(b.allocator, &.{
+            "-DFC_TEMPLATEDIR=\"/usr/share/fontconfig/conf.avail\"",
+            "-DFONTCONFIG_PATH=\"/etc/fonts\"",
+            "-DCONFIGDIR=\"/usr/local/fontconfig/conf.d\"",
+        });
+    }
+
+    if (target.result.os.tag == .linux) {
+        try flags.appendSlice(b.allocator, &.{
+            "-DHAVE_SYS_STATFS_H",
+            "-DHAVE_SYS_VFS_H",
+        });
+    }
+
+    const freetype = b.dependency("freetype", .{
+      .target = target,
+      .optimize = optimize
+    }).artifact("freetype");
+    lib.linkLibrary(freetype);
+
+    const expat = b.dependency("expat", .{
+      .target = target,
+      .optimize = optimize
+    }).artifact("expat");
+    lib.linkLibrary(expat);
+
+    const upstream = b.dependency("fontconfig", .{});
+
+    lib.addIncludePath(b.path("overrides"));
+    lib.addIncludePath(upstream.path("src"));
+    lib.addCSourceFiles(.{
+        .root = upstream.path(""),
+        .files = &.{
+            "src/fcatomic.c",
+            "src/fccache.c",
+            "src/fccfg.c",
+            "src/fccharset.c",
+            "src/fccompat.c",
+            "src/fcdbg.c",
+            "src/fcdefault.c",
+            "src/fcdir.c",
+            "src/fcformat.c",
+            "src/fcfreetype.c",
+            "src/fcfs.c",
+            "src/fcptrlist.c",
+            "src/fchash.c",
+            "src/fcinit.c",
+            "src/fclang.c",
+            "src/fclist.c",
+            "src/fcmatch.c",
+            "src/fcmatrix.c",
+            "src/fcname.c",
+            "src/fcobjs.c",
+            "src/fcpat.c",
+            "src/fcrange.c",
+            "src/fcserialize.c",
+            "src/fcstat.c",
+            "src/fcstr.c",
+            "src/fcweight.c",
+            "src/fcxml.c",
+            "src/ftglue.c",
+        },
+        .flags = flags.items,
+    });
+
+    const fcstdint = b.addConfigHeader(.{
+      .style = .{ .cmake = upstream.path("src/fcstdint.h.in") }
+    }, .{});
+    lib.addConfigHeader(fcstdint);
+
+    lib.installHeadersDirectory(
+        upstream.path("fontconfig"),
+        "fontconfig",
+        .{ .include_extensions = &.{".h"} },
+    );
+
+    b.installArtifact(lib);
+}

@@ -1,0 +1,17 @@
+.{
+    .name = .fontconfig,
+    .version = "2.14.2",
+    .fingerprint = 0x4a79a5a40c6d6d8,
+    .paths = .{""},
+    .dependencies = .{
+        .fontconfig = .{
+            .url = "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.2.tar.gz",
+            .hash = "N-V-__8AAIrfdwARSa-zMmxWwFuwpXf1T3asIN7s5jqi9c1v",
+        },
+        .expat = .{
+            .url = "https://github.com/allyourcodebase/libexpat/archive/2f2954d71f91142359fbbb158145bda7d36783d7.tar.gz",
+            .hash = "libexpat-2.7.1-y_akI-g7AABOKMRAFAL1BU60IqpRNHZXrUB_2Hu16Vsl",
+        },
+        .freetype = .{ .path = "../freetype" }
+    },
+}
