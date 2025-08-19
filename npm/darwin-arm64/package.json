@@ -1,0 +1,15 @@
+{
+  "name": "canvas-darwin-arm64",
+  "version": "3.2.3",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "canvas.node",
+  "files": [
+    "canvas.node"
+  ],
+  "description": "Canvas graphics API backed by Cairo"
+}

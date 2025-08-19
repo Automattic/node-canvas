@@ -1,0 +1,17 @@
+.{
+    .name = .zlib,
+    .version = "1.3.2",
+    .fingerprint = 0x73887d3a953b9465,
+    .minimum_zig_version = "0.15.2",
+    .dependencies = .{
+        .zlib = .{
+            .url = "https://github.com/madler/zlib/archive/refs/tags/v1.3.2.tar.gz",
+            .hash = "N-V-__8AAI4ANwDM8MWhHTUFLKfvLE_n2NQk6mh0sFDzhTqO",
+        },
+    },
+    .paths = .{
+        "LICENSE",
+        "build.zig",
+        "build.zig.zon",
+    },
+}

@@ -1,0 +1,27 @@
+.{
+    .name = .canvas,
+    .fingerprint = 0xa59f6c18a5521654,
+    .version = "0.0.0",
+    .paths = .{""},
+    .minimum_zig_version = "0.15.1",
+    // Sub-packages only specify dependencies for upstream C/C++ code.
+    // Everything else goes here so it's easier to share dependencies and ensure
+    // we don't build duplicate versions. Generally build.zig[.zon] files should
+    // be vendored so we can simplify them and have control over upgrades and
+    // things like -fPIC. Exceptions should (and are) justified below
+    .dependencies = .{
+        // Simple and general enough to use the canonical URL
+        .node_api = .{
+            .url = "https://github.com/chearon/node-api-zig/archive/37d992b2ff53608e301ce2d5bd76ec31a1a247d9.tar.gz",
+            .hash = "node_api-0.0.0-D68afJgfAABNKwoA-8I7d4v9fJUwM89W-yOHKMSNU7Em",
+        },
+        // Too complicated to maintain here (large build.zig)
+        .libjpeg_turbo = .{
+            .url = "https://github.com/chearon/libjpeg-turbo/archive/1222499df19186b61915ef6bf1b3bda15003584b.tar.gz",
+            .hash = "libjpeg_turbo-3.1.1-1-iiYWsnWCSQBHXuzUprRraTbBN-HJfN2dOX6BuZk6iKUi",
+        },
+        .giflib = .{ .path = "./pkg/giflib" },
+        .libpng = .{ .path = "./pkg/libpng" },
+        .cairo = .{ .path = "./pkg/cairo" },
+    },
+}

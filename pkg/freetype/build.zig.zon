@@ -1,0 +1,20 @@
+.{
+    .name = .freetype,
+    .version = "0.0.0",
+    .dependencies = .{
+        .freetype = .{
+            .url = "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-1.tar.gz",
+            .hash = "N-V-__8AAJx1qgDwI7KTM6yDZ4ArrZU6qmKKuvDHRVrxUkTw",
+        },
+        // TODO: this needs to be kept in sync with the root build.zig.zon
+        .zlib = .{
+          .url = "git+https://github.com/allyourcodebase/zlib#3599c16d41dbe749ae51b0ff7ab864c61adc779a",
+          .hash = "zlib-1.3.1-ZZQ7lc8NAABUbHzDe_cSWboCqMbrLkVwvFkKnojgeiT2",
+        },
+        // TODO: this needs to be kept in sync with the root build.zig.zon
+        .libpng = .{
+            .url = "https://github.com/allyourcodebase/libpng/archive/d512607515687aa60b975d6a191aef9a692dac87.zip",
+            .hash = "libpng-1.6.50-oiaFGt4qAAB_vzrtvz9hA7_UiBW4arSaMVGc7ekKMCZ2",
+        },
+    },
+}

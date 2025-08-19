@@ -11,34 +11,16 @@ node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation
 $ npm install canvas
 ```
 
-By default, pre-built binaries will be downloaded if you're on one of the following platforms:
-- macOS x86/64
-- macOS aarch64 (aka Apple silicon)
-- Linux x86/64 (glibc only)
-- Windows x86/64
-
-If you want to build from source, use `npm install --build-from-source` and see the **Compiling** section below.
-
 The minimum version of Node.js required is **18.12.0**.
 
-### Compiling
+Binaries will be installed for the following platforms:
+- macOS x64/arm64
+- Linux x64/x86/arm64 (glibc or musl)
+- Linux arm/riscv64 (glibc)
+- Windows x64/x86/arm64
 
-If you don't have a supported OS or processor architecture, or you use `--build-from-source`, the module will be compiled on your system. This requires several dependencies, including Cairo and Pango.
-
-For detailed installation information, see the [wiki](https://github.com/Automattic/node-canvas/wiki/_pages). One-line installation instructions for common OSes are below. Note that libgif/giflib, librsvg and libjpeg are optional and only required if you need GIF, SVG and JPEG support, respectively. Cairo v1.10.0 or later is required.
-
-OS | Command
------ | -----
-macOS | Using [Homebrew](https://brew.sh/):<br/>`brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman python-setuptools`
-Ubuntu | `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
-Fedora | `sudo yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel`
-Solaris | `pkgin install cairo pango pkg-config xproto renderproto kbproto xextproto`
-OpenBSD | `doas pkg_add cairo pango png jpeg giflib`
-Windows | See the [wiki](https://github.com/Automattic/node-canvas/wiki/Installation:-Windows)
-Others | See the [wiki](https://github.com/Automattic/node-canvas/wiki)
-
-**Mac OS X v10.11+:** If you have recently updated to Mac OS X v10.11+ and are experiencing trouble when compiling, run the following command: `xcode-select --install`. Read more about the problem [on Stack Overflow](http://stackoverflow.com/a/32929012/148072).
-If you have xcode 10.0 or higher installed, in order to build from source you need NPM 6.4.1 or higher.
+If you want to install for a more exotic system, CD into the package and run
+`zig build`. You may need to tweak one of the build.zig files. PRs are welcome.
 
 ## Quick Example
 
@@ -219,7 +201,7 @@ Enabling mime data tracking has no benefits (only a slow down) unless you are ge
 Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the image contained in the canvas.
 
 * **callback** If provided, the buffer will be provided in the callback instead of being returned by the function. Invoked with an error as the first argument if encoding failed, or the resulting buffer as the second argument if it succeeded. Not supported for mimeType `raw` or for PDF or SVG canvases.
-* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg` (if node-canvas was built with JPEG support), `raw` (unencoded data in BGRA order on little-endian (most) systems, ARGB on big-endian systems; top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
+* **mimeType** A string indicating the image format. Valid options are `image/png`, `image/jpeg`, `raw` (unencoded data in BGRA order on little-endian (most) systems, ARGB on big-endian systems; top-to-bottom), `application/pdf` (for PDF canvases) and `image/svg+xml` (for SVG canvases). Defaults to `image/png` for image canvases, or the corresponding type for PDF or SVG canvas.
 * **config**
   * For `image/jpeg`, an object specifying the quality (0 to 1), if progressive compression should be used and/or if chroma subsampling should be used: `{quality: 0.75, progressive: false, chromaSubsampling: true}`. All properties are optional.
 
@@ -227,7 +209,7 @@ Creates a [`Buffer`](https://nodejs.org/api/buffer.html) object representing the
 
     Note that the PNG format encodes the resolution in pixels per meter, so if you specify `96`, the file will encode 3780 ppm (~96.01 ppi). The resolution is undefined by default to match common browser behavior.
 
-  * For `application/pdf`, an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. All properties are optional and default to `undefined`, except for `creationDate`, which defaults to the current date. *Adding metadata requires Cairo 1.16.0 or later.*
+  * For `application/pdf`, an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. All properties are optional and default to `undefined`, except for `creationDate`, which defaults to the current date.
 
     For a description of these properties, see page 550 of [PDF 32000-1:2008](https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf).
 
@@ -351,7 +333,7 @@ const stream = canvas.createJPEGStream({
 > canvas.createPDFStream(config?: any) => ReadableStream
 > ```
 
-* `config` an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. See `toBuffer()` for more information. *Adding metadata requires Cairo 1.16.0 or later.*
+* `config` an object specifying optional document metadata: `{title: string, author: string, subject: string, keywords: string, creator: string, creationDate: Date, modDate: Date}`. See `toBuffer()` for more information.
 
 Applies to PDF canvases only. Creates a [`ReadableStream`](https://nodejs.org/api/stream.html#stream_class_stream_readable) that emits the encoded PDF. `canvas.toBuffer()` also produces an encoded PDF, but `createPDFStream()` can be used to reduce memory usage.
 
@@ -439,7 +421,7 @@ ctx.fillText('Hello World 2', 50, 80)
 
 canvas.toBuffer() // returns a PDF file
 canvas.createPDFStream() // returns a ReadableStream that emits a PDF
-// With optional document metadata (requires Cairo 1.16.0):
+// With optional document metadata:
 canvas.toBuffer('application/pdf', {
   title: 'my picture',
   keywords: 'node.js demo cairo',
@@ -523,7 +505,7 @@ These additional pixel formats have experimental support:
 * `RGB16_565` Each pixel is 16 bits, with red in the upper 5 bits, green in the middle 6 bits, and blue in the lower 5 bits, in native platform endianness. Some hardware devices and frame buffers use this format. Note that PNG does not support this format; when creating a PNG, the image will be converted to 24-bit RGB. This format is thus suboptimal for generating PNGs. `ImageData` instances for this mode use a `Uint16Array` instead of a `Uint8ClampedArray`.
 * `A1` Each pixel is 1 bit, and pixels are packed together into 32-bit quantities. The ordering of the bits matches the endianness of the
   platform: on a little-endian machine, the first pixel is the least-significant bit. This format can be used for creating single-color images. *Support for this format is incomplete, see note below.*
-* `RGB30` Each pixel is 30 bits, with red in the upper 10, green in the middle 10, and blue in the lower 10. (Requires Cairo 1.12 or later.) *Support for this format is incomplete, see note below.*
+* `RGB30` Each pixel is 30 bits, with red in the upper 10, green in the middle 10, and blue in the lower 10. *Support for this format is incomplete, see note below.*
 
 Notes and caveats:
 
@@ -540,23 +522,23 @@ Notes and caveats:
 
 * The `ImageData(width, height)` and `ImageData(Uint8ClampedArray, width)` constructors assume 4 bytes per pixel. To create an `ImageData` instance with a different number of bytes per pixel, use `new ImageData(new Uint8ClampedArray(size), width, height)` or `new ImageData(new Uint16ClampedArray(size), width, height)`.
 
-## Testing
+## Local Development and Testing
 
-First make sure you've built the latest version. Get all the deps you need (see [compiling](#compiling) above), and run:
+To set up node-canvas for local develoment, use the `--force` argument (until [npm/cli#6138](https://github.com/npm/cli/issues/6138) is fixed):
 
 ```
-npm install --build-from-source
+npm install --force
 ```
 
 For visual tests: `npm run test-server` and point your browser to http://localhost:4000.
 
 For unit tests: `npm run test`.
 
-## Benchmarks
+### Benchmarks
 
 Benchmarks live in the `benchmarks` directory.
 
-## Examples
+### Examples
 
 Examples line in the `examples` directory. Most produce a png image of the same name, and others such as *live-clock.js* launch an HTTP server to be viewed in the browser.
 
