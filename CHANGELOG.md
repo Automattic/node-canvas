@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Fix error message HTTP response status code in image src setter
 
 3.2.0
 ==================
