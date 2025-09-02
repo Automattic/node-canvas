@@ -268,6 +268,8 @@ Image::SetSource(const Napi::CallbackInfo& info){
 
 cairo_status_t
 Image::loadFromBuffer(uint8_t *buf, unsigned len) {
+  if (len == 0) return CAIRO_STATUS_READ_ERROR;
+
   uint8_t data[4] = {0};
   memcpy(data, buf, (len < 4 ? len : 4) * sizeof(uint8_t));
 
