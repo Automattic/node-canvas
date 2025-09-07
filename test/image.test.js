@@ -516,6 +516,24 @@ describe('Image', function () {
       img.src = path.join(bmpDir, 'bomb.bmp')
     })
 
+    it('rejects when loadImage is called with null', async function () {
+        await assert.rejects(
+            loadImage(null),
+        )
+    })
+
+    it('rejects when loadImage is called with undefined', async function () {
+        await assert.rejects(
+            loadImage(undefined),
+        )
+    })
+
+    it('rejects when loadImage is called with empty string', async function () {
+        await assert.rejects(
+            loadImage(''),
+        )
+    })
+
     function testImgd (img, data) {
       const ctx = createCanvas(img.width, img.height).getContext('2d')
       ctx.drawImage(img, 0, 0)
