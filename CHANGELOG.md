@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* `roundRect()` shape incorrect when radii were large relative to rectangle size (#2400)
 
 3.2.0
 ==================
