@@ -100,6 +100,7 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "getImageData", GetImageData);
   Nan::SetPrototypeMethod(ctor, "createImageData", CreateImageData);
   Nan::SetPrototypeMethod(ctor, "addPage", AddPage);
+  Nan::SetPrototypeMethod(ctor, "addPageAsync", AddPageAsync);
   Nan::SetPrototypeMethod(ctor, "save", Save);
   Nan::SetPrototypeMethod(ctor, "restore", Restore);
   Nan::SetPrototypeMethod(ctor, "rotate", Rotate);
@@ -745,7 +746,6 @@ NAN_GETTER(Context2d::GetFormat) {
 /*
  * Create a new page.
  */
-
 NAN_METHOD(Context2d::AddPage) {
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (context->canvas()->backend()->getName() != "pdf") {
@@ -758,6 +758,54 @@ NAN_METHOD(Context2d::AddPage) {
   if (height < 1) height = context->canvas()->getHeight();
   cairo_pdf_surface_set_size(context->canvas()->surface(), width, height);
   return;
+}
+
+struct AddPageInfo {
+  Nan::Callback cb;
+  Context2d* context;
+  int width;
+  int height;
+};
+
+void AddPageAsyncTask(uv_work_t* req) {
+  AddPageInfo* pi = static_cast<AddPageInfo*>(req->data);
+  cairo_show_page(pi->context->context());
+  cairo_pdf_surface_set_size(pi->context->canvas()->surface(), pi->width, pi->height);
+}
+
+void AddPageAsyncTaskAfter(uv_work_t* req) {
+  Nan::HandleScope scope;
+  Nan::AsyncResource async("canvas:ToBufferAsyncAfter");
+  AddPageInfo* pi = static_cast<AddPageInfo*>(req->data);
+  pi->cb.Call(0, {}), &async;
+  delete req;
+}
+
+/*
+ * Create a new page asynchronously. When using a PDF surface, Cairo actually
+ * creates a recording surface, then when cairo_show_page() is called, it plays
+ * back the operations *three times*. As such, this can be a very slow function
+ * that benefits from running in a separate thread.
+ */
+NAN_METHOD(Context2d::AddPageAsync) {
+  Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
+  if (context->canvas()->backend()->getName() != "pdf") {
+    return Nan::ThrowError("only PDF canvases support .addPage()");
+  }
+  int width = Nan::To<int32_t>(info[1]).FromMaybe(0);
+  int height = Nan::To<int32_t>(info[2]).FromMaybe(0);
+  if (width < 1) width = context->canvas()->getWidth();
+  if (height < 1) height = context->canvas()->getHeight();
+  AddPageInfo* pi = new AddPageInfo;
+  pi->cb.Reset(info[0].As<Function>());
+  pi->context = context;
+  context->Ref();
+  pi->width = width;
+  pi->height = height;
+  uv_loop_t* loop = uv_default_loop();
+  uv_work_t* req = new uv_work_t;
+  req->data = pi;
+  uv_queue_work(loop, req, AddPageAsyncTask, (uv_after_work_cb)AddPageAsyncTaskAfter);
 }
 
 /*

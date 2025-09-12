@@ -107,6 +107,7 @@ class Context2d : public Nan::ObjectWrap {
     static NAN_METHOD(BeginPath);
     static NAN_METHOD(ClosePath);
     static NAN_METHOD(AddPage);
+    static NAN_METHOD(AddPageAsync);
     static NAN_METHOD(Clip);
     static NAN_METHOD(Fill);
     static NAN_METHOD(Stroke);

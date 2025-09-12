@@ -1447,6 +1447,19 @@ describe('Canvas', function () {
     assert.strictEqual(gradient.toString(), '[object CanvasGradient]')
   })
 
+  it('Context2d#addPageAsync()', function (done) {
+    const canvas = createCanvas(200, 200, 'pdf')
+    const ctx = canvas.getContext('2d')
+    ctx.strokeRect(10, 10, 50, 50)
+    ctx.addPageAsync(() => {
+      ctx.strokeRect(20, 20, 50, 50)
+      ctx.addPageAsync(() => {
+        // no crashes, at least
+        done();
+      });
+    })
+  });
+
   describe('Context2d#putImageData()', function () {
     it('throws for invalid arguments', function () {
       const canvas = createCanvas(2, 1)
