@@ -132,6 +132,11 @@ tests['roundRect()'] = function (ctx) {
   ctx.roundRect(135, 70, 60, 60, [{ x: 30, y: 10 }, { x: 5, y: 20 }])
   ctx.fillStyle = 'darkseagreen'
   ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(5, 135, 8, 60, 15)
+  ctx.fillStyle = 'purple'
+  ctx.fill()
 }
 
 tests['lineTo()'] = function (ctx) {

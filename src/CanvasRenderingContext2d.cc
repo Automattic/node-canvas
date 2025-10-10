@@ -3175,10 +3175,10 @@ Context2d::RoundRect(const Napi::CallbackInfo& info) {
       upperLeft.x *= scale;
       upperLeft.y *= scale;
       upperRight.x *= scale;
-      upperRight.x *= scale;
+      upperRight.y *= scale;
+      lowerLeft.x *= scale;
       lowerLeft.y *= scale;
-      lowerLeft.y *= scale;
-      lowerRight.y *= scale;
+      lowerRight.x *= scale;
       lowerRight.y *= scale;
     }
   }
