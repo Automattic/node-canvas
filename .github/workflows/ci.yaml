@@ -12,6 +12,7 @@ jobs:
     name: Test on Linux
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
     steps:
@@ -32,6 +33,7 @@ jobs:
     name: Test on Windows
     runs-on: windows-2025
     strategy:
+      fail-fast: false
       matrix:
         node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
     steps:
@@ -46,8 +48,6 @@ jobs:
           Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
           .\libjpeg.exe /S
           winget install --accept-source-agreements --id=Microsoft.VCRedist.2010.x64 -e
-          npm install -g node-gyp
-          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Install
         run: npm install --build-from-source
       - name: Test
@@ -57,6 +57,7 @@ jobs:
     name: Test on macOS
     runs-on: macos-26
     strategy:
+      fail-fast: false
       matrix:
         node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
     steps:
