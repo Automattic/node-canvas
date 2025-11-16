@@ -55,7 +55,7 @@ jobs:
 
   macOS:
     name: Test on macOS
-    runs-on: macos-26
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
