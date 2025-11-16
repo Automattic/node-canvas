@@ -11,9 +11,10 @@ jobs:
   Linux:
     name: Test on Linux
     runs-on: ubuntu-latest
-    strategy:
+    strategy: &job_strategy  # Define a YAML anchor on first use
+      fail-fast: false
       matrix:
-        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
+        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0, 25.2.0]
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -31,9 +32,7 @@ jobs:
   Windows:
     name: Test on Windows
     runs-on: windows-2025
-    strategy:
-      matrix:
-        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
+    strategy: *job_strategy  # Reuse the YAML anchor defined above
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -55,10 +54,8 @@ jobs:
 
   macOS:
     name: Test on macOS
-    runs-on: macos-15
-    strategy:
-      matrix:
-        node: [18.20.5, 20.18.1, 22.12.0, 23.3.0, 24.2.0]
+    runs-on: macos-26
+    strategy: *job_strategy  # Reuse the YAML anchor defined above
     steps:
       - uses: actions/setup-node@v4
         with:
