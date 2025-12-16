@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix error message HTTP response status code in image src setter
 * `roundRect()` shape incorrect when radii were large relative to rectangle size (#2400)
 * Reject loadImage when src is null or invalid (#2304)
+* Fix compilation on GCC 15 by including <cstdint> (#2545)
 
 3.2.0
 ==================

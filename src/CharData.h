@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace CharData {
   static constexpr uint8_t Whitespace = 0x1;
   static constexpr uint8_t Newline = 0x2;
