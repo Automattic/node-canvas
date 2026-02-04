@@ -38,7 +38,7 @@ struct canvas_jpeg_error_mgr: jpeg_error_mgr {
  */
 
 typedef struct {
-  Napi::Env* env;
+  Napi::Env env;
   unsigned len;
   uint8_t *buf;
 } read_closure_t;
@@ -335,10 +335,7 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
 
 cairo_status_t
 Image::loadPNGFromBuffer(uint8_t *buf) {
-  read_closure_t closure;
-  closure.len = 0;
-  closure.buf = buf;
-  closure.env = &env;
+  read_closure_t closure{ env, 0, buf };
   _surface = cairo_image_surface_create_from_png_stream(readPNG, &closure);
   cairo_status_t status = cairo_surface_status(_surface);
   if (status) return status;
@@ -1007,7 +1004,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 void
 clearMimeData(void *closure) {
   Napi::MemoryManagement::AdjustExternalMemory(
-      *static_cast<read_closure_t *>(closure)->env,
+      static_cast<read_closure_t *>(closure)->env,
       -static_cast<int>((static_cast<read_closure_t *>(closure)->len)));
   free(static_cast<read_closure_t *>(closure)->buf);
   free(closure);
@@ -1036,7 +1033,7 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
 
   memcpy(mime_data, data, len);
 
-  mime_closure->env = &env;
+  mime_closure->env = env;
   mime_closure->buf = mime_data;
   mime_closure->len = len;
 
