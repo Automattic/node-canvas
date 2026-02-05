@@ -763,7 +763,7 @@ Context2d::AddPage(const Napi::CallbackInfo& info) {
   int height = info[1].ToNumber().UnwrapOr(zero).Int32Value();
   if (width < 1) width = canvas()->getWidth();
   if (height < 1) height = canvas()->getHeight();
-  cairo_pdf_surface_set_size(canvas()->surface(), width, height);
+  canvas()->backend()->setSize(width, height);
 }
 
 /*

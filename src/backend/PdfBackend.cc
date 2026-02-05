@@ -31,6 +31,10 @@ void PdfBackend::destroySurface() {
   }
 }
 
+void PdfBackend::resetSurface() {
+  cairo_pdf_surface_set_size(ensureSurface(), width, height);
+}
+
 void
 PdfBackend::Initialize(Napi::Object target) {
   Napi::Env env = target.Env();

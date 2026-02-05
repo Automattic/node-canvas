@@ -9,6 +9,7 @@ class PdfBackend : public Napi::ObjectWrap<PdfBackend>, public Backend
   private:
     cairo_surface_t* ensureSurface();
     void destroySurface();
+    void resetSurface();
     cairo_surface_t* surface = nullptr;
 
   public:

@@ -671,7 +671,7 @@ str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_numb
       return strdup(fallback);
     }
   }
-  
+
   return NULL;
 }
 
@@ -907,8 +907,10 @@ Canvas::resurface(Napi::Object This) {
   Napi::Value context;
 
   if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
-    backend()->destroySurface();
-    backend()->ensureSurface();
+    if (backend()->getName() != "pdf") {
+      backend()->destroySurface();
+      backend()->ensureSurface();
+    }
     // Reset context
     Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
     cairo_t *prev = context2d->context();

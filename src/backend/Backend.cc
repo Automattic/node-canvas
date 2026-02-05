@@ -29,8 +29,7 @@ int Backend::getWidth()
 }
 void Backend::setWidth(int width_)
 {
-  this->destroySurface();
-  this->width = width_;
+  setSize(width_, height);
 }
 
 int Backend::getHeight()
@@ -39,8 +38,17 @@ int Backend::getHeight()
 }
 void Backend::setHeight(int height_)
 {
+  setSize(width, height_);
+}
+
+void Backend::setSize(int width_, int height_) {
+  width = width_;
+  height = height_;
+  resetSurface();
+}
+
+void Backend::resetSurface() {
   this->destroySurface();
-  this->height = height_;
 }
 
 bool Backend::isSurfaceValid() {

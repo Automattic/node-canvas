@@ -28,6 +28,7 @@ class Backend
 
     virtual cairo_surface_t* ensureSurface() = 0;
     virtual void destroySurface() = 0;
+    virtual void resetSurface();
 
     DLL_PUBLIC std::string getName();
 
@@ -36,6 +37,8 @@ class Backend
 
     DLL_PUBLIC int getHeight();
     virtual void setHeight(int height);
+
+    void setSize(int width, int height);
 
     // Overridden by ImageBackend. SVG and PDF thus always return INVALID.
     virtual cairo_format_t getFormat() {
