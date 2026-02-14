@@ -923,7 +923,10 @@ Canvas::resurface(Napi::Object This) {
   Napi::HandleScope scope(env);
   Napi::Value context;
 
-  if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
+  if (type == CANVAS_TYPE_PDF) {
+    ensureSurface();
+    cairo_pdf_surface_set_size(_surface, width, height);
+  } else if (This.Get("context").UnwrapTo(&context) && context.IsObject()) {
     destroySurface();
     ensureSurface();
     // Reset context
