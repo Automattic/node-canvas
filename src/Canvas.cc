@@ -923,17 +923,24 @@ Canvas::resurface(Napi::Object This, int width, int height) {
   Napi::HandleScope scope(env);
   Napi::Value context;
 
-  destroySurface();
-  this->width = width;
-  this->height = height;
-  ensureSurface();
-  if (This.Get("context").UnwrapTo(&context) && context.IsObject())  {
-    // Reset context
-    Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
-    cairo_t *prev = context2d->context();
-    context2d->setContext(createCairoContext());
-    context2d->resetState();
-    cairo_destroy(prev);
+  if (type == CANVAS_TYPE_PDF) {
+    ensureSurface();
+    cairo_pdf_surface_set_size(_surface, width, height);
+    this->width = width;
+    this->height = height;
+  } else {
+    destroySurface();
+    this->width = width;
+    this->height = height;
+    ensureSurface();
+    if (This.Get("context").UnwrapTo(&context) && context.IsObject())  {
+      // Reset context
+      Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
+      cairo_t *prev = context2d->context();
+      context2d->setContext(createCairoContext());
+      context2d->resetState();
+      cairo_destroy(prev);
+    }
   }
 }
 
