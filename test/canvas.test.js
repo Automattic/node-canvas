@@ -2148,6 +2148,53 @@ describe('Canvas', function () {
     })
   })
 
+  it('PDF does not lose page content when setting width/height after addPage (#2538)', function () {
+    const zlib = require('zlib')
+    const canvas = createCanvas(100, 100, 'pdf')
+    const ctx = canvas.getContext('2d')
+
+    ctx.fillStyle = 'rgb(85, 85, 85)'
+    ctx.fillRect(10, 10, 30, 30)
+
+    // Should lock in page 1
+    ctx.addPage(200, 200)
+
+    ctx.fillStyle = 'rgb(170, 170, 170)'
+    ctx.fillRect(10, 10, 30, 30)
+
+    // Should not erase rgb(85, 85, 85)
+    // SHOULD erase rgb(170, 170, 170)
+    canvas.width = 200
+    canvas.height = 200
+
+    // Draw on page 2
+    ctx.fillStyle = 'rgb(250, 250, 250)'
+    ctx.fillRect(50, 50, 40, 40)
+
+    const pdf = canvas.toBuffer()
+
+    // Parse PDF streams to verify page 1 content is preserved
+    const pdfStr = pdf.toString('latin1')
+    const streamRegex = /stream\r?\n([\s\S]*?)\r?\nendstream/g
+    let match
+    let allContent = ''
+    while ((match = streamRegex.exec(pdfStr)) !== null) {
+      try {
+        const compressed = Buffer.from(match[1], 'latin1')
+        allContent += zlib.inflateSync(compressed).toString()
+      } catch (e) {
+        // Some streams may not be zlib-compressed
+      }
+    }
+
+    // 85/255 ≈ 0.333333 - page 1 fill color
+    // 170/255 ≈ 0.666667 - page 2 fill color, erased
+    // 250/255 ≈ 0.980392 - page 2 fill color
+    assert(allContent.includes('0.333333 0.333333 0.333333'), 'Page 1 content should be preserved')
+    assert(!allContent.includes('0.666667 0.666667 0.666667'), 'Pre-resize page 2 content should be erased')
+    assert(allContent.includes('0.980392 0.980392 0.980392'), 'Post-resize page 2 content should be preserved')
+  })
+
   it('Canvas#createJPEGStream()', function (done) {
     const canvas = createCanvas(640, 480)
     const stream = canvas.createJPEGStream()
