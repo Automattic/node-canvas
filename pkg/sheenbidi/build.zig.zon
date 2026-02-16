@@ -1,0 +1,10 @@
+.{
+    .name = .sheenbidi,
+    .version = "0.0.0",
+    .dependencies = .{
+        .sheenbidi = .{
+            .url = "https://github.com/Tehreer/SheenBidi/archive/refs/tags/v2.9.0.tar.gz",
+            .hash = "N-V-__8AAHe8LwF6n4S3jDUlzJLIka4vXuAcDZnCnNpaR1-l"
+        }
+    },
+}
