@@ -1,0 +1,10 @@
+.{
+    .name = .harfbuzz,
+    .version = "0.0.0",
+    .dependencies = .{
+        .harfbuzz = .{
+            .url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/12.3.0.tar.gz",
+            .hash = "N-V-__8AAK5WlgUb7zJouNiGizHTUdl6zQTgr_apzjhQfiwE",
+        }
+    },
+}
