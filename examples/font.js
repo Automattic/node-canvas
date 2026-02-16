@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const Canvas = require('..')
+const {createCanvas, FontFace, fonts} = require('..')
 
 function fontFile (name) {
   return path.join(__dirname, '/pfennigFont/', name)
@@ -10,12 +10,12 @@ function fontFile (name) {
 // `registerFont`. When you set `ctx.font`, refer to the styles and the family
 // name as it is embedded in the TTF. If you aren't sure, open the font in
 // FontForge and visit Element -> Font Information and copy the Family Name
-Canvas.registerFont(fontFile('Pfennig.ttf'), { family: 'pfennigFont' })
-Canvas.registerFont(fontFile('PfennigBold.ttf'), { family: 'pfennigFont', weight: 'bold' })
-Canvas.registerFont(fontFile('PfennigItalic.ttf'), { family: 'pfennigFont', style: 'italic' })
-Canvas.registerFont(fontFile('PfennigBoldItalic.ttf'), { family: 'pfennigFont', weight: 'bold', style: 'italic' })
+fonts.add(new FontFace('pfennigFont', fontFile('Pfennig.ttf')));
+fonts.add(new FontFace('pfennigFont', fontFile('PfennigBold.ttf'), { weight: 'bold' }))
+fonts.add(new FontFace('pfennigFont', fontFile('PfennigItalic.ttf'), { style: 'italic' }))
+fonts.add(new FontFace('pfennigFont', fontFile('PfennigBoldItalic.ttf'), { weight: 'bold', style: 'italic' }))
 
-const canvas = Canvas.createCanvas(320, 320)
+const canvas = createCanvas(320, 320)
 const ctx = canvas.getContext('2d')
 
 ctx.font = 'normal normal 50px Helvetica'

@@ -24,6 +24,28 @@ typedef enum {
   CANVAS_TYPE_SVG
 } canvas_type_t;
 
+enum text_baseline_t : uint8_t {
+  TEXT_BASELINE_ALPHABETIC = 0,
+  TEXT_BASELINE_TOP = 1,
+  TEXT_BASELINE_BOTTOM = 2,
+  TEXT_BASELINE_MIDDLE = 3,
+  TEXT_BASELINE_IDEOGRAPHIC = 4,
+  TEXT_BASELINE_HANGING = 5
+};
+
+enum text_align_t : int8_t {
+  TEXT_ALIGNMENT_LEFT = -1,
+  TEXT_ALIGNMENT_CENTER = 0,
+  TEXT_ALIGNMENT_RIGHT = 1,
+  TEXT_ALIGNMENT_START = -2,
+  TEXT_ALIGNMENT_END = 2
+};
+
+enum canvas_draw_mode_t : uint8_t {
+  TEXT_DRAW_PATHS,
+  TEXT_DRAW_GLYPHS
+};
+
 /*
  * Canvas.
  */

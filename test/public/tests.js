@@ -2688,7 +2688,7 @@ tests['measureText()'] = function (ctx) {
     ctx.strokeStyle = 'blue'
     ctx.strokeRect(
       // positive numbers for actualBoundingBoxLeft indicate a distance going left
-      x + metrics.actualBoundingBoxLeft + 0.5,
+      x - metrics.actualBoundingBoxLeft + 0.5,
       y - metrics.actualBoundingBoxAscent + 0.5,
       metrics.width,
       metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent

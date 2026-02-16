@@ -402,15 +402,15 @@ FontParser::parseFontStyle(FontProperties& props) {
   if (check(Token::Type::Identifier)) {
     const auto& value = currentToken_.getString();
     if (value == "italic") {
-      props.fontStyle = FontStyle::Italic;
+      props.style = FontStyle::Italic;
       advance();
       return true;
     } else if (value == "oblique") {
-      props.fontStyle = FontStyle::Oblique;
+      props.style = FontStyle::Oblique;
       advance();
       return true;
     } else if (value == "normal") {
-      props.fontStyle = FontStyle::Normal;
+      props.style = FontStyle::Normal;
       advance();
       return true;
     }
@@ -424,11 +424,11 @@ FontParser::parseFontVariant(FontProperties& props) {
   if (check(Token::Type::Identifier)) {
     const auto& value = currentToken_.getString();
     if (value == "small-caps") {
-      props.fontVariant = FontVariant::SmallCaps;
+      props.variant = FontVariant::SmallCaps;
       advance();
       return true;
     } else if (value == "normal") {
-      props.fontVariant = FontVariant::Normal;
+      props.variant = FontVariant::Normal;
       advance();
       return true;
     }
@@ -443,14 +443,14 @@ FontParser::parseFontWeight(FontProperties& props) {
     double weightFloat = currentToken_.getNumber();
     int weight = static_cast<int>(weightFloat);
     if (weight < 1 || weight > 1000) return false;
-    props.fontWeight = static_cast<uint16_t>(weight);
+    props.weight = static_cast<uint16_t>(weight);
     advance();
     return true;
   } else if (check(Token::Type::Identifier)) {
     const auto& value = currentToken_.getString();
 
     if (auto it = weightMap.find(value); it != weightMap.end()) {
-      props.fontWeight = it->second;
+      props.weight = it->second;
       advance();
       return true;
     }
@@ -463,7 +463,7 @@ bool
 FontParser::parseFontSize(FontProperties& props) {
   if (!check(Token::Type::Number)) return false;
 
-  props.fontSize = currentToken_.getNumber();
+  props.size = currentToken_.getNumber();
   advance();
 
   double multiplier = 1.0f;
@@ -487,7 +487,7 @@ FontParser::parseFontSize(FontProperties& props) {
   // we should rewind the tokenizer, but I don't think the grammar allows for
   // any valid alternates in this specific case
 
-  props.fontSize *= multiplier;
+  props.size *= multiplier;
   return true;
 }
 
@@ -550,7 +550,7 @@ FontParser::parseFontFamily(FontProperties& props) {
 
     if (!found) return false; // only whitespace or non-id/string found
 
-    props.fontFamily.push_back(family);
+    props.families.push_back(family);
 
     if (check(Token::Type::Comma)) advance();
   }
@@ -564,6 +564,24 @@ FontParser::parse(const std::string& fontString, bool* success) {
   auto result = parser.parseFont();
   if (success) *success = !parser.hasError_;
   return result;
+}
+
+std::optional<uint16_t>
+FontParser::parseWeight(const std::string& source) {
+  FontParser parser(source);
+  FontProperties props; // TODO: use only the memory needed
+  parser.skipWs();
+  if (parser.parseFontWeight(props)) return props.weight;
+  return std::nullopt;
+}
+
+std::optional<FontStyle>
+FontParser::parseStyle(const std::string& source) {
+  FontParser parser(source);
+  FontProperties props; // TODO: use only the memory needed
+  parser.skipWs();
+  if (parser.parseFontStyle(props)) return props.style;
+  return std::nullopt;
 }
 
 FontProperties
