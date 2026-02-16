@@ -654,23 +654,22 @@ Canvas::ParseFont(const Napi::CallbackInfo& info) {
   if (!ok) return env.Undefined();
 
   Napi::Object obj = Napi::Object::New(env);
-  obj.Set("size", Napi::Number::New(env, props.fontSize));
+  obj.Set("size", Napi::Number::New(env, props.size));
   Napi::Array families = Napi::Array::New(env);
   obj.Set("families", families);
 
   unsigned int index = 0;
 
-  for (auto& family : props.fontFamily) {
+  for (auto& family : props.families) {
     families[index++] = Napi::String::New(env, family);
   }
 
-  obj.Set("weight", Napi::Number::New(env, props.fontWeight));
-  obj.Set("variant", Napi::Number::New(env, static_cast<int>(props.fontVariant)));
-  obj.Set("style", Napi::Number::New(env, static_cast<int>(props.fontStyle)));
+  obj.Set("weight", Napi::Number::New(env, props.weight));
+  obj.Set("variant", Napi::Number::New(env, static_cast<int>(props.variant)));
+  obj.Set("style", Napi::Number::New(env, static_cast<int>(props.style)));
 
   return obj;
 }
-
 
 // This returns an approximate value only, suitable for
 // Napi::MemoryManagement:: AdjustExternalMemory.

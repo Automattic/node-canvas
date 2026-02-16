@@ -1,0 +1,10 @@
+.{
+    .name = .node_api,
+    .version = "0.0.0",
+    .dependencies = .{
+        .node_api_headers = .{
+            .url = "https://github.com/nodejs/node-api-headers/archive/refs/tags/v1.5.0.tar.gz",
+            .hash = "N-V-__8AAASNAQA0UI0mvQk4LyFEhdFuFBPgH8HSokdFFpnz"
+        }
+    },
+}
