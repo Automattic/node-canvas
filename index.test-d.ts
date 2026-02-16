@@ -1,10 +1,22 @@
 import { expectAssignable, expectType } from 'tsd'
-import * as path from 'path'
 import { Readable } from 'stream'
 
 import * as Canvas from './index'
 
-Canvas.registerFont(path.join(__dirname, '../pfennigFont/Pfennig.ttf'), {family: 'pfennigFont'})
+const font = new Canvas.FontFace('pfennigFont', '../pfennigFont/Pfennig.ttf', {
+  weight: 'normal',
+  style: 'normal'
+});
+
+Canvas.fonts.add(font)
+font.status;
+font.family = 'pfennig';
+font.style = 'italic';
+font.weight = 'bold';
+Canvas.fonts.delete(font);
+Canvas.fonts.clear();
+Canvas.fonts.size;
+for (const font of Canvas.fonts) font.status;
 
 Canvas.createCanvas(5, 10)
 Canvas.createCanvas(200, 200, 'pdf')
@@ -49,5 +61,3 @@ expectType<Canvas.ImageData>(id2)
 ctx.putImageData(id2, 0, 0)
 
 ctx.drawImage(canv, 0, 0)
-
-Canvas.deregisterAllFonts()

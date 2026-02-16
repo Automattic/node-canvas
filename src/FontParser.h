@@ -8,24 +8,7 @@
 #include <unordered_map>
 #include "CharData.h"
 
-enum class FontStyle {
-  Normal,
-  Italic,
-  Oblique
-};
-
-enum class FontVariant {
-  Normal,
-  SmallCaps
-};
-
-struct FontProperties {
-  double fontSize{16.0f};
-  std::vector<std::string> fontFamily;
-  uint16_t fontWeight{400};
-  FontVariant fontVariant{FontVariant::Normal};
-  FontStyle fontStyle{FontStyle::Normal};
-};
+#include "Font.h"
 
 class Token {
   public:
@@ -88,6 +71,8 @@ class Tokenizer {
 class FontParser {
   public:
     static FontProperties parse(const std::string& fontString, bool* success = nullptr);
+    static std::optional<uint16_t> parseWeight(const std::string& source);
+    static std::optional<FontStyle> parseStyle(const std::string& source);
 
   private:
     static const std::unordered_map<std::string, uint16_t> weightMap;

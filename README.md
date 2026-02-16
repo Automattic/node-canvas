@@ -20,7 +20,7 @@ Binaries will be installed for the following platforms:
 - Windows x64/x86/arm64
 
 If you want to install for a more exotic system, CD into the package and run
-`zig build`. You may need to tweak one of the build.zig files. PRs are welcome.
+`zig build`. You may need to tweak build.zig. PRs are welcome.
 
 ## Quick Example
 
@@ -60,6 +60,10 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [createImageData()](#createimagedata)
 * [loadImage()](#loadimage)
 
+### Font API
+
+* [FontFace](#fontface)
+* [fonts](#fonts)
 
 ### Non-standard APIs
 
@@ -129,6 +133,84 @@ myimg.then(() => {
 // or with async/await:
 const myimg = await loadImage('http://server.com/image.png')
 // do something with image
+```
+
+### FontFace
+
+> ```ts
+>
+> interface FontFaceDescriptors {
+>   weight?: string | number;
+>   style?: string;
+> }
+>
+> class FontFace {
+>   constructor(
+>     family: string,
+>     source: string | ArrayBuffer | Uint8Array,
+>     descriptors?: FontFaceDescriptors
+>   )
+>
+>   family: string;
+>   style: string;
+>   weight: string;
+>   status: 'loaded' | 'unloaded' | 'error';
+> }
+>
+> ```
+
+To use your own font file, create a `FontFace` with the file path and add it to [`fonts`](#fonts). `fonts` is just like the browser's `document.fonts`, but with a slightly more limited API.
+
+```js
+const { createCanvas, FontFace, fonts } = require('canvas')
+fonts.add(new FontFace('Comic Sans', '/home/you/comicsans.ttf'))
+
+const canvas = createCanvas(500, 500)
+const ctx = canvas.getContext('2d')
+
+ctx.font = '12px "Comic Sans"'
+ctx.fillText('Everyone hates this font :(', 250, 10)
+```
+
+The second argument can either be a path to the font file or a buffer in TrueType format. The third argument is an object with properties that resemble the CSS properties that are specified in `@font-face` rules. You must specify at least `family`. `weight` and `style` are optional and default to `'normal'`.
+
+### fonts
+
+> ```ts
+>
+> class FontFaceSet {
+>   add(face: FontFace): void;
+>   has(face: FontFace): boolean;
+>   clear(): void;
+>   delete(face: FontFace): boolean;
+>   [Symbol.iterator](): Iterator<FontFace>;
+>   size: number;
+> }
+>
+> fonts: FontFaceSet
+> ```
+
+`fonts` implements a subset of the browser's `document.fonts`. Use `fonts.delete()` to unregister an individual font, or `fonts.clear()` to remove all registered fonts. This is useful when you want to remove all registered fonts, such as when using the canvas in tests.
+
+```ts
+const { registerFont, createCanvas, fonts, FontFace } = require('canvas')
+
+describe('text rendering', () => {
+  afterEach(() => {
+    fonts.clear()
+  })
+  it('should render text with Comic Sans', () => {
+    fonts.add(new FontFace('Comic Sans', '/home/you/comicsans.ttf'))
+
+    const canvas = createCanvas(500, 500)
+    const ctx = canvas.getContext('2d')
+
+    ctx.font = '12px "Comic Sans"'
+    ctx.fillText('Everyone loves this font :)', 250, 10)
+
+    // assertScreenshot()
+  })
+})
 ```
 
 ### Image#src
