@@ -15,7 +15,9 @@ const {
   createImageData,
   loadImage,
   Canvas,
-  ImageData
+  ImageData,
+  fonts,
+  FontFace
 } = require('../')
 
 function assertApprox(actual, expected, tol) {
@@ -51,6 +53,22 @@ describe('Canvas', function () {
     canvas.height = -0xfffffff2
     assert.equal(canvas.width, 14)
     assert.equal(canvas.height, 14)
+  });
+
+  it('canvas.fonts', function () {
+    // Minimal test to make sure nothing is thrown
+    const regular = new FontFace('Pfennig', './examples/pfennigFont/Pfennig.ttf')
+    fonts.add(regular);
+    const bold = new FontFace('Pfennig', './examples/pfennigFont/PfennigBold.ttf', {weight: 'bold'});
+    fonts.add(bold);
+
+    // Test to multi byte file path support
+    const multi = new FontFace('Pfennig', './examples/pfennigFont/pfennigMultiByte🚀.ttf');
+    fonts.add(multi);
+
+    fonts.delete(multi);
+    fonts.delete(regular);
+    fonts.delete(bold);
   });
 
   it('color serialization', function () {
@@ -421,12 +439,15 @@ describe('Canvas', function () {
     assert.equal(canvas.width, 50)
     assert.equal(canvas.height, 70)
 
+    context.font = '20px arial'
+    assert.equal(context.font, '20px arial')
     canvas.width |= 0
 
     assert.equal(context.lineWidth, 1) // #1095
     assert.equal(context.globalAlpha, 1) // #1292
     assert.equal(context.fillStyle, '#000000')
     assert.equal(context.strokeStyle, '#000000')
+    assert.equal(context.font, '10px sans-serif')
     assert.strictEqual(context.getImageData(0, 0, 1, 1).data.join(','), '0,0,0,0')
   })
 
@@ -480,6 +501,18 @@ describe('Canvas', function () {
     assert.equal('good', ctx.patternQuality)
     assert.equal(false, ctx.imageSmoothingEnabled)
     assert.equal('good', ctx.patternQuality)
+  })
+
+  it('Context2d#font=', function () {
+    const canvas = createCanvas(200, 200)
+    const ctx = canvas.getContext('2d')
+
+    assert.equal(ctx.font, '10px sans-serif')
+    ctx.font = '15px Arial, sans-serif'
+    assert.equal(ctx.font, '15px Arial, sans-serif')
+
+    ctx.font = 'Helvetica, sans' // invalid
+    assert.equal(ctx.font, '15px Arial, sans-serif')
   })
 
   it('Context2d#lineWidth=', function () {
@@ -559,6 +592,21 @@ describe('Canvas', function () {
     assert.ok(ctx.isPointInPath(60, 110))
     assert.ok(!ctx.isPointInPath(70, 110))
     assert.ok(!ctx.isPointInPath(50, 120))
+  })
+
+  it('Context2d#textAlign', function () {
+    const canvas = createCanvas(200, 200)
+    const ctx = canvas.getContext('2d')
+
+    assert.equal('start', ctx.textAlign)
+    ctx.textAlign = 'center'
+    assert.equal('center', ctx.textAlign)
+    ctx.textAlign = 'right'
+    assert.equal('right', ctx.textAlign)
+    ctx.textAlign = 'end'
+    assert.equal('end', ctx.textAlign)
+    ctx.textAlign = 'fail'
+    assert.equal('end', ctx.textAlign)
   })
 
   describe('#toBuffer', function () {
@@ -960,6 +1008,118 @@ describe('Canvas', function () {
   describe('ImageData', function () {
     it('checks for overflow', function () {
       assert.throws(() => new ImageData(0x80000001, 0x80000001))
+    })
+  })
+
+  describe('Context2d#measureText()', function () {
+    it('Context2d#measureText().width', function () {
+      const canvas = createCanvas(20, 20)
+      const ctx = canvas.getContext('2d')
+
+      assert.ok(ctx.measureText('foo').width)
+      assert.ok(ctx.measureText('foo').width !== ctx.measureText('foobar').width)
+      assert.ok(ctx.measureText('foo').width !== ctx.measureText('  foo').width)
+    })
+
+    it('works', function () {
+      const canvas = createCanvas(20, 20)
+      const ctx = canvas.getContext('2d')
+      ctx.font = '20px Arial'
+
+      ctx.textBaseline = 'alphabetic'
+      let metrics = ctx.measureText('Alphabet')
+      // Actual value depends on font library version. Have observed values
+      // between 0 and 0.769.
+      assertApprox(metrics.alphabeticBaseline, 0.5, 0.5)
+      // Positive = going up from the baseline
+      assert.ok(metrics.actualBoundingBoxAscent > 0)
+      // Positive = going down from the baseline
+      assertApprox(metrics.actualBoundingBoxDescent, 5, 2)
+
+      ctx.textBaseline = 'bottom'
+      metrics = ctx.measureText('Alphabet')
+      assert.strictEqual(ctx.textBaseline, 'bottom')
+      assertApprox(metrics.alphabeticBaseline, 5, 2)
+      assert.ok(metrics.actualBoundingBoxAscent > 0)
+      // On the baseline or slightly above
+      assertApprox(metrics.actualBoundingBoxDescent, 0, 1)
+    })
+
+    it('actualBoundingBox is correct for left, center and right alignment (#1909)', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+
+      ctx.font = '10px helvetica';
+      // positive actualBoundingBoxLeft indicates a distance going left from the
+      // given alignment point.
+
+      // positive actualBoundingBoxRight indicates a distance going right from
+      // the given alignment point.
+
+      ctx.textAlign = 'left'
+      const lm = ctx.measureText('aaaa')
+      assertApprox(lm.actualBoundingBoxLeft, -1, 6)
+      assertApprox(lm.actualBoundingBoxRight, 21, 6)
+
+      ctx.textAlign = 'center'
+      const cm = ctx.measureText('aaaa')
+      assertApprox(cm.actualBoundingBoxLeft, 9, 6)
+      assertApprox(cm.actualBoundingBoxRight, 11, 6)
+
+      ctx.textAlign = 'right'
+      const rm = ctx.measureText('aaaa')
+      assertApprox(rm.actualBoundingBoxLeft, 19, 6)
+      assertApprox(rm.actualBoundingBoxRight, 1, 6)
+    })
+
+    it('resolves text alignment wrt Context2d#direction #2508', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+
+      ctx.textAlign = "left";
+      const leftMetrics = ctx.measureText('hello');
+      assert(leftMetrics.actualBoundingBoxLeft < leftMetrics.actualBoundingBoxRight, "leftMetrics.actualBoundingBoxLeft < leftMetrics.actualBoundingBoxRight");
+      
+      ctx.textAlign = "right";
+      const rightMetrics = ctx.measureText('hello');
+      assert(rightMetrics.actualBoundingBoxLeft > rightMetrics.actualBoundingBoxRight, "metrics.actualBoundingBoxLeft > metrics.actualBoundingBoxRight");
+      
+      ctx.textAlign = "start";
+      
+      ctx.direction = "ltr";
+      const ltrStartMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(ltrStartMetrics, leftMetrics, "ltr start metrics should equal left metrics");
+        
+      ctx.direction = "rtl";
+      const rtlStartMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(rtlStartMetrics, rightMetrics, "rtl start metrics should equal right metrics");
+      
+      ctx.textAlign = "end";
+      
+      ctx.direction = "ltr";
+      const ltrEndMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(ltrEndMetrics, rightMetrics, "ltr end metrics should equal right metrics");
+        
+      ctx.direction = "rtl";
+      const rtlEndMetrics = ctx.measureText('hello');
+      assert.deepStrictEqual(rtlEndMetrics, leftMetrics, "rtl end metrics should equal left metrics");
+    })
+  })
+
+  it('Context2d#fillText()', function () {
+    [
+      [['A', 10, 10], true],
+      [['A', 10, 10, undefined], true],
+      [['A', 10, 10, NaN], false]
+    ].forEach(([args, shouldDraw]) => {
+      const canvas = createCanvas(20, 20)
+      const ctx = canvas.getContext('2d')
+
+      ctx.textBaseline = 'middle'
+      ctx.textAlign = 'center'
+      ctx.fillText(...args)
+
+      assert.strictEqual(ctx.getImageData(0, 0, 20, 20).data.some(a => a), shouldDraw)
     })
   })
 
@@ -2451,6 +2611,9 @@ describe('Canvas', function () {
       ['shadowBlur', 5],
       ['shadowColor', '#ff0000'],
       ['globalCompositeOperation', 'copy'],
+      ['font', '25px serif'],
+      ['textAlign', 'center'],
+      ['textBaseline', 'bottom'],
       // Added vs. WPT
       ['imageSmoothingEnabled', false],
       // ['imageSmoothingQuality', ], // not supported by node-canvas, #2114
@@ -2458,7 +2621,10 @@ describe('Canvas', function () {
       // Non-standard properties:
       ['patternQuality', 'best'],
       // ['quality', 'best'], // doesn't do anything, TODO remove
-      ['antialias', 'gray']
+      ['textDrawingMode', 'glyph'],
+      ['antialias', 'gray'],
+      ['lang', 'eu'],
+      ['direction', 'rtl']
     ]
 
     for (const [k, v] of state) {
@@ -2496,6 +2662,7 @@ describe('Canvas', function () {
       const canvas = createCanvas(20, 20, 'pdf')
       const ctx = canvas.getContext('2d')
       ctx.beginTag('Link', "uri='http://example.com'")
+      ctx.strokeText('hello', 0, 0)
       ctx.endTag('Link')
       const buf = canvas.toBuffer('application/pdf')
       assert.equal('PDF', buf.slice(1, 4).toString())
