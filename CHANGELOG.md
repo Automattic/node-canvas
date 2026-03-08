@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Fix dangling env pointer in image MIME data cleanup (#2550)
+* Fix `ctx.direction` not affected by `ctx.save` and `ctx.restore`
 
 3.2.1
 ==================

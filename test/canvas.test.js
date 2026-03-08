@@ -2491,7 +2491,8 @@ describe('Canvas', function () {
       // ['quality', 'best'], // doesn't do anything, TODO remove
       ['textDrawingMode', 'glyph'],
       ['antialias', 'gray'],
-      ['lang', 'eu']
+      ['lang', 'eu'],
+      ['direction', 'rtl']
     ]
 
     for (const [k, v] of state) {
