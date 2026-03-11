@@ -36,6 +36,24 @@ describe('Canvas', function () {
     assert('width' in Canvas.prototype)
   })
 
+  it('limits createCanvas size via exceptions', function () {
+    assert.throws(() => createCanvas(40_000, 100))
+    assert.throws(() => createCanvas(4000, 40_000))
+    assert.throws(() => createCanvas(40_000, 40_000))
+  })
+
+  it('wraps negative width and height', function () {
+    // WebIDL says negative numbers should throw an
+    // IndexSizeError, but we skip [EnforceRange]
+    const canvas = createCanvas(-0xfffffff1, -0xfffffff1)
+    assert.equal(canvas.width, 15)
+    assert.equal(canvas.height, 15)
+    canvas.width = -0xfffffff2
+    canvas.height = -0xfffffff2
+    assert.equal(canvas.width, 14)
+    assert.equal(canvas.height, 14)
+  });
+
   it('registerFont', function () {
     // Minimal test to make sure nothing is thrown
     registerFont('./examples/pfennigFont/Pfennig.ttf', { family: 'Pfennig' })
