@@ -36,6 +36,12 @@ describe('Canvas', function () {
     assert('width' in Canvas.prototype)
   })
 
+  it('limits createCanvas size via exceptions', function () {
+    assert.throws(() => createCanvas(40_000, 100))
+    assert.throws(() => createCanvas(4000, 40_000))
+    assert.throws(() => createCanvas(40_000, 40_000))
+  })
+
   it('registerFont', function () {
     // Minimal test to make sure nothing is thrown
     registerFont('./examples/pfennigFont/Pfennig.ttf', { family: 'Pfennig' })
