@@ -988,6 +988,15 @@ describe('Canvas', function () {
       assert.equal(0, imageData.data[0])
       assert.equal(0, imageData.data[1])
     })
+
+    it('wraps negative values', function () {
+      const canvas = createCanvas(20, 20)
+      const ctx = canvas.getContext('2d')
+      // WebIDL says this should throw, but we skip [EnforceRange]
+      const data = ctx.createImageData(-0xfffffffe, -0xfffffffe)
+      assert.equal(data.width, 2)
+      assert.equal(data.height, 2)
+    })
   })
 
   describe('Context2d#measureText()', function () {

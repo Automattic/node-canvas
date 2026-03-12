@@ -1219,20 +1219,27 @@ Napi::Value
 Context2d::CreateImageData(const Napi::CallbackInfo& info){
   Canvas *canvas = this->canvas();
   Napi::Number zero = Napi::Number::New(env, 0);
-  int32_t width, height;
+  uint32_t width, height;
 
   if (info[0].IsObject()) {
     Napi::Object obj = info[0].As<Napi::Object>();
-    width = obj.Get("width").UnwrapOr(zero).ToNumber().UnwrapOr(zero).Int32Value();
-    height = obj.Get("height").UnwrapOr(zero).ToNumber().UnwrapOr(zero).Int32Value();
+    width = obj.Get("width").UnwrapOr(zero).ToNumber().UnwrapOr(zero).Uint32Value();
+    height = obj.Get("height").UnwrapOr(zero).ToNumber().UnwrapOr(zero).Uint32Value();
   } else {
-    width = info[0].ToNumber().UnwrapOr(zero).Int32Value();
-    height = info[1].ToNumber().UnwrapOr(zero).Int32Value();
+    width = info[0].ToNumber().UnwrapOr(zero).Uint32Value();
+    height = info[1].ToNumber().UnwrapOr(zero).Uint32Value();
   }
 
   int stride = canvas->stride();
   double Bpp = static_cast<double>(stride) / canvas->getWidth();
-  int nBytes = static_cast<int>(Bpp * width * height + .5);
+  int64_t nBytes = Bpp * width * height + .5;
+
+  if (nBytes > INT32_MAX) {
+    // INT32_MAX is what Firefox limits the buffer to
+    std::string msg = "buffer exceeds " + std::to_string(INT32_MAX) + " bytes";
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
 
   Napi::ArrayBuffer ab = Napi::ArrayBuffer::New(env, nBytes);
   Napi::Value arr;
