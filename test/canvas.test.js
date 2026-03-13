@@ -16,7 +16,8 @@ const {
   loadImage,
   registerFont,
   Canvas,
-  deregisterAllFonts
+  deregisterAllFonts,
+  ImageData
 } = require('../')
 
 function assertApprox(actual, expected, tol) {
@@ -996,6 +997,12 @@ describe('Canvas', function () {
       const data = ctx.createImageData(-0xfffffffe, -0xfffffffe)
       assert.equal(data.width, 2)
       assert.equal(data.height, 2)
+    })
+  })
+
+  describe('ImageData', function () {
+    it('checks for overflow', function () {
+      assert.throws(() => new ImageData(0x80000001, 0x80000001))
     })
   })
 

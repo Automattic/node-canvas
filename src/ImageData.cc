@@ -30,7 +30,7 @@ ImageData::ImageData(const Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageDat
   Napi::TypedArray dataArray;
   uint32_t width;
   uint32_t height;
-  int length;
+  uint32_t length;
 
   if (info[0].IsNumber() && info[1].IsNumber()) {
     width = info[0].As<Napi::Number>().Uint32Value();
@@ -41,6 +41,12 @@ ImageData::ImageData(const Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageDat
     height = info[1].As<Napi::Number>().Uint32Value();
     if (height == 0) {
       Napi::RangeError::New(env, "The source height is zero.").ThrowAsJavaScriptException();
+      return;
+    }
+    if ((uint64_t)width * height > INT32_MAX / 4) {
+      // INT32_MAX is what Firefox limits ImageData to
+      std::string msg = "buffer exceeds " + std::to_string(INT32_MAX) + " bytes";
+      Napi::Error::New(env, msg).ThrowAsJavaScriptException();
       return;
     }
     length = width * height * 4; // ImageData(w, h) constructor assumes 4 BPP; documented.
