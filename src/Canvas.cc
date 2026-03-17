@@ -93,10 +93,10 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
   format = CAIRO_FORMAT_ARGB32;
 
   if (info[0].IsNumber()) {
-    int width = info[0].As<Napi::Number>().Int32Value();
-    int height = 0;
+    uint32_t width = info[0].As<Napi::Number>().Uint32Value();
+    uint32_t height = 0;
 
-    if (info[1].IsNumber()) height = info[1].As<Napi::Number>().Int32Value();
+    if (info[1].IsNumber()) height = info[1].As<Napi::Number>().Uint32Value();
 
     if (width > CAIRO_MAX_SIZE) {
       std::string msg = "Canvas width cannot exceed " + std::to_string(CAIRO_MAX_SIZE);
@@ -181,7 +181,7 @@ Canvas::GetWidth(const Napi::CallbackInfo& info) {
 void
 Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    int width = value.As<Napi::Number>().Uint32Value();
+    uint32_t width = value.As<Napi::Number>().Uint32Value();
     if (width <= CAIRO_MAX_SIZE) {
       resurface(info.This().As<Napi::Object>(), width, this->height);
     }
@@ -204,7 +204,7 @@ Canvas::GetHeight(const Napi::CallbackInfo& info) {
 void
 Canvas::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
-    int height = value.As<Napi::Number>().Uint32Value();
+    uint32_t height = value.As<Napi::Number>().Uint32Value();
     if (height <= CAIRO_MAX_SIZE) {
       resurface(info.This().As<Napi::Object>(), this->width, height);
     }
@@ -643,7 +643,7 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
-  return (std::min)(canvas->getWidth() * canvas->getHeight() * 4, static_cast<int>(PAGE_SIZE));
+  return (std::min)((uint32_t)canvas->getWidth() * canvas->getHeight() * 4, PAGE_SIZE);
 }
 
 void
@@ -902,7 +902,7 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
 // This returns an approximate value only, suitable for
 // Napi::MemoryManagement:: AdjustExternalMemory.
 // The formats that don't map to intrinsic types (RGB30, A1) round up.
-int32_t
+uint8_t
 Canvas::approxBytesPerPixel() {
   switch (format) {
   case CAIRO_FORMAT_ARGB32:
@@ -940,7 +940,7 @@ Canvas::getFormat() {
  */
 
 void
-Canvas::resurface(Napi::Object This, int width, int height) {
+Canvas::resurface(Napi::Object This, uint16_t width, uint16_t height) {
   Napi::HandleScope scope(env);
   Napi::Value context;
 

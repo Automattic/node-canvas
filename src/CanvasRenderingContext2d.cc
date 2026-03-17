@@ -887,8 +887,8 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   // clamp width at canvas size
   // Need to wrap std::min calls using parens to prevent macro expansion on
   // windows. See http://stackoverflow.com/questions/5004858/stdmin-gives-error
-  cols = (std::min)(sw, canvas()->getWidth() - dx);
-  rows = (std::min)(sh, canvas()->getHeight() - dy);
+  cols = (std::min)(sw, (int)canvas()->getWidth() - dx);
+  rows = (std::min)(sh, (int)canvas()->getHeight() - dy);
 
   if (cols <= 0 || rows <= 0) return;
 

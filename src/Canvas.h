@@ -100,13 +100,13 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
       return static_cast<std::size_t>(height) * stride();
     }
 
-    DLL_PUBLIC inline int getWidth() { return width; }
-    DLL_PUBLIC inline int getHeight() { return height; }
+    DLL_PUBLIC inline uint16_t getWidth() { return width; }
+    DLL_PUBLIC inline uint16_t getHeight() { return height; }
 
-    int32_t approxBytesPerPixel();
+    uint8_t approxBytesPerPixel();
     void setFormat(cairo_format_t format);
     cairo_format_t getFormat();
-    void resurface(Napi::Object This, int width, int height);
+    void resurface(Napi::Object This, uint16_t width, uint16_t height);
     cairo_surface_t *ensureSurface();
     void destroySurface();
 
@@ -121,9 +121,8 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     Napi::FunctionReference ctor;
     static std::vector<FontFace> font_face_list;
 
-    // TODO: these shouldn't be signed!
-    int width;
-    int height;
+    uint16_t width;
+    uint16_t height;
     canvas_type_t type;
     cairo_format_t format;
 };

@@ -19,7 +19,7 @@ class Canvas;
 #include <vector>
 
 #ifndef PAGE_SIZE
-  #define PAGE_SIZE 4096
+  #define PAGE_SIZE 4096u
 #endif
 
 /*
