@@ -32,6 +32,8 @@
   "with at least a family (string) and optionally weight (string/number) " \
   "and style (string)."
 
+#define CAIRO_MAX_SIZE 32767
+
 using namespace std;
 
 std::vector<FontFace> Canvas::font_face_list;
@@ -86,13 +88,30 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
 
   _surface = nullptr;
   _closure = nullptr;
+  width = 0;
+  height = 0;
   format = CAIRO_FORMAT_ARGB32;
 
   if (info[0].IsNumber()) {
-    width = info[0].As<Napi::Number>().Int32Value();
-    height = 0;
+    int width = info[0].As<Napi::Number>().Int32Value();
+    int height = 0;
 
     if (info[1].IsNumber()) height = info[1].As<Napi::Number>().Int32Value();
+
+    if (width > CAIRO_MAX_SIZE) {
+      std::string msg = "Canvas width cannot exceed " + std::to_string(CAIRO_MAX_SIZE);
+      Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+      return;
+    }
+
+    if (height > CAIRO_MAX_SIZE) {
+      std::string msg = "Canvas height cannot exceed " + std::to_string(CAIRO_MAX_SIZE);
+      Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+      return;
+    }
+
+    this->width = width;
+    this->height = height;
 
     if (info[2].IsString()) {
       std::string str = info[2].As<Napi::String>();
@@ -107,8 +126,6 @@ Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info),
       type = CANVAS_TYPE_IMAGE;
     }
   } else {
-    width = 0;
-    height = 0;
     type = CANVAS_TYPE_IMAGE;
   }
 
@@ -165,7 +182,9 @@ void
 Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
     int width = value.As<Napi::Number>().Uint32Value();
-    resurface(info.This().As<Napi::Object>(), width, this->height);
+    if (width <= CAIRO_MAX_SIZE) {
+      resurface(info.This().As<Napi::Object>(), width, this->height);
+    }
   }
 }
 
@@ -186,7 +205,9 @@ void
 Canvas::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
   if (value.IsNumber()) {
     int height = value.As<Napi::Number>().Uint32Value();
-    resurface(info.This().As<Napi::Object>(), this->width, height);
+    if (height <= CAIRO_MAX_SIZE) {
+      resurface(info.This().As<Napi::Object>(), this->width, height);
+    }
   }
 }
 

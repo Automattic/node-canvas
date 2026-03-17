@@ -428,6 +428,11 @@ describe('Canvas', function () {
     assert.equal(canvas.width, 50)
     assert.equal(canvas.height, 70)
 
+    canvas.width = 60_000
+    canvas.height = 60_000
+    assert.equal(canvas.width, 50)
+    assert.equal(canvas.height, 70)
+
     context.font = '20px arial'
     assert.equal(context.font, '20px arial')
     canvas.width |= 0
