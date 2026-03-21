@@ -2147,6 +2147,25 @@ describe('Canvas', function () {
       assert.equal(pixel.data[0], 65535)
       assert.equal(pixel.data[1], 65500)
     })
+
+    it('safely handles integer overflow in sx + sw and sy + sh', function () {
+      const canvas = createCanvas(256, 256)
+      const ctx = canvas.getContext('2d', {pixelFormat: 'A8'})
+      const imageData = ctx.getImageData(0, 0, 2, 2); // black
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, 256, 256)
+      // Assuming sx, sw, and dx are int32_ts:
+      // sx + sw = 0x7fffffff + 1 = INT32_MIN (overflow), bypassing the right-
+      // edge clamp. sx then gets added to dx: -0x7fffff00 + 0x7fffffff = 255,
+      // which is inside the canvas, so the canvas-side clamp also passes.
+      // Without the fix, src += sx bytes reads 2GB past the imageData buffer.
+      ctx.putImageData(imageData, -0x7fffff00, 0, 0x7fffffff, 0, 1, 1)
+      // Same overflow with sy, sh, dy
+      ctx.putImageData(imageData, 0, -0x7fffff00, 0, 0x7fffffff, 1, 1)
+      const result = ctx.getImageData(0, 0, 256, 256)
+      assert.equal(result.data[255], 255) // not black or junk data
+      assert.equal(result.data[255 * 256], 255) // not black or junk data
+    })
   })
 
   it('Canvas#createPNGStream()', function (done) {

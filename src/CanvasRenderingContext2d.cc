@@ -842,7 +842,7 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   int Bpp = dstStride / canvas()->getWidth();
   int srcStride = Bpp * imageData->width();
 
-  int sx = 0
+  int64_t sx = 0
     , sy = 0
     , sw = 0
     , sh = 0

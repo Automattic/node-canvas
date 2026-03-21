@@ -12,15 +12,15 @@ class ImageData : public Napi::ObjectWrap<ImageData> {
     Napi::Value GetWidth(const Napi::CallbackInfo& info);
     Napi::Value GetHeight(const Napi::CallbackInfo& info);
 
-    inline int width() { return _width; }
-    inline int height() { return _height; }
+    inline uint32_t width() { return _width; }
+    inline uint32_t height() { return _height; }
     inline uint8_t *data() { return _data; }
 
     Napi::Env env;
 
   private:
-    int _width;
-    int _height;
+    uint32_t _width;
+    uint32_t _height;
     uint8_t *_data;
 
 };
