@@ -3,12 +3,7 @@
     {
       'target_name': 'canvas',
       'sources': [
-        'src/backend/Backend.cc',
-        'src/backend/ImageBackend.cc',
-        'src/backend/PdfBackend.cc',
-        'src/backend/SvgBackend.cc',
         'src/bmp/BMPParser.cc',
-        'src/Backends.cc',
         'src/Canvas.cc',
         'src/CanvasGradient.cc',
         'src/CanvasPattern.cc',
