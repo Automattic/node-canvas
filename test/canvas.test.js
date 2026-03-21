@@ -1769,6 +1769,27 @@ describe('Canvas', function () {
       })
     })
 
+    it('safely rejects integer overflows', function () {
+      const canvas = createCanvas(256, 1)
+      const ctx = canvas.getContext('2d', {pixelFormat: 'A8'})
+      // Integer overflow: 256 * 16777217 * 1(A8) = 0x100000100 > INT32_MAX
+      assert.throws(() => ctx.getImageData(0, 0, 256, 16777217))
+      // abs(INT32_MIN) * 1 * 1(A8) = 0x80000000 > INT32_MAX
+      assert.throws(() => ctx.getImageData(0, 0, -0x80000000, 1))
+      // If sx + sw are ints, then when setting the copy width like this:
+      //
+      //    int cw = sw;
+      //    if (sx + sw > width) cw = width - sx;
+      //
+      //  cw stays as sw, meaning we get 100 bytes of junk/sensitive data
+      const dx = ctx.getImageData(0x7fffffff, 0, 100, 1) // hopefully SIGSEGVs
+      assert.equal(dx.data.length, 100)
+      for (let i = 0; i < dx.data.length; i++) assert.equal(dx.data[i], 0)
+      const dy = ctx.getImageData(0, 0x7fffffff, 1, 100) // hopefully SIGSEGVs
+      assert.equal(dy.data.length, 100)
+      for (let i = 0; i < dy.data.length; i++) assert.equal(dy.data[i], 0)
+    });
+
     describe('does not throw if rectangle is outside the canvas (#2024)', function () {
       it('on the left', function () {
         const ctx = createTestCanvas(true, { pixelFormat: 'A8' })

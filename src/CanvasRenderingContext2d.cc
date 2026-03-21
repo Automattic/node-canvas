@@ -1021,10 +1021,12 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   Napi::Number zero = Napi::Number::New(env, 0);
   Canvas *canvas = this->canvas();
 
-  int sx = info[0].ToNumber().UnwrapOr(zero).Int32Value();
-  int sy = info[1].ToNumber().UnwrapOr(zero).Int32Value();
-  int sw = info[2].ToNumber().UnwrapOr(zero).Int32Value();
-  int sh = info[3].ToNumber().UnwrapOr(zero).Int32Value();
+  // 64 bit integers for when (1) both sx, sw or sy, sh are negative (2) sx and
+  // sy are decreased (3) signs are flipped
+  int64_t sx = info[0].ToNumber().UnwrapOr(zero).Int32Value();
+  int64_t sy = info[1].ToNumber().UnwrapOr(zero).Int32Value();
+  int64_t sw = info[2].ToNumber().UnwrapOr(zero).Int32Value();
+  int64_t sh = info[3].ToNumber().UnwrapOr(zero).Int32Value();
 
   if (!sw) {
     Napi::Error::New(env, "IndexSizeError: The source width is 0.").ThrowAsJavaScriptException();
@@ -1059,11 +1061,11 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   }
 
   // Width and height to actually copy
-  int cw = sw;
-  int ch = sh;
+  int64_t cw = sw;
+  int64_t ch = sh;
   // Offsets in the destination image
-  int ox = 0;
-  int oy = 0;
+  int64_t ox = 0;
+  int64_t oy = 0;
 
   // Clamp the copy width and height if the copy would go outside the image
   if (sx + sw > width) cw = width - sx;
@@ -1083,8 +1085,16 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
 
   int srcStride = canvas->stride();
   int bpp = srcStride / width;
-  int size = sw * sh * bpp;
-  int dstStride = sw * bpp;
+  // Note: barely fits: INT32_MAX * INT32_MAX * 4. Bpp can't be bigger than 4!
+  uint64_t size = (uint64_t)sw * sh * bpp;
+  int64_t dstStride = sw * bpp;
+
+  if (size > INT32_MAX) {
+    // INT32_MAX is what Firefox limits the buffer to
+    std::string msg = "buffer exceeds " + std::to_string(INT32_MAX) + " bytes";
+    Napi::Error::New(env, msg).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
 
   uint8_t *src = canvas->data();
 
