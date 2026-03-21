@@ -13,6 +13,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix dangling env pointer in image MIME data cleanup (#2550)
 * Fix `ctx.direction` not affected by `ctx.save` and `ctx.restore`
 * Preserve rest of PDF pages when changing width and height (#2538)
+* Several security fixes for untrusted inputs to getImageData and putImageData. Thanks to Ethan Kim for the report.
 
 3.2.1
 ==================
