@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+3.2.2
+==================
+### Fixed
 * Fix dangling env pointer in image MIME data cleanup (#2550)
 * Fix `ctx.direction` not affected by `ctx.save` and `ctx.restore`
 * Preserve rest of PDF pages when changing width and height (#2538)
