@@ -643,7 +643,7 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
-  return (std::min)((uint32_t)canvas->getWidth() * canvas->getHeight() * 4, PAGE_SIZE);
+  return (std::min)((uint32_t)canvas->getWidth() * canvas->getHeight() * 4, (uint32_t)PAGE_SIZE);
 }
 
 void
