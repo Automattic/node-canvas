@@ -256,9 +256,8 @@ export class CanvasRenderingContext2D {
 	/**
 	 * Defaults to 'path'. The effect depends on the canvas type:
 	 *
-	 * * **Standard (image)** `'glyph'` and `'path'` both result in rasterized
-	 *   text. Glyph mode is faster than path, but may result in lower-quality
-	 *   text, especially when rotated or translated.
+	 * * **Standard (image)** `glyph` and `path` both result in rasterized text.
+	 *   Glyph mode is faster than `path`.
 	 *
 	 * * **PDF** `'glyph'` will embed text instead of paths into the PDF. This
 	 *   is faster to encode, faster to open with PDF viewers, yields a smaller
@@ -273,8 +272,11 @@ export class CanvasRenderingContext2D {
 	 *   creates a `<path>` element for each text string. glyph mode is faster
 	 *   and yields a smaller file size.
 	 *
-	 * In glyph mode, `ctx.strokeText()` and `ctx.fillText()` behave the same
-	 * (aside from using the stroke and fill style, respectively).
+	 * Currently, `path` mode is the only way to stroke text (although this is
+	 * incorrect). In `glyph` mode, `ctx.strokeText()` and `ctx.fillText()` behave
+	 * the same (aside from using the stroke and fill style, respectively).
+	 *
+	 * Emojis are not supported in `path` mode.
 	 */
 	textDrawingMode: 'path' | 'glyph'
 	/**

@@ -22,7 +22,7 @@ expectType<number>(id.width)
 ctx.currentTransform = ctx.getTransform()
 
 ctx.quality = 'best'
-ctx.textDrawingMode = 'glyph'
+ctx.textDrawingMode = 'path'
 
 const grad = ctx.createLinearGradient(0, 1, 2, 3)
 expectType<Canvas.CanvasGradient>(grad)

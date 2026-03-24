@@ -33,7 +33,7 @@ struct canvas_state_t {
   int shadowBlur = 0;
   text_align_t textAlignment = TEXT_ALIGNMENT_START;
   text_baseline_t textBaseline = TEXT_BASELINE_ALPHABETIC;
-  canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
+  canvas_draw_mode_t textDrawingMode = TEXT_DRAW_GLYPHS;
   bool imageSmoothingEnabled = true;
   std::string direction = "ltr";
   std::string lang = "";
