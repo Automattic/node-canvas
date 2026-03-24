@@ -20,7 +20,7 @@ const {
   FontFace
 } = require('../')
 
-fonts.add(new FontFace('Arimo', './test/fixtures/Arimo-Regular.ttf'));
+fonts.add(new FontFace('Arimo', path.join(__dirname, 'fixtures/Arimo-Regular.ttf')));
 
 function assertApprox(actual, expected, tol) {
   assert(Math.abs(expected - actual) <= tol,
@@ -59,13 +59,13 @@ describe('Canvas', function () {
 
   it('canvas.fonts', function () {
     // Minimal test to make sure nothing is thrown
-    const regular = new FontFace('Pfennig', './examples/pfennigFont/Pfennig.ttf')
+    const regular = new FontFace('Pfennig', path.join(__dirname, '../examples/pfennigFont/Pfennig.ttf'))
     fonts.add(regular);
-    const bold = new FontFace('Pfennig', './examples/pfennigFont/PfennigBold.ttf', {weight: 'bold'});
+    const bold = new FontFace('Pfennig', path.join(__dirname, '../examples/pfennigFont/PfennigBold.ttf'), {weight: 'bold'});
     fonts.add(bold);
 
     // Test to multi byte file path support
-    const multi = new FontFace('Pfennig', './examples/pfennigFont/pfennigMultiByte🚀.ttf');
+    const multi = new FontFace('Pfennig', path.join(__dirname, '../examples/pfennigFont/pfennigMultiByte🚀.ttf'));
     fonts.add(multi);
 
     fonts.delete(multi);
@@ -1051,7 +1051,7 @@ describe('Canvas', function () {
       const canvas = createCanvas(0, 0)
       const ctx = canvas.getContext('2d')
 
-      ctx.font = '10px helvetica';
+      ctx.font = '10px Arimo';
       // positive actualBoundingBoxLeft indicates a distance going left from the
       // given alignment point.
 

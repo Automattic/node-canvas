@@ -1,9 +1,10 @@
+// Copyright (c) 2025 Caleb Hearon <caleb@chearon.net>
+
 #pragma once
 
 #include "FontManager.h"
-#include <optional>
 
-class FontManagerMacos : public FontManager {
+class FontManagerLinux : public FontManager {
   public:
     void readSystemFonts(std::vector<FontDescriptor>& properties) override;
     void populateFallbackFonts(std::vector<std::string>& families, script_t script) override;

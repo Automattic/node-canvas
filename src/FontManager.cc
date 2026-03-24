@@ -29,7 +29,6 @@ compareFamilyNames(const char* str1, size_t len1, const char* str2, size_t len2)
   return true;
 }
 
-
 void
 FontManager::narrowByStretch(
   std::vector<FontDescriptor*>& fonts,
@@ -230,7 +229,7 @@ FontManager::query(
   for (const std::string& family : properties.families) {
     auto genericFamilies = getGenericList(family);
     if (genericFamilies) {
-      for (const std::string& family : **genericFamilies) {
+      for (const std::string& family : *genericFamilies) {
         for (FontDescriptor& desc : system_fonts) {
           maybeAdd(family, &desc);
         }

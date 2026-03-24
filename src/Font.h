@@ -32,7 +32,7 @@ struct FontDescriptor : FontBase {
   // Collection (ttc). macOS CTFontDescriptors don't tell you which index
   // they represent in a ttc, so when we begin to draw with a ttc match, we
   // select which index to draw with based on which one has this name.
-  std::unique_ptr<char[]> postscript;
+  std::unique_ptr<char[]> postscript = nullptr;
   std::unique_ptr<char[]> url = nullptr;
   std::unique_ptr<uint8_t[]> data = nullptr;
   size_t data_len = 0;

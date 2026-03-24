@@ -434,7 +434,9 @@ layoutText(
         nullptr
       );
       size_t count = hb_face_count(hbblob);
-      if (count > 1) {
+      // If there's a postscript name, the backend (macOS) requires us to
+      // initialize the TTC index
+      if (count > 1 && matches[matchIndex]->postscript) {
         for (size_t index = 0; index < count; index++) {
           char buf[128];
           unsigned int len = sizeof(buf);

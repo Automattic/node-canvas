@@ -8,7 +8,6 @@
 #include <vector>
 #include <array>
 #include <cstring>
-#include <iostream>
 #include <cmath>
 
 #include "FontManagerMacos.h"
@@ -64,7 +63,7 @@ convertWeight(float aCTWeight) {
   return round(prev->second * (1.0 - t) + m->second * t);
 }
 
-void
+static void
 create_font_descriptor(
   std::vector<FontDescriptor>& results,
   CTFontDescriptorRef descriptor
@@ -654,18 +653,18 @@ const std::vector<std::string> monospace_fonts = {"Menlo"};
 const std::vector<std::string> cursive_fonts = {"Apple Chancery"};
 const std::vector<std::string> fantasy_fonts = {"Papyrus"};
 
-std::optional<const std::vector<std::string>*>
+std::optional<const std::vector<std::string>>
 FontManagerMacos::getGenericList(const std::string& generic) {
   if (generic == "serif") {
-    return &serif_fonts;
+    return serif_fonts;
   } else if (generic == "sans-serif") {
-    return &sans_serif_fonts;
+    return sans_serif_fonts;
   } else if (generic == "monospace") {
-    return &monospace_fonts;
+    return monospace_fonts;
   } else if (generic == "cursive") {
-    return &cursive_fonts;
+    return cursive_fonts;
   } else if (generic == "fantasy") {
-    return &fantasy_fonts;
+    return fantasy_fonts;
   } else {
     return std::nullopt;
   }

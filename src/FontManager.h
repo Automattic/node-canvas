@@ -19,7 +19,7 @@ class FontManager {
       script_t script
     ) = 0;
 
-    virtual std::optional<const std::vector<std::string>*> getGenericList(
+    virtual std::optional<const std::vector<std::string>> getGenericList(
       const std::string& generic
     ) = 0;
 

@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
         .use_png = true,
         .use_glib = false,
         .use_dwrite = false,
-        .use_fontconfig = false,
+        .use_fontconfig = target.result.os.tag == .linux,
         .use_freetype = true,
         .use_quartz = false,
         .target = target,
@@ -54,6 +54,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .root_source_file = b.path("src/unicode.zig"),
+            .link_libc = true,
         })
     });
 
@@ -88,7 +89,11 @@ pub fn build(b: *std.Build) void {
             "src/init.cc",
             "src/itemize.cc",
             "src/FontManager.cc",
-            "src/FontManagerMacos.cc",
+            switch (target.result.os.tag) {
+              .macos => "src/FontManagerMacos.cc",
+              .linux => "src/FontManagerLinux.cc",
+              else => @panic("unrecognized OS")
+            },
             "src/FontFace.cc",
             "src/FontFaceSet.cc",
             "src/FontParser.cc",
@@ -97,6 +102,11 @@ pub fn build(b: *std.Build) void {
         .flags = &.{
             "-DNAPI_DISABLE_CPP_EXCEPTIONS",
             "-DNODE_ADDON_API_ENABLE_MAYBE",
+            switch (target.result.os.tag) {
+              .macos => "-DCANVAS_MACOS",
+              .linux => "-DCANVAS_LINUX",
+              else => @panic("unrecognized OS")
+            },
             "-std=c++20",
             if (target.result.os.tag == .windows) "-DCAIRO_WIN32_STATIC_BUILD" else "",
         }
