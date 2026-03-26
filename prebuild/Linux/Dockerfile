@@ -1,5 +1,10 @@
 FROM debian:10
 RUN apt-get update && apt-get -y install curl git cmake make gcc g++ nasm wget gperf bzip2 meson uuid-dev perl libxml-parser-perl
+# Ensure locally-built libs in /usr/local/lib are preferred over system libs.
+# On arm64, /etc/ld.so.conf.d/aarch64-linux-gnu.conf sorts before libc.conf,
+# causing /lib/aarch64-linux-gnu to take precedence over /usr/local/lib.
+# This breaks bundle.sh which filters out /lib/* paths.
+RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/00-local.conf
 
 RUN bash -c 'cd; curl -LO https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz; tar -xvf pkg-config-0.29.2.tar.gz; cd pkg-config-0.29.2; ./configure --with-internal-glib; make -j8; make install'
 RUN bash -c 'cd; curl -O https://zlib.net/fossils/zlib-1.2.11.tar.gz; tar -xvf zlib-1.2.11.tar.gz; cd zlib-1.2.11; ./configure; make -j8; make install'
