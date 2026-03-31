@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+3.2.3
+==================
+### Fixed
 * Fix building with gcc (#2559)
 
 3.2.2
