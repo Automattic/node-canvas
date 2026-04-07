@@ -64,6 +64,7 @@ Pattern::Pattern(const Napi::CallbackInfo& info) : ObjectWrap<Pattern>(info), en
     return;
   }
   _pattern = cairo_pattern_create_for_surface(surface);
+  _source = Napi::Persistent(obj);
 
   if (info[1].IsString()) {
     if ("no-repeat" == info[1].As<Napi::String>().Utf8Value()) {
@@ -126,4 +127,8 @@ repeat_type_t Pattern::get_repeat_type_for_cairo_pattern(cairo_pattern_t *patter
 
 Pattern::~Pattern() {
   if (_pattern) cairo_pattern_destroy(_pattern);
+}
+
+void Pattern::Finalize(Napi::Env env) {
+  _source.Reset();
 }

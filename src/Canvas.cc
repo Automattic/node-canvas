@@ -141,6 +141,12 @@ Canvas::~Canvas() {
   destroySurface();
 }
 
+void Canvas::Finalize(Napi::Env env) {
+  if (_surface && type == CANVAS_TYPE_IMAGE) {
+    Napi::MemoryManagement::AdjustExternalMemory(env, -(int64_t)approxBytesPerPixel() * width * height);
+  }
+}
+
 /*
  * Get type string.
  */
@@ -993,9 +999,6 @@ Canvas::destroySurface() {
   if (_surface) {
     // flush any operations that may use the closure that is freed below
     cairo_surface_finish(_surface);
-    if (type == CANVAS_TYPE_IMAGE) {
-      Napi::MemoryManagement::AdjustExternalMemory(env, -(int64_t)approxBytesPerPixel() * width * height);
-    }
     cairo_surface_destroy(_surface);
     _surface = nullptr;
   }
