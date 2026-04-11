@@ -956,7 +956,7 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
   jpeg_mem_src(&args, buf, len);
 
-  jpeg_read_header(&args, 1);
+  jpeg_read_header(&args, (boolean)1);
   jpeg_start_decompress(&args);
   width = naturalWidth = args.output_width;
   height = naturalHeight = args.output_height;
@@ -1080,7 +1080,7 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
 
   jpeg_mem_src(&args, buf, len);
 
-  jpeg_read_header(&args, 1);
+  jpeg_read_header(&args, (boolean)1);
   jpeg_start_decompress(&args);
   width = naturalWidth = args.output_width;
   height = naturalHeight = args.output_height;
@@ -1129,7 +1129,7 @@ Image::loadJPEG(FILE *stream) {
 
     jpeg_stdio_src(&args, stream);
 
-    jpeg_read_header(&args, 1);
+    jpeg_read_header(&args, (boolean)1);
     jpeg_start_decompress(&args);
 
     if (args.output_width > canvas_max_side || args.output_height > canvas_max_side) {
