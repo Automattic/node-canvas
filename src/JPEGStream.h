@@ -36,7 +36,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
-  return true;
+  return TRUE;
 }
 
 void
@@ -93,7 +93,7 @@ void encode_jpeg(jpeg_compress_struct cinfo, cairo_surface_t *surface, int quali
   jpeg_set_defaults(&cinfo);
   if (progressive)
     jpeg_simple_progression(&cinfo);
-  jpeg_set_quality(&cinfo, quality, (quality < 25) ? 0 : 1);
+  jpeg_set_quality(&cinfo, quality, quality < 25 ? FALSE : TRUE);
   cinfo.comp_info[0].h_samp_factor = chromaHSampFactor;
   cinfo.comp_info[0].v_samp_factor = chromaVSampFactor;
 

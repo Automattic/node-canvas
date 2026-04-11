@@ -14,6 +14,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Load images from Node.js object URLs (#2525)
 * `isPointInPath()` now ignores the current transform and no longer counts points that are only inside the stroke (#2634)
 * Fix off-by-one RGB values from `getImageData` on semi-transparent pixels (#1933)
+* Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
 
 3.2.3
 ==================
