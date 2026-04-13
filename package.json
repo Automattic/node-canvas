@@ -27,7 +27,7 @@
     "prebenchmark": "node-gyp build",
     "benchmark": "node benchmarks/run.js",
     "lint": "standard examples/*.js test/server.js test/public/*.js benchmarks/run.js lib/context2d.js util/has_lib.js browser.js index.js",
-    "test": "mocha test/*.test.js",
+    "test": "mocha --node-option expose-gc test/*.test.js",
     "pretest-server": "node-gyp build",
     "test-server": "node test/server.js",
     "generate-wpt": "node ./test/wpt/generate.js",
@@ -45,7 +45,7 @@
     "util/"
   ],
   "dependencies": {
-    "node-addon-api": "^7.0.0",
+    "node-addon-api": "^8.7.0",
     "prebuild-install": "^7.1.3"
   },
   "devDependencies": {

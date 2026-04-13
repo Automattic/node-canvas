@@ -244,6 +244,9 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
 Context2d::~Context2d() {
   if (_layout) g_object_unref(_layout);
   if (_context) cairo_destroy(_context);
+}
+
+void Context2d::Finalize(Napi::Env env) {
   _resetPersistentHandles();
 }
 
