@@ -41,7 +41,7 @@ EncodingWorker::OnWorkComplete(Napi::Env env, napi_status status) {
   Napi::HandleScope scope(env);
 
   if (closure->status) {
-    closure->cb.Call({ closure->canvas->CairoError(closure->status).Value() });
+    closure->cb.Call({ closure->canvas->CairoError(env, closure->status).Value() });
   } else {
     Napi::Object buf = Napi::Buffer<uint8_t>::Copy(env, &closure->vec[0], closure->vec.size());
     closure->cb.Call({ env.Null(), buf });

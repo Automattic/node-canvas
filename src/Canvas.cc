@@ -83,6 +83,7 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
  */
 
 Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info), env(info.Env()) {
+  Napi::Env env = info.Env();
   InstanceData* data = env.GetInstanceData<InstanceData>();
   ctor = Napi::Persistent(data->CanvasCtor.Value());
 
@@ -149,11 +150,11 @@ Napi::Value
 Canvas::GetType(const Napi::CallbackInfo& info) {
   switch (type) {
     case CANVAS_TYPE_PDF:
-      return Napi::String::New(env, "pdf");
+      return Napi::String::New(info.Env(), "pdf");
     case CANVAS_TYPE_SVG:
-      return Napi::String::New(env, "svg");
+      return Napi::String::New(info.Env(), "svg");
     default:
-      return Napi::String::New(env, "image");
+      return Napi::String::New(info.Env(), "image");
   }
 }
 
@@ -162,7 +163,7 @@ Canvas::GetType(const Napi::CallbackInfo& info) {
  */
 Napi::Value
 Canvas::GetStride(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, cairo_image_surface_get_stride(ensureSurface()));
+  return Napi::Number::New(info.Env(), cairo_image_surface_get_stride(ensureSurface()));
 }
 
 /*
@@ -171,7 +172,7 @@ Canvas::GetStride(const Napi::CallbackInfo& info) {
 
 Napi::Value
 Canvas::GetWidth(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, getWidth());
+  return Napi::Number::New(info.Env(), getWidth());
 }
 
 /*
@@ -194,7 +195,7 @@ Canvas::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
 
 Napi::Value
 Canvas::GetHeight(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, getHeight());
+  return Napi::Number::New(info.Env(), getHeight());
 }
 
 /*
@@ -374,6 +375,7 @@ static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
 
 Napi::Value
 Canvas::ToBuffer(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   cairo_status_t status;
 
   // Vector canvases, sync only
@@ -432,7 +434,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
         }
       }
     } catch (cairo_status_t ex) {
-      CairoError(ex).ThrowAsJavaScriptException();
+      CairoError(env, ex).ThrowAsJavaScriptException();
     } catch (const char* ex) {
       Napi::Error::New(env, ex).ThrowAsJavaScriptException();
     }
@@ -449,7 +451,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
       closure = new PngClosure(this);
       parsePNGArgs(info[2], *closure);
     } catch (cairo_status_t ex) {
-      CairoError(ex).ThrowAsJavaScriptException();
+      CairoError(env, ex).ThrowAsJavaScriptException();
       return env.Undefined();
     } catch (const char* ex) {
       Napi::Error::New(env, ex).ThrowAsJavaScriptException();
@@ -483,7 +485,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
         return Napi::Buffer<uint8_t>::Copy(env, &closure.vec[0], closure.vec.size());
       }
     } catch (cairo_status_t ex) {
-      CairoError(ex).ThrowAsJavaScriptException();
+      CairoError(env, ex).ThrowAsJavaScriptException();
       return env.Undefined();
     }
     return env.Undefined();
@@ -516,7 +518,7 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
 static cairo_status_t
 streamPNG(void *c, const uint8_t *data, unsigned len) {
   PngClosure* closure = (PngClosure*) c;
-  Napi::Env env = closure->canvas->env;
+  Napi::Env env = closure->cb.Env();
   Napi::HandleScope scope(env);
   Napi::AsyncContext async(env, "canvas:StreamPNG");
   Napi::Value buf = Napi::Buffer<uint8_t>::Copy(env, data, len);
@@ -531,6 +533,7 @@ streamPNG(void *c, const uint8_t *data, unsigned len) {
 
 void
 Canvas::StreamPNGSync(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   if (!info[0].IsFunction()) {
     Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
     return;
@@ -545,7 +548,7 @@ Canvas::StreamPNGSync(const Napi::CallbackInfo& info) {
 
   if (!env.IsExceptionPending()) {
     if (status) {
-      closure.cb.Call(env.Global(), { CairoError(status).Value() });
+      closure.cb.Call(env.Global(), { CairoError(env, status).Value() });
     } else {
       closure.cb.Call(env.Global(), { env.Null(), env.Null(), Napi::Number::New(env, 0) });
     }
@@ -599,6 +602,7 @@ cairo_status_t canvas_write_to_pdf_stream(cairo_surface_t *surface, cairo_write_
 
 void
 Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   if (!info[0].IsFunction()) {
     Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
     return;
@@ -628,7 +632,7 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
 
   if (!env.IsExceptionPending()) {
     if (status) {
-      fn.Call(env.Global(), { CairoError(status).Value() });
+      fn.Call(env.Global(), { CairoError(env, status).Value() });
     } else {
       fn.Call(env.Global(), { env.Null(), env.Null(), Napi::Number::New(env, 0) });
     }
@@ -649,7 +653,7 @@ static uint32_t getSafeBufSize(Canvas* canvas) {
 void
 Canvas::StreamJPEGSync(const Napi::CallbackInfo& info) {
   if (!info[1].IsFunction()) {
-    Napi::TypeError::New(env, "callback function required").ThrowAsJavaScriptException();
+    Napi::TypeError::New(info.Env(), "callback function required").ThrowAsJavaScriptException();
     return;
   }
 
@@ -941,7 +945,7 @@ Canvas::getFormat() {
 
 void
 Canvas::resurface(Napi::Object This, uint16_t width, uint16_t height) {
-  Napi::HandleScope scope(env);
+  Napi::HandleScope scope(This.Env());
   Napi::Value context;
 
   if (type == CANVAS_TYPE_PDF) {
@@ -1021,6 +1025,6 @@ Canvas::createCairoContext() {
  */
 
 Napi::Error
-Canvas::CairoError(cairo_status_t status) {
+Canvas::CairoError(Napi::Env env, cairo_status_t status) {
   return Napi::Error::New(env, cairo_status_to_string(status));
 }

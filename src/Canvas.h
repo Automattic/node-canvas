@@ -80,7 +80,7 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     static void RegisterFont(const Napi::CallbackInfo& info);
     static void DeregisterAllFonts(const Napi::CallbackInfo& info);
     static Napi::Value ParseFont(const Napi::CallbackInfo& info);
-    Napi::Error CairoError(cairo_status_t status);
+    Napi::Error CairoError(Napi::Env env, cairo_status_t status);
     static void ToPngBufferAsync(Closure* closure);
     static void ToJpegBufferAsync(Closure* closure);
     static PangoWeight GetWeightFromCSSString(const char *weight);
@@ -110,7 +110,7 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     cairo_surface_t *ensureSurface();
     void destroySurface();
 
-    Napi::Env env;
+    Napi::BasicEnv env;
     static int fontSerial;
 
   private:
