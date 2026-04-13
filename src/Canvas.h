@@ -65,7 +65,6 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
   public:
     Canvas(const Napi::CallbackInfo& info);
     ~Canvas();
-    void Finalize(Napi::Env env);
     static void Initialize(Napi::Env& env, Napi::Object& target);
 
     Napi::Value ToBuffer(const Napi::CallbackInfo& info);
