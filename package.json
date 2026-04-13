@@ -45,7 +45,7 @@
     "util/"
   ],
   "dependencies": {
-    "node-addon-api": "^7.0.0",
+    "node-addon-api": "^8.7.0",
     "prebuild-install": "^7.1.3"
   },
   "devDependencies": {
