@@ -84,12 +84,19 @@ jobs:
         run: |
           set -ex
           rm -rf build/Release/.deps build/Release/obj.target
-          # dylibbundler copies all non-system .dylib deps next to canvas.node and
-          # rewrites install names to @loader_path/<basename> recursively.
+
+          # dylibbundler clobbers the binary when -x and -d resolve to the same
+          # directory. Stage the binary in a temp dir, let dylibbundler rewrite
+          # its install names relative to @loader_path, then move it back.
+          stage=$(mktemp -d)
+          cp build/Release/canvas.node "$stage/canvas.node"
+
           dylibbundler -od -b -of \
-            -x build/Release/canvas.node \
+            -x "$stage/canvas.node" \
             -d build/Release/ \
             -p '@loader_path/'
+
+          mv -f "$stage/canvas.node" build/Release/canvas.node
           ls -la build/Release
 
       - name: Pack tarball
