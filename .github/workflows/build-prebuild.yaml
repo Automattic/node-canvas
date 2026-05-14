@@ -39,7 +39,7 @@ jobs:
 
       - name: Compile native binding
         run: |
-          npm ci --ignore-scripts
+          npm ci --ignore-scripts --no-audit --no-fund
           npx node-gyp rebuild --release
 
       - name: Bundle shared libs next to canvas.node (rpath=$ORIGIN)
