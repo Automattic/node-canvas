@@ -13,7 +13,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: linux-x64
+          - os: macos-14
+            target: darwin-arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,13 +29,19 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install build deps
+      - name: Install build deps (Linux)
+        if: matrix.target == 'linux-x64'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential python3 \
             libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev \
-            patchelf pax-utils
+            patchelf
+
+      - name: Install build deps (macOS)
+        if: matrix.target == 'darwin-arm64'
+        run: |
+          brew install pkg-config cairo pango jpeg giflib librsvg dylibbundler
 
       - name: Sanity-check package.json version matches input
         run: |
@@ -42,25 +56,21 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npx node-gyp rebuild --release
 
-      - name: Bundle shared libs next to canvas.node (rpath=$ORIGIN)
+      - name: Bundle shared libs (Linux)
+        if: matrix.target == 'linux-x64'
         run: |
           set -ex
           rm -rf build/Release/.deps build/Release/obj.target
           patchelf --set-rpath '$ORIGIN' build/Release/canvas.node
-
-          # Resolve all dynamic deps of canvas.node and bundle them, except glibc/
-          # loader-supplied libs which must come from the host.
           copies=$(ldd build/Release/canvas.node \
             | awk '/=> \// {print $3}' \
             | grep -vE '/(ld-linux|libc|libm|libdl|libpthread|librt|libresolv|libnsl|libutil|libcrypt)[-.][^/]*\.so' \
             | sort -u)
-
           if [ -z "$copies" ]; then
-            echo "::error::ldd resolved no bundleable deps — something is wrong"
+            echo "::error::ldd resolved no bundleable deps"
             ldd build/Release/canvas.node
             exit 1
           fi
-
           for so in $copies; do
             base=$(basename "$so")
             cp -L "$so" "build/Release/$base"
@@ -69,15 +79,29 @@ jobs:
           find build/Release -type f -name '*.so*' -exec strip --strip-unneeded {} \;
           ls -la build/Release
 
+      - name: Bundle shared libs (macOS)
+        if: matrix.target == 'darwin-arm64'
+        run: |
+          set -ex
+          rm -rf build/Release/.deps build/Release/obj.target
+          # dylibbundler copies all non-system .dylib deps next to canvas.node and
+          # rewrites install names to @loader_path/<basename> recursively.
+          dylibbundler -od -b -of \
+            -x build/Release/canvas.node \
+            -d build/Release/ \
+            -p '@loader_path/'
+          ls -la build/Release
+
       - name: Pack tarball
         id: pack
         run: |
           tag="${{ inputs.release_tag }}"
-          filename="canvas-${tag}-napi-v7-linux-x64.tar.gz"
+          filename="canvas-${tag}-napi-v7-${{ matrix.target }}.tar.gz"
           tar -czf "$filename" build
           echo "filename=$filename" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke test prebuild in a clean container
+      - name: Smoke test (Linux, clean container)
+        if: matrix.target == 'linux-x64'
         run: |
           docker run --rm \
             -v "$PWD/${{ steps.pack.outputs.filename }}:/tmp/prebuild.tar.gz:ro" \
@@ -88,18 +112,47 @@ jobs:
               node -e "process.dlopen({exports:{}}, \"./build/Release/canvas.node\"); console.log(\"loaded ok\")"
             '
 
+      - name: Smoke test (macOS, fresh dir, no DYLD_*)
+        if: matrix.target == 'darwin-arm64'
+        run: |
+          set -ex
+          workdir=$(mktemp -d)
+          tar -xzf "${{ steps.pack.outputs.filename }}" -C "$workdir"
+          cd "$workdir"
+          unset DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH
+          node -e 'process.dlopen({exports:{}}, "./build/Release/canvas.node"); console.log("loaded ok")'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-${{ matrix.target }}
+          path: ${{ steps.pack.outputs.filename }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la artifacts/
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${{ inputs.release_tag }}"
-          file="${{ steps.pack.outputs.filename }}"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" "$file" --clobber
+            gh release upload "$tag" artifacts/*.tar.gz --clobber
           else
             gh release create "$tag" \
               --target "${{ github.sha }}" \
               --title "$tag" \
               --notes "Temporary prebuild with memory-leak fix from PR Automattic/node-canvas#2562. Built by ${{ github.workflow }} run ${{ github.run_id }}." \
-              "$file"
+              artifacts/*.tar.gz
           fi
