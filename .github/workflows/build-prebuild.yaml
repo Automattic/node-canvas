@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install build deps
         run: |
@@ -47,6 +47,7 @@ jobs:
           set -ex
           copies=$(lddtree -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d')
           rm -rf build/Release/.deps build/Release/obj.target
+          patchelf --set-rpath '$ORIGIN' build/Release/canvas.node
           for so in $copies; do
             cp "$so" build/Release/
             patchelf --set-rpath '$ORIGIN' "build/Release/$(basename "$so")"
@@ -66,7 +67,7 @@ jobs:
         run: |
           docker run --rm \
             -v "$PWD/${{ steps.pack.outputs.filename }}:/tmp/prebuild.tar.gz:ro" \
-            -w /work node:20-slim bash -c '
+            -w /work node:24-slim bash -c '
               set -ex
               mkdir -p /work && cd /work
               tar -xzf /tmp/prebuild.tar.gz
