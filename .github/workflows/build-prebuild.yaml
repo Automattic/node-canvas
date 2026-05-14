@@ -1,0 +1,90 @@
+name: Build canvas prebuild
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag (must match v$(package.json version), e.g. v3.2.3-memfix.0)"
+        required: true
+        default: v3.2.3-memfix.0
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential python3 \
+            libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev \
+            patchelf pax-utils
+
+      - name: Sanity-check package.json version matches input
+        run: |
+          pkg_version="v$(node -p "require('./package.json').version")"
+          if [ "$pkg_version" != "${{ inputs.release_tag }}" ]; then
+            echo "::error::package.json version ($pkg_version) does not match release_tag (${{ inputs.release_tag }})"
+            exit 1
+          fi
+
+      - name: Compile native binding
+        run: |
+          npm ci --ignore-scripts
+          npx node-gyp rebuild --release
+
+      - name: Bundle shared libs next to canvas.node (rpath=$ORIGIN)
+        run: |
+          set -ex
+          copies=$(lddtree -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d')
+          rm -rf build/Release/.deps build/Release/obj.target
+          for so in $copies; do
+            cp "$so" build/Release/
+            patchelf --set-rpath '$ORIGIN' "build/Release/$(basename "$so")"
+          done
+          find build/Release -type f -name '*.so*' -exec strip --strip-unneeded {} \;
+          ls -la build/Release
+
+      - name: Pack tarball
+        id: pack
+        run: |
+          tag="${{ inputs.release_tag }}"
+          filename="canvas-${tag}-napi-v7-linux-x64.tar.gz"
+          tar -czf "$filename" build
+          echo "filename=$filename" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test prebuild in a clean container
+        run: |
+          docker run --rm \
+            -v "$PWD/${{ steps.pack.outputs.filename }}:/tmp/prebuild.tar.gz:ro" \
+            -w /work node:20-slim bash -c '
+              set -ex
+              mkdir -p /work && cd /work
+              tar -xzf /tmp/prebuild.tar.gz
+              node -e "process.dlopen({exports:{}}, \"./build/Release/canvas.node\"); console.log(\"loaded ok\")"
+            '
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ inputs.release_tag }}"
+          file="${{ steps.pack.outputs.filename }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$file" --clobber
+          else
+            gh release create "$tag" \
+              --target "${{ github.sha }}" \
+              --title "$tag" \
+              --notes "Temporary prebuild with memory-leak fix from PR Automattic/node-canvas#2562. Built by ${{ github.workflow }} run ${{ github.run_id }}." \
+              "$file"
+          fi
