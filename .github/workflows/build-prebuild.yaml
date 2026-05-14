@@ -45,12 +45,26 @@ jobs:
       - name: Bundle shared libs next to canvas.node (rpath=$ORIGIN)
         run: |
           set -ex
-          copies=$(lddtree -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d')
           rm -rf build/Release/.deps build/Release/obj.target
           patchelf --set-rpath '$ORIGIN' build/Release/canvas.node
+
+          # Resolve all dynamic deps of canvas.node and bundle them, except glibc/
+          # loader-supplied libs which must come from the host.
+          copies=$(ldd build/Release/canvas.node \
+            | awk '/=> \// {print $3}' \
+            | grep -vE '/(ld-linux|libc|libm|libdl|libpthread|librt|libresolv|libnsl|libutil|libcrypt)[-.][^/]*\.so' \
+            | sort -u)
+
+          if [ -z "$copies" ]; then
+            echo "::error::ldd resolved no bundleable deps — something is wrong"
+            ldd build/Release/canvas.node
+            exit 1
+          fi
+
           for so in $copies; do
-            cp "$so" build/Release/
-            patchelf --set-rpath '$ORIGIN' "build/Release/$(basename "$so")"
+            base=$(basename "$so")
+            cp -L "$so" "build/Release/$base"
+            patchelf --set-rpath '$ORIGIN' "build/Release/$base"
           done
           find build/Release -type f -name '*.so*' -exec strip --strip-unneeded {} \;
           ls -la build/Release
