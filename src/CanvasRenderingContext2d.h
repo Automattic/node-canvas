@@ -47,10 +47,10 @@ struct canvas_state_t {
     fill = other.fill;
     stroke = other.stroke;
     patternQuality = other.patternQuality;
-    fillPattern = other.fillPattern;
-    strokePattern = other.strokePattern;
-    fillGradient = other.fillGradient;
-    strokeGradient = other.strokeGradient;
+    fillPattern = referencePattern(other.fillPattern);
+    strokePattern = referencePattern(other.strokePattern);
+    fillGradient = referencePattern(other.fillGradient);
+    strokeGradient = referencePattern(other.strokeGradient);
     globalAlpha = other.globalAlpha;
     textAlignment = other.textAlignment;
     textBaseline = other.textBaseline;
@@ -66,8 +66,92 @@ struct canvas_state_t {
     lang = other.lang;
   }
 
-  ~canvas_state_t() {
+  canvas_state_t& operator=(const canvas_state_t& other) {
+    if (this == &other) return *this;
+
+    fill = other.fill;
+    stroke = other.stroke;
+    patternQuality = other.patternQuality;
+    releasePattern(fillPattern);
+    releasePattern(strokePattern);
+    releasePattern(fillGradient);
+    releasePattern(strokeGradient);
+    fillPattern = referencePattern(other.fillPattern);
+    strokePattern = referencePattern(other.strokePattern);
+    fillGradient = referencePattern(other.fillGradient);
+    strokeGradient = referencePattern(other.strokeGradient);
+    globalAlpha = other.globalAlpha;
+    textAlignment = other.textAlignment;
+    textBaseline = other.textBaseline;
+    shadow = other.shadow;
+    shadowBlur = other.shadowBlur;
+    shadowOffsetX = other.shadowOffsetX;
+    shadowOffsetY = other.shadowOffsetY;
+    textDrawingMode = other.textDrawingMode;
     pango_font_description_free(fontDescription);
+    fontDescription = pango_font_description_copy(other.fontDescription);
+    font = other.font;
+    imageSmoothingEnabled = other.imageSmoothingEnabled;
+    direction = other.direction;
+    lang = other.lang;
+
+    return *this;
+  }
+
+  ~canvas_state_t() {
+    releasePattern(fillPattern);
+    releasePattern(strokePattern);
+    releasePattern(fillGradient);
+    releasePattern(strokeGradient);
+    pango_font_description_free(fontDescription);
+  }
+
+  void setFillPattern(cairo_pattern_t* pattern) {
+    releasePattern(fillGradient);
+    replacePattern(fillPattern, pattern);
+  }
+
+  void setStrokePattern(cairo_pattern_t* pattern) {
+    releasePattern(strokeGradient);
+    replacePattern(strokePattern, pattern);
+  }
+
+  void setFillGradient(cairo_pattern_t* pattern) {
+    releasePattern(fillPattern);
+    replacePattern(fillGradient, pattern);
+  }
+
+  void setStrokeGradient(cairo_pattern_t* pattern) {
+    releasePattern(strokePattern);
+    replacePattern(strokeGradient, pattern);
+  }
+
+  void clearFillPattern() {
+    releasePattern(fillPattern);
+    releasePattern(fillGradient);
+  }
+
+  void clearStrokePattern() {
+    releasePattern(strokePattern);
+    releasePattern(strokeGradient);
+  }
+
+  static cairo_pattern_t* referencePattern(cairo_pattern_t* pattern) {
+    if (pattern) cairo_pattern_reference(pattern);
+    return pattern;
+  }
+
+  static void releasePattern(cairo_pattern_t*& pattern) {
+    if (pattern) {
+      cairo_pattern_destroy(pattern);
+      pattern = nullptr;
+    }
+  }
+
+  static void replacePattern(cairo_pattern_t*& current, cairo_pattern_t* next) {
+    if (current == next) return;
+    releasePattern(current);
+    current = referencePattern(next);
   }
 };
 
@@ -214,7 +298,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void resetState();
     inline PangoLayout *layout(){ return _layout; }
     ~Context2d();
-    void Finalize(Napi::Env env);
     Napi::Env env;
 
   private:
