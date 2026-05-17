@@ -1406,6 +1406,7 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
         std::memcpy(pixels + new_idx, unrotated + orig_idx, channels);
       }
     }
+    delete[] unrotated;
   };
 
   auto rotate270 = [](uint8_t* pixels, int width, int height, int channels) {
@@ -1422,6 +1423,7 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
         std::memcpy(pixels + new_idx, unrotated + orig_idx, channels);
       }
     }
+    delete[] unrotated;
   };
 
   switch (orientation) {
