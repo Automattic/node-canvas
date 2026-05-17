@@ -29,6 +29,8 @@ typedef struct {
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
     Image* image;
+    uint8_t* data = nullptr;
+    uint8_t* src = nullptr;
     jmp_buf setjmp_buffer;
 };
 #endif
@@ -830,6 +832,7 @@ cairo_status_t
 Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientation) {
   const int channels = 4;
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
+  canvas_jpeg_error_mgr *err = static_cast<canvas_jpeg_error_mgr*>(args->err);
 
   uint8_t *data = new uint8_t[naturalWidth * naturalHeight * channels];
   if (!data) {
@@ -838,15 +841,18 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
     this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
+  err->data = data;
 
   uint8_t *src = new uint8_t[naturalWidth * args->output_components];
   if (!src) {
+    err->data = nullptr;
     delete[] data;
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
     this->errorInfo.set(NULL, "malloc", errno);
     return CAIRO_STATUS_NO_MEMORY;
   }
+  err->src = src;
 
   // These are the three main cases to handle. libjpeg converts YCCK to CMYK
   // and YCbCr to RGB by default.
@@ -880,6 +886,16 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
 
   updateDimensionsForOrientation(orientation);
 
+  if (status) {
+    jpeg_abort_decompress(args);
+  } else {
+    jpeg_finish_decompress(args);
+  }
+  jpeg_destroy_decompress(args);
+
+  delete[] src;
+  err->src = nullptr;
+
   if (!status) {
     _surface = cairo_image_surface_create_for_data(
         data
@@ -887,22 +903,19 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
       , naturalWidth
       , naturalHeight
       , cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, naturalWidth));
+    status = cairo_surface_status(_surface);
   }
-
-  jpeg_finish_decompress(args);
-  jpeg_destroy_decompress(args);
-  status = cairo_surface_status(_surface);
-
-  rotatePixels(data, naturalWidth, naturalHeight, channels, orientation);
-
-  delete[] src;
 
   if (status) {
     delete[] data;
+    err->data = nullptr;
     return status;
   }
 
+  rotatePixels(data, naturalWidth, naturalHeight, channels, orientation);
+
   _data = data;
+  err->data = nullptr;
 
   return CAIRO_STATUS_SUCCESS;
 }
@@ -914,6 +927,10 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
 static void canvas_jpeg_error_exit(j_common_ptr cinfo) {
   canvas_jpeg_error_mgr *cjerr = static_cast<canvas_jpeg_error_mgr*>(cinfo->err);
   cjerr->output_message(cinfo);
+  delete[] cjerr->data;
+  delete[] cjerr->src;
+  cjerr->data = nullptr;
+  cjerr->src = nullptr;
   // Return control to the setjmp point
   longjmp(cjerr->setjmp_buffer, 1);
 }
