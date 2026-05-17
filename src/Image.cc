@@ -841,7 +841,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
 
   uint8_t *src = new uint8_t[naturalWidth * args->output_components];
   if (!src) {
-    free(data);
+    delete[] data;
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
     this->errorInfo.set(NULL, "malloc", errno);
@@ -1408,6 +1408,7 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
         std::memcpy(pixels + new_idx, unrotated + orig_idx, channels);
       }
     }
+    delete[] unrotated;
   };
 
   auto rotate270 = [](uint8_t* pixels, int width, int height, int channels) {
@@ -1424,6 +1425,7 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
         std::memcpy(pixels + new_idx, unrotated + orig_idx, channels);
       }
     }
+    delete[] unrotated;
   };
 
   switch (orientation) {
