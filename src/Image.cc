@@ -839,7 +839,7 @@ Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientati
 
   uint8_t *src = new uint8_t[naturalWidth * args->output_components];
   if (!src) {
-    free(data);
+    delete[] data;
     jpeg_abort_decompress(args);
     jpeg_destroy_decompress(args);
     this->errorInfo.set(NULL, "malloc", errno);
