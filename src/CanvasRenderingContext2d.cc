@@ -90,7 +90,6 @@ inline static bool checkArgs(const Napi::CallbackInfo&info, double *args, int ar
 
 void
 Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
-  Napi::HandleScope scope(env);
   InstanceData* data = env.GetInstanceData<InstanceData>();
 
   Napi::Function ctor = DefineClass(env, "CanvasRenderingContext2D", {
@@ -1968,11 +1967,11 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
       _fillStyle.Reset(obj);
       Gradient *grad = Gradient::Unwrap(obj);
-      state->fillGradient = grad->pattern();
+      state->setFillGradient(grad->pattern());
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
       _fillStyle.Reset(obj);
       Pattern *pattern = Pattern::Unwrap(obj);
-      state->fillPattern = pattern->pattern();
+      state->setFillPattern(pattern->pattern());
     }
   }
 }
@@ -2008,11 +2007,11 @@ Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& val
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
       _strokeStyle.Reset(obj);
       Gradient *grad = Gradient::Unwrap(obj);
-      state->strokeGradient = grad->pattern();
+      state->setStrokeGradient(grad->pattern());
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
       _strokeStyle.Reset(value);
       Pattern *pattern = Pattern::Unwrap(obj);
-      state->strokePattern = pattern->pattern();
+      state->setStrokePattern(pattern->pattern());
     }
   }
 }
@@ -2193,7 +2192,7 @@ Context2d::_setFillColor(Napi::Value arg) {
     if (status != napi_ok) return;
     uint32_t rgba = rgba_from_string(buf, &ok);
     if (!ok) return;
-    state->fillPattern = state->fillGradient = NULL;
+    state->clearFillPattern();
     state->fill = rgba_create(rgba);
   }
 }
@@ -2219,7 +2218,7 @@ Context2d::_setStrokeColor(Napi::Value arg) {
   std::string str = arg.As<Napi::String>();
   uint32_t rgba = rgba_from_string(str.c_str(), &ok);
   if (!ok) return;
-  state->strokePattern = state->strokeGradient = NULL;
+  state->clearStrokePattern();
   state->stroke = rgba_create(rgba);
 }
 
