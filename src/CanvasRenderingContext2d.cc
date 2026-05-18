@@ -358,6 +358,8 @@ create_transparent_pattern(cairo_pattern_t *source, float alpha) {
     height);
   cairo_t *mask_context = cairo_create(mask_surface);
   if (cairo_status(mask_context) != CAIRO_STATUS_SUCCESS) {
+    cairo_destroy(mask_context);
+    cairo_surface_destroy(mask_surface);
     return NULL;
   }
   cairo_set_source(mask_context, source);

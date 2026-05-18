@@ -617,6 +617,7 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   if (colormap == nullptr) {
     GIF_CLOSE_FILE(gif);
+    delete[] data;
     return CAIRO_STATUS_READ_ERROR;
   }
 
@@ -1041,12 +1042,20 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
 
   Napi::MemoryManagement::AdjustExternalMemory(env, len);
 
-  return cairo_surface_set_mime_data(_surface
+  cairo_status_t status = cairo_surface_set_mime_data(_surface
     , mime_type
     , mime_data
     , len
     , clearMimeData
     , mime_closure);
+
+  if (status) {
+    Napi::MemoryManagement::AdjustExternalMemory(env, -len);
+    free(mime_data);
+    free(mime_closure);
+  }
+
+  return status;
 }
 
 /*
