@@ -242,9 +242,15 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
  */
 
 Context2d::~Context2d() {
+  while (!states.empty()) states.pop();
+  state = nullptr;
   if (_layout) g_object_unref(_layout);
   if (_context) cairo_destroy(_context);
-  _resetPersistentHandles();
+  // _resetPersistentHandles() is intentionally NOT called here. It calls
+  // napi_delete_reference, which is unsafe when the destructor runs from
+  // inside GC (FATAL ERROR: "Finalizer is calling a function that may
+  // affect GC state"). Persistent handles are reset from Finalize(env)
+  // which is deferred via node_api_post_finalizer.
 }
 
 /*
@@ -252,8 +258,9 @@ Context2d::~Context2d() {
  */
 
 void Context2d::resetState() {
-  states.pop();
+  while (!states.empty()) states.pop();
   states.emplace();
+  state = &states.top();
   pango_layout_set_font_description(_layout, state->fontDescription);
   _resetPersistentHandles();
 }
@@ -1966,13 +1973,13 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
+      _fillStyle.Reset(obj, 1);
       Gradient *grad = Gradient::Unwrap(obj);
-      state->fillGradient = grad->pattern();
+      state->setFillGradient(grad->pattern());
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
+      _fillStyle.Reset(obj, 1);
       Pattern *pattern = Pattern::Unwrap(obj);
-      state->fillPattern = pattern->pattern();
+      state->setFillPattern(pattern->pattern());
     }
   }
 }
@@ -2006,13 +2013,13 @@ Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& val
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(obj);
+      _strokeStyle.Reset(obj, 1);
       Gradient *grad = Gradient::Unwrap(obj);
-      state->strokeGradient = grad->pattern();
+      state->setStrokeGradient(grad->pattern());
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(value);
+      _strokeStyle.Reset(value, 1);
       Pattern *pattern = Pattern::Unwrap(obj);
-      state->strokePattern = pattern->pattern();
+      state->setStrokePattern(pattern->pattern());
     }
   }
 }
@@ -2193,7 +2200,7 @@ Context2d::_setFillColor(Napi::Value arg) {
     if (status != napi_ok) return;
     uint32_t rgba = rgba_from_string(buf, &ok);
     if (!ok) return;
-    state->fillPattern = state->fillGradient = NULL;
+    state->clearFillPattern();
     state->fill = rgba_create(rgba);
   }
 }
@@ -2219,7 +2226,7 @@ Context2d::_setStrokeColor(Napi::Value arg) {
   std::string str = arg.As<Napi::String>();
   uint32_t rgba = rgba_from_string(str.c_str(), &ok);
   if (!ok) return;
-  state->strokePattern = state->strokeGradient = NULL;
+  state->clearStrokePattern();
   state->stroke = rgba_create(rgba);
 }
 
