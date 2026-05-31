@@ -24,7 +24,7 @@ jobs:
           sudo apt update
           sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
       - name: Install
-        run: npm install --build-from-source
+        run: npm ci --build-from-source
       - name: Test
         run: npm test
 
@@ -46,10 +46,10 @@ jobs:
           Invoke-WebRequest "https://downloads.sourceforge.net/project/libjpeg-turbo/2.0.4/libjpeg-turbo-2.0.4-vc64.exe" -OutFile "libjpeg.exe" -UserAgent NativeHost
           .\libjpeg.exe /S
           winget install --accept-source-agreements --id=Microsoft.VCRedist.2010.x64 -e
-          npm install -g node-gyp@8
+          npm ci -g node-gyp@8
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Install
-        run: npm install --build-from-source
+        run: npm ci --build-from-source
       - name: Test
         run: npm test
 
@@ -69,7 +69,7 @@ jobs:
           brew update
           brew install python-setuptools pkg-config cairo pango libpng jpeg giflib librsvg
       - name: Install
-        run: npm install --build-from-source
+        run: npm ci --build-from-source
       - name: Test
         run: npm test
 
@@ -82,7 +82,7 @@ jobs:
           node-version: 20.9.0
       - uses: actions/checkout@v4
       - name: Install
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Lint
         run: npm run lint
       - name: Lint Types
