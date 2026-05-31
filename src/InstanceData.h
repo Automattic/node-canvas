@@ -3,7 +3,13 @@
 #include <napi.h>
 #include <freetype/freetype.h>
 #include "FontFaceSet.h"
-#include "FontManagerMacos.h" // TODO per-platform
+#ifdef _WIN32
+#include "FontManagerWindows.h"
+using PlatformFontManager = FontManagerWindows;
+#else
+#include "FontManagerMacos.h"
+using PlatformFontManager = FontManagerMacos;
+#endif
 
 struct InstanceData {
   Napi::FunctionReference CanvasCtor;
@@ -18,7 +24,7 @@ struct InstanceData {
   Napi::ObjectReference jsFontSet;
   FontFaceSet* cppFontSet;
   FT_Library ft;
-  FontManagerMacos fontManager;
+  PlatformFontManager fontManager;
 
   InstanceData() {
     FT_Init_FreeType(&ft);

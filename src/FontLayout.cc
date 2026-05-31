@@ -434,7 +434,8 @@ layoutText(
         nullptr
       );
       size_t count = hb_face_count(hbblob);
-      if (count > 1) {
+      if (count > 1 && face->postscript) {
+        // Lazily initialize the ttc index for backends that don't provide it (macOS)
         for (size_t index = 0; index < count; index++) {
           char buf[128];
           unsigned int len = sizeof(buf);
@@ -447,6 +448,7 @@ layoutText(
             buf
           );
           hb_face_destroy(hbface);
+
           if (strcmp(buf, face->postscript.get()) == 0) {
             matches[matchIndex]->index = index;
             face->index = index;

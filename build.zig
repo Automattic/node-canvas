@@ -59,6 +59,7 @@ pub fn build(b: *std.Build) void {
 
     unicode.root_module.addImport("Scripts", zg.module("Scripts"));
     unicode.root_module.addImport("Graphemes", zg.module("Graphemes"));
+    unicode.linkLibC();
 
     const canvas = b.addLibrary(.{
       .name = "canvas",
@@ -88,7 +89,7 @@ pub fn build(b: *std.Build) void {
             "src/init.cc",
             "src/itemize.cc",
             "src/FontManager.cc",
-            "src/FontManagerMacos.cc",
+            if (target.result.os.tag == .windows) "src/FontManagerWindows.cc" else "src/FontManagerMacos.cc",
             "src/FontFace.cc",
             "src/FontFaceSet.cc",
             "src/FontParser.cc",
@@ -97,6 +98,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{
             "-DNAPI_DISABLE_CPP_EXCEPTIONS",
             "-DNODE_ADDON_API_ENABLE_MAYBE",
+            "-D_USE_MATH_DEFINES",
             "-std=c++20",
             if (target.result.os.tag == .windows) "-DCAIRO_WIN32_STATIC_BUILD" else "",
         }
@@ -118,7 +120,11 @@ pub fn build(b: *std.Build) void {
     canvas.linkLibrary(sheenbidi);
     canvas.linkLibrary(unicode);
     canvas.linkLibrary(harfbuzz);
-    
+
+    if (target.result.os.tag == .windows) {
+        canvas.linkSystemLibrary("dwrite");
+    }
+
     const move = b.addInstallFile(canvas.getEmittedBin(), "../bin/canvas.node");
     move.step.dependOn(&canvas.step);
     b.getInstallStep().dependOn(&move.step);

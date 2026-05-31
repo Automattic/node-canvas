@@ -169,6 +169,7 @@ void FontManagerMacos::populateFallbackFonts(
   std::vector<std::string>& families,
   script_t script
 ) {
+  // Note: this was copied from Firefox, including comments, and tweaked to fit
   switch (script) {
     case SCRIPT_COMMON:
     case SCRIPT_INHERITED:
