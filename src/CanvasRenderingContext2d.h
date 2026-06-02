@@ -214,6 +214,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void resetState();
     inline PangoLayout *layout(){ return _layout; }
     ~Context2d();
+    void Finalize(Napi::Env env);
     Napi::Env env;
 
   private:

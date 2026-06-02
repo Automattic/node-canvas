@@ -8,8 +8,10 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Upgrade node-addon-api from 7.x to 8.x
 ### Added
 ### Fixed
+* Fix memory leak caused by N-API weak reference callbacks being deferred to SetImmediate instead of running during GC. Enabled `NAPI_EXPERIMENTAL` to use `node_api_nogc_finalize` for ObjectWrap destructor. (#2436)
 
 3.2.3
 ==================
