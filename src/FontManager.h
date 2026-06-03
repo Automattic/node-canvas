@@ -10,9 +10,7 @@ class FontManager {
   public:
     virtual ~FontManager() = default;
 
-    virtual void readSystemFonts(
-      std::vector<FontDescriptor>& results
-    ) = 0;
+    virtual void readSystemFonts() = 0;
 
     virtual void populateFallbackFonts(
       std::vector<std::string>& families,
@@ -45,6 +43,6 @@ class FontManager {
       FontProperties& properties
     );
 
-    bool system_fonts_loaded = false;
+  protected:
     std::vector<FontDescriptor> system_fonts;
 };

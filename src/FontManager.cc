@@ -206,11 +206,6 @@ FontManager::query(
 ) {
   std::vector<FontDescriptor*> allFamilyResults;
   std::vector<FontDescriptor*> familyResults;
-  
-  if (!system_fonts_loaded) {
-    readSystemFonts(system_fonts);
-    system_fonts_loaded = true;
-  }
 
   auto maybeAdd = [&](const std::string& family, FontDescriptor* desc) {
     if (

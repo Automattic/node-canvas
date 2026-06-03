@@ -33,7 +33,9 @@ setParseFont(const Napi::CallbackInfo& info) {
 }
 
 Napi::Object init(Napi::Env env, Napi::Object exports) {
-  env.SetInstanceData(new InstanceData());
+  InstanceData* data = new InstanceData();
+  env.SetInstanceData(data);
+  data->fontManager.readSystemFonts();
 
   Canvas::Initialize(env, exports);
   Image::Initialize(env, exports);

@@ -6,9 +6,13 @@
 #ifdef _WIN32
 #include "FontManagerWindows.h"
 using PlatformFontManager = FontManagerWindows;
-#else
+#elif __APPLE__
 #include "FontManagerMacos.h"
 using PlatformFontManager = FontManagerMacos;
+#else
+// Linux, the BSDs, and other Unixes that use FontConfig.
+#include "FontManagerLinux.h"
+using PlatformFontManager = FontManagerLinux;
 #endif
 
 struct InstanceData {

@@ -148,18 +148,18 @@ create_font_descriptor(
 }
 
 void
-FontManagerMacos::readSystemFonts(std::vector<FontDescriptor>& results) {
+FontManagerMacos::readSystemFonts() {
   static CTFontCollectionRef collection = NULL;
   if (collection == NULL) collection = CTFontCollectionCreateFromAvailableFonts(NULL);
 
   NSArray *matches = (NSArray *) CTFontCollectionCreateMatchingFontDescriptors(collection);  
   CFIndex count = CFArrayGetCount((CFArrayRef) matches);
 
-  results.reserve(count);
+  system_fonts.reserve(count);
 
   for (CFIndex i = 0; i < count; i++) {
     CTFontDescriptorRef match = (CTFontDescriptorRef)CFArrayGetValueAtIndex((CFArrayRef)matches, i);
-    create_font_descriptor(results, match);
+    create_font_descriptor(system_fonts, match);
   }
 
   CFRelease(matches);

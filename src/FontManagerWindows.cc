@@ -158,7 +158,7 @@ create_font_descriptor(
 }
 
 void
-FontManagerWindows::readSystemFonts(std::vector<FontDescriptor>& results) {
+FontManagerWindows::readSystemFonts() {
   ComPtr<IDWriteFactory> factory;
   HRESULT res = DWriteCreateFactory(
     DWRITE_FACTORY_TYPE_SHARED,
@@ -187,7 +187,7 @@ FontManagerWindows::readSystemFonts(std::vector<FontDescriptor>& results) {
     for (UINT32 j = 0; j < fontCount; j++) {
       ComPtr<IDWriteFont> font;
       if (FAILED(family->GetFont(j, &font))) continue;
-      create_font_descriptor(results, font.ptr, familyName.get());
+      create_font_descriptor(system_fonts, font.ptr, familyName.get());
     }
   }
 }
