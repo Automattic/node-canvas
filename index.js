@@ -30,7 +30,11 @@ function loadImage (src) {
     }
 
     image.onload = () => { cleanup(); resolve(image) }
-    image.onerror = (err) => { cleanup(); reject(err) }
+    image.onerror = (err) => {
+      cleanup()
+      image.src = Buffer.alloc(0)
+      reject(err)
+    }
 
     image.src = src
   })
