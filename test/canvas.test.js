@@ -1007,6 +1007,14 @@ describe('Canvas', function () {
   })
 
   describe('Context2d#measureText()', function () {
+    before(function () {
+      registerFont(path.join(__dirname, '/fixtures/Arimo-Regular.ttf'), {family: 'Arimo'})
+    });
+
+    after(function () {
+      deregisterAllFonts()
+    });
+
     it('Context2d#measureText().width', function () {
       const canvas = createCanvas(20, 20)
       const ctx = canvas.getContext('2d')
@@ -1019,7 +1027,7 @@ describe('Canvas', function () {
     it('works', function () {
       const canvas = createCanvas(20, 20)
       const ctx = canvas.getContext('2d')
-      ctx.font = '20px Arial'
+      ctx.font = '20px Arimo'
 
       ctx.textBaseline = 'alphabetic'
       let metrics = ctx.measureText('Alphabet')
