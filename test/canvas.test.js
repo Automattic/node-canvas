@@ -1022,6 +1022,10 @@ describe('Canvas', function () {
       fonts.delete(arimo);
     });
 
+    // TODO: all but 'works' can be updated to use exact assertions. Those
+    // tests were written before custom fonts and font selelection worked
+    // perfectly on all OSes.
+
     it('Context2d#measureText().width', function () {
       const canvas = createCanvas(20, 20)
       const ctx = canvas.getContext('2d')
@@ -1038,21 +1042,16 @@ describe('Canvas', function () {
 
       ctx.textBaseline = 'alphabetic'
       let metrics = ctx.measureText('Alphabet')
-      // Actual value depends on font library version. Have observed values
-      // between 0 and 0.769.
-      assertApprox(metrics.alphabeticBaseline, 0.5, 0.5)
-      // Positive = going up from the baseline
-      assert.ok(metrics.actualBoundingBoxAscent > 0)
-      // Positive = going down from the baseline
-      assertApprox(metrics.actualBoundingBoxDescent, 5, 2)
+      assertApprox(metrics.alphabeticBaseline, 0, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 14.5, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, 4.16, 0.1)
 
       ctx.textBaseline = 'bottom'
       metrics = ctx.measureText('Alphabet')
       assert.strictEqual(ctx.textBaseline, 'bottom')
-      assertApprox(metrics.alphabeticBaseline, 5, 2)
-      assert.ok(metrics.actualBoundingBoxAscent > 0)
-      // On the baseline or slightly above
-      assertApprox(metrics.actualBoundingBoxDescent, 0, 1)
+      assertApprox(metrics.alphabeticBaseline, 3.07, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 17.57, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, 1.09, 0.1)
     })
 
     it('actualBoundingBox is correct for left, center and right alignment (#1909)', function () {
