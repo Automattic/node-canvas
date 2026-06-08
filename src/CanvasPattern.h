@@ -26,8 +26,10 @@ class Pattern : public Napi::ObjectWrap<Pattern> {
     static repeat_type_t get_repeat_type_for_cairo_pattern(cairo_pattern_t *pattern);
     inline cairo_pattern_t *pattern(){ return _pattern; }
     ~Pattern();
+    void Finalize(Napi::Env env);
     Napi::Env env;
   private:
     cairo_pattern_t *_pattern;
+    Napi::Reference<Napi::Object> _source;
     repeat_type_t _repeat = REPEAT;
 };
