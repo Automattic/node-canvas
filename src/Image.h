@@ -39,7 +39,6 @@ class Image : public Napi::ObjectWrap<Image> {
     int width, height;
     int naturalWidth, naturalHeight;
     Napi::Env env;
-    static Napi::FunctionReference constructor;
     static void Initialize(Napi::Env& env, Napi::Object& target);
     Image(const Napi::CallbackInfo& info);
     Napi::Value GetComplete(const Napi::CallbackInfo& info);
