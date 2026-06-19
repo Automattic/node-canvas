@@ -1265,9 +1265,9 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
       Napi::Error::New(env, "Image given has not completed loading").ThrowAsJavaScriptException();
       return;
     }
-    source_w = sw = img->width;
-    source_h = sh = img->height;
-    surface = img->surface();
+    source_w = sw = img->surface.width;
+    source_h = sh = img->surface.height;
+    surface = img->surface.surface();
 
   // Canvas
   } else if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->CanvasCtor.Value()).UnwrapOr(false)) {
