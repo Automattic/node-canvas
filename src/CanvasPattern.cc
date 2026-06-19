@@ -119,7 +119,7 @@ Pattern::createCairoPattern(double alpha, cairo_filter_t patternQuality) {
   if (canvas) {
     source_surface = canvas->ensureSurface();
   } else if (image) {
-    source_surface = image->surface();
+    source_surface = image->surface.surface();
   }
 
   if (!source_surface) return nullptr;
