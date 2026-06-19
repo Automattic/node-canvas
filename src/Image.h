@@ -16,25 +16,13 @@
 
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
-class Image : public Napi::ObjectWrap<Image> {
+class ImageSurface {
   public:
+    Napi::Env env;
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    Napi::Env env;
-    static void Initialize(Napi::Env& env, Napi::Object& target);
-    Image(const Napi::CallbackInfo& info);
-    Napi::Value GetComplete(const Napi::CallbackInfo& info);
-    Napi::Value GetWidth(const Napi::CallbackInfo& info);
-    Napi::Value GetHeight(const Napi::CallbackInfo& info);
-    Napi::Value GetNaturalWidth(const Napi::CallbackInfo& info);
-    Napi::Value GetNaturalHeight(const Napi::CallbackInfo& info);
-    Napi::Value GetDataMode(const Napi::CallbackInfo& info);
-    void SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value);
-    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
-    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
-    static Napi::Value GetSource(const Napi::CallbackInfo& info);
-    static void SetSource(const Napi::CallbackInfo& info);
+    ImageSurface(Napi::Env env);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
@@ -42,7 +30,6 @@ class Image : public Napi::ObjectWrap<Image> {
     static int isGIF(uint8_t *data);
     static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
-    inline int isComplete(){ return COMPLETE == state; }
     cairo_surface_t *surface();
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
@@ -81,8 +68,8 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_status_t loadBMP(FILE *stream);
     CanvasError errorInfo;
     void loaded();
-    cairo_status_t load();
-    ~Image();
+    cairo_status_t load(std::string& filename);
+    ~ImageSurface();
 
     enum {
         DEFAULT
@@ -108,4 +95,24 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_surface_t *_surface;
     uint8_t *_data = nullptr;
     int _data_len;
+};
+
+class Image : public Napi::ObjectWrap<Image> {
+  public:
+    Napi::Env env;
+    static void Initialize(Napi::Env& env, Napi::Object& target);
+    Image(const Napi::CallbackInfo& info);
+    Napi::Value GetComplete(const Napi::CallbackInfo& info);
+    Napi::Value GetWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetDataMode(const Napi::CallbackInfo& info);
+    void SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
+    static Napi::Value GetSource(const Napi::CallbackInfo& info);
+    static void SetSource(const Napi::CallbackInfo& info);
+    inline int isComplete(){ return ImageSurface::COMPLETE == surface.state; }
+    ImageSurface surface;
 };
