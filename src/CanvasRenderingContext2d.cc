@@ -90,7 +90,6 @@ inline static bool checkArgs(const Napi::CallbackInfo&info, double *args, int ar
 
 void
 Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
-  Napi::HandleScope scope(env);
   InstanceData* data = env.GetInstanceData<InstanceData>();
 
   Napi::Function ctor = DefineClass(env, "CanvasRenderingContext2D", {

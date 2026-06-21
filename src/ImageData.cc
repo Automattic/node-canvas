@@ -9,8 +9,6 @@
 
 void
 ImageData::Initialize(Napi::Env& env, Napi::Object& exports) {
-  Napi::HandleScope scope(env);
-
   InstanceData *data = env.GetInstanceData<InstanceData>();
 
   Napi::Function ctor = DefineClass(env, "ImageData", {

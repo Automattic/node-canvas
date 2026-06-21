@@ -16,7 +16,6 @@ const cairo_user_data_key_t *pattern_repeat_key;
 
 void
 Pattern::Initialize(Napi::Env& env, Napi::Object& exports) {
-  Napi::HandleScope scope(env);
   InstanceData* data = env.GetInstanceData<InstanceData>();
 
   // Constructor

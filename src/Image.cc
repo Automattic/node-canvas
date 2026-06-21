@@ -50,7 +50,6 @@ typedef struct {
 void
 Image::Initialize(Napi::Env& env, Napi::Object& exports) {
   InstanceData *data = env.GetInstanceData<InstanceData>();
-  Napi::HandleScope scope(env);
 
   Napi::Function ctor = DefineClass(env, "Image", {
     InstanceAccessor<&Image::GetComplete>("complete", napi_default_jsproperty),
@@ -383,7 +382,6 @@ Image::load() {
 
 void
 Image::loaded() {
-  Napi::HandleScope scope(env);
   state = COMPLETE;
 
   width = naturalWidth = cairo_image_surface_get_width(_surface);

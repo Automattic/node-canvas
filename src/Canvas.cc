@@ -47,7 +47,6 @@ int Canvas::fontSerial = 1;
 
 void
 Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
-  Napi::HandleScope scope(env);
   InstanceData* data = env.GetInstanceData<InstanceData>();
 
   // Constructor
@@ -941,7 +940,6 @@ Canvas::getFormat() {
 
 void
 Canvas::resurface(Napi::Object This, uint16_t width, uint16_t height) {
-  Napi::HandleScope scope(env);
   Napi::Value context;
 
   if (type == CANVAS_TYPE_PDF) {
