@@ -2167,6 +2167,16 @@ tests['drawImage(img) svg with scaling from ctx'] = function (ctx, done) {
   img.src = imageSrc('tree.svg')
 }
 
+tests['drawImage(img) svg with embedded jpeg'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 50, 50)
+    done(null)
+  }
+  img.onerror = done
+  img.src = imageSrc('embedded-jpeg.svg')
+}
+
 tests['drawImage(img,x,y)'] = function (ctx, done) {
   const img = new Image()
   img.onload = function () {
