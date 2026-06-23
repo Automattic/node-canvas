@@ -345,6 +345,20 @@ describe('Image', function () {
     assert.ok(!keys.includes('setSource'))
   })
 
+  it('loadImage doesn\'t crash when you don\'t specify width and height', async function () {
+    const err = {name: 'Error'}
+
+    // TODO: remove this when we have a static build or something
+    if (os.platform() !== 'win32') {
+      err.message = 'Width and height must be set on the svg element';
+    }
+
+    await assert.rejects(async () => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`;
+      await loadImage(Buffer.from(svg))
+    }, err)
+  })
+
   describe('supports BMP', function () {
     it('parses 1-bit image', function (done) {
       const img = new Image()
