@@ -242,6 +242,10 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
  */
 
 Context2d::~Context2d() {
+  // Destroy states before _context so each canvas_state_t is torn down while
+  // the context is still valid.
+  while (!states.empty()) states.pop();
+  state = nullptr;
   if (_layout) g_object_unref(_layout);
   if (_context) cairo_destroy(_context);
   _resetPersistentHandles();
@@ -252,8 +256,9 @@ Context2d::~Context2d() {
  */
 
 void Context2d::resetState() {
-  states.pop();
+  while (!states.empty()) states.pop();
   states.emplace();
+  state = &states.top();
   pango_layout_set_font_description(_layout, state->fontDescription);
   _resetPersistentHandles();
 }
@@ -1966,11 +1971,11 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
+      _fillStyle.Reset(obj, 1);
       Gradient *grad = Gradient::Unwrap(obj);
       state->fillGradient = grad->pattern();
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
+      _fillStyle.Reset(obj, 1);
       Pattern *pattern = Pattern::Unwrap(obj);
       state->fillPattern = pattern->pattern();
     }
@@ -2006,11 +2011,11 @@ Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& val
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(obj);
+      _strokeStyle.Reset(obj, 1);
       Gradient *grad = Gradient::Unwrap(obj);
       state->strokeGradient = grad->pattern();
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(value);
+      _strokeStyle.Reset(value, 1);
       Pattern *pattern = Pattern::Unwrap(obj);
       state->strokePattern = pattern->pattern();
     }
