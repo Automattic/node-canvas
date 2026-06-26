@@ -5,6 +5,7 @@
 #include <cairo.h>
 #include <jpeglib.h>
 #include <gif_lib.h>
+#include <lunasvg.h>
 
 #include "Canvas.h"
 #include "CanvasGradient.h"
@@ -66,6 +67,11 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
   char gif_version[10];
   snprintf(gif_version, 10, "%d.%d.%d", GIFLIB_MAJOR, GIFLIB_MINOR, GIFLIB_RELEASE);
   exports.Set("gifVersion", Napi::String::New(env, gif_version));
+  exports.Set("lunasvgVersion", Napi::String::New(env, LUNASVG_VERSION_STRING));
+
+  char freetype_version[10];
+  snprintf(freetype_version, 10, "%d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
+  exports.Set("freetypeVersion", Napi::String::New(env, freetype_version));
 
   return exports;
 }
