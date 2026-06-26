@@ -1,0 +1,11 @@
+.{
+    .name = .lunasvg,
+    .version = "0.0.0",
+    .dependencies = .{
+        .cairo = .{ .path = "../cairo" },
+        .lunasvg = .{
+            .url = "https://github.com/chearon/lunasvg/archive/3fd8ba9e0cd5cf0af36b1bda2d0a3bbaf8bd8da7.tar.gz",
+            .hash = "N-V-__8AAFD4FABzdNrtG-6ulAVAPIPJZde38BQWKRcKgkgV",
+        }
+    },
+}

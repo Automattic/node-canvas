@@ -89,6 +89,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).artifact("harfbuzz");
 
+    const lunasvg = b.dependency("lunasvg", .{
+        .target = target,
+        .optimize = optimize,
+    }).artifact("lunasvg");
+
     const unicode = b.addLibrary(.{
         .name = "unicode",
         .linkage = .static,
@@ -147,6 +152,7 @@ pub fn build(b: *std.Build) void {
             "-D_USE_MATH_DEFINES",
             "-std=c++20",
             if (target.result.os.tag == .windows) "-DCAIRO_WIN32_STATIC_BUILD" else "",
+            "-DLUNASVG_BUILD_STATIC",
         }
     });
 
@@ -166,6 +172,11 @@ pub fn build(b: *std.Build) void {
     canvas.linkLibrary(sheenbidi);
     canvas.linkLibrary(unicode);
     canvas.linkLibrary(harfbuzz);
+    canvas.linkLibrary(lunasvg);
+
+    // some deps, especially lunasvg, compile with -ffunction-sections and
+    // -fdata-sections so we don't have to distribute unused parts of libraries
+    canvas.link_gc_sections = true;
 
     if (target.result.os.tag == .windows) {
         canvas.linkSystemLibrary("dwrite");

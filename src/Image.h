@@ -7,6 +7,7 @@
 #include <functional>
 #include <napi.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
+#include <optional>
 
 #include <jpeglib.h>
 #include <jerror.h>
@@ -14,20 +15,25 @@
 #include <gif_lib.h>
 #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
 
+#include <lunasvg.h>
+
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
 class ImageSurface {
   public:
-    Napi::Env env;
+    // Only contains a value when the ImageSurface backs a js Image. Empty for
+    // ImageSurfaces supporting lunasvg (to render images embedded in SVGs).
+    std::optional<Napi::Env> env;
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    ImageSurface(Napi::Env env);
+    ImageSurface(std::optional<Napi::Env> env);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
     static int isJPEG(uint8_t *data);
     static int isGIF(uint8_t *data);
+    static int isSVG(uint8_t *data, unsigned len);
     static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
     cairo_surface_t *surface();
@@ -36,6 +42,10 @@ class ImageSurface {
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();
+    cairo_surface_t* transferSurface();
+    cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
+    cairo_status_t loadSVG(FILE *stream);
+    cairo_status_t renderSVGToSurface();
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadGIF(FILE *stream);
     enum Orientation {
@@ -87,6 +97,7 @@ class ImageSurface {
       , GIF
       , JPEG
       , PNG
+      , SVG
     } type;
 
     static type extension(const char *filename);
@@ -95,6 +106,9 @@ class ImageSurface {
     cairo_surface_t *_surface;
     uint8_t *_data = nullptr;
     int _data_len;
+    std::unique_ptr<lunasvg::Document> svgdoc;
+    int _svg_last_width;
+    int _svg_last_height;
 };
 
 class Image : public Napi::ObjectWrap<Image> {
