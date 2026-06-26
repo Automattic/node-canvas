@@ -121,6 +121,30 @@ describe('Image', function () {
     }, MyError)
   })
 
+  it('loads SVG data URL base64', function () {
+    const base64Enc = fs.readFileSync(svgTree, 'base64')
+    const dataURL = `data:image/svg+xml;base64,${base64Enc}`
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
+  it('loads SVG data URL utf8', function () {
+    const utf8Encoded = fs.readFileSync(svgTree, 'utf8')
+    const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
+    return loadImage(dataURL).then((img) => {
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      assert.strictEqual(img.width, 200)
+      assert.strictEqual(img.height, 200)
+      assert.strictEqual(img.complete, true)
+    })
+  })
+
   it('calls Image#onload multiple times', function () {
     return loadImage(pngClock).then((img) => {
       let onloadCalled = 0
@@ -317,6 +341,13 @@ describe('Image', function () {
     assert.ok(!keys.includes('source'))
     assert.ok(!keys.includes('getSource'))
     assert.ok(!keys.includes('setSource'))
+  })
+
+  it('loadImage doesn\'t crash when you don\'t specify width and height', async function () {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`
+    const img = await loadImage(Buffer.from(svg))
+    assert.equal(img.width, 1)
+    assert.equal(img.height, 1)
   })
 
   describe('supports BMP', function () {

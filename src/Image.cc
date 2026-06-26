@@ -33,7 +33,7 @@ struct canvas_jpeg_error_mgr: jpeg_error_mgr {
  */
 
 typedef struct {
-  Napi::Env env;
+  std::optional<Napi::Env> env;
   unsigned len;
   uint8_t *buf;
 } read_closure_t;
@@ -42,7 +42,7 @@ typedef struct {
  * Initialize a new ImageSurface (canvas_surface_t wrapper)
  */
 
-ImageSurface::ImageSurface(Napi::Env env) : env(env) {
+ImageSurface::ImageSurface(std::optional<Napi::Env> env) : env(env) {
   data_mode = DATA_IMAGE;
   filename = NULL;
   _data = nullptr;
@@ -51,6 +51,8 @@ ImageSurface::ImageSurface(Napi::Env env) : env(env) {
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
+  svgdoc = nullptr;
+  _svg_last_width = _svg_last_height = 0;
 }
 
 /*
@@ -61,7 +63,7 @@ void
 ImageSurface::clearData() {
   if (_surface) {
     cairo_surface_destroy(_surface);
-    Napi::MemoryManagement::AdjustExternalMemory(env, -_data_len);
+    if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, -_data_len);
     _data_len = 0;
     _surface = NULL;
   }
@@ -72,9 +74,23 @@ ImageSurface::clearData() {
   free(filename);
   filename = NULL;
 
+  svgdoc = nullptr;
+
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
+}
+
+cairo_surface_t*
+ImageSurface::transferSurface() {
+  cairo_surface_t* surface = _surface;
+
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, -_data_len);
+  _data_len = 0;
+  _surface = nullptr;
+  _data = nullptr;
+
+  return surface;
 }
 
 /*
@@ -109,6 +125,12 @@ ImageSurface::loadFromBuffer(uint8_t *buf, unsigned len) {
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
   }
+
+  // confirm svg using first 1000 chars
+  // if a very long comment precedes the root <svg> tag, isSVG returns false
+  unsigned head_len = (len < 1000 ? len : 1000);
+  if (isSVG(buf, head_len))
+    return loadSVGFromBuffer(buf, len);
 
   if (isBMP(buf, len))
     return loadBMPFromBuffer(buf, len);
@@ -182,13 +204,20 @@ ImageSurface::loaded() {
   width = naturalWidth = cairo_image_surface_get_width(_surface);
   height = naturalHeight = cairo_image_surface_get_height(_surface);
   _data_len = naturalHeight * cairo_image_surface_get_stride(_surface);
-  Napi::MemoryManagement::AdjustExternalMemory(env, _data_len);
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, _data_len);
 }
 
 /*
  * Returns this image's surface.
  */
 cairo_surface_t *ImageSurface::surface() {
+  if (svgdoc && (_svg_last_width != width || _svg_last_height != height)) {
+    cairo_status_t status = renderSVGToSurface();
+    if (status != CAIRO_STATUS_SUCCESS) {
+      if (env) Napi::Error::New(*env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
+      return nullptr;
+    }
+  }
   return _surface;
 }
 
@@ -232,8 +261,26 @@ ImageSurface::loadSurface() {
     return CAIRO_STATUS_READ_ERROR;
   }
 
+  // confirm svg using first 1000 chars
+  // if a very long comment precedes the root <svg> tag, isSVG returns false
+  uint8_t head[1000] = {0};
+  fseek(stream, 0 , SEEK_END);
+  long len = ftell(stream);
+  unsigned head_len = (len < 1000 ? len : 1000);
+  unsigned head_size = head_len * sizeof(uint8_t);
+  rewind(stream);
+  if (head_size != fread(&head, 1, head_size, stream)) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+  rewind(stream);
+  if (isSVG(head, head_len)) {
+    return loadSVG(stream);
+  }
+
   if (isBMP(buf, 2))
     return loadBMP(stream);
+
   fclose(stream);
 
   this->errorInfo.set("Unsupported image type");
@@ -737,10 +784,9 @@ ImageSurface::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  Napi::MemoryManagement::AdjustExternalMemory(
-      static_cast<read_closure_t *>(closure)->env,
-      -static_cast<int>((static_cast<read_closure_t *>(closure)->len)));
-  free(static_cast<read_closure_t *>(closure)->buf);
+  read_closure_t* c = static_cast<read_closure_t *>(closure);
+  if (c->env) Napi::MemoryManagement::AdjustExternalMemory(*c->env, (int)c->len);
+  free(c->buf);
   free(closure);
 }
 
@@ -771,7 +817,7 @@ ImageSurface::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   mime_closure->buf = mime_data;
   mime_closure->len = len;
 
-  Napi::MemoryManagement::AdjustExternalMemory(env, len);
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, len);
 
   return cairo_surface_set_mime_data(_surface
     , mime_type
@@ -1183,6 +1229,87 @@ ImageSurface::rotatePixels(uint8_t* pixels, int width, int height, int channels,
 }
 
 /*
+ * Load SVG from buffer
+ */
+
+cairo_status_t
+ImageSurface::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  lunasvg::GraphicsCallbacks callbacks;
+
+  callbacks.setDecoderFn([](char* data, int length) {
+      ImageSurface bitmap(std::nullopt);
+      bitmap.loadFromBuffer((uint8_t*)data, length);
+      return bitmap.transferSurface();
+  });
+
+  svgdoc = lunasvg::Document::loadFromData((char*)buf, len, callbacks);
+
+  if (!svgdoc) return CAIRO_STATUS_READ_ERROR;
+
+  width = naturalWidth = svgdoc->width();
+  height = naturalHeight = svgdoc->height();
+
+  if (width <= 0 || height <= 0) {
+    this->errorInfo.set("Width and height must be set on the svg element");
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  return renderSVGToSurface();
+}
+
+/*
+ * Renders the lunasvg document to this image's surface
+ */
+
+cairo_status_t
+ImageSurface::renderSVGToSurface() {
+  cairo_status_t status;
+
+  if (_surface) cairo_surface_destroy(_surface);
+  lunasvg::Bitmap bitmap = svgdoc->renderToBitmap(width, height, 0);
+  status = cairo_surface_status(bitmap.surface());
+  if (status != CAIRO_STATUS_SUCCESS) return status;
+  _surface = cairo_surface_reference(bitmap.surface());
+
+  _svg_last_width = width;
+  _svg_last_height = height;
+
+  return status;
+}
+
+/*
+ * Load SVG
+ */
+
+cairo_status_t
+ImageSurface::loadSVG(FILE *stream) {
+  struct stat s;
+  int fd = fileno(stream);
+
+  // stat
+  if (fstat(fd, &s) < 0) {
+    fclose(stream);
+    return CAIRO_STATUS_READ_ERROR;
+  }
+
+  uint8_t *buf = (uint8_t *) malloc(s.st_size);
+
+  if (!buf) {
+    fclose(stream);
+    return CAIRO_STATUS_NO_MEMORY;
+  }
+
+  size_t read = fread(buf, s.st_size, 1, stream);
+  fclose(stream);
+
+  cairo_status_t result = CAIRO_STATUS_READ_ERROR;
+  if (1 == read) result = loadSVGFromBuffer(buf, s.st_size);
+  free(buf);
+
+  return result;
+}
+
+/*
  * Load BMP from buffer.
  */
 
@@ -1254,7 +1381,7 @@ cairo_status_t ImageSurface::loadBMP(FILE *stream){
 }
 
 /*
- * Return UNKNOWN, GIF, JPEG, or PNG based on the filename.
+ * Return UNKNOWN, SVG, GIF, JPEG, or PNG based on the filename.
  */
 
 ImageSurface::type
@@ -1265,6 +1392,7 @@ ImageSurface::extension(const char *filename) {
   if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return ImageSurface::GIF;
   if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return ImageSurface::JPEG;
   if (len >= 4 && 0 == strcmp(".png", filename - 4)) return ImageSurface::PNG;
+  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return ImageSurface::SVG;
   return ImageSurface::UNKNOWN;
 }
 
@@ -1293,6 +1421,27 @@ ImageSurface::isGIF(uint8_t *data) {
 int
 ImageSurface::isPNG(uint8_t *data) {
   return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
+}
+
+/*
+ * Skip "<?" and "<!" tags to test if root tag starts "<svg"
+ */
+int
+ImageSurface::isSVG(uint8_t *data, unsigned len) {
+  for (unsigned i = 3; i < len; i++) {
+    if ('<' == data[i-3]) {
+      switch (data[i-2]) {
+        case '?':
+        case '!':
+          break;
+        case 's':
+          return ('v' == data[i-1] && 'g' == data[i]);
+        default:
+          return false;
+      }
+    }
+  }
+  return false;
 }
 
 /*

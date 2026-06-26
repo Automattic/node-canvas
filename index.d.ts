@@ -518,3 +518,5 @@ export const jpegVersion: string | undefined
 export const gifVersion: string | undefined
 /** freetype version. */
 export const freetypeVersion: string
+/** lunasvg version. */
+export const lunasvgVersion: string | undefined
