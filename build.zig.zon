@@ -31,5 +31,6 @@
         .sheenbidi = .{ .path = "./pkg/sheenbidi" },
         .harfbuzz = .{ .path = "./pkg/harfbuzz" },
         .freetype = .{ .path = "./pkg/freetype" },
+        .lunasvg = .{ .path = "./pkg/lunasvg" }
     },
 }
