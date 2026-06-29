@@ -106,6 +106,9 @@ pub fn build(b: *std.Build) void {
             "-DNODE_ADDON_API_ENABLE_MAYBE",
             "-D_USE_MATH_DEFINES",
             "-std=c++20",
+            // dlclose gets called on the addon
+            // https://maskray.me/blog/2024-03-17-c++-exit-time-destructors
+            "-fno-c++-static-destructors",
             if (target.result.os.tag == .windows) "-DCAIRO_WIN32_STATIC_BUILD" else "",
         }
     });
