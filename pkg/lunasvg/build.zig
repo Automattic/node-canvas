@@ -88,6 +88,9 @@ pub fn build(b: *std.Build) !void {
             "-DLUNASVG_BUILD_STATIC",
             "-DPLUTOVG_BUILD_STATIC",
             "-fvisibility=hidden",
+            // dlclose gets called on the addon
+            // https://maskray.me/blog/2024-03-17-c++-exit-time-destructors
+            "-fno-c++-static-destructors",
         }
     });
 
