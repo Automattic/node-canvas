@@ -22,10 +22,10 @@ struct canvas_state_t {
   rgba_t shadow = { 0, 0, 0, 0 };
   double shadowOffsetX = 0.;
   double shadowOffsetY = 0.;
-  cairo_pattern_t* fillPattern = nullptr;
-  cairo_pattern_t* strokePattern = nullptr;
-  cairo_pattern_t* fillGradient = nullptr;
-  cairo_pattern_t* strokeGradient = nullptr;
+  Napi::ObjectReference fillPattern;
+  Napi::ObjectReference strokePattern;
+  Napi::ObjectReference fillGradient;
+  Napi::ObjectReference strokeGradient;
   PangoFontDescription* fontDescription = nullptr;
   std::string font = "10px sans-serif";
   cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
@@ -47,10 +47,10 @@ struct canvas_state_t {
     fill = other.fill;
     stroke = other.stroke;
     patternQuality = other.patternQuality;
-    fillPattern = other.fillPattern;
-    strokePattern = other.strokePattern;
-    fillGradient = other.fillGradient;
-    strokeGradient = other.strokeGradient;
+    fillPattern.Reset(other.fillPattern.Value());
+    strokePattern.Reset(other.strokePattern.Value());
+    fillGradient.Reset(other.fillGradient.Value());
+    strokeGradient.Reset(other.strokeGradient.Value());
     globalAlpha = other.globalAlpha;
     textAlignment = other.textAlignment;
     textBaseline = other.textBaseline;
@@ -217,7 +217,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Env env;
 
   private:
-    void _resetPersistentHandles();
     Napi::Value _getFillColor();
     Napi::Value _getStrokeColor();
     Napi::Value get_current_transform();
@@ -228,8 +227,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
     text_align_t resolveTextAlignment();
-    Napi::Reference<Napi::Value> _fillStyle;
-    Napi::Reference<Napi::Value> _strokeStyle;
     Canvas *_canvas;
     cairo_t *_context = nullptr;
     cairo_path_t *_path;

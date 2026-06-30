@@ -2641,6 +2641,37 @@ describe('Canvas', function () {
         ctx.restore()
       })
     }
+
+    it('save/restores patterns', async function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+      const img = await loadImage(path.join(__dirname, '/fixtures/checkers.png'))
+      const pattern = ctx.createPattern(img)
+
+      ctx.fillStyle = pattern
+      ctx.strokeStyle = pattern
+      ctx.save()
+      ctx.fillStyle = 'red'
+      ctx.strokeStyle = 'red'
+      ctx.restore()
+      assert.strictEqual(ctx.fillStyle, pattern)
+      assert.strictEqual(ctx.strokeStyle, pattern)
+    })
+
+    it('save/restores gradients', async function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+      const gradient = ctx.createLinearGradient(0, 0, 0, 150)
+
+      ctx.fillStyle = gradient
+      ctx.strokeStyle = gradient
+      ctx.save()
+      ctx.fillStyle = 'red'
+      ctx.strokeStyle = 'red'
+      ctx.restore()
+      assert.strictEqual(ctx.fillStyle, gradient)
+      assert.strictEqual(ctx.strokeStyle, gradient)
+    })
   })
 
   describe('Context2d#beingTag()/endTag()', function () {

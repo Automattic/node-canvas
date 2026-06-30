@@ -243,7 +243,6 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
 Context2d::~Context2d() {
   if (_layout) g_object_unref(_layout);
   if (_context) cairo_destroy(_context);
-  _resetPersistentHandles();
 }
 
 /*
@@ -254,12 +253,6 @@ void Context2d::resetState() {
   states.pop();
   states.emplace();
   pango_layout_set_font_description(_layout, state->fontDescription);
-  _resetPersistentHandles();
-}
-
-void Context2d::_resetPersistentHandles() {
-  _fillStyle.Reset();
-  _strokeStyle.Reset();
 }
 
 /*
@@ -345,28 +338,6 @@ create_transparent_gradient(cairo_pattern_t *source, float alpha) {
   return newGradient;
 }
 
-cairo_pattern_t*
-create_transparent_pattern(cairo_pattern_t *source, float alpha) {
-  cairo_surface_t *surface;
-  cairo_pattern_get_surface(source, &surface);
-  int width = cairo_image_surface_get_width(surface);
-  int height = cairo_image_surface_get_height(surface);
-  cairo_surface_t *mask_surface = cairo_image_surface_create(
-    CAIRO_FORMAT_ARGB32,
-    width,
-    height);
-  cairo_t *mask_context = cairo_create(mask_surface);
-  if (cairo_status(mask_context) != CAIRO_STATUS_SUCCESS) {
-    return NULL;
-  }
-  cairo_set_source(mask_context, source);
-  cairo_paint_with_alpha(mask_context, alpha);
-  cairo_destroy(mask_context);
-  cairo_pattern_t* newPattern = cairo_pattern_create_for_surface(mask_surface);
-  cairo_surface_destroy(mask_surface);
-  return newPattern;
-}
-
 /*
  * Fill and apply shadow.
  */
@@ -387,30 +358,25 @@ void
 Context2d::fill(bool preserve) {
   cairo_pattern_t *new_pattern;
   bool needsRestore = false;
-  if (state->fillPattern) {
-    if (state->globalAlpha < 1) {
-      new_pattern = create_transparent_pattern(state->fillPattern, state->globalAlpha);
-      if (new_pattern == NULL) {
-        Napi::Error::New(env, "Failed to initialize context").ThrowAsJavaScriptException();
-        // failed to allocate
-        return;
-      }
-      cairo_set_source(_context, new_pattern);
-      cairo_pattern_destroy(new_pattern);
-    } else {
-      cairo_pattern_set_filter(state->fillPattern, state->patternQuality);
-      cairo_set_source(_context, state->fillPattern);
+  if (Napi::Object jsPattern; (jsPattern = state->fillPattern.Value())) {
+    Pattern *pattern = Pattern::Unwrap(jsPattern);
+    new_pattern = pattern->createCairoPattern(state->globalAlpha, state->patternQuality);
+    if (new_pattern == nullptr) {
+      Napi::Error::New(env, "Failed to initialize context").ThrowAsJavaScriptException();
+      // failed to allocate
+      return;
     }
-    repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->fillPattern);
+    cairo_set_source(_context, new_pattern);
+    repeat_type_t repeat = pattern->repeat();
     if (repeat == NO_REPEAT) {
-      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
+      cairo_pattern_set_extend(new_pattern, CAIRO_EXTEND_NONE);
     } else if (repeat == REPEAT) {
-      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+      cairo_pattern_set_extend(new_pattern, CAIRO_EXTEND_REPEAT);
     } else {
       cairo_save(_context);
       cairo_path_t *savedPath = cairo_copy_path(_context);
       cairo_surface_t *patternSurface = nullptr;
-      cairo_pattern_get_surface(cairo_get_source(_context), &patternSurface);
+      cairo_pattern_get_surface(new_pattern, &patternSurface);
 
       double width, height;
       if (repeat == REPEAT_X) {
@@ -430,12 +396,14 @@ Context2d::fill(bool preserve) {
       cairo_clip(_context);
       cairo_append_path(_context, savedPath);
       cairo_path_destroy(savedPath);
-      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+      cairo_pattern_set_extend(new_pattern, CAIRO_EXTEND_REPEAT);
       needsRestore = true;
     }
-  } else if (state->fillGradient) {
+    cairo_pattern_destroy(new_pattern);
+  } else if (Napi::Object jsGradient; (jsGradient = state->fillGradient.Value())) {
+    Gradient *gradient = Gradient::Unwrap(jsGradient);
     if (state->globalAlpha < 1) {
-      new_pattern = create_transparent_gradient(state->fillGradient, state->globalAlpha);
+      new_pattern = create_transparent_gradient(gradient->pattern(), state->globalAlpha);
       if (new_pattern == NULL) {
         Napi::Error::New(env, "Unexpected gradient type").ThrowAsJavaScriptException();
         // failed to recognize gradient
@@ -445,8 +413,8 @@ Context2d::fill(bool preserve) {
       cairo_set_source(_context, new_pattern);
       cairo_pattern_destroy(new_pattern);
     } else {
-      cairo_pattern_set_filter(state->fillGradient, state->patternQuality);
-      cairo_set_source(_context, state->fillGradient);
+      cairo_pattern_set_filter(gradient->pattern(), state->patternQuality);
+      cairo_set_source(_context, gradient->pattern());
     }
   } else {
     setSourceRGBA(state->fill);
@@ -472,29 +440,26 @@ Context2d::fill(bool preserve) {
 void
 Context2d::stroke(bool preserve) {
   cairo_pattern_t *new_pattern;
-  if (state->strokePattern) {
-    if (state->globalAlpha < 1) {
-      new_pattern = create_transparent_pattern(state->strokePattern, state->globalAlpha);
-      if (new_pattern == NULL) {
-        Napi::Error::New(env, "Failed to initialize context").ThrowAsJavaScriptException();
-        // failed to allocate
-        return;
-      }
-      cairo_set_source(_context, new_pattern);
-      cairo_pattern_destroy(new_pattern);
-    } else {
-      cairo_pattern_set_filter(state->strokePattern, state->patternQuality);
-      cairo_set_source(_context, state->strokePattern);
+  if (Napi::Object jsPattern; (jsPattern = state->strokePattern.Value())) {
+    Pattern *pattern = Pattern::Unwrap(jsPattern);
+    new_pattern = pattern->createCairoPattern(state->globalAlpha, state->patternQuality);
+    if (new_pattern == nullptr) {
+      Napi::Error::New(env, "Failed to initialize context").ThrowAsJavaScriptException();
+      // failed to allocate
+      return;
     }
-    repeat_type_t repeat = Pattern::get_repeat_type_for_cairo_pattern(state->strokePattern);
+    cairo_set_source(_context, new_pattern);
+    repeat_type_t repeat = pattern->repeat();
     if (NO_REPEAT == repeat) {
-      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_NONE);
+      cairo_pattern_set_extend(new_pattern, CAIRO_EXTEND_NONE);
     } else {
-      cairo_pattern_set_extend(cairo_get_source(_context), CAIRO_EXTEND_REPEAT);
+      cairo_pattern_set_extend(new_pattern, CAIRO_EXTEND_REPEAT);
     }
-  } else if (state->strokeGradient) {
+    cairo_pattern_destroy(new_pattern);
+  } else if (Napi::Object jsGradient; (jsGradient = state->strokeGradient.Value())) {
+    Gradient *gradient = Gradient::Unwrap(jsGradient);
     if (state->globalAlpha < 1) {
-      new_pattern = create_transparent_gradient(state->strokeGradient, state->globalAlpha);
+      new_pattern = create_transparent_gradient(gradient->pattern(), state->globalAlpha);
       if (new_pattern == NULL) {
         Napi::Error::New(env, "Unexpected gradient type").ThrowAsJavaScriptException();
         // failed to recognize gradient
@@ -504,8 +469,8 @@ Context2d::stroke(bool preserve) {
       cairo_set_source(_context, new_pattern);
       cairo_pattern_destroy(new_pattern);
     } else {
-      cairo_pattern_set_filter(state->strokeGradient, state->patternQuality);
-      cairo_set_source(_context, state->strokeGradient);
+      cairo_pattern_set_filter(gradient->pattern(), state->patternQuality);
+      cairo_set_source(_context, gradient->pattern());
     }
   } else {
     setSourceRGBA(state->stroke);
@@ -1942,14 +1907,13 @@ Context2d::SetCurrentTransform(const Napi::CallbackInfo& info, const Napi::Value
 
 Napi::Value
 Context2d::GetFillStyle(const Napi::CallbackInfo& info) {
-  Napi::Value style;
-
-  if (_fillStyle.IsEmpty())
-    style = _getFillColor();
-  else
-    style = _fillStyle.Value();
-
-  return style;
+  if (state->fillGradient.Value()) {
+    return state->fillGradient.Value();
+  } else if (state->fillPattern.Value()) {
+    return state->fillPattern.Value();
+  } else {
+    return _getFillColor();
+  }
 }
 
 /*
@@ -1958,20 +1922,18 @@ Context2d::GetFillStyle(const Napi::CallbackInfo& info) {
 
 void
 Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  state->fillGradient.Reset();
+  state->fillPattern.Reset();
+
   if (value.IsString()) {
-    _fillStyle.Reset();
     _setFillColor(value.As<Napi::String>());
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
-      Gradient *grad = Gradient::Unwrap(obj);
-      state->fillGradient = grad->pattern();
+      state->fillGradient.Reset(obj);
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _fillStyle.Reset(obj);
-      Pattern *pattern = Pattern::Unwrap(obj);
-      state->fillPattern = pattern->pattern();
+      state->fillPattern.Reset(obj);
     }
   }
 }
@@ -1982,14 +1944,13 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
 
 Napi::Value
 Context2d::GetStrokeStyle(const Napi::CallbackInfo& info) {
-  Napi::Value style;
-
-  if (_strokeStyle.IsEmpty())
-    style = _getStrokeColor();
-  else
-    style = _strokeStyle.Value();
-
-  return style;
+  if (state->strokeGradient.Value()) {
+    return state->strokeGradient.Value();
+  } else if (state->strokePattern.Value()) {
+    return state->strokePattern.Value();
+  } else {
+    return _getStrokeColor();
+  }
 }
 
 /*
@@ -1998,20 +1959,18 @@ Context2d::GetStrokeStyle(const Napi::CallbackInfo& info) {
 
 void
 Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  state->strokeGradient.Reset();
+  state->strokePattern.Reset();
+
   if (value.IsString()) {
-    _strokeStyle.Reset();
     _setStrokeColor(value.As<Napi::String>());
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
     if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(obj);
-      Gradient *grad = Gradient::Unwrap(obj);
-      state->strokeGradient = grad->pattern();
+      state->strokeGradient.Reset(obj);
     } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
-      _strokeStyle.Reset(value);
-      Pattern *pattern = Pattern::Unwrap(obj);
-      state->strokePattern = pattern->pattern();
+      state->strokePattern.Reset(obj);
     }
   }
 }
@@ -2192,7 +2151,6 @@ Context2d::_setFillColor(Napi::Value arg) {
     if (status != napi_ok) return;
     uint32_t rgba = rgba_from_string(buf, &ok);
     if (!ok) return;
-    state->fillPattern = state->fillGradient = NULL;
     state->fill = rgba_create(rgba);
   }
 }
@@ -2218,7 +2176,6 @@ Context2d::_setStrokeColor(Napi::Value arg) {
   std::string str = arg.As<Napi::String>();
   uint32_t rgba = rgba_from_string(str.c_str(), &ok);
   if (!ok) return;
-  state->strokePattern = state->strokeGradient = NULL;
   state->stroke = rgba_create(rgba);
 }
 
