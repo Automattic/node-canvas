@@ -6,8 +6,6 @@
 #include "Image.h"
 #include "InstanceData.h"
 
-using namespace Napi;
-
 const cairo_user_data_key_t *pattern_repeat_key;
 
 /*

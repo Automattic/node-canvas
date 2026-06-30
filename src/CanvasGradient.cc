@@ -6,8 +6,6 @@
 #include "Canvas.h"
 #include "color.h"
 
-using namespace Napi;
-
 /*
  * Initialize CanvasGradient.
  */
