@@ -9,7 +9,6 @@
 #include <limits>
 #include <map>
 #include <string>
-
 // Compatibility with Visual Studio versions prior to VS2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
@@ -154,13 +153,44 @@ wrap_float(T value, T limit) {
 // }
 
 /*
+ * Parse and clip a percentage value. Returns a float in the range [0, 1].
+ */
+
+
+static bool
+check_percentage(const char* str) {
+  while (*str && *str != '%' && *str != ',' && *str != ' ' && *str != '/') ++str;
+  return *str == '%';
+}
+
+static bool
+parse_clipped_percentage(const char** pStr, float *pFraction) {
+  float percentage;
+  bool result = parse_css_number(pStr,&percentage);
+  const char*& str = *pStr;
+  if (result) {
+    if (*str == '%') {
+      ++str;
+      *pFraction = clip(percentage, 0.0f, 100.0f) / 100.0f;
+      return result;
+    }
+  }
+  return false;
+}
+
+/*
  * Parse color channel value
  */
 
 static bool
 parse_rgb_channel(const char** pStr, uint8_t *pChannel) {
   float f_channel;
-  if (parse_css_number(pStr, &f_channel)) {
+  bool percentage = check_percentage(*pStr);
+  if(percentage && parse_clipped_percentage(pStr, &f_channel)) {
+    int channel = (int) ceil(255 * f_channel);
+    *pChannel = channel;
+    return true;
+  } else if (parse_css_number(pStr, &f_channel)) {
     int channel = (int) ceil(f_channel);
     *pChannel = clip(channel, 0, 255);
     return true;
@@ -182,24 +212,6 @@ parse_degrees(const char** pStr, float *pDegrees) {
   return false;
 }
 
-/*
- * Parse and clip a percentage value. Returns a float in the range [0, 1].
- */
-
-static bool
-parse_clipped_percentage(const char** pStr, float *pFraction) {
-  float percentage;
-  bool result = parse_css_number(pStr,&percentage);
-  const char*& str = *pStr;
-  if (result) {
-    if (*str == '%') {
-      ++str;
-      *pFraction = clip(percentage, 0.0f, 100.0f) / 100.0f;
-      return result;
-    }
-  }
-  return false;
-}
 
 /*
  * Macros to help with parsing inside rgba_from_*_string
@@ -231,13 +243,15 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 #define ALPHA(NAME) \
     if (*str >= '1' && *str <= '9') { \
       NAME = 0; \
-      float n = .1f; \
       while(*str >='0' && *str <= '9') { \
-        NAME += (*str - '0') * n; \
+        NAME = NAME * 10 + (*str - '0'); \
         str++; \
       } \
       while(*str == ' ')str++; \
-      if(*str != '%') { \
+      if(*str == '%') { \
+        NAME *= 0.01f; \
+        ++str; \
+      } else { \
         NAME = 1; \
       } \
     } else { \
@@ -252,6 +266,11 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
         while (*str >= '0' && *str <= '9') { \
           NAME += (*str++ - '0') * n; \
           n *= .1f; \
+        } \
+        while(*str == ' ')str++; \
+        if(*str == '%') { \
+          NAME *= 0.01f; \
+          ++str; \
         } \
       } \
     } \
