@@ -112,10 +112,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void FillText(const Napi::CallbackInfo& info);
     void StrokeText(const Napi::CallbackInfo& info);
     static Napi::Value SetFont(const Napi::CallbackInfo& info);
-    static Napi::Value SetFillColor(const Napi::CallbackInfo& info);
-    static Napi::Value SetStrokeColor(const Napi::CallbackInfo& info);
-    static Napi::Value SetStrokePattern(const Napi::CallbackInfo& info);
-    static Napi::Value SetTextAlignment(const Napi::CallbackInfo& info);
     void SetLineDash(const Napi::CallbackInfo& info);
     Napi::Value GetLineDash(const Napi::CallbackInfo& info);
     Napi::Value MeasureText(const Napi::CallbackInfo& info);
@@ -133,7 +129,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void Ellipse(const Napi::CallbackInfo& info);
     Napi::Value GetImageData(const Napi::CallbackInfo& info);
     Napi::Value CreateImageData(const Napi::CallbackInfo& info);
-    static Napi::Value GetStrokeColor(const Napi::CallbackInfo& info);
     Napi::Value CreatePattern(const Napi::CallbackInfo& info);
     Napi::Value CreateLinearGradient(const Napi::CallbackInfo& info);
     Napi::Value CreateRadialGradient(const Napi::CallbackInfo& info);
@@ -199,18 +194,13 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void setTextPath(double x, double y);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
-    void shadowStart();
-    void shadowApply();
     void savePath();
     void restorePath();
-    void saveState();
-    void restoreState();
     void inline setFillRule(Napi::Value value);
     void fill(bool preserve = false);
     void stroke(bool preserve = false);
     void save();
     void restore();
-    void setFontFromState();
     void resetState();
     inline PangoLayout *layout(){ return _layout; }
     ~Context2d();
@@ -221,9 +211,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value _getStrokeColor();
     Napi::Value get_current_transform();
     void _setFillColor(Napi::Value arg);
-    void _setFillPattern(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
-    void _setStrokePattern(Napi::Value arg);
     void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
     text_align_t resolveTextAlignment();
