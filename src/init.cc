@@ -13,6 +13,8 @@
 #include "Image.h"
 #include "ImageData.h"
 #include "InstanceData.h"
+#include "FontFace.h"
+#include "FontFaceSet.h"
 
 /*
  * Save some external modules as private references.
@@ -31,7 +33,9 @@ setParseFont(const Napi::CallbackInfo& info) {
 }
 
 Napi::Object init(Napi::Env env, Napi::Object exports) {
-  env.SetInstanceData(new InstanceData());
+  InstanceData* data = new InstanceData();
+  env.SetInstanceData(data);
+  data->fontManager.readSystemFonts();
 
   Canvas::Initialize(env, exports);
   Image::Initialize(env, exports);
@@ -39,6 +43,8 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
   Context2d::Initialize(env, exports);
   Gradient::Initialize(env, exports);
   Pattern::Initialize(env, exports);
+  FontFace::Initialize(env, exports);
+  FontFaceSet::Initialize(env, exports);
 
   exports.Set("setDOMMatrix", Napi::Function::New(env, &setDOMMatrix));
   exports.Set("setParseFont", Napi::Function::New(env, &setParseFont));

@@ -3,6 +3,21 @@ import { Readable } from 'stream'
 
 import * as Canvas from './index'
 
+const font = new Canvas.FontFace('../pfennigFont/Pfennig.ttf', 'pfennigFont', {
+  weight: 'normal',
+  style: 'normal'
+});
+
+Canvas.fonts.add(font)
+font.status;
+font.family = 'pfennig';
+font.style = 'italic';
+font.weight = 'bold';
+Canvas.fonts.delete(font);
+Canvas.fonts.clear();
+Canvas.fonts.size;
+for (const font of Canvas.fonts) font.status;
+
 Canvas.createCanvas(5, 10)
 Canvas.createCanvas(200, 200, 'pdf')
 Canvas.createCanvas(150, 150, 'svg')
@@ -19,6 +34,7 @@ expectType<number>(id.width)
 ctx.currentTransform = ctx.getTransform()
 
 ctx.quality = 'best'
+ctx.textDrawingMode = 'glyph'
 
 const grad = ctx.createLinearGradient(0, 1, 2, 3)
 expectType<Canvas.CanvasGradient>(grad)

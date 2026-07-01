@@ -4,8 +4,11 @@
 
 #include "cairo.h"
 #include "Canvas.h"
+#include "Font.h"
+#include "FontLayout.h"
 #include "color.h"
 #include "napi.h"
+#include "unicode.h"
 #include <stack>
 
 /*
@@ -25,10 +28,17 @@ struct canvas_state_t {
   Napi::ObjectReference strokePattern;
   Napi::ObjectReference fillGradient;
   Napi::ObjectReference strokeGradient;
+  FontProperties fontProperties;
+  std::string font = "10px sans-serif";
   cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
   float globalAlpha = 1.f;
   int shadowBlur = 0;
+  text_align_t textAlignment = TEXT_ALIGNMENT_START;
+  text_baseline_t textBaseline = TEXT_BASELINE_ALPHABETIC;
+  canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
   bool imageSmoothingEnabled = true;
+  std::string direction = "ltr";
+  std::string lang = "";
 
   canvas_state_t() {}
 
@@ -41,11 +51,18 @@ struct canvas_state_t {
     fillGradient.Reset(other.fillGradient.Value());
     strokeGradient.Reset(other.strokeGradient.Value());
     globalAlpha = other.globalAlpha;
+    textAlignment = other.textAlignment;
+    textBaseline = other.textBaseline;
     shadow = other.shadow;
     shadowBlur = other.shadowBlur;
     shadowOffsetX = other.shadowOffsetX;
     shadowOffsetY = other.shadowOffsetY;
+    textDrawingMode = other.textDrawingMode;
+    fontProperties = other.fontProperties;
+    font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
+    direction = other.direction;
+    lang = other.lang;
   }
 };
 
@@ -87,8 +104,11 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void Clip(const Napi::CallbackInfo& info);
     void Fill(const Napi::CallbackInfo& info);
     void Stroke(const Napi::CallbackInfo& info);
+    void FillText(const Napi::CallbackInfo& info);
+    void StrokeText(const Napi::CallbackInfo& info);
     void SetLineDash(const Napi::CallbackInfo& info);
     Napi::Value GetLineDash(const Napi::CallbackInfo& info);
+    Napi::Value MeasureText(const Napi::CallbackInfo& info);
     void BezierCurveTo(const Napi::CallbackInfo& info);
     void QuadraticCurveTo(const Napi::CallbackInfo& info);
     void LineTo(const Napi::CallbackInfo& info);
@@ -126,6 +146,10 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value GetCurrentTransform(const Napi::CallbackInfo& info);
     Napi::Value GetFillStyle(const Napi::CallbackInfo& info);
     Napi::Value GetStrokeStyle(const Napi::CallbackInfo& info);
+    Napi::Value GetFont(const Napi::CallbackInfo& info);
+    Napi::Value GetTextBaseline(const Napi::CallbackInfo& info);
+    Napi::Value GetTextAlign(const Napi::CallbackInfo& info);
+    Napi::Value GetLanguage(const Napi::CallbackInfo& info);
     void SetPatternQuality(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetImageSmoothingEnabled(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetGlobalCompositeOperation(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -140,18 +164,26 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void SetShadowOffsetY(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetShadowBlur(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetAntiAlias(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetTextDrawingMode(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetQuality(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetCurrentTransform(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetFont(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetTextBaseline(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetTextAlign(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value);
     void BeginTag(const Napi::CallbackInfo& info);
     void EndTag(const Napi::CallbackInfo& info);
+    Napi::Value GetDirection(const Napi::CallbackInfo& info);
+    void SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
     inline cairo_t *context(){ return _context; }
     inline Canvas *canvas(){ return _canvas; }
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
+    void setTextPath(cairo_glyph_t* glyphs, size_t numGlyphs);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void savePath();
@@ -171,7 +203,12 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value get_current_transform();
     void _setFillColor(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
+    void paintText(const Napi::CallbackInfo&, bool);
+    text_align_t resolveTextAlignment();
     Canvas *_canvas;
     cairo_t *_context = nullptr;
     cairo_path_t *_path;
+    // 65536 is an arbitrary max fillText length. Use sizeof to get the capacity.
+    char16_t textBuffer[65536];
+    size_t textLength;
 };

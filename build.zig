@@ -4,14 +4,11 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const cairo = b.dependency("cairo", .{
-        .use_spectre = false,
-        .use_xlib = false,
         .use_xcb = false,
         .use_png = true,
         .use_glib = false,
         .use_dwrite = false,
-        .use_fontconfig = false,
-        .use_freetype = false,
+        .use_freetype = true,
         .use_quartz = false,
         .target = target,
         .optimize = optimize,
@@ -31,6 +28,35 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     }).artifact("png");
+    
+    const sheenbidi = b.dependency("sheenbidi", .{
+        .target = target,
+        .optimize = optimize,
+    }).artifact("sheenbidi");
+
+    const zg = b.dependency("zg", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const harfbuzz = b.dependency("harfbuzz", .{
+        .target = target,
+        .optimize = optimize,
+    }).artifact("harfbuzz");
+
+    const unicode = b.addLibrary(.{
+        .name = "unicode",
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .root_source_file = b.path("src/unicode.zig"),
+        })
+    });
+
+    unicode.root_module.addImport("Scripts", zg.module("Scripts"));
+    unicode.root_module.addImport("Graphemes", zg.module("Graphemes"));
+    unicode.linkLibC();
 
     const canvas = b.addLibrary(.{
       .name = "canvas",
@@ -58,11 +84,23 @@ pub fn build(b: *std.Build) void {
             "src/Image.cc",
             "src/ImageData.cc",
             "src/init.cc",
-            "src/FontParser.cc"
+            "src/itemize.cc",
+            "src/FontManager.cc",
+            switch (target.result.os.tag) {
+                .windows => "src/FontManagerWindows.cc",
+                .macos => "src/FontManagerMacos.cc",
+                else => "src/FontManagerLinux.cc",
+            },
+            "src/FontFace.cc",
+            "src/FontFaceSet.cc",
+            "src/FontParser.cc",
+            "src/FontLayout.cc"
         } ,
         .flags = &.{
             "-DNAPI_DISABLE_CPP_EXCEPTIONS",
             "-DNODE_ADDON_API_ENABLE_MAYBE",
+            "-D_USE_MATH_DEFINES",
+            "-std=c++20",
             if (target.result.os.tag == .windows) "-DCAIRO_WIN32_STATIC_BUILD" else "",
         }
     });
@@ -80,7 +118,14 @@ pub fn build(b: *std.Build) void {
     canvas.linkLibrary(libjpeg_turbo);
     canvas.linkLibrary(libpng);
     canvas.linkLibrary(giflib);
-    
+    canvas.linkLibrary(sheenbidi);
+    canvas.linkLibrary(unicode);
+    canvas.linkLibrary(harfbuzz);
+
+    if (target.result.os.tag == .windows) {
+        canvas.linkSystemLibrary("dwrite");
+    }
+
     const move = b.addInstallFile(canvas.getEmittedBin(), "../bin/canvas.node");
     move.step.dependOn(&canvas.step);
     b.getInstallStep().dependOn(&move.step);
