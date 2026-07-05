@@ -1,6 +1,6 @@
 # node-canvas
 
-![Test](https://github.com/Automattic/node-canvas/workflows/Test/badge.svg)
+![Test](https://github.com/Automattic/node-canvas/actions/workflows/ci.yaml/badge.svg)
 [![NPM version](https://badge.fury.io/js/canvas.svg)](http://badge.fury.io/js/canvas)
 
 node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation for [Node.js](http://nodejs.org).
