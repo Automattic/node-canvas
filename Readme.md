@@ -68,12 +68,6 @@ loadImage('examples/images/lime-cat.jpg').then((image) => {
 })
 ```
 
-## Upgrading from 1.x to 2.x
-
-See the [changelog](https://github.com/Automattic/node-canvas/blob/master/CHANGELOG.md) for a guide to upgrading from 1.x to 2.x.
-
-For version 1.x documentation, see [the v1.x branch](https://github.com/Automattic/node-canvas/tree/v1.x).
-
 ## Documentation
 
 This project is an implementation of the Web Canvas API and implements that API as closely as possible. For API documentation, please visit [Mozilla Web Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API). (See [Compatibility Status](https://github.com/Automattic/node-canvas/wiki/Compatibility-Status) for the current API compliance.) All utility methods and non-standard APIs are documented below.
