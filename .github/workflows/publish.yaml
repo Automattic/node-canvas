@@ -1,0 +1,13 @@
+# This is a dummy file so that this workflow shows up in the Actions tab.
+# Publishing packages via CI is a 4x feature (next branch) not yet released
+
+name: Publish
+on: workflow_dispatch
+
+jobs:
+  Linux:
+    name: Nothing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Nothing
+        run: echo "Nothing to do here"
