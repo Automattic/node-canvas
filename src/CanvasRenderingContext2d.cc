@@ -20,6 +20,9 @@
 #include "Util.h"
 #include <vector>
 
+#define _BSD_SOURCE
+#include <endian.h>
+
 /*
  * Rectangle arg assertions.
  */
@@ -34,6 +37,39 @@
   double height = args[3];
 
 constexpr double twoPi = M_PI * 2.;
+
+union PixelRGBA32 {
+    uint32_t value;   // packed 32‑bit pixel
+
+    struct {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
+    } rgba;
+};
+
+union PixelARGB32 {
+    uint32_t value;   // packed 32‑bit pixel
+
+    struct {
+        uint8_t a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+    } rgba;
+};
+
+
+static inline uint32_t load32(const void* p) {
+    uint32_t v;
+    std::memcpy(&v, p, sizeof(v));
+    return v;
+}
+
+static inline void store32(void* p, uint32_t v) {
+    std::memcpy(p, &v, sizeof(v));
+}
 
 /*
  * Simple helper macro for a rather verbose function call.
@@ -804,7 +840,9 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
 
   int dstStride = canvas()->stride();
   int Bpp = dstStride / canvas()->getWidth();
-  int srcStride = Bpp * imageData->width();
+  int imWidth = imageData->width();
+  int imHeight = imageData->height();
+  int srcStride = Bpp * imWidth;
 
   int64_t sx = 0
     , sy = 0
@@ -818,8 +856,8 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   switch (info.Length()) {
     // imageData, dx, dy
     case 3:
-      sw = imageData->width();
-      sh = imageData->height();
+      sw = imWidth;
+      sh = imHeight;
       break;
     // imageData, dx, dy, sx, sy, sw, sh
     case 7:
@@ -859,37 +897,35 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   switch (canvas()->getFormat()) {
   case CAIRO_FORMAT_ARGB32: {
     src += sy * srcStride + sx * 4;
-    dst += dstStride * dy + 4 * dx;
+    dst += dstStride * dy + sizeof(uint32_t) * dx;
+    PixelRGBA32 pixelsrc;
+    PixelARGB32 pixeldst;
     for (int y = 0; y < rows; ++y) {
-      uint8_t *dstRow = dst;
       uint8_t *srcRow = src;
+      uint32_t *dstRow = ((uint32_t *) dst);
       for (int x = 0; x < cols; ++x) {
-        // rgba
-        uint8_t r = *srcRow++;
-        uint8_t g = *srcRow++;
-        uint8_t b = *srcRow++;
-        uint8_t a = *srcRow++;
-
+        pixelsrc.rgba.r = *srcRow++;
+        pixelsrc.rgba.g = *srcRow++;
+        pixelsrc.rgba.b = *srcRow++;
+        pixelsrc.rgba.a = *srcRow++;
         // argb
         // performance optimization: fully transparent/opaque pixels can be
         // processed more efficiently.
-        if (a == 0) {
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-          *dstRow++ = 0;
-        } else if (a == 255) {
-          *dstRow++ = b;
-          *dstRow++ = g;
-          *dstRow++ = r;
-          *dstRow++ = a;
+        if (pixelsrc.rgba.a == 0) {
+          pixeldst.rgba.a = pixeldst.rgba.r = pixeldst.rgba.g = pixeldst.rgba.b = 0;
+        } else if (pixelsrc.rgba.a == 255) {
+          pixeldst.rgba.a = pixelsrc.rgba.a;
+          pixeldst.rgba.r = pixelsrc.rgba.r;
+          pixeldst.rgba.b = pixelsrc.rgba.b;
+          pixeldst.rgba.g = pixelsrc.rgba.g;
         } else {
-          float alpha = (float)a / 255;
-          *dstRow++ = b * alpha;
-          *dstRow++ = g * alpha;
-          *dstRow++ = r * alpha;
-          *dstRow++ = a;
+          pixeldst.rgba.a = pixelsrc.rgba.a;
+          float alpha = (float)pixeldst.rgba.a / 255;
+          pixeldst.rgba.r = pixelsrc.rgba.r * alpha;
+          pixeldst.rgba.b = pixelsrc.rgba.b * alpha;
+          pixeldst.rgba.g = pixelsrc.rgba.g * alpha;
         }
+        store32(dstRow++, be32toh(pixeldst.value));
       }
       dst += dstStride;
       src += srcStride;
@@ -898,22 +934,27 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   }
   case CAIRO_FORMAT_RGB24: {
     src += sy * srcStride + sx * 4;
-    dst += dstStride * dy + 4 * dx;
+    dst += dstStride * dy + sizeof(uint32_t) * dx;
+    PixelRGBA32 pixelsrc;
+    PixelARGB32 pixeldst;
     for (int y = 0; y < rows; ++y) {
       uint8_t *dstRow = dst;
       uint8_t *srcRow = src;
       for (int x = 0; x < cols; ++x) {
         // rgba
-        uint8_t r = *srcRow++;
-        uint8_t g = *srcRow++;
-        uint8_t b = *srcRow++;
+        pixelsrc.rgba.r = *srcRow++;
+        pixelsrc.rgba.g = *srcRow++;
+        pixelsrc.rgba.b = *srcRow++;
+        pixelsrc.rgba.a = 255;
         srcRow++;
 
         // argb
-        *dstRow++ = b;
-        *dstRow++ = g;
-        *dstRow++ = r;
-        *dstRow++ = 255;
+        pixeldst.rgba.a = pixelsrc.rgba.a;
+        pixeldst.rgba.r = pixelsrc.rgba.r;
+        pixeldst.rgba.b = pixelsrc.rgba.b;
+        pixeldst.rgba.g = pixelsrc.rgba.g;
+
+        store32(dstRow++, be32toh(pixeldst.value));
       }
       dst += dstStride;
       src += srcStride;
@@ -1085,31 +1126,32 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     dst += oy * dstStride + ox * 4;
     // Rearrange alpha (argb -> rgba), undo alpha pre-multiplication,
     // and store in big-endian format
+    PixelARGB32 pixelsrc;
     for (int y = 0; y < ch; ++y) {
       uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
       for (int x = 0; x < cw; ++x) {
-        int bx = x * 4;
-        uint32_t *pixel = row + x + sx;
-        uint8_t a = *pixel >> 24;
-        uint8_t r = *pixel >> 16;
-        uint8_t g = *pixel >> 8;
-        uint8_t b = *pixel;
-        dst[bx + 3] = a;
-
+        int bx = x * sizeof(uint32_t);
+        pixelsrc.value = htobe32(load32(row + x + sx));
         // Performance optimization: fully transparent/opaque pixels can be
         // processed more efficiently.
-        if (a == 0 || a == 255) {
-          dst[bx + 0] = r;
-          dst[bx + 1] = g;
-          dst[bx + 2] = b;
+        if (pixelsrc.rgba.a == 0) {
+          dst[bx + 0] = 0;
+          dst[bx + 1] = 0;
+          dst[bx + 2] = 0;
+          dst[bx + 3] = 0;
+        } else if (pixelsrc.rgba.a == 255) {
+          dst[bx + 0] = pixelsrc.rgba.r;
+          dst[bx + 1] = pixelsrc.rgba.g;
+          dst[bx + 2]  = pixelsrc.rgba.b;
+          dst[bx + 3] = pixelsrc.rgba.a;
         } else {
           // Undo alpha pre-multiplication
-          float alphaR = (float)255 / a;
-          dst[bx + 0] = (int)((float)r * alphaR);
-          dst[bx + 1] = (int)((float)g * alphaR);
-          dst[bx + 2] = (int)((float)b * alphaR);
+          float alphaR = (float)255 / pixelsrc.rgba.a;
+          dst[bx + 0] = (int)((float)pixelsrc.rgba.r * alphaR);
+          dst[bx + 1] = (int)((float)pixelsrc.rgba.g * alphaR);
+          dst[bx + 2] = (int)((float)pixelsrc.rgba.b * alphaR);
+          dst[bx + 3] = pixelsrc.rgba.a;
         }
-
       }
       dst += dstStride;
     }
@@ -1117,19 +1159,16 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   }
   case CAIRO_FORMAT_RGB24: {
     dst += oy * dstStride + ox * 4;
+    PixelARGB32 pixelsrc;
   // Rearrange alpha (argb -> rgba) and store in big-endian format
     for (int y = 0; y < ch; ++y) {
     uint32_t *row = (uint32_t *)(src + srcStride * (y + sy));
     for (int x = 0; x < cw; ++x) {
-      int bx = x * 4;
-      uint32_t *pixel = row + x + sx;
-      uint8_t r = *pixel >> 16;
-      uint8_t g = *pixel >> 8;
-      uint8_t b = *pixel;
-
-      dst[bx + 0] = r;
-      dst[bx + 1] = g;
-      dst[bx + 2] = b;
+      int bx = x * sizeof(uint32_t);
+      pixelsrc.value = htobe32(load32(row + x + sx));
+      dst[bx + 0] = pixelsrc.rgba.r;
+      dst[bx + 1] = pixelsrc.rgba.g;
+      dst[bx + 2]  = pixelsrc.rgba.b;
       dst[bx + 3] = 255;
     }
     dst += dstStride;
