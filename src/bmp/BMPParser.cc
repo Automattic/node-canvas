@@ -3,6 +3,12 @@
 #include <cassert>
 #include <cstring>
 
+#include <bit>
+#include <cstdint>
+#include <cstring>
+
+
+
 using namespace std;
 using namespace BMPParser;
 
@@ -382,21 +388,35 @@ string Parser::getErrMsg() const{
   return "Error while processing " + getOp() + " - " + err;
 }
 
-template <typename T, bool check> inline T Parser::get(){
-  if(check)
-    CHECK_OVERRUN(ptr, sizeof(T), T);
-  T val;
-  std::memcpy(&val, ptr, sizeof(T));
-  ptr += sizeof(T);
-  return val;
+
+template <typename T, bool check>
+inline T Parser::get() {
+    if (check)
+        CHECK_OVERRUN(ptr, sizeof(T), T);
+
+    T val;
+    std::memcpy(&val, ptr, sizeof(T));
+    ptr += sizeof(T);
+
+    if constexpr (sizeof(T) > 1 && std::endian::native == std::endian::big)
+        val = std::byteswap(val);
+    return val;
 }
 
-template <typename T, bool check> inline T Parser::get(uint8_t* pointer){
-  if(check)
-    CHECK_OVERRUN(pointer, sizeof(T), T);
-  T val = *(T*)pointer;
-  return val;
+template <typename T, bool check>
+inline T Parser::get(uint8_t* pointer) {
+    if (check)
+        CHECK_OVERRUN(pointer, sizeof(T), T);
+
+    T val;
+    std::memcpy(&val, pointer, sizeof(T));
+
+    if constexpr (sizeof(T) > 1 && std::endian::native == std::endian::big)
+        val = std::byteswap(val);
+
+    return val;
 }
+
 
 string Parser::getStr(int size, bool reverse){
   CHECK_OVERRUN(ptr, size, string);

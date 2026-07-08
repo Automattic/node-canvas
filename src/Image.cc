@@ -11,10 +11,29 @@
 #include <node_buffer.h>
 #include <sys/stat.h>
 
+#include <array>
+#include <bit>
+
 /* Cairo limit:
   * https://lists.cairographics.org/archives/cairo/2010-December/021422.html
   */
 static constexpr int canvas_max_side = (1 << 15) - 1;
+
+template<std::endian E = std::endian::native>
+constexpr auto pixFmt() {
+    std::array<uint8_t,5> fmt{};
+
+    if constexpr (E == std::endian::little) {
+        // Cairo ARGB32 → BGRA bytes
+        fmt = {2, 1, 0, 3, 1};
+    } else {
+        // Cairo ARGB32 → ARGB bytes
+        fmt = {3, 0, 1, 2, 1};
+    }
+
+    return fmt;
+}
+
 
 #ifdef HAVE_GIF
 typedef struct {
@@ -1576,8 +1595,8 @@ cairo_status_t Image::loadBMPFromBuffer(uint8_t *buf, unsigned len){
   BMPParser::Parser parser;
 
   // Reversed ARGB32 with pre-multiplied alpha
-  uint8_t pixFmt[5] = {2, 1, 0, 3, 1};
-  parser.parse(buf, len, pixFmt);
+  auto fmt = pixFmt<>();
+  parser.parse(buf, len, fmt.data());
 
   if (parser.getStatus() != BMPParser::Status::OK) {
     errorInfo.reset();
@@ -1587,20 +1606,30 @@ cairo_status_t Image::loadBMPFromBuffer(uint8_t *buf, unsigned len){
 
   width = naturalWidth = parser.getWidth();
   height = naturalHeight = parser.getHeight();
+  uint32_t src_stride = width * sizeof(uint32_t);
   uint8_t *data = parser.getImgd();
 
-  _surface = cairo_image_surface_create_for_data(
-    data,
+  int dst_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+  _surface = cairo_image_surface_create(
     CAIRO_FORMAT_ARGB32,
     width,
-    height,
-    cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width)
+    height
   );
 
   // No need to delete the data
   cairo_status_t status = cairo_surface_status(_surface);
   if (status) return status;
 
+  uint8_t *dst = cairo_image_surface_get_data(_surface);
+  for (int y = 0; y < height; y++) {
+     memcpy(
+       dst + y * dst_stride,
+       data + y * src_stride,
+       src_stride
+     );
+   }
+
+  cairo_surface_mark_dirty(_surface);
   _data = data;
   parser.clearImgd();
 
