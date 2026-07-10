@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) !void {
 
     lib.link_data_sections = true;
     lib.link_function_sections = true;
-    lib.addIncludePath(cairo.path("src"));
+    lib.root_module.addIncludePath(cairo.path("src"));
 
     var cairo_sources = std.ArrayList([]const u8).empty;
     defer cairo_sources.deinit(b.allocator);
@@ -143,14 +143,14 @@ pub fn build(b: *std.Build) !void {
 
     const feature_config = b.addConfigHeader(.{ .include_path = "cairo-features.h" }, .{});
 
-    lib.linkSystemLibrary("m");
+    lib.root_module.linkSystemLibrary("m", .{});
 
     const zlib = b.dependency("zlib", .{
             .target = target,
             .optimize = optimize,
     });
 
-    lib.linkLibrary(zlib.artifact("z"));
+    lib.root_module.linkLibrary(zlib.artifact("z"));
 
     config.addValues(.{
         .HAVE_ZLIB = 1,
@@ -169,7 +169,7 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    lib.linkLibrary(png.artifact("png"));
+    lib.root_module.linkLibrary(png.artifact("png"));
 
     config.addValues(.{
         .CAIRO_CAN_TEST_SVG_SURFACE = 1,
@@ -185,7 +185,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     }).artifact("freetype");
-    lib.linkLibrary(freetype);
+    lib.root_module.linkLibrary(freetype);
     lib.installLibraryHeaders(freetype);
 
     feature_config.addValues(.{ .CAIRO_HAS_FT_FONT = 1 });
@@ -204,8 +204,8 @@ pub fn build(b: *std.Build) !void {
             "-DCAIRO_WIN32_STATIC_BUILD",
         });
 
-        lib.linkSystemLibrary("gdi32");
-        lib.linkSystemLibrary("msimg32");
+        lib.root_module.linkSystemLibrary("gdi32", .{});
+        lib.root_module.linkSystemLibrary("msimg32", .{});
 
         feature_config.addValues(.{
             .CAIRO_HAS_WIN32_SURFACE = 1,
@@ -214,14 +214,14 @@ pub fn build(b: *std.Build) !void {
     }
 
     if (b.systemIntegrationOption("pixman", .{})) {
-        lib.linkSystemLibrary("pixman-1");
+        lib.root_module.linkSystemLibrary("pixman-1", .{});
     } else if (b.lazyDependency("pixman", .{
         .target = target,
         .optimize = optimize,
     })) |dep| {
         const pixman = dep.artifact("pixman");
         pixman.root_module.sanitize_c = .off;
-        lib.linkLibrary(pixman);
+        lib.root_module.linkLibrary(pixman);
         lib.installLibraryHeaders(pixman);
     }
 
@@ -235,7 +235,7 @@ pub fn build(b: *std.Build) !void {
         .CAIRO_HAS_OBSERVER_SURFACE = 1,
     });
 
-    lib.linkSystemLibrary("pthread");
+    lib.root_module.linkSystemLibrary("pthread", .{});
 
     config.addValues(.{
         .CAIRO_HAS_PTHREAD = 1,
@@ -250,10 +250,10 @@ pub fn build(b: *std.Build) !void {
     if (!target.result.cpu.arch.isX86())
         config.addValues(.{ .ATOMIC_OP_NEEDS_MEMORY_BARRIER = 1 });
 
-    lib.addConfigHeader(config);
-    lib.addConfigHeader(feature_config);
+    lib.root_module.addConfigHeader(config);
+    lib.root_module.addConfigHeader(feature_config);
 
-    lib.addCSourceFiles(.{
+    lib.root_module.addCSourceFiles(.{
         .root = cairo.path("src"),
         .files = try cairo_sources.toOwnedSlice(b.allocator),
         .flags = c_flags.items,

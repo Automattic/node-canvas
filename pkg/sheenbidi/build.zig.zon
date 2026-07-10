@@ -1,5 +1,6 @@
 .{
     .name = .sheenbidi,
+    .fingerprint = 0x684adc4fa57f4871,
     .version = "0.0.0",
     .dependencies = .{
         .sheenbidi = .{

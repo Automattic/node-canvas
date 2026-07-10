@@ -21,3 +21,4 @@ npm-debug.log
 .idea
 
 .zig-cache/
+zig-pkg/

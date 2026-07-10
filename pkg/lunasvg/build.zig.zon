@@ -1,5 +1,6 @@
 .{
     .name = .lunasvg,
+    .fingerprint = 0xd309c055ae5fca1b,
     .version = "0.0.0",
     .dependencies = .{
         .cairo = .{ .path = "../cairo" },

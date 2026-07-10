@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) !void {
         }),
     });
 
-    lib.addIncludePath(upstream.path("include"));
+    lib.root_module.addIncludePath(upstream.path("include"));
     lib.installHeadersDirectory(upstream.path("include"), "", .{});
 
     // Dependencies

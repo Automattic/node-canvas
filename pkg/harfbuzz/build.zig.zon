@@ -1,5 +1,6 @@
 .{
     .name = .harfbuzz,
+    .fingerprint = 0xbd60917c14346ca6,
     .version = "0.0.0",
     .dependencies = .{
         .harfbuzz = .{

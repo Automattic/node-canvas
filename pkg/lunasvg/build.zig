@@ -10,6 +10,8 @@ pub fn build(b: *std.Build) !void {
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .pic = true,
+            .link_libc = true,
         })
     });
 
@@ -19,7 +21,7 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     }).artifact("cairo");
 
-    plutovg.addCSourceFiles(.{
+    plutovg.root_module.addCSourceFiles(.{
         .root = upstream.path(""),
         .files = &.{
             "plutovg/source/plutovg-blend.c",
@@ -46,10 +48,9 @@ pub fn build(b: *std.Build) !void {
         }
     });
 
-    plutovg.addIncludePath(upstream.path("plutovg/include"));
+    plutovg.root_module.addIncludePath(upstream.path("plutovg/include"));
     plutovg.installHeadersDirectory(upstream.path("plutovg/include"), "", .{});
-    plutovg.linkLibrary(cairo);
-    plutovg.linkLibC();
+    plutovg.root_module.linkLibrary(cairo);
 
     // strip out anything we didn't use, which for plutovg is a lot (on this fork)
     plutovg.link_data_sections = true;
@@ -61,10 +62,13 @@ pub fn build(b: *std.Build) !void {
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .pic = true,
+            .link_libc = true,
+            .link_libcpp = true,
         })
     });
 
-    lunasvg.addCSourceFiles(.{
+    lunasvg.root_module.addCSourceFiles(.{
         .root = upstream.path(""),
         .files = &.{
             "source/lunasvg.cpp",
@@ -98,12 +102,10 @@ pub fn build(b: *std.Build) !void {
     lunasvg.link_data_sections = true;
     lunasvg.link_function_sections = true;
 
-    lunasvg.addIncludePath(upstream.path("include"));
+    lunasvg.root_module.addIncludePath(upstream.path("include"));
     lunasvg.installHeadersDirectory(upstream.path("include"), "", .{});
-    lunasvg.linkLibrary(plutovg);
-    lunasvg.linkLibC();
-    lunasvg.linkLibCpp();
-    lunasvg.linkLibrary(cairo);
+    lunasvg.root_module.linkLibrary(plutovg);
+    lunasvg.root_module.linkLibrary(cairo);
 
     b.installArtifact(lunasvg);
 }
