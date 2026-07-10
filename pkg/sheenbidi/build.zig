@@ -12,17 +12,17 @@ pub fn build(b: *std.Build) !void {
             .target = target,
             .optimize = optimize,
             .pic = true,
+            .link_libc = true,
         })
     });
 
-    sheenbidi.addCSourceFile(.{
+    sheenbidi.root_module.addCSourceFile(.{
         .file = upstream.path("Source/SheenBidi.c"),
         .flags = &.{"-DSB_CONFIG_UNITY"},
     });
 
-    sheenbidi.addIncludePath(upstream.path("Headers"));
+    sheenbidi.root_module.addIncludePath(upstream.path("Headers"));
     sheenbidi.installHeadersDirectory(upstream.path("Headers"), "", .{});
-    sheenbidi.linkLibC();
 
     b.installArtifact(sheenbidi);
 }

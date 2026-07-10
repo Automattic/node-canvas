@@ -3,7 +3,7 @@
     .fingerprint = 0xa59f6c18a5521654,
     .version = "0.0.0",
     .paths = .{""},
-    .minimum_zig_version = "0.15.1",
+    .minimum_zig_version = "0.16.0",
     // Sub-packages only specify dependencies for upstream C/C++ code.
     // Everything else goes here so it's easier to share dependencies and ensure
     // we don't build duplicate versions. Generally build.zig[.zon] files should
@@ -22,8 +22,8 @@
         },
         // Zig dependencies don't need as much tweaking
         .zg = .{
-            .url = "https://codeberg.org/atman/zg/archive/d9f596626e8ec05a9f3e47f7bc83aedd5bd2f989.tar.gz",
-            .hash = "zg-0.15.3-oGqU3P5ItAJHmwDLfzX6sg6Xc5MhSJU2TctHfWu_sKLv",
+            .url = "https://codeberg.org/atman/zg/archive/ce364b17d60b28fda1af24c6575b93c47afe043e.tar.gz",
+            .hash = "zg-0.16.2-oGqU3HqftgI6rwFS90ypwfjgToH8Pz829OKuFURlm773",
         },
         .giflib = .{ .path = "./pkg/giflib" },
         .libpng = .{ .path = "./pkg/libpng" },
