@@ -11,17 +11,16 @@ pub fn build(b: *std.Build) !void {
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
+            .link_libcpp = true,
             .pic = true,
         })
     });
 
-    harfbuzz.addCSourceFile(.{
+    harfbuzz.root_module.addCSourceFile(.{
         .file = upstream.path("src/harfbuzz.cc"),
     });
     harfbuzz.installHeadersDirectory(upstream.path("src"), "", .{});
-
-    harfbuzz.linkLibC();
-    harfbuzz.linkLibCpp();
 
     b.installArtifact(harfbuzz);
 }

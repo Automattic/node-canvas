@@ -8,10 +8,11 @@ pub fn build(b: *std.Build) !void {
         .root_module = b.createModule(.{
             .target = b.standardTargetOptions(.{}),
             .optimize = b.standardOptimizeOption(.{}),
+            .link_libc = true,
+            .pic = true,
         }),
     });
 
-    lib.linkLibC();
     lib.root_module.addCMacro("HAVE_CONFIG_H", "1");
 
     const config_h = b.addConfigHeader(.{
@@ -21,11 +22,11 @@ pub fn build(b: *std.Build) !void {
         .PACKAGE = "FOO",
         .HAVE_PTHREADS = "1",
     });
-    lib.addConfigHeader(config_h);
+    lib.root_module.addConfigHeader(config_h);
 
-    lib.addIncludePath(upstream.path("pixman"));
+    lib.root_module.addIncludePath(upstream.path("pixman"));
     lib.installHeadersDirectory(upstream.path("pixman"), "", .{});
-    lib.addCSourceFiles(.{
+    lib.root_module.addCSourceFiles(.{
         .root = upstream.path("pixman"),
         .files = sources,
     });

@@ -181,17 +181,8 @@ pub const Script = enum(c_int) {
     Zanabazar_Square,
 };
 
-var scripts: Scripts = undefined;
-var initializedScripts: bool = false;
-
 export fn get_script(cp: u32) callconv(.c) Script {
-    // TODO: initialize once, not every get_script call
-    if (!initializedScripts) {
-        scripts = Scripts.init(std.heap.c_allocator) catch @panic("Failed to initialize scripts");
-        initializedScripts = true;
-    }
-
-    const script_result = scripts.script(@as(u21, @intCast(cp))) orelse return .none;
+    const script_result = Scripts.script(@as(u21, @intCast(cp))) orelse return .none;
 
     return switch (script_result) {
         .none => .none,
@@ -368,19 +359,10 @@ export fn get_script(cp: u32) callconv(.c) Script {
     };
 }
 
-var graphemes: Graphemes = undefined;
-var initializedGraphemes: bool = false;
-
 export fn grapheme_break(
     state: *Graphemes.IterState,
     cp1: u32,
     cp2: u32
 ) callconv(.c) bool {
-    // TODO: initialize once, not every get_script call
-    if (!initializedGraphemes) {
-        graphemes = Graphemes.init(std.heap.c_allocator) catch @panic("Failed to initialize graphemes");
-        initializedGraphemes = true;
-    }
-
-    return Graphemes.graphemeBreak(@as(u21, @intCast(cp1)), @as(u21, @intCast(cp2)), &graphemes, state);
+    return Graphemes.graphemeBreak(@as(u21, @intCast(cp1)), @as(u21, @intCast(cp2)), state);
 }

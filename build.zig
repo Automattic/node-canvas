@@ -101,12 +101,13 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .root_source_file = b.path("src/unicode.zig"),
+            .link_libc = true,
+            .pic = true,
         })
     });
 
     unicode.root_module.addImport("Scripts", zg.module("Scripts"));
     unicode.root_module.addImport("Graphemes", zg.module("Graphemes"));
-    unicode.linkLibC();
 
     const canvas = b.addLibrary(.{
       .name = "canvas",
@@ -114,6 +115,9 @@ pub fn build(b: *std.Build) void {
       .root_module = b.createModule(.{
         .target = target,
         .optimize = optimize,
+        .pic = true,
+        .link_libc = true,
+        .link_libcpp = true,
       })
     });
     
@@ -122,7 +126,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).artifact("node_api");
 
-    canvas.addCSourceFiles(.{
+    canvas.root_module.addCSourceFiles(.{
         .files = &.{
             "src/bmp/BMPParser.cc",
             "src/Canvas.cc",
@@ -165,24 +169,22 @@ pub fn build(b: *std.Build) void {
         canvas.root_module.strip = true;
     }
 
-    canvas.linkLibC();
-    canvas.linkLibCpp();
-    canvas.addObject(node_api);
-    canvas.linkLibrary(cairo);
-    canvas.linkLibrary(libjpeg_turbo);
-    canvas.linkLibrary(libpng);
-    canvas.linkLibrary(giflib);
-    canvas.linkLibrary(sheenbidi);
-    canvas.linkLibrary(unicode);
-    canvas.linkLibrary(harfbuzz);
-    canvas.linkLibrary(lunasvg);
+    canvas.root_module.addObject(node_api);
+    canvas.root_module.linkLibrary(cairo);
+    canvas.root_module.linkLibrary(libjpeg_turbo);
+    canvas.root_module.linkLibrary(libpng);
+    canvas.root_module.linkLibrary(giflib);
+    canvas.root_module.linkLibrary(sheenbidi);
+    canvas.root_module.linkLibrary(unicode);
+    canvas.root_module.linkLibrary(harfbuzz);
+    canvas.root_module.linkLibrary(lunasvg);
 
     // some deps, especially lunasvg, compile with -ffunction-sections and
     // -fdata-sections so we don't have to distribute unused parts of libraries
     canvas.link_gc_sections = true;
 
     if (target.result.os.tag == .windows) {
-        canvas.linkSystemLibrary("dwrite");
+        canvas.root_module.linkSystemLibrary("dwrite", .{});
     }
 
     if (target.result.os.tag == .macos) {
@@ -200,19 +202,19 @@ pub fn build(b: *std.Build) void {
             " \r\n",
         );
 
-        canvas.addSystemFrameworkPath(.{
+        canvas.root_module.addSystemFrameworkPath(.{
             .cwd_relative = b.pathJoin(&.{
                 path,
                 "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/System/Library/Frameworks",
             }),
         });
-        canvas.addSystemIncludePath(.{
+        canvas.root_module.addSystemIncludePath(.{
             .cwd_relative = b.pathJoin(&.{
                 path,
                 "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/include",
             }),
         });
-        canvas.addLibraryPath(.{
+        canvas.root_module.addLibraryPath(.{
             .cwd_relative = b.pathJoin(&.{
                 path,
                 "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/lib",
