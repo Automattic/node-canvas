@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Load images from Node.js object URLs (#2525)
 
 3.2.3
 ==================

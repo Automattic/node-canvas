@@ -10,6 +10,8 @@ const assertRejects = require('assert-rejects')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
+const { Blob } = require('node:buffer')
+const { URL } = require('node:url')
 
 const { createCanvas, loadImage, rsvgVersion, Image } = require('../')
 const HAVE_SVG = rsvgVersion !== undefined
@@ -88,6 +90,34 @@ describe('Image', function () {
       assert.strictEqual(img.height, 320)
       assert.strictEqual(img.complete, true)
     })
+  })
+
+  it('loads PNG object URL', async function () {
+    const objectURL = URL.createObjectURL(new Blob([
+      fs.readFileSync(pngClock)
+    ], { type: 'image/png' }))
+
+    try {
+      const img = await loadImage(objectURL)
+      assert.strictEqual(img.src, objectURL)
+      assert.strictEqual(img.width, 320)
+      assert.strictEqual(img.height, 320)
+
+      const canvas = createCanvas(img.width, img.height)
+      const ctx = canvas.getContext('2d')
+      assert.doesNotThrow(() => ctx.drawImage(img, 0, 0))
+    } finally {
+      URL.revokeObjectURL(objectURL)
+    }
+  })
+
+  it('rejects revoked object URLs', async function () {
+    const objectURL = URL.createObjectURL(new Blob([
+      fs.readFileSync(pngClock)
+    ], { type: 'image/png' }))
+    URL.revokeObjectURL(objectURL)
+
+    await assert.rejects(loadImage(objectURL), /Invalid object URL/)
   })
 
   it('detects invalid PNG', function (done) {
