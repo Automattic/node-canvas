@@ -22,7 +22,10 @@
     "pdf"
   ],
   "homepage": "https://github.com/Automattic/node-canvas",
-  "repository": "git://github.com/Automattic/node-canvas.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/node-canvas"
+  },
   "scripts": {
     "prebenchmark": "zig build",
     "benchmark": "node benchmarks/run.js",

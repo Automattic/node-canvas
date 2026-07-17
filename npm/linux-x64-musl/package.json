@@ -11,5 +11,9 @@
   "files": [
     "canvas.node"
   ],
-  "description": "Canvas graphics API backed by Cairo"
+  "description": "Canvas graphics API backed by Cairo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/node-canvas"
+  }
 }
