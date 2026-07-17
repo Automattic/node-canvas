@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const rVersion = /^(\d+)\.(\d+).(\d+)$/
+const rVersion = /^(\d+)\.(\d+).(\d+)(-([\.A-z0-9]+))?$/
 let __pjson;
 
 function getPackageJson() {
@@ -30,7 +30,7 @@ function getVersionOrExit() {
   }
 
   if (parts) {
-    return parts.join('.');
+    return `${parts[0]}.${parts[1]}.${parts[2]}` + (parts[3] ? parts[3] : '');
   } else {
     console.error('Usage: node scripts/version.js [major|minor|patch|<semver>]');
     process.exit(1);
