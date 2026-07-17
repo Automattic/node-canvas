@@ -1,6 +1,10 @@
 name: Publish
 on: workflow_dispatch
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   binaries:
     name: ${{ matrix.package }}
@@ -27,13 +31,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false  # never use caching in release builds
       - uses: mlugg/setup-zig@v2
       - name: Install
         run: npm ci --force # https://github.com/npm/cli/issues/6138
       - name: Build
         run: zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseSafe
       - name: Publish
-        run: npm publish --dry-run --workspace ${{ matrix.package }}
+        run: npm publish --workspace ${{ matrix.package }} --tag next
 
   root:
     name: canvas
