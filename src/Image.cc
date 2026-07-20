@@ -8,7 +8,6 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <node_buffer.h>
 #include <sys/stat.h>
 
 /* Cairo limit:
@@ -16,68 +15,35 @@
   */
 static constexpr int canvas_max_side = (1 << 15) - 1;
 
-#ifdef HAVE_GIF
 typedef struct {
   uint8_t *buf;
   unsigned len;
   unsigned pos;
 } gif_data_t;
-#endif
 
-#ifdef HAVE_JPEG
 #include <csetjmp>
 
 struct canvas_jpeg_error_mgr: jpeg_error_mgr {
-    Image* image;
+    ImageSurface* surface;
     jmp_buf setjmp_buffer;
 };
-#endif
 
 /*
  * Read closure used by loadFromBuffer.
  */
 
 typedef struct {
-  Napi::Env env;
+  std::optional<Napi::Env> env;
   unsigned len;
   uint8_t *buf;
 } read_closure_t;
 
 /*
- * Initialize Image.
+ * Initialize a new ImageSurface (canvas_surface_t wrapper)
  */
 
-void
-Image::Initialize(Napi::Env& env, Napi::Object& exports) {
-  InstanceData *data = env.GetInstanceData<InstanceData>();
-
-  Napi::Function ctor = DefineClass(env, "Image", {
-    InstanceAccessor<&Image::GetComplete>("complete", napi_default_jsproperty),
-    InstanceAccessor<&Image::GetWidth, &Image::SetWidth>("width", napi_default_jsproperty),
-    InstanceAccessor<&Image::GetHeight, &Image::SetHeight>("height", napi_default_jsproperty),
-    InstanceAccessor<&Image::GetNaturalWidth>("naturalWidth", napi_default_jsproperty),
-    InstanceAccessor<&Image::GetNaturalHeight>("naturalHeight", napi_default_jsproperty),
-    InstanceAccessor<&Image::GetDataMode, &Image::SetDataMode>("dataMode", napi_default_jsproperty),
-    StaticValue("MODE_IMAGE", Napi::Number::New(env, DATA_IMAGE), napi_default_jsproperty),
-    StaticValue("MODE_MIME", Napi::Number::New(env, DATA_MIME), napi_default_jsproperty)
-  });
-
-  // Used internally in lib/image.js
-  exports.Set("GetSource", Napi::Function::New(env, &GetSource));
-  exports.Set("SetSource", Napi::Function::New(env, &SetSource));
-
-  data->ImageCtor = Napi::Persistent(ctor);
-  exports.Set("Image", ctor);
-}
-
-/*
- * Initialize a new Image.
- */
-
-Image::Image(const Napi::CallbackInfo& info) : ObjectWrap<Image>(info), env(info.Env()) {
+ImageSurface::ImageSurface(std::optional<Napi::Env> env) : env(env) {
   data_mode = DATA_IMAGE;
-  info.This().ToObject().Unwrap().Set("onload", env.Null());
-  info.This().ToObject().Unwrap().Set("onerror", env.Null());
   filename = NULL;
   _data = nullptr;
   _data_len = 0;
@@ -85,109 +51,8 @@ Image::Image(const Napi::CallbackInfo& info) : ObjectWrap<Image>(info), env(info
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
-#ifdef HAVE_RSVG
-  _rsvg = NULL;
-  _is_svg = false;
+  svgdoc = nullptr;
   _svg_last_width = _svg_last_height = 0;
-#endif
-}
-
-/*
- * Get complete boolean.
- */
-
-Napi::Value
-Image::GetComplete(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, true);
-}
-
-/*
- * Get dataMode.
- */
-
-Napi::Value
-Image::GetDataMode(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, data_mode);
-}
-
-/*
- * Set dataMode.
- */
-
-void
-Image::SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  if (value.IsNumber()) {
-    int mode = value.As<Napi::Number>().Uint32Value();
-    data_mode = (data_mode_t) mode;
-  }
-}
-
-/*
- * Get natural width
- */
-
-Napi::Value
-Image::GetNaturalWidth(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, naturalWidth);
-}
-
-/*
- * Get width.
- */
-
-Napi::Value
-Image::GetWidth(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, width);
-}
-
-/*
- * Set width.
- */
-
-void
-Image::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  if (value.IsNumber()) {
-    width = value.As<Napi::Number>().Uint32Value();
-  }
-}
-
-/*
- * Get natural height
- */
-
-Napi::Value
-Image::GetNaturalHeight(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, naturalHeight);
-}
-
-/*
- * Get height.
- */
-
-Napi::Value
-Image::GetHeight(const Napi::CallbackInfo& info) {
-  return Napi::Number::New(env, height);
-}
-/*
- * Set height.
- */
-
-void
-Image::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  if (value.IsNumber()) {
-    height = value.As<Napi::Number>().Uint32Value();
-  }
-}
-
-/*
- * Get src path.
- */
-
-Napi::Value
-Image::GetSource(const Napi::CallbackInfo& info){
-  Napi::Env env = info.Env();
-  Image *img = Image::Unwrap(info.This().As<Napi::Object>());
-  return Napi::String::New(env, img->filename ? img->filename : "");
 }
 
 /*
@@ -195,10 +60,10 @@ Image::GetSource(const Napi::CallbackInfo& info){
  */
 
 void
-Image::clearData() {
+ImageSurface::clearData() {
   if (_surface) {
     cairo_surface_destroy(_surface);
-    Napi::MemoryManagement::AdjustExternalMemory(env, -_data_len);
+    if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, -_data_len);
     _data_len = 0;
     _surface = NULL;
   }
@@ -209,67 +74,23 @@ Image::clearData() {
   free(filename);
   filename = NULL;
 
-#ifdef HAVE_RSVG
-  if (_rsvg != NULL) {
-    g_object_unref(_rsvg);
-    _rsvg = NULL;
-  }
-#endif
+  svgdoc = nullptr;
 
   width = height = 0;
   naturalWidth = naturalHeight = 0;
   state = DEFAULT;
 }
 
-/*
- * Set src path.
- */
+cairo_surface_t*
+ImageSurface::transferSurface() {
+  cairo_surface_t* surface = _surface;
 
-void
-Image::SetSource(const Napi::CallbackInfo& info){
-  Napi::Env env = info.Env();
-  Napi::Object This = info.This().As<Napi::Object>();
-  Image *img = Image::Unwrap(This);
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, -_data_len);
+  _data_len = 0;
+  _surface = nullptr;
+  _data = nullptr;
 
-  cairo_status_t status = CAIRO_STATUS_READ_ERROR;
-
-  Napi::Value value = info[0];
-
-  img->clearData();
-  // Clear errno in case some unrelated previous syscall failed
-  errno = 0;
-
-  // url string
-  if (value.IsString()) {
-    std::string src = value.As<Napi::String>().Utf8Value();
-    if (img->filename) free(img->filename);
-    img->filename = strdup(src.c_str());
-    status = img->load();
-  // Buffer
-  } else if (value.IsBuffer()) {
-    uint8_t *buf = value.As<Napi::Buffer<uint8_t>>().Data();
-    unsigned len = value.As<Napi::Buffer<uint8_t>>().Length();
-    status = img->loadFromBuffer(buf, len);
-  }
-
-  if (status) {
-    Napi::Value onerrorFn;
-    if (This.Get("onerror").UnwrapTo(&onerrorFn) && onerrorFn.IsFunction()) {
-      Napi::Error arg;
-      if (img->errorInfo.empty()) {
-        arg = Napi::Error::New(env, Napi::String::New(env, cairo_status_to_string(status)));
-      } else {
-        arg = img->errorInfo.toError(env);
-      }
-      onerrorFn.As<Napi::Function>().Call({ arg.Value() });
-    }
-  } else {
-    img->loaded();
-    Napi::Value onloadFn;
-    if (This.Get("onload").UnwrapTo(&onloadFn) && onloadFn.IsFunction()) {
-      onloadFn.As<Napi::Function>().Call({});
-    }
-  }
+  return surface;
 }
 
 /*
@@ -278,7 +99,9 @@ Image::SetSource(const Napi::CallbackInfo& info){
  */
 
 cairo_status_t
-Image::loadFromBuffer(uint8_t *buf, unsigned len) {
+ImageSurface::loadFromBuffer(uint8_t *buf, unsigned len) {
+  clearData();
+
   if (len == 0) return CAIRO_STATUS_READ_ERROR;
 
   uint8_t data[4] = {0};
@@ -287,16 +110,12 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
   if (isPNG(data)) return loadPNGFromBuffer(buf);
 
   if (isGIF(data)) {
-#ifdef HAVE_GIF
     return loadGIFFromBuffer(buf, len);
-#else
     this->errorInfo.set("node-canvas was built without GIF support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isJPEG(data)) {
-#ifdef HAVE_JPEG
     if (DATA_IMAGE == data_mode) return loadJPEGFromBuffer(buf, len);
     if (DATA_MIME == data_mode) return decodeJPEGBufferIntoMimeSurface(buf, len);
     if ((DATA_IMAGE | DATA_MIME) == data_mode) {
@@ -305,23 +124,13 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
       if (status) return status;
       return assignDataAsMime(buf, len, CAIRO_MIME_TYPE_JPEG);
     }
-#else // HAVE_JPEG
-    this->errorInfo.set("node-canvas was built without JPEG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   // confirm svg using first 1000 chars
   // if a very long comment precedes the root <svg> tag, isSVG returns false
   unsigned head_len = (len < 1000 ? len : 1000);
-  if (isSVG(buf, head_len)) {
-#ifdef HAVE_RSVG
+  if (isSVG(buf, head_len))
     return loadSVGFromBuffer(buf, len);
-#else
-    this->errorInfo.set("node-canvas was built without SVG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
-  }
 
   if (isBMP(buf, len))
     return loadBMPFromBuffer(buf, len);
@@ -335,7 +144,7 @@ Image::loadFromBuffer(uint8_t *buf, unsigned len) {
  */
 
 cairo_status_t
-Image::loadPNGFromBuffer(uint8_t *buf) {
+ImageSurface::loadPNGFromBuffer(uint8_t *buf) {
   read_closure_t closure{ env, 0, buf };
   _surface = cairo_image_surface_create_from_png_stream(readPNG, &closure);
   cairo_status_t status = cairo_surface_status(_surface);
@@ -348,7 +157,7 @@ Image::loadPNGFromBuffer(uint8_t *buf) {
  */
 
 cairo_status_t
-Image::readPNG(void *c, uint8_t *data, unsigned int len) {
+ImageSurface::readPNG(void *c, uint8_t *data, unsigned int len) {
   read_closure_t *closure = (read_closure_t *) c;
   memcpy(data, closure->buf + closure->len, len);
   closure->len += len;
@@ -359,7 +168,7 @@ Image::readPNG(void *c, uint8_t *data, unsigned int len) {
  * Destroy image and associated surface.
  */
 
-Image::~Image() {
+ImageSurface::~ImageSurface() {
   clearData();
 }
 
@@ -368,7 +177,15 @@ Image::~Image() {
  */
 
 cairo_status_t
-Image::load() {
+ImageSurface::load(std::string& filename) {
+  clearData();
+
+  // Clear errno in case some unrelated previous syscall failed
+  errno = 0;
+
+  if (this->filename) free(this->filename);
+  this->filename = strdup(filename.c_str());
+
   if (LOADING != state) {
     state = LOADING;
     return loadSurface();
@@ -381,35 +198,26 @@ Image::load() {
  */
 
 void
-Image::loaded() {
+ImageSurface::loaded() {
   state = COMPLETE;
 
   width = naturalWidth = cairo_image_surface_get_width(_surface);
   height = naturalHeight = cairo_image_surface_get_height(_surface);
   _data_len = naturalHeight * cairo_image_surface_get_stride(_surface);
-  Napi::MemoryManagement::AdjustExternalMemory(env, _data_len);
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, _data_len);
 }
 
 /*
  * Returns this image's surface.
  */
-cairo_surface_t *Image::surface() {
-#ifdef HAVE_RSVG
-  if (_is_svg && (_svg_last_width != width || _svg_last_height != height)) {
-    if (_surface != NULL) {
-      cairo_surface_destroy(_surface);
-      _surface = NULL;
-    }
-
+cairo_surface_t *ImageSurface::surface() {
+  if (svgdoc && (_svg_last_width != width || _svg_last_height != height)) {
     cairo_status_t status = renderSVGToSurface();
     if (status != CAIRO_STATUS_SUCCESS) {
-      g_object_unref(_rsvg);
-      Napi::Error::New(env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
-
-      return NULL;
+      if (env) Napi::Error::New(*env, cairo_status_to_string(status)).ThrowAsJavaScriptException();
+      return nullptr;
     }
   }
-#endif
   return _surface;
 }
 
@@ -421,7 +229,7 @@ cairo_surface_t *Image::surface() {
  */
 
 cairo_status_t
-Image::loadSurface() {
+ImageSurface::loadSurface() {
   FILE *stream = fopen(filename, "rb");
   if (!stream) {
     this->errorInfo.set(NULL, "fopen", errno, filename);
@@ -442,21 +250,15 @@ Image::loadSurface() {
 
 
   if (isGIF(buf)) {
-#ifdef HAVE_GIF
     return loadGIF(stream);
-#else
     this->errorInfo.set("node-canvas was built without GIF support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isJPEG(buf)) {
-#ifdef HAVE_JPEG
     return loadJPEG(stream);
-#else
     this->errorInfo.set("node-canvas was built without JPEG support");
     return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   // confirm svg using first 1000 chars
@@ -473,12 +275,7 @@ Image::loadSurface() {
   }
   rewind(stream);
   if (isSVG(head, head_len)) {
-#ifdef HAVE_RSVG
     return loadSVG(stream);
-#else
-    this->errorInfo.set("node-canvas was built without SVG support");
-    return CAIRO_STATUS_READ_ERROR;
-#endif
   }
 
   if (isBMP(buf, 2))
@@ -495,14 +292,12 @@ Image::loadSurface() {
  */
 
 cairo_status_t
-Image::loadPNG() {
+ImageSurface::loadPNG() {
   _surface = cairo_image_surface_create_from_png(filename);
   return cairo_surface_status(_surface);
 }
 
 // GIF support
-
-#ifdef HAVE_GIF
 
 /*
  * Return the alpha color for `gif` at `frame`, or -1.
@@ -538,7 +333,7 @@ read_gif_from_memory(GifFileType *gif, GifByteType *buf, int len) {
  */
 
 cairo_status_t
-Image::loadGIF(FILE *stream) {
+ImageSurface::loadGIF(FILE *stream) {
   struct stat s;
   int fd = fileno(stream);
 
@@ -571,20 +366,15 @@ Image::loadGIF(FILE *stream) {
  */
 
 cairo_status_t
-Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
+ImageSurface::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
   int i = 0;
   GifFileType* gif;
 
   gif_data_t gifd = { buf, len, 0 };
 
-#if GIFLIB_MAJOR >= 5
   int errorcode;
   if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory, &errorcode)) == NULL)
     return CAIRO_STATUS_READ_ERROR;
-#else
-  if ((gif = DGifOpen((void*) &gifd, read_gif_from_memory)) == NULL)
-    return CAIRO_STATUS_READ_ERROR;
-#endif
 
   if (GIF_OK != DGifSlurp(gif)) {
     GIF_CLOSE_FILE(gif);
@@ -713,15 +503,8 @@ Image::loadGIFFromBuffer(uint8_t *buf, unsigned len) {
 
   return CAIRO_STATUS_SUCCESS;
 }
-#endif /* HAVE_GIF */
 
 // JPEG support
-
-#ifdef HAVE_JPEG
-
-// libjpeg 6.2 does not have jpeg_mem_src; define it ourselves here unless
-// libjpeg 8 is installed.
-#if JPEG_LIB_VERSION < 80 && !defined(MEM_SRCDST_SUPPORTED)
 
 /* Read JPEG image from a memory segment */
 static void
@@ -761,9 +544,7 @@ static void jpeg_mem_src (j_decompress_ptr cinfo, void* buffer, long nbytes) {
   src->next_input_byte = (JOCTET*)buffer;
 }
 
-#endif
-
-class BufferReader : public Image::Reader {
+class BufferReader : public ImageSurface::Reader {
 public:
   BufferReader(uint8_t* buf, unsigned len) : _buf(buf), _len(len), _idx(0) {}
 
@@ -781,7 +562,7 @@ private:
   unsigned _idx;
 };
 
-class StreamReader : public Image::Reader {
+class StreamReader : public ImageSurface::Reader {
 public:
   StreamReader(FILE *stream) : _stream(stream), _len(0), _idx(0) {
     fseek(_stream, 0, SEEK_END);
@@ -807,7 +588,7 @@ private:
   unsigned _idx;
 };
 
-void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
+void ImageSurface::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src, JPEGDecodeL decode) {
   int stride = naturalWidth * 4;
   for (int y = 0; y < naturalHeight; ++y) {
     jpeg_read_scanlines(args, &src, 1);
@@ -825,7 +606,7 @@ void Image::jpegToARGB(jpeg_decompress_struct* args, uint8_t* data, uint8_t* src
  */
 
 cairo_status_t
-Image::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientation) {
+ImageSurface::decodeJPEGIntoSurface(jpeg_decompress_struct *args, Orientation orientation) {
   const int channels = 4;
   cairo_status_t status = CAIRO_STATUS_SUCCESS;
 
@@ -922,7 +703,7 @@ static void canvas_jpeg_output_message(j_common_ptr cinfo) {
   char buff[JMSG_LENGTH_MAX];
   cjerr->format_message(cinfo, buff);
   // (Only the last message will be returned to JS land.)
-  cjerr->image->errorInfo.set(buff);
+  cjerr->surface->errorInfo.set(buff);
 }
 
 /*
@@ -931,13 +712,13 @@ static void canvas_jpeg_output_message(j_common_ptr cinfo) {
  */
 
 cairo_status_t
-Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
+ImageSurface::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
   // TODO: remove this duplicate logic
   // JPEG setup
   struct jpeg_decompress_struct args;
   struct canvas_jpeg_error_mgr err;
 
-  err.image = this;
+  err.surface = this;
   args.err = jpeg_std_error(&err);
   args.err->error_exit = canvas_jpeg_error_exit;
   args.err->output_message = canvas_jpeg_output_message;
@@ -1003,10 +784,9 @@ Image::decodeJPEGBufferIntoMimeSurface(uint8_t *buf, unsigned len) {
 
 void
 clearMimeData(void *closure) {
-  Napi::MemoryManagement::AdjustExternalMemory(
-      static_cast<read_closure_t *>(closure)->env,
-      -static_cast<int>((static_cast<read_closure_t *>(closure)->len)));
-  free(static_cast<read_closure_t *>(closure)->buf);
+  read_closure_t* c = static_cast<read_closure_t *>(closure);
+  if (c->env) Napi::MemoryManagement::AdjustExternalMemory(*c->env, (int)c->len);
+  free(c->buf);
   free(closure);
 }
 
@@ -1017,7 +797,7 @@ clearMimeData(void *closure) {
  */
 
 cairo_status_t
-Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
+ImageSurface::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   uint8_t *mime_data = (uint8_t *) malloc(len);
   if (!mime_data) {
     this->errorInfo.set(NULL, "malloc", errno);
@@ -1037,7 +817,7 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
   mime_closure->buf = mime_data;
   mime_closure->len = len;
 
-  Napi::MemoryManagement::AdjustExternalMemory(env, len);
+  if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, len);
 
   return cairo_surface_set_mime_data(_surface
     , mime_type
@@ -1052,7 +832,7 @@ Image::assignDataAsMime(uint8_t *data, int len, const char *mime_type) {
  */
 
 cairo_status_t
-Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
+ImageSurface::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   BufferReader reader(buf, len);
   Orientation orientation = getExifOrientation(reader);
 
@@ -1061,7 +841,7 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
   struct jpeg_decompress_struct args;
   struct canvas_jpeg_error_mgr err;
 
-  err.image = this;
+  err.surface = this;
   args.err = jpeg_std_error(&err);
   args.err->error_exit = canvas_jpeg_error_exit;
   args.err->output_message = canvas_jpeg_output_message;
@@ -1091,14 +871,10 @@ Image::loadJPEGFromBuffer(uint8_t *buf, unsigned len) {
  */
 
 cairo_status_t
-Image::loadJPEG(FILE *stream) {
+ImageSurface::loadJPEG(FILE *stream) {
   cairo_status_t status;
 
-#if defined(_MSC_VER)
-  if (false) { // Force using loadJPEGFromBuffer
-#else
   if (data_mode == DATA_IMAGE) { // Can lazily read in the JPEG.
-#endif
     Orientation orientation = NORMAL;
     {
     StreamReader reader(stream);
@@ -1110,7 +886,7 @@ Image::loadJPEG(FILE *stream) {
     struct jpeg_decompress_struct args;
     struct canvas_jpeg_error_mgr err;
 
-    err.image = this;
+    err.surface = this;
     args.err = jpeg_std_error(&err);
     args.err->error_exit = canvas_jpeg_error_exit;
     args.err->output_message = canvas_jpeg_output_message;
@@ -1162,11 +938,6 @@ Image::loadJPEG(FILE *stream) {
     } else if (DATA_MIME == data_mode) {
       status = decodeJPEGBufferIntoMimeSurface(buf, len);
     }
-#if defined(_MSC_VER)
-    else if (DATA_IMAGE == data_mode) {
-      status = loadJPEGFromBuffer(buf, len);
-    }
-#endif
     else {
       status = CAIRO_STATUS_READ_ERROR;
     }
@@ -1182,8 +953,8 @@ Image::loadJPEG(FILE *stream) {
  * Returns the Exif orientation if one exists, otherwise returns NORMAL
  */
 
-Image::Orientation
-Image::getExifOrientation(Reader& jpeg) {
+ImageSurface::Orientation
+ImageSurface::getExifOrientation(Reader& jpeg) {
   static const char kJpegStartOfImage = (char)0xd8;
   static const char kJpegStartOfFrameBaseline = (char)0xc0;
   static const char kJpegStartOfFrameProgressive = (char)0xc2;
@@ -1330,7 +1101,7 @@ Image::getExifOrientation(Reader& jpeg) {
  * Updates the dimensions of the bitmap according to the orientation
  */
 
-void Image::updateDimensionsForOrientation(Orientation orientation) {
+void ImageSurface::updateDimensionsForOrientation(Orientation orientation) {
   switch (orientation) {
     case ROTATE_90_CW:
     case ROTATE_270_CW:
@@ -1359,7 +1130,7 @@ void Image::updateDimensionsForOrientation(Orientation orientation) {
  */
 
 void
-Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
+ImageSurface::rotatePixels(uint8_t* pixels, int width, int height, int channels,
                     Orientation orientation) {
   auto swapPixel = [channels](uint8_t* pixels, int src_idx, int dst_idx) {
     uint8_t tmp;
@@ -1457,29 +1228,26 @@ Image::rotatePixels(uint8_t* pixels, int width, int height, int channels,
   }
 }
 
-#endif /* HAVE_JPEG */
-
-#ifdef HAVE_RSVG
-
 /*
  * Load SVG from buffer
  */
 
 cairo_status_t
-Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
-  _is_svg = true;
+ImageSurface::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
+  lunasvg::GraphicsCallbacks callbacks;
 
-  if (NULL == (_rsvg = rsvg_handle_new_from_data(buf, len, nullptr))) {
-    return CAIRO_STATUS_READ_ERROR;
-  }
+  callbacks.setDecoderFn([](char* data, int length) {
+      ImageSurface bitmap(std::nullopt);
+      bitmap.loadFromBuffer((uint8_t*)data, length);
+      return bitmap.transferSurface();
+  });
 
-  double d_width;
-  double d_height;
+  svgdoc = lunasvg::Document::loadFromData((char*)buf, len, callbacks);
 
-  rsvg_handle_get_intrinsic_size_in_pixels(_rsvg, &d_width, &d_height);
+  if (!svgdoc) return CAIRO_STATUS_READ_ERROR;
 
-  width = naturalWidth = d_width;
-  height = naturalHeight = d_height;
+  width = naturalWidth = svgdoc->width();
+  height = naturalHeight = svgdoc->height();
 
   if (width <= 0 || height <= 0) {
     this->errorInfo.set("Width and height must be set on the svg element");
@@ -1490,41 +1258,18 @@ Image::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
 }
 
 /*
- * Renders the Rsvg handle to this image's surface
+ * Renders the lunasvg document to this image's surface
  */
+
 cairo_status_t
-Image::renderSVGToSurface() {
+ImageSurface::renderSVGToSurface() {
   cairo_status_t status;
 
-  _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-
-  status = cairo_surface_status(_surface);
-  if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(_rsvg);
-    return status;
-  }
-
-  cairo_t *cr = cairo_create(_surface);
-  status = cairo_status(cr);
-  if (status != CAIRO_STATUS_SUCCESS) {
-    g_object_unref(_rsvg);
-    return status;
-  }
-
-  RsvgRectangle viewport = {
-    0, // x
-    0, // y
-    static_cast<double>(width),
-    static_cast<double>(height)
-  };
-  gboolean render_ok = rsvg_handle_render_document(_rsvg, cr, &viewport, nullptr);
-  if (!render_ok) {
-    g_object_unref(_rsvg);
-    cairo_destroy(cr);
-    return CAIRO_STATUS_READ_ERROR; // or WRITE?
-  }
-
-  cairo_destroy(cr);
+  if (_surface) cairo_surface_destroy(_surface);
+  lunasvg::Bitmap bitmap = svgdoc->renderToBitmap(width, height, 0);
+  status = cairo_surface_status(bitmap.surface());
+  if (status != CAIRO_STATUS_SUCCESS) return status;
+  _surface = cairo_surface_reference(bitmap.surface());
 
   _svg_last_width = width;
   _svg_last_height = height;
@@ -1537,9 +1282,7 @@ Image::renderSVGToSurface() {
  */
 
 cairo_status_t
-Image::loadSVG(FILE *stream) {
-  _is_svg = true;
-
+ImageSurface::loadSVG(FILE *stream) {
   struct stat s;
   int fd = fileno(stream);
 
@@ -1566,13 +1309,11 @@ Image::loadSVG(FILE *stream) {
   return result;
 }
 
-#endif /* HAVE_RSVG */
-
 /*
  * Load BMP from buffer.
  */
 
-cairo_status_t Image::loadBMPFromBuffer(uint8_t *buf, unsigned len){
+cairo_status_t ImageSurface::loadBMPFromBuffer(uint8_t *buf, unsigned len){
   BMPParser::Parser parser;
 
   // Reversed ARGB32 with pre-multiplied alpha
@@ -1611,7 +1352,7 @@ cairo_status_t Image::loadBMPFromBuffer(uint8_t *buf, unsigned len){
  * Load BMP.
  */
 
-cairo_status_t Image::loadBMP(FILE *stream){
+cairo_status_t ImageSurface::loadBMP(FILE *stream){
   struct stat s;
   int fd = fileno(stream);
 
@@ -1643,16 +1384,16 @@ cairo_status_t Image::loadBMP(FILE *stream){
  * Return UNKNOWN, SVG, GIF, JPEG, or PNG based on the filename.
  */
 
-Image::type
-Image::extension(const char *filename) {
+ImageSurface::type
+ImageSurface::extension(const char *filename) {
   size_t len = strlen(filename);
   filename += len;
-  if (len >= 5 && 0 == strcmp(".jpeg", filename - 5)) return Image::JPEG;
-  if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return Image::GIF;
-  if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return Image::JPEG;
-  if (len >= 4 && 0 == strcmp(".png", filename - 4)) return Image::PNG;
-  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return Image::SVG;
-  return Image::UNKNOWN;
+  if (len >= 5 && 0 == strcmp(".jpeg", filename - 5)) return ImageSurface::JPEG;
+  if (len >= 4 && 0 == strcmp(".gif", filename - 4)) return ImageSurface::GIF;
+  if (len >= 4 && 0 == strcmp(".jpg", filename - 4)) return ImageSurface::JPEG;
+  if (len >= 4 && 0 == strcmp(".png", filename - 4)) return ImageSurface::PNG;
+  if (len >= 4 && 0 == strcmp(".svg", filename - 4)) return ImageSurface::SVG;
+  return ImageSurface::UNKNOWN;
 }
 
 /*
@@ -1660,7 +1401,7 @@ Image::extension(const char *filename) {
  */
 
 int
-Image::isJPEG(uint8_t *data) {
+ImageSurface::isJPEG(uint8_t *data) {
   return 0xff == data[0] && 0xd8 == data[1];
 }
 
@@ -1669,7 +1410,7 @@ Image::isJPEG(uint8_t *data) {
  */
 
 int
-Image::isGIF(uint8_t *data) {
+ImageSurface::isGIF(uint8_t *data) {
   return 'G' == data[0] && 'I' == data[1] && 'F' == data[2];
 }
 
@@ -1678,7 +1419,7 @@ Image::isGIF(uint8_t *data) {
  */
 
 int
-Image::isPNG(uint8_t *data) {
+ImageSurface::isPNG(uint8_t *data) {
   return 'P' == data[1] && 'N' == data[2] && 'G' == data[3];
 }
 
@@ -1686,7 +1427,7 @@ Image::isPNG(uint8_t *data) {
  * Skip "<?" and "<!" tags to test if root tag starts "<svg"
  */
 int
-Image::isSVG(uint8_t *data, unsigned len) {
+ImageSurface::isSVG(uint8_t *data, unsigned len) {
   for (unsigned i = 3; i < len; i++) {
     if ('<' == data[i-3]) {
       switch (data[i-2]) {
@@ -1707,7 +1448,7 @@ Image::isSVG(uint8_t *data, unsigned len) {
  * Check for valid BMP signatures
  */
 
-int Image::isBMP(uint8_t *data, unsigned len) {
+int ImageSurface::isBMP(uint8_t *data, unsigned len) {
   if(len < 2) return false;
   std::string sig = std::string(1, (char)data[0]) + (char)data[1];
   return sig == "BM" ||
@@ -1717,3 +1458,179 @@ int Image::isBMP(uint8_t *data, unsigned len) {
          sig == "IC" ||
          sig == "PT";
 }
+
+void
+Image::Initialize(Napi::Env& env, Napi::Object& exports) {
+  InstanceData *data = env.GetInstanceData<InstanceData>();
+  Napi::HandleScope scope(env);
+
+  Napi::Function ctor = DefineClass(env, "Image", {
+    InstanceAccessor<&Image::GetComplete>("complete", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetWidth, &Image::SetWidth>("width", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetHeight, &Image::SetHeight>("height", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetNaturalWidth>("naturalWidth", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetNaturalHeight>("naturalHeight", napi_default_jsproperty),
+    InstanceAccessor<&Image::GetDataMode, &Image::SetDataMode>("dataMode", napi_default_jsproperty),
+    StaticValue("MODE_IMAGE", Napi::Number::New(env, ImageSurface::DATA_IMAGE), napi_default_jsproperty),
+    StaticValue("MODE_MIME", Napi::Number::New(env, ImageSurface::DATA_MIME), napi_default_jsproperty)
+  });
+
+  // Used internally in lib/image.js
+  exports.Set("GetSource", Napi::Function::New(env, &GetSource));
+  exports.Set("SetSource", Napi::Function::New(env, &SetSource));
+
+  data->ImageCtor = Napi::Persistent(ctor);
+  exports.Set("Image", ctor);
+}
+
+/*
+ * Initialize a new Image.
+ */
+
+Image::Image(const Napi::CallbackInfo& info) : ObjectWrap<Image>(info), env(info.Env()) , surface(env) {
+  info.This().ToObject().Unwrap().Set("onload", env.Null());
+  info.This().ToObject().Unwrap().Set("onerror", env.Null());
+}
+
+/*
+ * Get complete boolean.
+ */
+
+Napi::Value
+Image::GetComplete(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, true);
+}
+
+/*
+ * Get dataMode.
+ */
+
+Napi::Value
+Image::GetDataMode(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, surface.data_mode);
+}
+
+/*
+ * Set dataMode.
+ */
+
+void
+Image::SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (value.IsNumber()) {
+    int mode = value.As<Napi::Number>().Uint32Value();
+    surface.data_mode = (ImageSurface::data_mode_t) mode;
+  }
+}
+
+/*
+ * Get natural width
+ */
+
+Napi::Value
+Image::GetNaturalWidth(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, surface.naturalWidth);
+}
+
+/*
+ * Get width.
+ */
+
+Napi::Value
+Image::GetWidth(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, surface.width);
+}
+
+/*
+ * Set width.
+ */
+
+void
+Image::SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (value.IsNumber()) {
+    surface.width = value.As<Napi::Number>().Uint32Value();
+  }
+}
+
+/*
+ * Get natural height
+ */
+
+Napi::Value
+Image::GetNaturalHeight(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, surface.naturalHeight);
+}
+
+/*
+ * Get height.
+ */
+
+Napi::Value
+Image::GetHeight(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, surface.height);
+}
+/*
+ * Set height.
+ */
+
+void
+Image::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
+  if (value.IsNumber()) {
+    surface.height = value.As<Napi::Number>().Uint32Value();
+  }
+}
+
+/*
+ * Get src path.
+ */
+
+Napi::Value
+Image::GetSource(const Napi::CallbackInfo& info){
+  Napi::Env env = info.Env();
+  Image *img = Image::Unwrap(info.This().As<Napi::Object>());
+  return Napi::String::New(env, img->surface.filename ? img->surface.filename : "");
+}
+
+/*
+ * Set src path.
+ */
+
+void
+Image::SetSource(const Napi::CallbackInfo& info){
+  Napi::Env env = info.Env();
+  Napi::Object This = info.This().As<Napi::Object>();
+  Image *img = Image::Unwrap(This);
+  cairo_status_t status = CAIRO_STATUS_READ_ERROR;
+
+  Napi::Value value = info[0];
+
+  // url string
+  if (value.IsString()) {
+    std::string src = value.As<Napi::String>().Utf8Value();
+    status = img->surface.load(src);
+  // Buffer
+  } else if (value.IsBuffer()) {
+    uint8_t *buf = value.As<Napi::Buffer<uint8_t>>().Data();
+    unsigned len = value.As<Napi::Buffer<uint8_t>>().Length();
+    status = img->surface.loadFromBuffer(buf, len);
+  }
+
+  if (status) {
+    Napi::Value onerrorFn;
+    if (This.Get("onerror").UnwrapTo(&onerrorFn) && onerrorFn.IsFunction()) {
+      Napi::Error arg;
+      if (img->surface.errorInfo.empty()) {
+        arg = Napi::Error::New(env, Napi::String::New(env, cairo_status_to_string(status)));
+      } else {
+        arg = img->surface.errorInfo.toError(env);
+      }
+      onerrorFn.As<Napi::Function>().Call({ arg.Value() });
+    }
+  } else {
+    img->surface.loaded();
+    Napi::Value onloadFn;
+    if (This.Get("onload").UnwrapTo(&onloadFn) && onloadFn.IsFunction()) {
+      onloadFn.As<Napi::Function>().Call({});
+    }
+  }
+}
+

@@ -7,11 +7,12 @@ struct PdfSvgClosure;
 
 #include "closure.h"
 #include <cairo.h>
-#include "dll_visibility.h"
 #include <napi.h>
-#include <pango/pangocairo.h>
 #include <vector>
 #include <cstddef>
+
+#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 /*
  * Canvas types.
@@ -22,18 +23,6 @@ typedef enum {
   CANVAS_TYPE_PDF,
   CANVAS_TYPE_SVG
 } canvas_type_t;
-
-
-/*
- * FontFace describes a font file in terms of one PangoFontDescription that
- * will resolve to it and one that the user describes it as (like @font-face)
- */
-class FontFace {
-  public:
-    PangoFontDescription *sys_desc = nullptr;
-    PangoFontDescription *user_desc = nullptr;
-    unsigned char file_path[1024];
-};
 
 enum text_baseline_t : uint8_t {
   TEXT_BASELINE_ALPHABETIC = 0,
@@ -77,15 +66,10 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     void StreamPNGSync(const Napi::CallbackInfo& info);
     void StreamPDFSync(const Napi::CallbackInfo& info);
     void StreamJPEGSync(const Napi::CallbackInfo& info);
-    static void RegisterFont(const Napi::CallbackInfo& info);
-    static void DeregisterAllFonts(const Napi::CallbackInfo& info);
     static Napi::Value ParseFont(const Napi::CallbackInfo& info);
     Napi::Error CairoError(cairo_status_t status);
     static void ToPngBufferAsync(Closure* closure);
     static void ToJpegBufferAsync(Closure* closure);
-    static PangoWeight GetWeightFromCSSString(const char *weight);
-    static PangoStyle GetStyleFromCSSString(const char *style);
-    static PangoFontDescription *ResolveFontDescription(const PangoFontDescription *desc);
 
     inline bool isPDF() { return type == CANVAS_TYPE_PDF; }
     inline bool isSVG() { return type == CANVAS_TYPE_SVG; }
@@ -111,7 +95,6 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     void destroySurface();
 
     Napi::Env env;
-    static int fontSerial;
 
   private:
 
@@ -119,7 +102,6 @@ class Canvas : public Napi::ObjectWrap<Canvas> {
     PdfSvgClosure *_closure;
 
     Napi::FunctionReference ctor;
-    static std::vector<FontFace> font_face_list;
 
     uint16_t width;
     uint16_t height;

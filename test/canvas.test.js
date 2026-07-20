@@ -14,10 +14,10 @@ const {
   createCanvas,
   createImageData,
   loadImage,
-  registerFont,
   Canvas,
-  deregisterAllFonts,
-  ImageData
+  ImageData,
+  fonts,
+  FontFace
 } = require('../')
 
 function assertApprox(actual, expected, tol) {
@@ -55,15 +55,33 @@ describe('Canvas', function () {
     assert.equal(canvas.height, 14)
   });
 
-  it('registerFont', function () {
+  it('canvas.fonts', function () {
     // Minimal test to make sure nothing is thrown
-    registerFont('./examples/pfennigFont/Pfennig.ttf', { family: 'Pfennig' })
-    registerFont('./examples/pfennigFont/PfennigBold.ttf', { family: 'Pfennig', weight: 'bold' })
-
+    const regular = new FontFace('Pfennig1', './examples/pfennigFont/Pfennig.ttf')
+    const bold = new FontFace('Pfennig2', './examples/pfennigFont/PfennigBold.ttf', {weight: 'bold'});
     // Test to multi byte file path support
-    registerFont('./examples/pfennigFont/pfennigMultiByte🚀.ttf', { family: 'Pfennig' })
+    const multi = new FontFace('Pfennig3', './examples/pfennigFont/pfennigMultiByte🚀.ttf');
 
-    deregisterAllFonts()
+    fonts.add(regular);
+    fonts.add(bold);
+    fonts.add(multi);
+
+    const canvas = createCanvas(1, 1);
+    const ctx = canvas.getContext('2d');
+    ctx.font = '8px Pfennig1';
+    ctx.fillText('Pfennig', 0, 0);
+    ctx.font = '8px Pfennig2';
+    ctx.fillText('Pfennig', 0, 0);
+    ctx.font = '8px Pfennig3';
+    ctx.fillText('Pfennig', 0, 0);
+
+    assert.equal(regular.status, 'loaded');
+    assert.equal(bold.status, 'loaded');
+    assert.equal(multi.status, 'loaded');
+
+    fonts.delete(multi);
+    fonts.delete(regular);
+    fonts.delete(bold);
   });
 
   it('color serialization', function () {
@@ -1007,6 +1025,20 @@ describe('Canvas', function () {
   })
 
   describe('Context2d#measureText()', function () {
+    const arimo = new FontFace('Arimo', path.join(__dirname, '/fixtures/Arimo-Regular.ttf'));
+
+    before(function () {
+      fonts.add(arimo);
+    });
+
+    after(function () {
+      fonts.delete(arimo);
+    });
+
+    // TODO: all but 'works' can be updated to use exact assertions. Those
+    // tests were written before custom fonts and font selelection worked
+    // perfectly on all OSes.
+
     it('Context2d#measureText().width', function () {
       const canvas = createCanvas(20, 20)
       const ctx = canvas.getContext('2d')
@@ -1019,31 +1051,27 @@ describe('Canvas', function () {
     it('works', function () {
       const canvas = createCanvas(20, 20)
       const ctx = canvas.getContext('2d')
-      ctx.font = '20px Arial'
+      ctx.font = '20px Arimo'
 
       ctx.textBaseline = 'alphabetic'
       let metrics = ctx.measureText('Alphabet')
-      // Actual value depends on font library version. Have observed values
-      // between 0 and 0.769.
-      assertApprox(metrics.alphabeticBaseline, 0.5, 0.5)
-      // Positive = going up from the baseline
-      assert.ok(metrics.actualBoundingBoxAscent > 0)
-      // Positive = going down from the baseline
-      assertApprox(metrics.actualBoundingBoxDescent, 5, 2)
+      assertApprox(metrics.alphabeticBaseline, 0, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 14.5, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, 4.16, 0.1)
 
       ctx.textBaseline = 'bottom'
       metrics = ctx.measureText('Alphabet')
       assert.strictEqual(ctx.textBaseline, 'bottom')
-      assertApprox(metrics.alphabeticBaseline, 5, 2)
-      assert.ok(metrics.actualBoundingBoxAscent > 0)
-      // On the baseline or slightly above
-      assert.ok(metrics.actualBoundingBoxDescent <= 0)
+      assertApprox(metrics.alphabeticBaseline, 3.07, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 17.57, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, 1.09, 0.1)
     })
 
     it('actualBoundingBox is correct for left, center and right alignment (#1909)', function () {
       const canvas = createCanvas(0, 0)
       const ctx = canvas.getContext('2d')
 
+      ctx.font = '10px helvetica';
       // positive actualBoundingBoxLeft indicates a distance going left from the
       // given alignment point.
 

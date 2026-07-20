@@ -14,7 +14,6 @@ const { Blob } = require('node:buffer')
 const { URL } = require('node:url')
 
 const { createCanvas, loadImage, rsvgVersion, Image } = require('../')
-const HAVE_SVG = rsvgVersion !== undefined
 
 
 const pngCheckers = path.join(__dirname, '/fixtures/checkers.png')
@@ -153,7 +152,6 @@ describe('Image', function () {
   })
 
   it('loads SVG data URL base64', function () {
-    if (!HAVE_SVG) this.skip()
     const base64Enc = fs.readFileSync(svgTree, 'base64')
     const dataURL = `data:image/svg+xml;base64,${base64Enc}`
     return loadImage(dataURL).then((img) => {
@@ -166,7 +164,6 @@ describe('Image', function () {
   })
 
   it('loads SVG data URL utf8', function () {
-    if (!HAVE_SVG) this.skip()
     const utf8Encoded = fs.readFileSync(svgTree, 'utf8')
     const dataURL = `data:image/svg+xml;utf8,${utf8Encoded}`
     return loadImage(dataURL).then((img) => {
@@ -377,17 +374,10 @@ describe('Image', function () {
   })
 
   it('loadImage doesn\'t crash when you don\'t specify width and height', async function () {
-    const err = {name: 'Error'}
-
-    // TODO: remove this when we have a static build or something
-    if (os.platform() !== 'win32') {
-      err.message = 'Width and height must be set on the svg element';
-    }
-
-    await assert.rejects(async () => {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`;
-      await loadImage(Buffer.from(svg))
-    }, err)
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M1,1"/></svg>`
+    const img = await loadImage(Buffer.from(svg))
+    assert.equal(img.width, 1)
+    assert.equal(img.height, 1)
   })
 
   describe('supports BMP', function () {

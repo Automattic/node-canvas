@@ -11,35 +11,19 @@
 #include <cstring>
 #include <cctype>
 #include <ctime>
-#include <glib.h>
 #include "PNG.h"
-#include "register_font.h"
 #include <sstream>
 #include <stdlib.h>
 #include <string>
 #include <unordered_set>
 #include "Util.h"
 #include <vector>
-#include "node_buffer.h"
 #include "FontParser.h"
-
-#ifdef HAVE_JPEG
 #include "JPEGStream.h"
-#endif
-
-#define GENERIC_FACE_ERROR \
-  "The second argument to registerFont is required, and should be an object " \
-  "with at least a family (string) and optionally weight (string/number) " \
-  "and style (string)."
 
 #define CAIRO_MAX_SIZE 32767
 
 using namespace std;
-
-std::vector<FontFace> Canvas::font_face_list;
-
-// Increases each time a font is (de)registered
-int Canvas::fontSerial = 1;
 
 /*
  * Initialize Canvas.
@@ -54,9 +38,7 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Canvas::ToBuffer>("toBuffer", napi_default_method),
     InstanceMethod<&Canvas::StreamPNGSync>("streamPNGSync", napi_default_method),
     InstanceMethod<&Canvas::StreamPDFSync>("streamPDFSync", napi_default_method),
-#ifdef HAVE_JPEG
     InstanceMethod<&Canvas::StreamJPEGSync>("streamJPEGSync", napi_default_method),
-#endif
     InstanceAccessor<&Canvas::GetType>("type", napi_default_jsproperty),
     InstanceAccessor<&Canvas::GetStride>("stride", napi_default_jsproperty),
     InstanceAccessor<&Canvas::GetWidth, &Canvas::SetWidth>("width", napi_default_jsproperty),
@@ -68,8 +50,6 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
     StaticValue("PNG_FILTER_AVG", Napi::Number::New(env, PNG_FILTER_AVG), napi_default_jsproperty),
     StaticValue("PNG_FILTER_PAETH", Napi::Number::New(env, PNG_FILTER_PAETH), napi_default_jsproperty),
     StaticValue("PNG_ALL_FILTERS", Napi::Number::New(env, PNG_ALL_FILTERS), napi_default_jsproperty),
-    StaticMethod<&Canvas::RegisterFont>("_registerFont", napi_default_method),
-    StaticMethod<&Canvas::DeregisterAllFonts>("_deregisterAllFonts", napi_default_method),
     StaticMethod<&Canvas::ParseFont>("parseFont", napi_default_method)
   });
 
@@ -224,13 +204,11 @@ Canvas::ToPngBufferAsync(Closure* base) {
     closure);
 }
 
-#ifdef HAVE_JPEG
 void
 Canvas::ToJpegBufferAsync(Closure* base) {
   JpegClosure* closure = static_cast<JpegClosure*>(base);
   write_to_jpeg_buffer(closure->canvas->ensureSurface(), closure);
 }
-#endif
 
 static void
 parsePNGArgs(Napi::Value arg, PngClosure& pngargs) {
@@ -275,7 +253,6 @@ parsePNGArgs(Napi::Value arg, PngClosure& pngargs) {
   }
 }
 
-#ifdef HAVE_JPEG
 static void parseJPEGArgs(Napi::Value arg, JpegClosure& jpegargs) {
   // "If Type(quality) is not Number, or if quality is outside that range, the
   // user agent must use its default quality value, as if the quality argument
@@ -307,9 +284,6 @@ static void parseJPEGArgs(Napi::Value arg, JpegClosure& jpegargs) {
     }
   }
 }
-#endif
-
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
 
 static inline void setPdfMetaStr(cairo_surface_t* surf, Napi::Object opts,
   cairo_pdf_metadata_t t, const char* propName) {
@@ -342,8 +316,6 @@ static void setPdfMetadata(Canvas* canvas, Napi::Object opts) {
   setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_CREATE_DATE, "creationDate");
   setPdfMetaDate(surf, opts, CAIRO_PDF_METADATA_MOD_DATE, "modDate");
 }
-
-#endif // CAIRO 16+
 
 /*
  * Converts/encodes data to a Buffer. Async when a callback function is passed.
@@ -380,11 +352,9 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     // mime type may be present, but it's not checked
     PdfSvgClosure* closure = static_cast<PdfSvgClosure*>(_closure);
     if (isPDF()) {
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
       if (info[1].IsObject()) { // toBuffer("application/pdf", config)
         setPdfMetadata(this, info[1].As<Napi::Object>());
       }
-#endif // CAIRO 16+
     }
 
     cairo_surface_t *surf = ensureSurface();
@@ -403,10 +373,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
   if (info[0].StrictEquals(Napi::String::New(env, "raw"))) {
     cairo_surface_t *surface = ensureSurface();
     cairo_surface_flush(surface);
-    if (nBytes() > node::Buffer::kMaxLength) {
-      Napi::Error::New(env, "Data exceeds maximum buffer length.").ThrowAsJavaScriptException();
-      return env.Undefined();
-    }
     return Napi::Buffer<uint8_t>::Copy(env, cairo_image_surface_get_data(surface), nBytes());
   }
 
@@ -467,7 +433,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     return env.Undefined();
   }
 
-#ifdef HAVE_JPEG
   // Sync JPEG
   Napi::Value jpegStr = Napi::String::New(env, "image/jpeg");
   if (info[0].StrictEquals(jpegStr)) {
@@ -503,7 +468,6 @@ Canvas::ToBuffer(const Napi::CallbackInfo& info) {
     worker->Queue();
     return env.Undefined();
   }
-#endif
 
   return env.Undefined();
 }
@@ -608,11 +572,9 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
     return;
   }
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
   if (info[1].IsObject()) {
     setPdfMetadata(this, info[1].As<Napi::Object>());
   }
-#endif
 
   cairo_surface_finish(ensureSurface());
 
@@ -638,7 +600,6 @@ Canvas::StreamPDFSync(const Napi::CallbackInfo& info) {
  * Stream JPEG data synchronously.
  */
 
-#ifdef HAVE_JPEG
 static uint32_t getSafeBufSize(Canvas* canvas) {
   // Don't allow the buffer size to exceed the size of the canvas (#674)
   // TODO not sure if this is really correct, but it fixed #674
@@ -659,7 +620,6 @@ Canvas::StreamJPEGSync(const Napi::CallbackInfo& info) {
   uint32_t bufsize = getSafeBufSize(this);
   write_to_jpeg_stream(ensureSurface(), bufsize, &closure);
 }
-#endif
 
 char *
 str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_number) {
@@ -674,88 +634,6 @@ str_value(Napi::Maybe<Napi::Value> maybe, const char *fallback, bool can_be_numb
   }
   
   return NULL;
-}
-
-void
-Canvas::RegisterFont(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  if (!info[0].IsString()) {
-    Napi::Error::New(env, "Wrong argument type").ThrowAsJavaScriptException();
-    return;
-  } else if (!info[1].IsObject()) {
-    Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
-    return;
-  }
-
-  std::string filePath = info[0].As<Napi::String>();
-  PangoFontDescription *sys_desc = get_pango_font_description((unsigned char *)(filePath.c_str()));
-
-  if (!sys_desc) {
-    Napi::Error::New(env, "Could not parse font file").ThrowAsJavaScriptException();
-    return;
-  }
-
-  PangoFontDescription *user_desc = pango_font_description_new();
-
-  // now check the attrs, there are many ways to be wrong
-  Napi::Object js_user_desc = info[1].As<Napi::Object>();
-
-  // TODO: use FontParser on these values just like the FontFace API works
-  char *family = str_value(js_user_desc.Get("family"), NULL, false);
-  char *weight = str_value(js_user_desc.Get("weight"), "normal", true);
-  char *style = str_value(js_user_desc.Get("style"), "normal", false);
-
-  if (family && weight && style) {
-    pango_font_description_set_weight(user_desc, Canvas::GetWeightFromCSSString(weight));
-    pango_font_description_set_style(user_desc, Canvas::GetStyleFromCSSString(style));
-    pango_font_description_set_family(user_desc, family);
-
-    auto found = std::find_if(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
-      return pango_font_description_equal(f.sys_desc, sys_desc);
-    });
-
-    if (found != font_face_list.end()) {
-      pango_font_description_free(found->user_desc);
-      found->user_desc = user_desc;
-    } else if (register_font((unsigned char *) filePath.c_str())) {
-      FontFace face;
-      face.user_desc = user_desc;
-      face.sys_desc = sys_desc;
-      strncpy((char *)face.file_path, (char *) filePath.c_str(), 1023);
-      font_face_list.push_back(face);
-    } else {
-      pango_font_description_free(user_desc);
-      Napi::Error::New(env, "Could not load font to the system's font host").ThrowAsJavaScriptException();
-
-    }
-  } else {
-    pango_font_description_free(user_desc);
-    if (!env.IsExceptionPending()) {
-      Napi::Error::New(env, GENERIC_FACE_ERROR).ThrowAsJavaScriptException();
-    }
-  }
-
-  free(family);
-  free(weight);
-  free(style);
-  fontSerial++;
-}
-
-void
-Canvas::DeregisterAllFonts(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  // Unload all fonts from pango to free up memory
-  bool success = true;
-
-  std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
-    if (!deregister_font( (unsigned char *)f.file_path )) success = false;
-    pango_font_description_free(f.user_desc);
-    pango_font_description_free(f.sys_desc);
-  });
-
-  font_face_list.clear();
-  fontSerial++;
-  if (!success) Napi::Error::New(env, "Could not deregister one or more fonts").ThrowAsJavaScriptException();
 }
 
 /*
@@ -775,127 +653,21 @@ Canvas::ParseFont(const Napi::CallbackInfo& info) {
   if (!ok) return env.Undefined();
 
   Napi::Object obj = Napi::Object::New(env);
-  obj.Set("size", Napi::Number::New(env, props.fontSize));
+  obj.Set("size", Napi::Number::New(env, props.size));
   Napi::Array families = Napi::Array::New(env);
   obj.Set("families", families);
 
   unsigned int index = 0;
 
-  for (auto& family : props.fontFamily) {
+  for (auto& family : props.families) {
     families[index++] = Napi::String::New(env, family);
   }
 
-  obj.Set("weight", Napi::Number::New(env, props.fontWeight));
-  obj.Set("variant", Napi::Number::New(env, static_cast<int>(props.fontVariant)));
-  obj.Set("style", Napi::Number::New(env, static_cast<int>(props.fontStyle)));
+  obj.Set("weight", Napi::Number::New(env, props.weight));
+  obj.Set("variant", Napi::Number::New(env, static_cast<int>(props.variant)));
+  obj.Set("style", Napi::Number::New(env, static_cast<int>(props.style)));
 
   return obj;
-}
-
-/*
- * Get a PangoStyle from a CSS string (like "italic")
- */
-
-PangoStyle
-Canvas::GetStyleFromCSSString(const char *style) {
-  PangoStyle s = PANGO_STYLE_NORMAL;
-
-  if (strlen(style) > 0) {
-    if (0 == strcmp("italic", style)) {
-      s = PANGO_STYLE_ITALIC;
-    } else if (0 == strcmp("oblique", style)) {
-      s = PANGO_STYLE_OBLIQUE;
-    }
-  }
-
-  return s;
-}
-
-/*
- * Get a PangoWeight from a CSS string ("bold", "100", etc)
- */
-
-PangoWeight
-Canvas::GetWeightFromCSSString(const char *weight) {
-  PangoWeight w = PANGO_WEIGHT_NORMAL;
-
-  if (strlen(weight) > 0) {
-    if (0 == strcmp("bold", weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("100", weight)) {
-      w = PANGO_WEIGHT_THIN;
-    } else if (0 == strcmp("200", weight)) {
-      w = PANGO_WEIGHT_ULTRALIGHT;
-    } else if (0 == strcmp("300", weight)) {
-      w = PANGO_WEIGHT_LIGHT;
-    } else if (0 == strcmp("400", weight)) {
-      w = PANGO_WEIGHT_NORMAL;
-    } else if (0 == strcmp("500", weight)) {
-      w = PANGO_WEIGHT_MEDIUM;
-    } else if (0 == strcmp("600", weight)) {
-      w = PANGO_WEIGHT_SEMIBOLD;
-    } else if (0 == strcmp("700", weight)) {
-      w = PANGO_WEIGHT_BOLD;
-    } else if (0 == strcmp("800", weight)) {
-      w = PANGO_WEIGHT_ULTRABOLD;
-    } else if (0 == strcmp("900", weight)) {
-      w = PANGO_WEIGHT_HEAVY;
-    }
-  }
-
-  return w;
-}
-
-/*
- * Given a user description, return a description that will select the
- * font either from the system or @font-face
- */
-
-PangoFontDescription *
-Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
-  // One of the user-specified families could map to multiple SFNT family names
-  // if someone registered two different fonts under the same family name.
-  // https://drafts.csswg.org/css-fonts-3/#font-style-matching
-  FontFace best;
-  istringstream families(pango_font_description_get_family(desc));
-  unordered_set<string> seen_families;
-  string resolved_families;
-  bool first = true;
-
-  for (string family; getline(families, family, ','); ) {
-    string renamed_families;
-    for (auto& ff : font_face_list) {
-      string pangofamily = string(pango_font_description_get_family(ff.user_desc));
-      if (streq_casein(family, pangofamily)) {
-        const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
-        bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
-        bool better = best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc);
-
-        // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
-        // https://bugzilla.gnome.org/show_bug.cgi?id=762873
-        if (unseen) {
-          seen_families.insert(sys_desc_family_name);
-
-          if (better) {
-            renamed_families = string(sys_desc_family_name) + (renamed_families.size() ? "," : "") + renamed_families;
-          } else {
-            renamed_families = renamed_families + (renamed_families.size() ? "," : "") + sys_desc_family_name;
-          }
-        }
-
-        if (first && better) best = ff;
-      }
-    }
-
-    if (resolved_families.size()) resolved_families += ',';
-    resolved_families += renamed_families.size() ? renamed_families : family;
-    first = false;
-  }
-
-  PangoFontDescription* ret = pango_font_description_copy(best.sys_desc ? best.sys_desc : desc);
-  pango_font_description_set_family(ret, resolved_families.c_str());
-
-  return ret;
 }
 
 // This returns an approximate value only, suitable for
@@ -907,10 +679,8 @@ Canvas::approxBytesPerPixel() {
   case CAIRO_FORMAT_ARGB32:
   case CAIRO_FORMAT_RGB24:
     return 4;
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30:
     return 3;
-#endif
   case CAIRO_FORMAT_RGB16_565:
     return 2;
   case CAIRO_FORMAT_A8:

@@ -378,19 +378,34 @@ export function createImageData(width: number, height: number): ImageData
  */
 export function loadImage(src: string|Buffer, options?: any): Promise<Image>
 
-/**
- * Registers a font that is not installed as a system font. This must be used
- * before creating Canvas instances.
- * @param path Path to local font file.
- * @param fontFace Description of the font face, corresponding to CSS properties
- * used in `@font-face` rules.
- */
-export function registerFont(path: string, fontFace: {family: string, weight?: string, style?: string}): void
+interface FontFaceDescriptors {
+  weight?: string | number;
+  style?: string;
+}
 
-/**
- * Unloads all fonts
- */
-export function deregisterAllFonts(): void;
+export class FontFace {
+  constructor(
+    family: string,
+    url: string | ArrayBuffer | Uint8Array,
+    descriptors?: FontFaceDescriptors
+  );
+
+  family: string;
+  style: string;
+  weight: string;
+  status: 'loaded' | 'unloaded' | 'error';
+}
+
+declare class FontFaceSet {
+  add(face: FontFace): void;
+  has(face: FontFace): boolean;
+  clear(): void;
+  delete(face: FontFace): boolean;
+  [Symbol.iterator](): Iterator<FontFace>;
+  size: number;
+}
+
+export const fonts: FontFaceSet;
 
 /** This class must not be constructed directly; use `canvas.createPNGStream()`. */
 export class PNGStream extends Readable {}

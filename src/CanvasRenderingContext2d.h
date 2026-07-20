@@ -4,9 +4,11 @@
 
 #include "cairo.h"
 #include "Canvas.h"
+#include "Font.h"
+#include "FontLayout.h"
 #include "color.h"
 #include "napi.h"
-#include <pango/pangocairo.h>
+#include "unicode.h"
 #include <stack>
 
 /*
@@ -26,7 +28,7 @@ struct canvas_state_t {
   Napi::ObjectReference strokePattern;
   Napi::ObjectReference fillGradient;
   Napi::ObjectReference strokeGradient;
-  PangoFontDescription* fontDescription = nullptr;
+  FontProperties fontProperties;
   std::string font = "10px sans-serif";
   cairo_filter_t patternQuality = CAIRO_FILTER_GOOD;
   float globalAlpha = 1.f;
@@ -38,10 +40,7 @@ struct canvas_state_t {
   std::string direction = "ltr";
   std::string lang = "";
 
-  canvas_state_t() {
-    fontDescription = pango_font_description_from_string("sans");
-    pango_font_description_set_absolute_size(fontDescription, 10 * PANGO_SCALE);
-  }
+  canvas_state_t() {}
 
   canvas_state_t(const canvas_state_t& other) {
     fill = other.fill;
@@ -59,15 +58,11 @@ struct canvas_state_t {
     shadowOffsetX = other.shadowOffsetX;
     shadowOffsetY = other.shadowOffsetY;
     textDrawingMode = other.textDrawingMode;
-    fontDescription = pango_font_description_copy(other.fontDescription);
+    fontProperties = other.fontProperties;
     font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
     direction = other.direction;
     lang = other.lang;
-  }
-
-  ~canvas_state_t() {
-    pango_font_description_free(fontDescription);
   }
 };
 
@@ -111,7 +106,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void Stroke(const Napi::CallbackInfo& info);
     void FillText(const Napi::CallbackInfo& info);
     void StrokeText(const Napi::CallbackInfo& info);
-    static Napi::Value SetFont(const Napi::CallbackInfo& info);
     void SetLineDash(const Napi::CallbackInfo& info);
     Napi::Value GetLineDash(const Napi::CallbackInfo& info);
     Napi::Value MeasureText(const Napi::CallbackInfo& info);
@@ -179,10 +173,8 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void SetTextBaseline(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetTextAlign(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value);
-    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
     void BeginTag(const Napi::CallbackInfo& info);
     void EndTag(const Napi::CallbackInfo& info);
-    #endif
     Napi::Value GetDirection(const Napi::CallbackInfo& info);
     void SetDirection(const Napi::CallbackInfo& info, const Napi::Value& value);
     inline void setContext(cairo_t *ctx) { _context = ctx; }
@@ -191,7 +183,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(double x, double y);
+    void setTextPath(cairo_glyph_t* glyphs, size_t numGlyphs);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void savePath();
@@ -202,7 +194,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void save();
     void restore();
     void resetState();
-    inline PangoLayout *layout(){ return _layout; }
     ~Context2d();
     Napi::Env env;
 
@@ -212,12 +203,12 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value get_current_transform();
     void _setFillColor(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
-    void checkFonts();
     void paintText(const Napi::CallbackInfo&, bool);
     text_align_t resolveTextAlignment();
     Canvas *_canvas;
     cairo_t *_context = nullptr;
     cairo_path_t *_path;
-    PangoLayout *_layout = nullptr;
-    int fontSerial = 1;
+    // 65536 is an arbitrary max fillText length. Use sizeof to get the capacity.
+    char16_t textBuffer[65536];
+    size_t textLength;
 };

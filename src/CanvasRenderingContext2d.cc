@@ -4,12 +4,16 @@
 
 #include <algorithm>
 #include <cairo-pdf.h>
+#include <cairo-ft.h>
 #include "Canvas.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
+#include "Font.h"
 #include "InstanceData.h"
 #include "FontParser.h"
+#include "FontLayout.h"
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include "Image.h"
 #include "ImageData.h"
@@ -19,6 +23,7 @@
 #include <string>
 #include "Util.h"
 #include <vector>
+#include <freetype/freetype.h>
 
 /*
  * Rectangle arg assertions.
@@ -34,15 +39,6 @@
   double height = args[3];
 
 constexpr double twoPi = M_PI * 2.;
-
-/*
- * Simple helper macro for a rather verbose function call.
- */
-
-#define PANGO_LAYOUT_GET_METRICS(LAYOUT) pango_context_get_metrics( \
-   pango_layout_get_context(LAYOUT), \
-   pango_layout_get_font_description(LAYOUT), \
-   pango_language_from_string(state->lang.c_str()))
 
 inline static bool checkArgs(const Napi::CallbackInfo&info, double *args, int argsNum, int offset = 0){
   Napi::Env env = info.Env();
@@ -133,10 +129,8 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::CreatePattern>("createPattern", napi_default_method),
     InstanceMethod<&Context2d::CreateLinearGradient>("createLinearGradient", napi_default_method),
     InstanceMethod<&Context2d::CreateRadialGradient>("createRadialGradient", napi_default_method),
-    #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
     InstanceMethod<&Context2d::BeginTag>("beginTag", napi_default_method),
     InstanceMethod<&Context2d::EndTag>("endTag", napi_default_method),
-    #endif
     InstanceAccessor<&Context2d::GetFormat>("pixelFormat", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetPatternQuality, &Context2d::SetPatternQuality>("patternQuality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetImageSmoothingEnabled, &Context2d::SetImageSmoothingEnabled>("imageSmoothingEnabled", napi_default_jsproperty),
@@ -204,9 +198,7 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
         else if (utf8PixelFormat == "A8") format = CAIRO_FORMAT_A8;
         else if (utf8PixelFormat == "RGB16_565") format = CAIRO_FORMAT_RGB16_565;
         else if (utf8PixelFormat == "A1") format = CAIRO_FORMAT_A1;
-#ifdef CAIRO_FORMAT_RGB30
         else if (utf8PixelFormat == "RGB30") format = CAIRO_FORMAT_RGB30;
-#endif
       }
 
       // alpha: false forces use of RGB24
@@ -221,19 +213,9 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
   }
 
   _context = _canvas->createCairoContext();
-  _layout = pango_cairo_create_layout(_context);
-
-  // As of January 2023, Pango rounds glyph positions which renders text wider
-  // or narrower than the browser. See #2184 for more information
-#if PANGO_VERSION_CHECK(1, 44, 0)
-  pango_context_set_round_glyph_positions(pango_layout_get_context(_layout), FALSE);
-#endif
-
-  pango_layout_set_auto_dir(_layout, FALSE);
 
   states.emplace();
   state = &states.top();
-  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -241,7 +223,6 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
  */
 
 Context2d::~Context2d() {
-  if (_layout) g_object_unref(_layout);
   if (_context) cairo_destroy(_context);
 }
 
@@ -252,7 +233,6 @@ Context2d::~Context2d() {
 void Context2d::resetState() {
   states.pop();
   states.emplace();
-  pango_layout_set_font_description(_layout, state->fontDescription);
 }
 
 /*
@@ -276,7 +256,6 @@ Context2d::restore() {
     cairo_restore(_context);
     states.pop();
     state = &states.top();
-    pango_layout_set_font_description(_layout, state->fontDescription);
   }
 }
 
@@ -701,9 +680,7 @@ Context2d::GetFormat(const Napi::CallbackInfo& info) {
   case CAIRO_FORMAT_A8: pixelFormatString = "A8"; break;
   case CAIRO_FORMAT_A1: pixelFormatString = "A1"; break;
   case CAIRO_FORMAT_RGB16_565: pixelFormatString = "RGB16_565"; break;
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: pixelFormatString = "RGB30"; break;
-#endif
   default: return env.Null();
   }
   return Napi::String::New(env, pixelFormatString);
@@ -951,14 +928,12 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
     }
     break;
   }
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO
     Napi::Error::New(env, "putImageData for CANVAS_FORMAT_RGB30 is not yet implemented").ThrowAsJavaScriptException();
 
     break;
   }
-#endif
   default: {
     Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
     return;
@@ -1160,14 +1135,12 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
     }
     break;
   }
-#ifdef CAIRO_FORMAT_RGB30
   case CAIRO_FORMAT_RGB30: {
     // TODO
     Napi::Error::New(env, "getImageData for CANVAS_FORMAT_RGB30 is not yet implemented").ThrowAsJavaScriptException();
 
     break;
   }
-#endif
   default: {
     // Unlikely
     Napi::Error::New(env, "Invalid pixel format").ThrowAsJavaScriptException();
@@ -1292,9 +1265,9 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
       Napi::Error::New(env, "Image given has not completed loading").ThrowAsJavaScriptException();
       return;
     }
-    source_w = sw = img->width;
-    source_h = sh = img->height;
-    surface = img->surface();
+    source_w = sw = img->surface.width;
+    source_h = sh = img->surface.height;
+    surface = img->surface.surface();
 
   // Canvas
   } else if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->CanvasCtor.Value()).UnwrapOr(false)) {
@@ -2439,31 +2412,11 @@ Context2d::Stroke(const Napi::CallbackInfo& info) {
  */
 
 double
-get_text_scale(PangoLayout *layout, double maxWidth) {
-
-  PangoRectangle logical_rect;
-  pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
-
-  if (logical_rect.width > maxWidth) {
-    return maxWidth / logical_rect.width;
+get_text_scale(TextLayout& layout, double maxWidth) {
+  if (layout.width > maxWidth) {
+    return maxWidth / layout.width;
   } else {
     return 1.0;
-  }
-}
-
-/*
- * Make sure the layout's font list is up-to-date
- */
-void
-Context2d::checkFonts() {
-  // If fonts have been registered, the PangoContext is using an outdated FontMap
-  if (canvas()->fontSerial != fontSerial) {
-    pango_context_set_font_map(
-      pango_layout_get_context(_layout),
-      pango_cairo_font_map_get_default()
-    );
-
-    fontSerial = canvas()->fontSerial;
   }
 }
 
@@ -2482,39 +2435,88 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
 
   if (!info[0].ToString().UnwrapTo(&strValue)) return;
 
-  std::string str = strValue.Utf8Value();
-  double x = args[0];
-  double y = args[1];
-  double scaled_by = 1;
+  napi_get_value_string_utf16(env, strValue, textBuffer, sizeof(textBuffer), &textLength);
 
-  PangoLayout *layout = this->layout();
+  InstanceData* data = env.GetInstanceData<InstanceData>();
 
-  checkFonts();
-  pango_layout_set_text(layout, str.c_str(), -1);
-  if (state->lang != "") {
-    pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(state->lang.c_str()));
-  }
-  pango_cairo_update_layout(context(), layout);
+  constexpr size_t CR_GLYPH_BUF_SIZE = 1024;
+  cairo_glyph_t glyphs[CR_GLYPH_BUF_SIZE];
 
-  PangoDirection pango_dir = state->direction == "ltr" ? PANGO_DIRECTION_LTR : PANGO_DIRECTION_RTL;
-  pango_context_set_base_dir(pango_layout_get_context(_layout), pango_dir);
+  TextLayout layout = layoutText(textBuffer, textLength, state, data);
+  double x = args[0] - layout.anchorX;
+  double y = args[1] + layout.anchorY;
 
   if (argsNum == 3) {
     if (args[2] <= 0) return;
-    scaled_by = get_text_scale(layout, args[2]);
+    double scaled_by = get_text_scale(layout, args[2]);
     cairo_save(context());
     cairo_scale(context(), scaled_by, 1);
   }
 
-  savePath();
-  if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    if (stroke == true) { this->stroke(); } else { this->fill(); }
-    setTextPath(x / scaled_by, y);
-  } else if (state->textDrawingMode == TEXT_DRAW_PATHS) {
-    setTextPath(x / scaled_by, y);
-    if (stroke == true) { this->stroke(); } else { this->fill(); }
+  for (GlyphRun& run : layout.runs) {
+    double fontSize = state->fontProperties.size;
+    double toPx = fontSize / 1000;
+
+    FT_Face ftface;
+    FT_Error newFaceResult = FT_New_Memory_Face(
+      data->ft,
+      reinterpret_cast<const FT_Byte *>(run.face->data.get()),
+      run.face->data_len,
+      run.face->index,
+      &ftface
+    );
+
+    if (newFaceResult != 0) continue;
+
+    cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(ftface, 0);
+
+    static const cairo_user_data_key_t key{0};
+    cairo_status_t setDataResult = cairo_font_face_set_user_data(
+      crface,
+      &key,
+      ftface,
+      (cairo_destroy_func_t) FT_Done_Face
+    );
+
+    if (setDataResult) {
+      cairo_font_face_destroy(crface);
+      FT_Done_Face (ftface);
+      continue;
+    }
+
+    cairo_set_font_face(context(), crface);
+    cairo_set_font_size(context(), fontSize);
+
+    size_t hbGlyphIndex = 0;
+    while (hbGlyphIndex < run.glyphs.size()) {
+      size_t crGlyphIndex = 0;
+
+      while (crGlyphIndex < CR_GLYPH_BUF_SIZE && hbGlyphIndex < run.glyphs.size()) {
+        glyphs[crGlyphIndex].index = run.glyphs[hbGlyphIndex].id;
+        glyphs[crGlyphIndex].x = x + run.glyphs[hbGlyphIndex].x_offset * toPx;
+        glyphs[crGlyphIndex].y = y + run.glyphs[hbGlyphIndex].y_offset * toPx;
+        x += run.glyphs[hbGlyphIndex].x_advance * toPx;
+        y += run.glyphs[hbGlyphIndex].y_advance * toPx;
+
+        hbGlyphIndex += 1;
+        crGlyphIndex += 1;
+      }
+
+      savePath();
+      if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
+        if (stroke) { this->stroke(); } else { this->fill(); }
+        setTextPath(glyphs, crGlyphIndex);
+      } else if (state->textDrawingMode == TEXT_DRAW_PATHS) {
+        setTextPath(glyphs, crGlyphIndex);
+        if (stroke) { this->stroke(); } else { this->fill(); }
+      }
+      restorePath();
+    }
+
+    cairo_set_font_face(context(), nullptr);
+    cairo_font_face_destroy(crface);
   }
-  restorePath();
+
   if (argsNum == 3) {
     cairo_restore(context());
   }
@@ -2538,75 +2540,13 @@ Context2d::StrokeText(const Napi::CallbackInfo& info) {
   paintText(info, true);
 }
 
-/*
- * Gets the baseline adjustment in device pixels
- */
-inline double getBaselineAdjustment(PangoLayout* layout, short baseline) {
-  PangoRectangle logical_rect;
-  pango_layout_line_get_extents(pango_layout_get_line(layout, 0), NULL, &logical_rect);
-
-  double scale = 1.0 / PANGO_SCALE;
-  double ascent = scale * pango_layout_get_baseline(layout);
-  double descent = scale * logical_rect.height - ascent;
-
-  switch (baseline) {
-  case TEXT_BASELINE_ALPHABETIC:
-    return ascent;
-  case TEXT_BASELINE_MIDDLE:
-    return (ascent + descent) / 2.0;
-  case TEXT_BASELINE_BOTTOM:
-    return ascent + descent;
-  default:
-    return 0;
-  }
-}
-
-text_align_t
-Context2d::resolveTextAlignment() {
-  text_align_t alignment = state->textAlignment;
-
-  // Convert start/end to left/right based on direction
-  if (alignment == TEXT_ALIGNMENT_START) {
-    return (state->direction == "rtl") ? TEXT_ALIGNMENT_RIGHT : TEXT_ALIGNMENT_LEFT;
-  } else if (alignment == TEXT_ALIGNMENT_END) {
-    return (state->direction == "rtl") ? TEXT_ALIGNMENT_LEFT : TEXT_ALIGNMENT_RIGHT;
-  }
-
-  return alignment;
-}
-
-/*
- * Set text path for the string in the layout at (x, y).
- * This function is called by paintText and won't behave correctly
- * if is not called from there.
- * it needs pango_layout_set_text and pango_cairo_update_layout to be called before
- */
-
 void
-Context2d::setTextPath(double x, double y) {
-  PangoRectangle logical_rect;
-  text_align_t alignment = resolveTextAlignment();
-
-  switch (alignment) {
-    case TEXT_ALIGNMENT_CENTER:
-      pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
-      x -= logical_rect.width / 2;
-      break;
-    case TEXT_ALIGNMENT_RIGHT:
-      pango_layout_get_pixel_extents(_layout, NULL, &logical_rect);
-      x -= logical_rect.width;
-      break;
-    default: // TEXT_ALIGNMENT_LEFT
-      break;
-  }
-
-  y -= getBaselineAdjustment(_layout, state->textBaseline);
-
-  cairo_move_to(_context, x, y);
-  if (state->textDrawingMode == TEXT_DRAW_PATHS) {
-    pango_cairo_layout_path(_context, _layout);
-  } else if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    pango_cairo_show_layout(_context, _layout);
+Context2d::setTextPath(cairo_glyph_t* glyphs, size_t numGlyphs) {
+  if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
+    // TODO: use cairo_show_text_glyphs !
+    cairo_show_glyphs(context(), glyphs, numGlyphs);
+  } else {
+    cairo_glyph_path(context(), glyphs, numGlyphs);
   }
 }
 
@@ -2665,40 +2605,8 @@ Context2d::SetFont(const Napi::CallbackInfo& info, const Napi::Value& value) {
   auto props = FontParser::parse(str, &success);
   if (!success) return;
 
-  PangoFontDescription *desc = pango_font_description_copy(state->fontDescription);
-  pango_font_description_free(state->fontDescription);
-
-  PangoStyle style = props.fontStyle == FontStyle::Italic ? PANGO_STYLE_ITALIC
-    : props.fontStyle == FontStyle::Oblique ? PANGO_STYLE_OBLIQUE
-    : PANGO_STYLE_NORMAL;
-  pango_font_description_set_style(desc, style);
-
-  pango_font_description_set_weight(desc, static_cast<PangoWeight>(props.fontWeight));
-
-  std::string family = props.fontFamily.empty() ? "" : props.fontFamily[0];
-  for (size_t i = 1; i < props.fontFamily.size(); i++) {
-    family += "," + props.fontFamily[i];
-  }
-  if (family.length() > 0) {
-    // See #1643 - Pango understands "sans" whereas CSS uses "sans-serif"
-    std::string s1(family);
-    std::string s2("sans-serif");
-    if (streq_casein(s1, s2)) {
-      pango_font_description_set_family(desc, "sans");
-    } else {
-      pango_font_description_set_family(desc, family.c_str());
-    }
-  }
-
-  PangoFontDescription *sys_desc = Canvas::ResolveFontDescription(desc);
-  pango_font_description_free(desc);
-
-  if (props.fontSize > 0) pango_font_description_set_absolute_size(sys_desc, props.fontSize * PANGO_SCALE);
-
-  state->fontDescription = sys_desc;
-  pango_layout_set_font_description(_layout, sys_desc);
-
   state->font = str;
+  state->fontProperties = props;
 }
 
 /*
@@ -2796,67 +2704,53 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
 
   Napi::String str;
   if (!info[0].ToString().UnwrapTo(&str)) return env.Undefined();
+  napi_get_value_string_utf16(env, str, textBuffer, sizeof(textBuffer), &textLength);
 
   Napi::Object obj = Napi::Object::New(env);
+  InstanceData* data = env.GetInstanceData<InstanceData>();
 
-  PangoRectangle _ink_rect, _logical_rect;
-  float_rectangle ink_rect, logical_rect;
-  PangoFontMetrics *metrics;
-  PangoLayout *layout = this->layout();
+  TextLayout layout = layoutText(textBuffer, textLength, state, data);
 
-  checkFonts();
-  pango_layout_set_text(layout, str.Utf8Value().c_str(), -1);
-  if (state->lang != "") {
-    pango_context_set_language(pango_layout_get_context(_layout), pango_language_from_string(state->lang.c_str()));
-  }
-  pango_cairo_update_layout(ctx, layout);
+  double fontSize = state->fontProperties.size;
+  double ax = 0;
+  double ay = 0;
+  double actualBoundingBoxLeft = 0;
+  double actualBoundingBoxRight = 0;
+  double actualBoundingBoxAscent = 0;
+  double actualBoundingBoxDescent = 0;
+  bool first = true;
 
-  // Normally you could use pango_layout_get_pixel_extents and be done, or use
-  // pango_extents_to_pixels, but both of those round the pixels, so we have to
-  // divide by PANGO_SCALE manually
-  pango_layout_get_extents(layout, &_ink_rect, &_logical_rect);
-
-  float inverse_pango_scale = 1. / PANGO_SCALE;
-
-  logical_rect.x = _logical_rect.x * inverse_pango_scale;
-  logical_rect.y = _logical_rect.y * inverse_pango_scale;
-  logical_rect.width = _logical_rect.width * inverse_pango_scale;
-  logical_rect.height = _logical_rect.height * inverse_pango_scale;
-
-  ink_rect.x = _ink_rect.x * inverse_pango_scale;
-  ink_rect.y = _ink_rect.y * inverse_pango_scale;
-  ink_rect.width = _ink_rect.width * inverse_pango_scale;
-  ink_rect.height = _ink_rect.height * inverse_pango_scale;
-
-  metrics = PANGO_LAYOUT_GET_METRICS(layout);
-
-  text_align_t alignment = resolveTextAlignment();
-
-  double x_offset;
-  switch (alignment) {
-    case TEXT_ALIGNMENT_CENTER:
-      x_offset = logical_rect.width / 2.;
-      break;
-    case TEXT_ALIGNMENT_RIGHT:
-      x_offset = logical_rect.width;
-      break;
-    case TEXT_ALIGNMENT_LEFT:
-    default:
-      x_offset = 0.0;
+  // first calculate this bounding box, with no anchor:
+  // - ascent and descent increasing means going away from baseline
+  // - left and right increasing means going right
+  for (GlyphRun& run : layout.runs) {
+    double toPx = fontSize / 1000;
+    for (Glyph& glyph : run.glyphs) {
+      actualBoundingBoxLeft = std::min(actualBoundingBoxLeft, ax + glyph.x_bearing * toPx);
+      actualBoundingBoxAscent = std::max(actualBoundingBoxAscent, ay + glyph.y_bearing * toPx);
+      actualBoundingBoxRight = std::max(actualBoundingBoxRight, ax + glyph.x_bearing * toPx + glyph.width * toPx);
+      actualBoundingBoxDescent = std::max(actualBoundingBoxDescent, ay - glyph.y_bearing * toPx - glyph.height * toPx);
+      ax += glyph.x_advance * toPx;
+      ay += glyph.y_advance * toPx;
+    }
   }
 
-  double y_offset = getBaselineAdjustment(layout, state->textBaseline);
+  // convert to whatwg-specified box with an anchor:
+  // - ascent and descent increasing means going from anchor outwards
+  // - left and right increasing means going from anchor outwards
+  actualBoundingBoxLeft = layout.anchorX - actualBoundingBoxLeft;
+  actualBoundingBoxRight = actualBoundingBoxRight - layout.anchorX;
+  actualBoundingBoxAscent = actualBoundingBoxAscent - layout.anchorY;
+  actualBoundingBoxDescent = layout.anchorY + actualBoundingBoxDescent;
 
-  obj.Set("width", Napi::Number::New(env, logical_rect.width));
-  obj.Set("actualBoundingBoxLeft", Napi::Number::New(env, PANGO_LBEARING(ink_rect) + x_offset));
-  obj.Set("actualBoundingBoxRight", Napi::Number::New(env, PANGO_RBEARING(ink_rect) - x_offset));
-  obj.Set("actualBoundingBoxAscent", Napi::Number::New(env, y_offset + PANGO_ASCENT(ink_rect)));
-  obj.Set("actualBoundingBoxDescent", Napi::Number::New(env, PANGO_DESCENT(ink_rect) - y_offset));
-  obj.Set("emHeightAscent", Napi::Number::New(env, -(PANGO_ASCENT(logical_rect) - y_offset)));
-  obj.Set("emHeightDescent", Napi::Number::New(env, PANGO_DESCENT(logical_rect) - y_offset));
-  obj.Set("alphabeticBaseline", Napi::Number::New(env, -(pango_font_metrics_get_ascent(metrics) * inverse_pango_scale - y_offset)));
-
-  pango_font_metrics_unref(metrics);
+  obj.Set("width", Napi::Number::New(env, actualBoundingBoxLeft + actualBoundingBoxRight));
+  obj.Set("actualBoundingBoxLeft", Napi::Number::New(env, actualBoundingBoxLeft));
+  obj.Set("actualBoundingBoxRight", Napi::Number::New(env, actualBoundingBoxRight));
+  obj.Set("actualBoundingBoxAscent", Napi::Number::New(env, actualBoundingBoxAscent));
+  obj.Set("actualBoundingBoxDescent", Napi::Number::New(env, actualBoundingBoxDescent));
+  obj.Set("emHeightAscent", Napi::Number::New(env, layout.anchorY + layout.metrics.central + fontSize / 2));
+  obj.Set("emHeightDescent", Napi::Number::New(env, layout.anchorY + layout.metrics.central - fontSize / 2));
+  obj.Set("alphabeticBaseline", Napi::Number::New(env, -layout.anchorY));
 
   return obj;
 }
@@ -3432,8 +3326,6 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   cairo_set_matrix(ctx, &save_matrix);
 }
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-
 void
 Context2d::BeginTag(const Napi::CallbackInfo& info) {
   std::string tagName = "";
@@ -3479,5 +3371,3 @@ Context2d::EndTag(const Napi::CallbackInfo& info) {
 
   cairo_tag_end(_context, tagName.c_str());
 }
-
-#endif

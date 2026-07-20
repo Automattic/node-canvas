@@ -1,0 +1,19 @@
+.{
+    .name = .libpng,
+    .version = "1.6.57",
+    .minimum_zig_version = "0.15.1",
+    .fingerprint = 0xb7a09eb41a8526a2,
+    .paths = .{
+        "LICENSE",
+        "build.zig",
+        "build.zig.zon",
+        "pnglibconf.h",
+    },
+    .dependencies = .{
+        .libpng = .{
+            .url = "https://github.com/glennrp/libpng/archive/refs/tags/v1.6.57.tar.gz",
+            .hash = "N-V-__8AACSdYAB_UbYSe21ZcD-qFBX7twJ4mRDPTrekTXQF",
+        },
+        .zlib = .{ .path = "../zlib" },
+    },
+}

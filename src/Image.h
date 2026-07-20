@@ -7,51 +7,27 @@
 #include <functional>
 #include <napi.h>
 #include <stdint.h> // node < 7 uses libstdc++ on macOS which lacks complete c++11
+#include <optional>
 
-#ifdef HAVE_JPEG
 #include <jpeglib.h>
 #include <jerror.h>
-#endif
 
-#ifdef HAVE_GIF
 #include <gif_lib.h>
+#define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
 
-  #if GIFLIB_MAJOR > 5 || GIFLIB_MAJOR == 5 && GIFLIB_MINOR >= 1
-    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif, NULL)
-  #else
-    #define GIF_CLOSE_FILE(gif) DGifCloseFile(gif)
-  #endif
-#endif
-
-#ifdef HAVE_RSVG
-#include <librsvg/rsvg.h>
-  // librsvg <= 2.36.1, identified by undefined macro, needs an extra include
-  #ifndef LIBRSVG_CHECK_VERSION
-  #include <librsvg/rsvg-cairo.h>
-  #endif
-#endif
+#include <lunasvg.h>
 
 using JPEGDecodeL = std::function<uint32_t (uint8_t* const src)>;
 
-class Image : public Napi::ObjectWrap<Image> {
+class ImageSurface {
   public:
+    // Only contains a value when the ImageSurface backs a js Image. Empty for
+    // ImageSurfaces supporting lunasvg (to render images embedded in SVGs).
+    std::optional<Napi::Env> env;
     char *filename;
     int width, height;
     int naturalWidth, naturalHeight;
-    Napi::Env env;
-    static void Initialize(Napi::Env& env, Napi::Object& target);
-    Image(const Napi::CallbackInfo& info);
-    Napi::Value GetComplete(const Napi::CallbackInfo& info);
-    Napi::Value GetWidth(const Napi::CallbackInfo& info);
-    Napi::Value GetHeight(const Napi::CallbackInfo& info);
-    Napi::Value GetNaturalWidth(const Napi::CallbackInfo& info);
-    Napi::Value GetNaturalHeight(const Napi::CallbackInfo& info);
-    Napi::Value GetDataMode(const Napi::CallbackInfo& info);
-    void SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value);
-    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
-    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
-    static Napi::Value GetSource(const Napi::CallbackInfo& info);
-    static void SetSource(const Napi::CallbackInfo& info);
+    ImageSurface(std::optional<Napi::Env> env);
     inline uint8_t *data(){ return cairo_image_surface_get_data(_surface); }
     inline int stride(){ return cairo_image_surface_get_stride(_surface); }
     static int isPNG(uint8_t *data);
@@ -60,23 +36,18 @@ class Image : public Napi::ObjectWrap<Image> {
     static int isSVG(uint8_t *data, unsigned len);
     static int isBMP(uint8_t *data, unsigned len);
     static cairo_status_t readPNG(void *closure, unsigned char *data, unsigned len);
-    inline int isComplete(){ return COMPLETE == state; }
     cairo_surface_t *surface();
     cairo_status_t loadSurface();
     cairo_status_t loadFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadPNGFromBuffer(uint8_t *buf);
     cairo_status_t loadPNG();
     void clearData();
-#ifdef HAVE_RSVG
+    cairo_surface_t* transferSurface();
     cairo_status_t loadSVGFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadSVG(FILE *stream);
     cairo_status_t renderSVGToSurface();
-#endif
-#ifdef HAVE_GIF
     cairo_status_t loadGIFFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadGIF(FILE *stream);
-#endif
-#ifdef HAVE_JPEG
     enum Orientation {
         NORMAL,
         MIRROR_HORIZ,
@@ -103,13 +74,12 @@ class Image : public Napi::ObjectWrap<Image> {
     Orientation getExifOrientation(Reader& jpeg);
     void updateDimensionsForOrientation(Orientation orientation);
     void rotatePixels(uint8_t* pixels, int width, int height, int channels, Orientation orientation);
-#endif
     cairo_status_t loadBMPFromBuffer(uint8_t *buf, unsigned len);
     cairo_status_t loadBMP(FILE *stream);
     CanvasError errorInfo;
     void loaded();
-    cairo_status_t load();
-    ~Image();
+    cairo_status_t load(std::string& filename);
+    ~ImageSurface();
 
     enum {
         DEFAULT
@@ -136,10 +106,27 @@ class Image : public Napi::ObjectWrap<Image> {
     cairo_surface_t *_surface;
     uint8_t *_data = nullptr;
     int _data_len;
-#ifdef HAVE_RSVG
-    RsvgHandle *_rsvg;
-    bool _is_svg;
+    std::unique_ptr<lunasvg::Document> svgdoc;
     int _svg_last_width;
     int _svg_last_height;
-#endif
+};
+
+class Image : public Napi::ObjectWrap<Image> {
+  public:
+    Napi::Env env;
+    static void Initialize(Napi::Env& env, Napi::Object& target);
+    Image(const Napi::CallbackInfo& info);
+    Napi::Value GetComplete(const Napi::CallbackInfo& info);
+    Napi::Value GetWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalWidth(const Napi::CallbackInfo& info);
+    Napi::Value GetNaturalHeight(const Napi::CallbackInfo& info);
+    Napi::Value GetDataMode(const Napi::CallbackInfo& info);
+    void SetDataMode(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetWidth(const Napi::CallbackInfo& info, const Napi::Value& value);
+    void SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value);
+    static Napi::Value GetSource(const Napi::CallbackInfo& info);
+    static void SetSource(const Napi::CallbackInfo& info);
+    inline int isComplete(){ return ImageSurface::COMPLETE == surface.state; }
+    ImageSurface surface;
 };
