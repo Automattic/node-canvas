@@ -46,7 +46,8 @@
     "lib/",
     "pkg/",
     "src/",
-    "util/"
+    "util/",
+    "!.zig-cache"
   ],
   "workspaces": [
     "./npm/*"
