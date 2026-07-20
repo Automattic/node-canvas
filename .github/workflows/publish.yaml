@@ -53,4 +53,4 @@ jobs:
       - name: Install
         run: npm ci --force # https://github.com/npm/cli/issues/6138
       - name: Publish
-        run: npm publish --dry-run
+        run: npm publish --tag next
