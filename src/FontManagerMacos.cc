@@ -66,7 +66,7 @@ convertWeight(float aCTWeight) {
 
 void
 create_font_descriptor(
-  std::vector<FontDescriptor>& results,
+  SystemFonts& results,
   CTFontDescriptorRef descriptor
 ) {
   FontDescriptor desc;
@@ -137,7 +137,7 @@ create_font_descriptor(
     if (strstr(styleBuffer, "Oblique") != NULL) desc.style = FontStyle::Oblique;
   }
 
-  results.push_back(std::move(desc));
+  results[desc.family.get()].push_back(std::move(desc));
 
   CFRelease(nsUrl);
   CFRelease(nsPath);
@@ -154,8 +154,6 @@ FontManagerMacos::readSystemFonts() {
 
   NSArray *matches = (NSArray *) CTFontCollectionCreateMatchingFontDescriptors(collection);
   CFIndex count = CFArrayGetCount((CFArrayRef) matches);
-
-  system_fonts.reserve(count);
 
   for (CFIndex i = 0; i < count; i++) {
     CTFontDescriptorRef match = (CTFontDescriptorRef)CFArrayGetValueAtIndex((CFArrayRef)matches, i);

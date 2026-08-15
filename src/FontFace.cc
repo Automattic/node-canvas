@@ -41,11 +41,13 @@ FontFace::FontFace(const Napi::CallbackInfo& info) :
     Napi::ArrayBuffer buf = ta.ArrayBuffer();
     descriptor.data_len = ta.ByteLength();
     descriptor.data = std::make_unique<uint8_t[]>(descriptor.data_len);
+    descriptor.status = FontStatus::Loaded;
     std::memcpy(descriptor.data.get(), static_cast<uint8_t*>(buf.Data()) + ta.ByteOffset(), descriptor.data_len);
   } else if (info[1].IsArrayBuffer()) {
     Napi::ArrayBuffer buf = info[1].As<Napi::ArrayBuffer>();
     descriptor.data_len = buf.ByteLength();
     descriptor.data = std::make_unique<uint8_t[]>(descriptor.data_len);
+    descriptor.status = FontStatus::Loaded;
     std::memcpy(descriptor.data.get(), buf.Data(), descriptor.data_len);
   } else {
     Napi::TypeError::New(env, "Source must be a string or buffer").ThrowAsJavaScriptException();

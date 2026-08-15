@@ -125,7 +125,7 @@ convertStyle(DWRITE_FONT_STYLE style) {
 
 static void
 create_font_descriptor(
-  std::vector<FontDescriptor>& results,
+  SystemFonts& results,
   IDWriteFont* font,
   const char* familyName
 ) {
@@ -154,7 +154,7 @@ create_font_descriptor(
   desc.style = convertStyle(font->GetStyle());
   desc.index = face->GetIndex();
 
-  results.push_back(std::move(desc));
+  results[desc.family.get()].push_back(std::move(desc));
 }
 
 void

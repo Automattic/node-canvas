@@ -418,50 +418,15 @@ layoutText(
     while (shapingWorkList.size() && matchIndex < matches.size()) {
       auto face = matches[matchIndex];
       face->load();
-      if (face->data == nullptr) {
+      if (!face->hbfont) {
         matchIndex++;
         continue;
       }
 
       LOG("==> %s\n", face->family.get());
 
-      // create the HarfBuzz font
-      hb_blob_t* hbblob = hb_blob_create(
-        reinterpret_cast<const char *>(face->data.get()),
-        face->data_len,
-        HB_MEMORY_MODE_READONLY,
-        nullptr,
-        nullptr
-      );
-      size_t count = hb_face_count(hbblob);
-      if (count > 1 && face->postscript) {
-        // Lazily initialize the ttc index for backends that don't provide it (macOS)
-        for (size_t index = 0; index < count; index++) {
-          char buf[128];
-          unsigned int len = sizeof(buf);
-          hb_face_t* hbface = hb_face_create(hbblob, index);
-          hb_ot_name_get_utf8(
-            hbface,
-            HB_OT_NAME_ID_POSTSCRIPT_NAME,
-            hb_language_from_string("en", -1),
-            &len,
-            buf
-          );
-          hb_face_destroy(hbface);
-
-          if (strcmp(buf, face->postscript.get()) == 0) {
-            matches[matchIndex]->index = index;
-            face->index = index;
-            break;
-          }
-        }
-      }
-      hb_face_t* hbface = hb_face_create(hbblob, face->index);
-      hb_font_t* hbfont = hb_font_create(hbface);
-      hb_font_set_scale(hbfont, 1000, 1000);
-
       if (!foundFont) {
-        extractMetrics(hbfont, fontSize, level, &layout.metrics);
+        extractMetrics(face->hbfont.get(), fontSize, level, &layout.metrics);
         foundFont = true;
       }
 
@@ -487,7 +452,7 @@ layoutText(
           buffer,
           level & 1 ? HB_DIRECTION_RTL : HB_DIRECTION_LTR
         );
-        hb_shape(hbfont, buffer, nullptr, 0);
+        hb_shape(face->hbfont.get(), buffer, nullptr, 0);
 
         LOG("==> shaping %zu..%zu\n", work.start, work.end - 1);
 
@@ -545,7 +510,7 @@ layoutText(
               segment.glyphEnd = glyphIndex;
             } else {
               // finish the last segment, not including this grapheme
-              flushSegment(segment, shapingWorkList, layout.runs, level, face, hbfont, buffer, isLastMatch);
+              flushSegment(segment, shapingWorkList, layout.runs, level, face, face->hbfont.get(), buffer, isLastMatch);
 
               // start a new segment that includes this grapheme
               segment.textStart = segment.textEnd;
@@ -556,7 +521,7 @@ layoutText(
             }
 
             if (graphemeDivider >= work.end) {
-              flushSegment(segment, shapingWorkList, layout.runs, level, face, hbfont, buffer, isLastMatch);
+              flushSegment(segment, shapingWorkList, layout.runs, level, face, face->hbfont.get(), buffer, isLastMatch);
             }
 
             glyphsNeedReshape = false;
@@ -567,9 +532,6 @@ layoutText(
       }
 
       matchIndex++;
-      hb_font_destroy(hbfont);
-      hb_face_destroy(hbface);
-      hb_blob_destroy(hbblob);
       shapingWorkList.erase(
         shapingWorkList.begin(),
         shapingWorkList.begin() + endWorkForMatch
