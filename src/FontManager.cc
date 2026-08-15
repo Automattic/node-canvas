@@ -4,31 +4,6 @@
 #include "FontFaceSet.h"
 #include "Util.h"
 
-bool
-compareFamilyNames(const char* str1, size_t len1, const char* str2, size_t len2) {
-  size_t start1 = 0;
-  size_t end1 = len1;
-  size_t start2 = 0;
-  size_t end2 = len2;
-
-  while (start1 < len1 && std::isspace(str1[start1])) start1++;
-  while (end1 > start1 && std::isspace(str1[end1 - 1])) end1--;
-
-  while (start2 < len2 && std::isspace(str2[start2])) start2++;
-  while (end2 > start2 && std::isspace(str2[end2 - 1])) end2--;
-
-  if (end1 - start1 != end2 - start2) return false;
-
-  for (size_t i = 0; i < end1 - start1; i++) {
-    if (std::tolower(str1[start1 + i]) != std::tolower(str2[start2 + i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-
 void
 FontManager::narrowByStretch(
   std::vector<FontDescriptor*>& fonts,
@@ -206,14 +181,9 @@ FontManager::query(
   std::vector<FontDescriptor*> allFamilyResults;
   std::vector<FontDescriptor*> familyResults;
 
-  auto maybeAdd = [&](const std::string& family, FontDescriptor* desc) {
+  auto maybeAdd = [&](FontDescriptor* desc) {
     if (
-      compareFamilyNames(
-        family.c_str(),
-        family.size(),
-        desc->family.get(),
-        strlen(desc->family.get())
-      ) && std::find(
+      std::find(
         familyResults.begin(),
         familyResults.end(),
         desc
@@ -225,16 +195,22 @@ FontManager::query(
     auto genericFamilies = getGenericList(family);
     if (genericFamilies) {
       for (const std::string& family : **genericFamilies) {
-        for (FontDescriptor& desc : system_fonts) {
-          maybeAdd(family, &desc);
+        if (auto it = system_fonts.find(family); it != system_fonts.end()) {
+          std::vector<FontDescriptor>& fonts = it->second;
+          for (FontDescriptor& desc : fonts) maybeAdd(&desc);
         }
       }
     } else {
       for (auto& entry : registered->facesData) {
-        if (entry.face != nullptr) maybeAdd(family, &(entry.face->descriptor));
+        if (entry.face == nullptr) continue;
+        std::string_view family2(entry.face->descriptor.family.get());
+        if (FontFamilyEqual{}(family, family2)) {
+          maybeAdd(&(entry.face->descriptor));
+        }
       }
-      for (FontDescriptor& desc : system_fonts) {
-        maybeAdd(family, &desc);
+      if (auto it = system_fonts.find(family); it != system_fonts.end()) {
+        std::vector<FontDescriptor>& fonts = it->second;
+        for (FontDescriptor& desc : fonts) maybeAdd(&desc);
       }
     }
 
@@ -250,8 +226,9 @@ FontManager::query(
   }
 
   for (const std::string& fallback : fallbacks) {
-    for (FontDescriptor& desc : system_fonts) {
-      maybeAdd(fallback, &desc);
+    if (auto it = system_fonts.find(fallback); it != system_fonts.end()) {
+      std::vector<FontDescriptor>& fonts = it->second;
+      for (FontDescriptor& desc : fonts) maybeAdd(&desc);
     }
 
     if (familyResults.size() == 1) {

@@ -276,8 +276,6 @@ FontManagerLinux::readSystemFonts() {
   FcFontSet* set = fc->FontList(nullptr, pattern, objects);
 
   if (set) {
-    system_fonts.reserve(set->nfont);
-
     for (int i = 0; i < set->nfont; i++) {
       FcPattern* font = set->fonts[i];
 
@@ -312,7 +310,7 @@ FontManagerLinux::readSystemFonts() {
       fc->PatternGetInteger(font, FC_SLANT, 0, &slant);
       desc.style = convertSlant(slant);
 
-      system_fonts.push_back(std::move(desc));
+      system_fonts[desc.family.get()].push_back(std::move(desc));
     }
 
     fc->FontSetDestroy(set);
