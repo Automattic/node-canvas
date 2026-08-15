@@ -79,7 +79,7 @@
     "canvas-win32-x86": "4.0.0-rc2"
   },
   "engines": {
-    "node": "^18.12.0 || >= 20.9.0"
+    "node": ">= 22"
   },
   "license": "MIT"
 }
