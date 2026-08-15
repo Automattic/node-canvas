@@ -71,6 +71,11 @@ function fontName () {
     String.fromCharCode(0x61 + Math.floor(Math.random() * 26))
 }
 
+bm('measureText(\'canvas\')', function () {
+  ctx.font = '12px Arial'
+  ctx.measureText('canvas')
+})
+
 bm('font setter', function () {
   ctx.font = `12px ${fontName()}`
   ctx.font = `400 6px ${fontName()}`
