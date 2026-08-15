@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
       - name: Install
-        run: npm ci --force # https://github.com/npm/cli/issues/6138
+        run: npm install --force # https://github.com/npm/cli/issues/6138
       - name: Build
         run: zig build
       - name: Test
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
       - name: Install
-        run: npm ci --force
+        run: npm install --force
       - name: Build
         run: zig build
       - name: Test
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
       - name: Install
-        run: npm ci --force
+        run: npm install --force
       - name: Build
         run: zig build
       - name: Test
@@ -70,7 +70,7 @@ jobs:
           node-version: 26.7.0
       - uses: actions/checkout@v4
       - name: Install
-        run: npm ci --force
+        run: npm install --force
       - name: Lint
         run: npm run lint
       - name: Lint Types

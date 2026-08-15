@@ -35,7 +35,7 @@ jobs:
           package-manager-cache: false  # never use caching in release builds
       - uses: mlugg/setup-zig@v2
       - name: Install
-        run: npm ci --force # https://github.com/npm/cli/issues/6138
+        run: npm install --force # https://github.com/npm/cli/issues/6138
       - name: Build
         run: zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseFast
       - name: Publish
@@ -51,6 +51,6 @@ jobs:
         with:
           node-version: 26
       - name: Install
-        run: npm ci --force # https://github.com/npm/cli/issues/6138
+        run: npm install --force # https://github.com/npm/cli/issues/6138
       - name: Publish
         run: npm publish --tag next
