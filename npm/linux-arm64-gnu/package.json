@@ -1,6 +1,6 @@
 {
   "name": "canvas-linux-arm64-gnu",
-  "version": "4.0.0-rc2",
+  "version": "4.0.0-rc3",
   "os": [
     "linux"
   ],

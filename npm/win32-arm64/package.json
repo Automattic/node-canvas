@@ -1,6 +1,6 @@
 {
   "name": "canvas-win32-arm64",
-  "version": "4.0.0-rc2",
+  "version": "4.0.0-rc3",
   "os": [
     "win32"
   ],

@@ -1,7 +1,7 @@
 {
   "name": "canvas",
   "description": "Canvas graphics API backed by Cairo",
-  "version": "4.0.0-rc2",
+  "version": "4.0.0-rc3",
   "author": "TJ Holowaychuk <tj@learnboost.com>",
   "main": "index.js",
   "browser": "browser.js",
@@ -64,19 +64,19 @@
     "typescript": "^4.2.2"
   },
   "optionalDependencies": {
-    "canvas-darwin-arm64": "4.0.0-rc2",
-    "canvas-darwin-x64": "4.0.0-rc2",
-    "canvas-linux-arm-gnueabihf": "4.0.0-rc2",
-    "canvas-linux-x86-musl": "4.0.0-rc2",
-    "canvas-linux-x86-gnu": "4.0.0-rc2",
-    "canvas-linux-arm64-musl": "4.0.0-rc2",
-    "canvas-linux-arm64-gnu": "4.0.0-rc2",
-    "canvas-linux-riscv64-gnu": "4.0.0-rc2",
-    "canvas-linux-x64-musl": "4.0.0-rc2",
-    "canvas-linux-x64-gnu": "4.0.0-rc2",
-    "canvas-win32-arm64": "4.0.0-rc2",
-    "canvas-win32-x64": "4.0.0-rc2",
-    "canvas-win32-x86": "4.0.0-rc2"
+    "canvas-darwin-arm64": "4.0.0-rc3",
+    "canvas-darwin-x64": "4.0.0-rc3",
+    "canvas-linux-arm-gnueabihf": "4.0.0-rc3",
+    "canvas-linux-x86-musl": "4.0.0-rc3",
+    "canvas-linux-x86-gnu": "4.0.0-rc3",
+    "canvas-linux-arm64-musl": "4.0.0-rc3",
+    "canvas-linux-arm64-gnu": "4.0.0-rc3",
+    "canvas-linux-riscv64-gnu": "4.0.0-rc3",
+    "canvas-linux-x64-musl": "4.0.0-rc3",
+    "canvas-linux-x64-gnu": "4.0.0-rc3",
+    "canvas-win32-arm64": "4.0.0-rc3",
+    "canvas-win32-x64": "4.0.0-rc3",
+    "canvas-win32-x86": "4.0.0-rc3"
   },
   "engines": {
     "node": ">= 22"
