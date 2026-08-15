@@ -7,11 +7,19 @@ node-canvas is a [Cairo](http://cairographics.org/)-backed Canvas implementation
 
 ## Installation
 
+The latest version of node-canvas is v4. It fixes a plethora of font related issues, adds support for worker threads, reduces binary size, removes the post install script, expands the platforms that binaries support, and more. It is still in the pre-release phase. We appreciate any feedback.
+
+```bash
+$ npm install canvas@next
+```
+
+To get v3:
+
 ```bash
 $ npm install canvas
 ```
 
-The minimum version of Node.js required is **18.12.0**.
+The minimum version of Node.js required is **22**.
 
 Binaries will be installed for the following platforms:
 - macOS x64/arm64
