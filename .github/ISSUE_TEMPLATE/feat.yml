@@ -1,0 +1,15 @@
+name: Feature Request
+description: Request a feature
+labels: ["Feature"]
+body:
+  - type: textarea
+    id: repro
+    attributes:
+      label: What would you like node-canvas to do?
+      description: Be as specific as you can!
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information/comments

@@ -1,0 +1,49 @@
+name: Bug Report
+description: File a bug report
+labels: ["Bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version of node-canvas
+      placeholder: v4.0.0
+    validations:
+      required: true
+  - type: input
+    id: node_version
+    attributes:
+      label: Version of node
+      placeholder: v26
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: What operating system does the problem occur on?
+      multiple: true
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Code snippets are strongly encouraged
+      value: |
+        ```js
+        import {createCanvas} from 'canvas';
+        const canvas = createCanvas(200, 200);
+        const ctx = canvas.getContext('2d');
+
+        // etc.
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information/comments
