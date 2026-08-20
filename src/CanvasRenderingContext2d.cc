@@ -2459,7 +2459,14 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
 
     cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(run.face->ftface.get(), 0);
     cairo_set_font_face(context(), crface);
-    cairo_set_font_size(context(), fontSize);
+
+    // Be shy about cairo_set_font_size. This always recreates a scaled font,
+    // which destroys lots of caching. Scaled fonts are associated with the
+    // font's matrix, which is both for scaling from em to Cairo space and for
+    // fake italics. Just checking xx should therefore be reliable.
+    cairo_matrix_t m;
+    cairo_get_font_matrix(context(), &m);
+    if (m.xx != fontSize) cairo_set_font_size(context(), fontSize);
 
     size_t hbGlyphIndex = 0;
     while (hbGlyphIndex < run.glyphs.size()) {
