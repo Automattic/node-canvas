@@ -71,9 +71,14 @@ function fontName () {
     String.fromCharCode(0x61 + Math.floor(Math.random() * 26))
 }
 
-bm('measureText(\'canvas\')', function () {
-  ctx.font = '12px Arial'
-  ctx.measureText('canvas')
+bm('fillText(Math.random())', function () {
+  ctx.font = '12px sans-serif'
+  ctx.fillText(0, 10, String(Math.random()))
+})
+
+bm('measureText(Math.random())', function () {
+  ctx.font = '12px sans-serif'
+  ctx.measureText(String(Math.random()))
 })
 
 bm('font setter', function () {
