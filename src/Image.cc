@@ -81,9 +81,30 @@ ImageSurface::clearData() {
   state = DEFAULT;
 }
 
+// Identifies the pixel buffer attached to a transferred surface. Only the
+// address matters to cairo.
+static cairo_user_data_key_t transferred_data_key;
+
 cairo_surface_t*
 ImageSurface::transferSurface() {
   cairo_surface_t* surface = _surface;
+
+  // The JPEG, GIF and BMP decoders back the surface with a buffer of our own
+  // that cairo does not own. We are giving up the only pointer to it, so hand
+  // it to the surface before letting go.
+  if (surface && _data) {
+    cairo_status_t status = cairo_surface_set_user_data(
+      surface, &transferred_data_key, _data,
+      [](void* data) { delete[] static_cast<uint8_t*>(data); });
+
+    if (status != CAIRO_STATUS_SUCCESS) {
+      // Out of memory. The buffer would outlive every pointer to it, so drop
+      // the surface with it rather than leak.
+      cairo_surface_destroy(surface);
+      delete[] _data;
+      surface = nullptr;
+    }
+  }
 
   if (env) Napi::MemoryManagement::AdjustExternalMemory(*env, -_data_len);
   _data_len = 0;
@@ -1236,9 +1257,13 @@ cairo_status_t
 ImageSurface::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
   lunasvg::GraphicsCallbacks callbacks;
 
-  callbacks.setDecoderFn([](char* data, int length) {
+  callbacks.setDecoderFn([](char* data, int length) -> cairo_surface_t* {
       ImageSurface bitmap(std::nullopt);
-      bitmap.loadFromBuffer((uint8_t*)data, length);
+      // Embedded images come in whatever format the document author used, so
+      // failing to decode one is routine. lunasvg renders nothing for a null
+      // surface; handing it a half-built one would render garbage.
+      if (bitmap.loadFromBuffer((uint8_t*)data, length) != CAIRO_STATUS_SUCCESS)
+        return nullptr;
       return bitmap.transferSurface();
   });
 
@@ -1251,10 +1276,15 @@ ImageSurface::loadSVGFromBuffer(uint8_t *buf, unsigned len) {
 
   if (width <= 0 || height <= 0) {
     this->errorInfo.set("Width and height must be set on the svg element");
+    width = naturalWidth = height = naturalHeight = 0;
+    svgdoc = nullptr;
     return CAIRO_STATUS_READ_ERROR;
   }
 
-  return renderSVGToSurface();
+  cairo_status_t status = renderSVGToSurface();
+  if (status != CAIRO_STATUS_SUCCESS) svgdoc = nullptr;
+
+  return status;
 }
 
 /*
@@ -1265,8 +1295,16 @@ cairo_status_t
 ImageSurface::renderSVGToSurface() {
   cairo_status_t status;
 
-  if (_surface) cairo_surface_destroy(_surface);
+  // Null as well as destroy: every early return below leaves the caller
+  // holding this object, and clearData() would destroy the surface again.
+  if (_surface) {
+    cairo_surface_destroy(_surface);
+    _surface = nullptr;
+  }
+
   lunasvg::Bitmap bitmap = svgdoc->renderToBitmap(width, height, 0);
+  if (bitmap.isNull()) return CAIRO_STATUS_NO_MEMORY;
+
   status = cairo_surface_status(bitmap.surface());
   if (status != CAIRO_STATUS_SUCCESS) return status;
   _surface = cairo_surface_reference(bitmap.surface());
