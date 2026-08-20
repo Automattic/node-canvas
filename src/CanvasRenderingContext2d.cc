@@ -2457,33 +2457,7 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
     double fontSize = state->fontProperties.size;
     double toPx = fontSize / 1000;
 
-    FT_Face ftface;
-    FT_Error newFaceResult = FT_New_Memory_Face(
-      data->ft,
-      reinterpret_cast<const FT_Byte *>(run.face->data.get()),
-      run.face->data_len,
-      run.face->index,
-      &ftface
-    );
-
-    if (newFaceResult != 0) continue;
-
-    cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(ftface, 0);
-
-    static const cairo_user_data_key_t key{0};
-    cairo_status_t setDataResult = cairo_font_face_set_user_data(
-      crface,
-      &key,
-      ftface,
-      (cairo_destroy_func_t) FT_Done_Face
-    );
-
-    if (setDataResult) {
-      cairo_font_face_destroy(crface);
-      FT_Done_Face (ftface);
-      continue;
-    }
-
+    cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(run.face->ftface.get(), 0);
     cairo_set_font_face(context(), crface);
     cairo_set_font_size(context(), fontSize);
 
