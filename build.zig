@@ -188,37 +188,23 @@ pub fn build(b: *std.Build) void {
     }
 
     if (target.result.os.tag == .macos) {
-        // Stole this method from
-        // https://github.com/ghostty-org/ghostty/commit/c0722b3652e5e207f34d220f64a03d9d53e93ad0
-
-        // The active SDK we want to use
-        const sdk = "MacOSX15.sdk";
-
-        // Get the path to our active Xcode installation. If this fails then
-        // the zig build will fail.
-        const path = std.mem.trim(
+        // The SDK the toolchain is pointed at, whether that is a full Xcode
+        // or just the Command Line Tools. The macOS version a binary runs on
+        // comes from the target, not from this.
+        const sdk_path = std.mem.trim(
             u8,
-            b.run(&.{ "xcode-select", "--print-path" }),
+            b.run(&.{ "xcrun", "--show-sdk-path" }),
             " \r\n",
         );
 
         canvas.root_module.addSystemFrameworkPath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/System/Library/Frameworks",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "System/Library/Frameworks" }),
         });
         canvas.root_module.addSystemIncludePath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/include",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "usr/include" }),
         });
         canvas.root_module.addLibraryPath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/lib",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "usr/lib" }),
         });
     }
 
