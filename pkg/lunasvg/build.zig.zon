@@ -5,8 +5,8 @@
     .dependencies = .{
         .cairo = .{ .path = "../cairo" },
         .lunasvg = .{
-            .url = "https://github.com/iurisilvio/lunasvg/archive/c8fbe875e4c241a8b45c8e274647297db12bda22.tar.gz",
-            .hash = "N-V-__8AAPD5FADyrh8KcLt8S2MOxVcQuxCvX9DkrI5zKsUZ",
+            .url = "https://github.com/iurisilvio/lunasvg/archive/b03b0dd7ba9967bd507c4a13ab12ff37e1d4128a.tar.gz",
+            .hash = "N-V-__8AAGcLFQB2sVL8Tvu9IeCPuaczmK9v1-aj16-Uasup",
         }
     },
 }
