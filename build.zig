@@ -202,23 +202,31 @@ pub fn build(b: *std.Build) void {
             " \r\n",
         );
 
+        // A full Xcode keeps its SDKs under Platforms/, the Command Line Tools
+        // keep them directly under SDKs/. Fall back to whichever SDK xcrun
+        // considers active if neither holds the one we asked for.
+        const candidates = [_][]const u8{
+            b.pathJoin(&.{ path, "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk }),
+            b.pathJoin(&.{ path, "SDKs/" ++ sdk }),
+        };
+
+        const sdk_path = for (candidates) |candidate| {
+            std.Io.Dir.accessAbsolute(b.graph.io, candidate, .{}) catch continue;
+            break candidate;
+        } else std.mem.trim(
+            u8,
+            b.run(&.{ "xcrun", "--show-sdk-path" }),
+            " \r\n",
+        );
+
         canvas.root_module.addSystemFrameworkPath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/System/Library/Frameworks",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "System/Library/Frameworks" }),
         });
         canvas.root_module.addSystemIncludePath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/include",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "usr/include" }),
         });
         canvas.root_module.addLibraryPath(.{
-            .cwd_relative = b.pathJoin(&.{
-                path,
-                "Platforms/MacOSX.platform/Developer/SDKs/" ++ sdk ++ "/usr/lib",
-            }),
+            .cwd_relative = b.pathJoin(&.{ sdk_path, "usr/lib" }),
         });
     }
 
