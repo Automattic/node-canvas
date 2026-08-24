@@ -417,7 +417,7 @@ layoutText(
 
     while (shapingWorkList.size() && matchIndex < matches.size()) {
       auto face = matches[matchIndex];
-      face->load();
+      face->load(data->ft());
       if (!face->hbfont) {
         matchIndex++;
         continue;

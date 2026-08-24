@@ -15,6 +15,16 @@ using PlatformFontManager = FontManagerMacos;
 using PlatformFontManager = FontManagerLinux;
 #endif
 
+struct FT_Wrapper {
+  FT_Library ft;
+  FT_Wrapper() {
+    FT_Init_FreeType(&ft);
+  }
+  ~FT_Wrapper() {
+    FT_Done_FreeType(ft);
+  }
+};
+
 struct InstanceData {
   Napi::FunctionReference CanvasCtor;
   Napi::FunctionReference CanvasGradientCtor;
@@ -27,14 +37,10 @@ struct InstanceData {
   Napi::FunctionReference FontFaceCtor;
   Napi::ObjectReference jsFontSet;
   FontFaceSet* cppFontSet;
-  FT_Library ft;
+  // FT_Wrapper exists because, and it is located here so that, FT_Done_FreeType
+  // is called after ~PlatformFontManager. FT_Faces are all freed in
+  // FT_Done_FreeType. That can't happen before their backing buffers are freed.
+  FT_Wrapper _ft;
+  inline FT_Library ft() { return _ft.ft; }
   PlatformFontManager fontManager;
-
-  InstanceData() {
-    FT_Init_FreeType(&ft);
-  }
-
-  ~InstanceData() {
-    FT_Done_FreeType(ft);
-  }
 };
