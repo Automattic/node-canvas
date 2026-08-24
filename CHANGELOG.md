@@ -11,6 +11,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Load images from Node.js object URLs (#2525)
+* Fix crash loading an SVG with an embedded image in an undecodable format (#2613)
+* Fix use-after-free when re-rendering an SVG image at a size cairo rejects (#2613)
+* Fix leak of one decoded frame per parse of an SVG with an embedded JPEG, GIF or BMP (#2613)
 
 3.2.3
 ==================
