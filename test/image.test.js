@@ -110,6 +110,34 @@ describe('Image', function () {
     }
   })
 
+  it('loads percent-encoded PNG data URLs as bytes, not UTF-8 text', async function () {
+    const png = fs.readFileSync(pngCheckers)
+    const encoded = Array.from(png, byte => '%' + byte.toString(16).padStart(2, '0')).join('')
+    const dataURL = `data:image/png,${encoded}`
+    const img = await loadImage(dataURL)
+    const expected = await loadImage(png)
+
+    assert.strictEqual(img.src, dataURL)
+    assert.strictEqual(img.width, 2)
+    assert.strictEqual(img.height, 2)
+    const pixels = image => {
+      const ctx = createCanvas(2, 2).getContext('2d')
+      ctx.drawImage(image, 0, 0)
+      return ctx.getImageData(0, 0, 2, 2).data
+    }
+    assert.deepStrictEqual(pixels(img), pixels(expected))
+  })
+
+  it('percent-decodes base64 image data before base64 decoding', async function () {
+    const base64 = fs.readFileSync(pngCheckers, 'base64')
+    const encoded = Array.from(base64, char => '%' + char.charCodeAt(0).toString(16)).join('')
+    const dataURL = `data:image/png;base64,${encoded}`
+    const img = await loadImage(dataURL)
+    assert.strictEqual(img.src, dataURL)
+    assert.strictEqual(img.width, 2)
+    assert.strictEqual(img.height, 2)
+  })
+
   it('rejects revoked object URLs', async function () {
     const objectURL = URL.createObjectURL(new Blob([
       fs.readFileSync(pngClock)
@@ -173,6 +201,44 @@ describe('Image', function () {
       assert.strictEqual(img.height, 200)
       assert.strictEqual(img.complete, true)
     })
+  })
+
+  it('loads percent-encoded SVG data URLs (GH-2126)', async function () {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><rect width="100%" height="100%" fill="#ff00ff"/></svg>'
+    const payloads = [
+      encodeURIComponent(svg),
+      svg.replace(/#/g, '%23'),
+      encodeURIComponent(svg).toLowerCase()
+    ]
+    for (const payload of payloads) {
+      const dataURL = `data:image/svg+xml;charset=utf-8,${payload}`
+      const img = await loadImage(dataURL)
+      assert.strictEqual(img.src, dataURL)
+      assert.strictEqual(img.complete, true)
+      assert.strictEqual(img.onerror, null)
+      assert.strictEqual(img.onload, null)
+      const ctx = createCanvas(2, 2).getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      assert.deepStrictEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [255, 0, 255, 255])
+    }
+  })
+
+  it('preserves raw SVG percentages and literal invalid escapes', async function () {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><!-- %, %2, %GG, %2G, %G2 --><rect width="100%" height="100%" fill="red"/></svg>'
+    const img = await loadImage(`data:image/svg+xml,${svg}`)
+    const ctx = createCanvas(2, 2).getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    assert.deepStrictEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [255, 0, 0, 255])
+  })
+
+  it('reports invalid percent-encoded image data through onerror', function (done) {
+    const img = new Image()
+    img.onload = () => done(new Error('Invalid image unexpectedly loaded'))
+    img.onerror = err => {
+      assert(err instanceof Error)
+      done()
+    }
+    img.src = 'data:image/png,%FF%00%FE'
   })
 
   it('calls Image#onload multiple times', function () {
