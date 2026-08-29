@@ -103,6 +103,7 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceMethod<&Context2d::ResetTransform>("resetTransform", napi_default_method),
     InstanceMethod<&Context2d::SetTransform>("setTransform", napi_default_method),
     InstanceMethod<&Context2d::IsPointInPath>("isPointInPath", napi_default_method),
+    InstanceMethod<&Context2d::IsPointInStroke>("isPointInStroke", napi_default_method),
     InstanceMethod<&Context2d::Scale>("scale", napi_default_method),
     InstanceMethod<&Context2d::Clip>("clip", napi_default_method),
     InstanceMethod<&Context2d::Fill>("fill", napi_default_method),
@@ -2082,6 +2083,21 @@ Context2d::IsPointInPath(const Napi::CallbackInfo& info) {
 }
 
 /*
+ * Check if the given point is within the stroke of the current path.
+ */
+
+Napi::Value
+Context2d::IsPointInStroke(const Napi::CallbackInfo& info) {
+  if (info[0].IsNumber() && info[1].IsNumber()) {
+    cairo_t *ctx = context();
+    double x = info[0].As<Napi::Number>(), y = info[1].As<Napi::Number>();
+    cairo_device_to_user(ctx, &x, &y);
+    return Napi::Boolean::New(env, cairo_in_stroke(ctx, x, y));
+  }
+  return Napi::Boolean::New(env, false);
+}
+
+/*
  * Set shadow color.
  */
 
@@ -3299,6 +3315,9 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
 
   cairo_t *ctx = context();
 
+  canonicalizeAngle(startAngle, endAngle);
+  endAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
+
   // See https://www.cairographics.org/cookbook/ellipses/
   double xRatio = radiusX / radiusY;
 
@@ -3308,7 +3327,7 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   cairo_rotate(ctx, rotation);
   cairo_scale(ctx, xRatio, 1.0);
   cairo_translate(ctx, -x, -y);
-  if (anticlockwise && M_PI * 2 != args[4]) {
+  if (anticlockwise) {
     cairo_arc_negative(ctx,
       x,
       y,
