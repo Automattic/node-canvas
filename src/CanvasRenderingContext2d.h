@@ -98,6 +98,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void ResetTransform(const Napi::CallbackInfo& info);
     void SetTransform(const Napi::CallbackInfo& info);
     Napi::Value IsPointInPath(const Napi::CallbackInfo& info);
+    Napi::Value IsPointInStroke(const Napi::CallbackInfo& info);
     void BeginPath(const Napi::CallbackInfo& info);
     void ClosePath(const Napi::CallbackInfo& info);
     void AddPage(const Napi::CallbackInfo& info);
