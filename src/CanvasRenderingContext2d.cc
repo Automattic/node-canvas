@@ -1079,10 +1079,9 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
           dst[bx + 2] = b;
         } else {
           // Undo alpha pre-multiplication
-          float alphaR = (float)255 / a;
-          dst[bx + 0] = (int)((float)r * alphaR);
-          dst[bx + 1] = (int)((float)g * alphaR);
-          dst[bx + 2] = (int)((float)b * alphaR);
+          dst[bx + 0] = (r * 255 + a / 2) / a;
+          dst[bx + 1] = (g * 255 + a / 2) / a;
+          dst[bx + 2] = (b * 255 + a / 2) / a;
         }
 
       }

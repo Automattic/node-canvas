@@ -2224,6 +2224,15 @@ describe('Canvas', function () {
       assert.equal(result.data[255], 255) // not black or junk data
       assert.equal(result.data[255 * 256], 255) // not black or junk data
     })
+
+    it('round-trips semi-transparent pixels through getImageData (#1933)', function () {
+      const canvas = createCanvas(1, 1)
+      const ctx = canvas.getContext('2d')
+      ctx.putImageData(createImageData(new Uint8ClampedArray([252, 252, 252, 252]), 1), 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [252, 252, 252, 252])
+      ctx.putImageData(createImageData(new Uint8ClampedArray([255, 128, 1, 2]), 1), 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [255, 128, 0, 2])
+    })
   })
 
   it('Canvas#createPNGStream()', function (done) {
