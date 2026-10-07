@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Check a type tag before unwrapping a native object, so a forged prototype chain can no longer crash the process (#2628)
 * Load images from Node.js object URLs (#2525)
 
 3.2.3

@@ -25,6 +25,7 @@ ImageData::Initialize(Napi::Env& env, Napi::Object& exports) {
  */
 
 ImageData::ImageData(const Napi::CallbackInfo& info) : Napi::ObjectWrap<ImageData>(info), env(info.Env()) {
+  info.This().As<Napi::Object>().TypeTag(&info.Env().GetInstanceData<InstanceData>()->tags.ImageData);
   Napi::TypedArray dataArray;
   uint32_t width;
   uint32_t height;
