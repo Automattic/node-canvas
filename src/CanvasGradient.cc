@@ -27,6 +27,7 @@ Gradient::Initialize(Napi::Env& env, Napi::Object& exports) {
  */
 
 Gradient::Gradient(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Gradient>(info), env(info.Env()) {
+  info.This().As<Napi::Object>().TypeTag(&info.Env().GetInstanceData<InstanceData>()->tags.Gradient);
   // Linear
   if (
     4 == info.Length() &&

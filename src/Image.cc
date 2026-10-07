@@ -1488,6 +1488,7 @@ Image::Initialize(Napi::Env& env, Napi::Object& exports) {
  */
 
 Image::Image(const Napi::CallbackInfo& info) : ObjectWrap<Image>(info), env(info.Env()) , surface(env) {
+  info.This().As<Napi::Object>().TypeTag(&info.Env().GetInstanceData<InstanceData>()->tags.Image);
   info.This().ToObject().Unwrap().Set("onload", env.Null());
   info.This().ToObject().Unwrap().Set("onerror", env.Null());
 }
@@ -1586,7 +1587,12 @@ Image::SetHeight(const Napi::CallbackInfo& info, const Napi::Value& value) {
 Napi::Value
 Image::GetSource(const Napi::CallbackInfo& info){
   Napi::Env env = info.Env();
-  Image *img = Image::Unwrap(info.This().As<Napi::Object>());
+  Napi::Object This = info.This().As<Napi::Object>();
+  if (!This.CheckTypeTag(&env.GetInstanceData<InstanceData>()->tags.Image)) {
+    Napi::TypeError::New(env, "Image expected").ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  Image *img = Image::Unwrap(This);
   return Napi::String::New(env, img->surface.filename ? img->surface.filename : "");
 }
 
@@ -1598,6 +1604,10 @@ void
 Image::SetSource(const Napi::CallbackInfo& info){
   Napi::Env env = info.Env();
   Napi::Object This = info.This().As<Napi::Object>();
+  if (!This.CheckTypeTag(&env.GetInstanceData<InstanceData>()->tags.Image)) {
+    Napi::TypeError::New(env, "Image expected").ThrowAsJavaScriptException();
+    return;
+  }
   Image *img = Image::Unwrap(This);
   cairo_status_t status = CAIRO_STATUS_READ_ERROR;
 

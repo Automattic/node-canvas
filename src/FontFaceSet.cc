@@ -9,6 +9,7 @@ FontFaceSet::FontFaceSet(Napi::CallbackInfo& info) :
   env(info.Env()),
   ready(Napi::Promise::Deferred::New(info.Env())),
   Napi::ObjectWrap<FontFaceSet>(info) {
+  info.This().As<Napi::Object>().TypeTag(&env.GetInstanceData<InstanceData>()->tags.FontFaceSet);
 }
 
 void
@@ -52,7 +53,7 @@ FontFaceSet::Add(const Napi::CallbackInfo& info) {
     isFontFace = false;
   } else {
     obj = info[0].As<Napi::Object>();
-    if (!obj.InstanceOf(data->FontFaceCtor.Value()).UnwrapTo(&isFontFace)) return env.Undefined();
+    isFontFace = obj.CheckTypeTag(&data->tags.FontFace);
   }
   if (!isFontFace) {
     Napi::TypeError::New(env, "Expected instance of FontFace").ThrowAsJavaScriptException();
@@ -85,7 +86,7 @@ FontFaceSet::Has(const Napi::CallbackInfo& info) {
     isFontFace = false;
   } else {
     obj = info[0].As<Napi::Object>();
-    if (!obj.InstanceOf(data->FontFaceCtor.Value()).UnwrapTo(&isFontFace)) return env.Undefined();
+    isFontFace = obj.CheckTypeTag(&data->tags.FontFace);
   }
   if (!isFontFace) {
     Napi::TypeError::New(env, "Expected instance of FontFace").ThrowAsJavaScriptException();
@@ -124,7 +125,7 @@ FontFaceSet::Delete(const Napi::CallbackInfo& info) {
     isFontFace = false;
   } else {
     obj = info[0].As<Napi::Object>();
-    if (!obj.InstanceOf(data->FontFaceCtor.Value()).UnwrapTo(&isFontFace)) return env.Undefined();
+    isFontFace = obj.CheckTypeTag(&data->tags.FontFace);
   }
   if (!isFontFace) {
     Napi::TypeError::New(env, "Expected instance of FontFace").ThrowAsJavaScriptException();
