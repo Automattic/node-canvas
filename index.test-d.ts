@@ -36,6 +36,8 @@ ctx.currentTransform = ctx.getTransform()
 ctx.quality = 'best'
 ctx.textDrawingMode = 'glyph'
 
+expectType<boolean>(ctx.isPointInStroke(1, 2))
+
 const grad = ctx.createLinearGradient(0, 1, 2, 3)
 expectType<Canvas.CanvasGradient>(grad)
 grad.addColorStop(0.1, 'red')

@@ -607,6 +607,26 @@ describe('Canvas', function () {
     assert.ok(!ctx.isPointInPath(50, 120))
   })
 
+  it('Context2d#isPointInStroke()', function () {
+    const canvas = createCanvas(100, 100)
+    const ctx = canvas.getContext('2d')
+
+    ctx.lineWidth = 10
+    ctx.rect(20, 20, 60, 60)
+
+    assert.equal(ctx.isPointInStroke(20, 50), true)
+    assert.equal(ctx.isPointInStroke(50, 50), false)
+    assert.equal(ctx.isPointInStroke(5, 5), false)
+    assert.equal(ctx.isPointInStroke('20', 50), false)
+
+    ctx.scale(2, 2)
+    ctx.beginPath()
+    ctx.moveTo(10, 10)
+    ctx.lineTo(40, 10)
+    assert.equal(ctx.isPointInStroke(40, 20), true)
+    assert.equal(ctx.isPointInStroke(40, 40), false)
+  })
+
   it('Context2d#textAlign', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
