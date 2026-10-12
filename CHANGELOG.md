@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+* Decode percent-encoded image data URLs (#2126)
 * Load images from Node.js object URLs (#2525)
 
 3.2.3
