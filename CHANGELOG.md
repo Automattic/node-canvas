@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Fixed
 * Load images from Node.js object URLs (#2525)
+* Fix off-by-one RGB values from `getImageData` on semi-transparent pixels (#1933)
 
 3.2.3
 ==================
