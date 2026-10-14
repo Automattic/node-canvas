@@ -1268,6 +1268,8 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
     source_w = sw = img->surface.width;
     source_h = sh = img->surface.height;
     surface = img->surface.surface();
+    // An SVG image re-renders on demand and can fail, throwing from surface().
+    if (!surface) return;
 
   // Canvas
   } else if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->CanvasCtor.Value()).UnwrapOr(false)) {
