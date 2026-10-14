@@ -63,6 +63,7 @@ Canvas::Initialize(Napi::Env& env, Napi::Object& exports) {
 
 Canvas::Canvas(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Canvas>(info), env(info.Env()) {
   InstanceData* data = env.GetInstanceData<InstanceData>();
+  info.This().As<Napi::Object>().TypeTag(&data->tags.Canvas);
   ctor = Napi::Persistent(data->CanvasCtor.Value());
 
   _surface = nullptr;
@@ -710,6 +711,7 @@ Canvas::getFormat() {
 
 void
 Canvas::resurface(Napi::Object This, uint16_t width, uint16_t height) {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
   Napi::Value context;
 
   if (type == CANVAS_TYPE_PDF) {
@@ -722,7 +724,8 @@ Canvas::resurface(Napi::Object This, uint16_t width, uint16_t height) {
     this->width = width;
     this->height = height;
     ensureSurface();
-    if (This.Get("context").UnwrapTo(&context) && context.IsObject())  {
+    if (This.Get("context").UnwrapTo(&context) && context.IsObject()
+        && context.As<Napi::Object>().CheckTypeTag(&data->tags.Context2d))  {
       // Reset context
       Context2d *context2d = Context2d::Unwrap(context.As<Napi::Object>());
       cairo_t *prev = context2d->context();

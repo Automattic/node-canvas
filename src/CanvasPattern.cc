@@ -29,16 +29,18 @@ Pattern::Initialize(Napi::Env& env, Napi::Object& exports) {
  */
 
 Pattern::Pattern(const Napi::CallbackInfo& info) : ObjectWrap<Pattern>(info), env(info.Env()) {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  info.This().As<Napi::Object>().TypeTag(&data->tags.Pattern);
+
   if (!info[0].IsObject()) {
     Napi::TypeError::New(env, "Image or Canvas expected").ThrowAsJavaScriptException();
     return;
   }
 
   Napi::Object obj = info[0].As<Napi::Object>();
-  InstanceData* data = env.GetInstanceData<InstanceData>();
 
   // Image
-  if (obj.InstanceOf(data->ImageCtor.Value()).UnwrapOr(false)) {
+  if (obj.CheckTypeTag(&data->tags.Image)) {
     image = Image::Unwrap(obj);
     if (!image->isComplete()) {
       Napi::Error::New(env, "Image given has not completed loading").ThrowAsJavaScriptException();
@@ -47,7 +49,7 @@ Pattern::Pattern(const Napi::CallbackInfo& info) : ObjectWrap<Pattern>(info), en
     value = Napi::Persistent(obj);
 
   // Canvas
-  } else if (obj.InstanceOf(data->CanvasCtor.Value()).UnwrapOr(false)) {
+  } else if (obj.CheckTypeTag(&data->tags.Canvas)) {
     canvas = Canvas::Unwrap(obj);
     value = Napi::Persistent(obj);
   // Invalid

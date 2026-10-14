@@ -168,6 +168,7 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
 
 Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2d>(info), env(info.Env()) {
   InstanceData* data = env.GetInstanceData<InstanceData>();
+  info.This().As<Napi::Object>().TypeTag(&data->tags.Context2d);
 
   if (!info[0].IsObject()) {
     Napi::TypeError::New(env, "Canvas expected").ThrowAsJavaScriptException();
@@ -175,7 +176,7 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
   }
 
   Napi::Object obj = info[0].As<Napi::Object>();
-  if (!obj.InstanceOf(data->CanvasCtor.Value()).UnwrapOr(false)) {
+  if (!obj.CheckTypeTag(&data->tags.Canvas)) {
     if (!env.IsExceptionPending()) {
       Napi::TypeError::New(env, "Canvas expected").ThrowAsJavaScriptException();
     }
@@ -761,7 +762,7 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   }
   Napi::Object obj = info[0].As<Napi::Object>();
   InstanceData* data = env.GetInstanceData<InstanceData>();
-  if (!obj.InstanceOf(data->ImageDataCtor.Value()).UnwrapOr(false)) {
+  if (!obj.CheckTypeTag(&data->tags.ImageData)) {
     if (!env.IsExceptionPending()) {
       Napi::TypeError::New(env, "ImageData expected").ThrowAsJavaScriptException();
     }
@@ -1259,7 +1260,9 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
   Napi::Object obj = info[0].As<Napi::Object>();
 
   // Image
-  if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->ImageCtor.Value()).UnwrapOr(false)) {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+
+  if (obj.CheckTypeTag(&data->tags.Image)) {
     Image *img = Image::Unwrap(obj);
     if (!img->isComplete()) {
       Napi::Error::New(env, "Image given has not completed loading").ThrowAsJavaScriptException();
@@ -1270,7 +1273,7 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
     surface = img->surface.surface();
 
   // Canvas
-  } else if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->CanvasCtor.Value()).UnwrapOr(false)) {
+  } else if (obj.CheckTypeTag(&data->tags.Canvas)) {
     Canvas *canvas = Canvas::Unwrap(obj);
     source_w = sw = canvas->getWidth();
     source_h = sh = canvas->getHeight();
@@ -1903,9 +1906,9 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
-    if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
+    if (obj.CheckTypeTag(&data->tags.Gradient)) {
       state->fillGradient.Reset(obj);
-    } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
+    } else if (obj.CheckTypeTag(&data->tags.Pattern)) {
       state->fillPattern.Reset(obj);
     }
   }
@@ -1940,9 +1943,9 @@ Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& val
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
-    if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
+    if (obj.CheckTypeTag(&data->tags.Gradient)) {
       state->strokeGradient.Reset(obj);
-    } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
+    } else if (obj.CheckTypeTag(&data->tags.Pattern)) {
       state->strokePattern.Reset(obj);
     }
   }
