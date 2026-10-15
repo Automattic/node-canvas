@@ -16,6 +16,10 @@ struct closure_destination_mgr {
   int bufsize;
 };
 
+static void jpeg_stream_buffer_free(Napi::Env, char* data) {
+  free(data);
+}
+
 void
 init_closure_destination(j_compress_ptr cinfo){
   // we really don't have to do anything here
@@ -28,7 +32,7 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Napi::HandleScope scope(env);
   Napi::AsyncContext async(env, "canvas:empty_closure_output_buffer");
 
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize);
+  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize, jpeg_stream_buffer_free);
 
   // emit "data"
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
@@ -47,7 +51,7 @@ term_closure_destination(j_compress_ptr cinfo){
   Napi::AsyncContext async(env, "canvas:term_closure_destination");
 
   /* emit remaining data */
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer);
+  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer, jpeg_stream_buffer_free);
 
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
