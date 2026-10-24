@@ -1125,6 +1125,28 @@ describe('Canvas', function () {
       assertApprox(rm.actualBoundingBoxRight, 1, 6)
     })
 
+    it('actualBoundingBox does not include the origin when the ink is away from it (#2620)', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+      ctx.font = '20px Arimo'
+
+      // the ink of '-' starts right of the pen and sits above the baseline
+      let metrics = ctx.measureText('-')
+      assertApprox(metrics.actualBoundingBoxLeft, -0.88, 0.1)
+      assertApprox(metrics.actualBoundingBoxRight, 5.78, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 6.1, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, -4.54, 0.1)
+
+      // the leading space has no ink
+      metrics = ctx.measureText(' -')
+      assertApprox(metrics.actualBoundingBoxLeft, -6.44, 0.1)
+      assertApprox(metrics.actualBoundingBoxRight, 11.34, 0.1)
+
+      // the ink of 'j' overhangs left of the pen
+      metrics = ctx.measureText('j')
+      assertApprox(metrics.actualBoundingBoxLeft, 0.48, 0.1)
+    })
+
     it('resolves text alignment wrt Context2d#direction #2508', function () {
       const canvas = createCanvas(0, 0)
       const ctx = canvas.getContext('2d')
