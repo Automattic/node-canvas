@@ -2711,10 +2711,25 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
   for (GlyphRun& run : layout.runs) {
     double toPx = fontSize / 1000;
     for (Glyph& glyph : run.glyphs) {
-      actualBoundingBoxLeft = std::min(actualBoundingBoxLeft, ax + glyph.x_bearing * toPx);
-      actualBoundingBoxAscent = std::max(actualBoundingBoxAscent, ay + glyph.y_bearing * toPx);
-      actualBoundingBoxRight = std::max(actualBoundingBoxRight, ax + glyph.x_bearing * toPx + glyph.width * toPx);
-      actualBoundingBoxDescent = std::max(actualBoundingBoxDescent, ay - glyph.y_bearing * toPx - glyph.height * toPx);
+      // glyphs without ink (spaces) don't contribute to the box
+      if (glyph.width != 0 && glyph.height != 0) {
+        double left = ax + glyph.x_bearing * toPx;
+        double ascent = ay + glyph.y_bearing * toPx;
+        double right = left + glyph.width * toPx;
+        double descent = ay - glyph.y_bearing * toPx - glyph.height * toPx;
+        if (first) {
+          actualBoundingBoxLeft = left;
+          actualBoundingBoxAscent = ascent;
+          actualBoundingBoxRight = right;
+          actualBoundingBoxDescent = descent;
+          first = false;
+        } else {
+          actualBoundingBoxLeft = std::min(actualBoundingBoxLeft, left);
+          actualBoundingBoxAscent = std::max(actualBoundingBoxAscent, ascent);
+          actualBoundingBoxRight = std::max(actualBoundingBoxRight, right);
+          actualBoundingBoxDescent = std::max(actualBoundingBoxDescent, descent);
+        }
+      }
       ax += glyph.x_advance * toPx;
       ay += glyph.y_advance * toPx;
     }
