@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * `isPointInPath()` now ignores the current transform and no longer counts points that are only inside the stroke (#2634)
 * Fix off-by-one RGB values from `getImageData` on semi-transparent pixels (#1933)
 * Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
+* `actualBoundingBox*` from `measureText()` no longer always include the text origin, so `actualBoundingBoxLeft` can be negative when the ink starts right of the origin (#2620)
 
 3.2.3
 ==================
