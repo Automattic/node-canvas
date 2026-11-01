@@ -120,7 +120,6 @@ describe('Image', function () {
   })
 
   it('detects invalid PNG', function (done) {
-    if (process.platform === 'win32') this.skip() // TODO
     const img = new Image()
     img.onerror = () => {
       assert.strictEqual(img.complete, true)
