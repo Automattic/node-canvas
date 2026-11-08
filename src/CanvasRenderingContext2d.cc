@@ -3161,6 +3161,11 @@ Context2d::ArcTo(const Napi::CallbackInfo& info) {
   if(!checkArgs(info, args, 5))
     return;
 
+  if (args[4] < 0) {
+    Napi::RangeError::New(env, "The radius provided is negative.").ThrowAsJavaScriptException();
+    return;
+  }
+
   cairo_t *ctx = context();
 
   // Current path point
@@ -3268,6 +3273,16 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
 
   double radiusX = args[2];
   double radiusY = args[3];
+
+  if (radiusX < 0) {
+    Napi::RangeError::New(env, "The major-axis radius provided is negative.").ThrowAsJavaScriptException();
+    return;
+  }
+
+  if (radiusY < 0) {
+    Napi::RangeError::New(env, "The minor-axis radius provided is negative.").ThrowAsJavaScriptException();
+    return;
+  }
 
   if (radiusX == 0 || radiusY == 0) return;
 

@@ -607,6 +607,36 @@ describe('Canvas', function () {
     assert.ok(!ctx.isPointInPath(50, 120))
   })
 
+  it('Context2d#arcTo() rejects a negative radius', function () {
+    const canvas = createCanvas(100, 100)
+    const ctx = canvas.getContext('2d')
+
+    ctx.moveTo(0, 0)
+    assert.throws(() => ctx.arcTo(50, 0, 50, 50, -5), RangeError)
+    // also when the points would make arcTo() draw a straight line
+    assert.throws(() => ctx.arcTo(0, 0, 0, 0, -1), RangeError)
+    // the path was not changed
+    ctx.lineTo(0, 10)
+    ctx.lineTo(10, 0)
+    assert.ok(!ctx.isPointInPath(48, 2))
+
+    ctx.arcTo(50, 0, 50, 50, NaN) // non-finite arguments are ignored
+    ctx.arcTo(50, 0, 50, 50, 0)
+  })
+
+  it('Context2d#ellipse() rejects a negative radius', function () {
+    const canvas = createCanvas(100, 100)
+    const ctx = canvas.getContext('2d')
+
+    assert.throws(() => ctx.ellipse(50, 50, -10, 10, 0, 0, Math.PI * 2), RangeError)
+    assert.throws(() => ctx.ellipse(50, 50, 10, -10, 0, 0, Math.PI * 2), RangeError)
+    assert.ok(!ctx.isPointInPath(50, 50))
+
+    ctx.ellipse(50, 50, 0, 10, 0, 0, Math.PI * 2)
+    ctx.ellipse(50, 50, 10, 10, 0, 0, Math.PI * 2)
+    assert.ok(ctx.isPointInPath(50, 50))
+  })
+
   it('Context2d#textAlign', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
