@@ -2079,7 +2079,9 @@ Context2d::IsPointInPath(const Napi::CallbackInfo& info) {
     cairo_t *ctx = context();
     double x = info[0].As<Napi::Number>(), y = info[1].As<Napi::Number>();
     setFillRule(info[2]);
-    return Napi::Boolean::New(env, cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y));
+    // x and y are in canvas coordinates, not affected by the transform
+    cairo_device_to_user(ctx, &x, &y);
+    return Napi::Boolean::New(env, cairo_in_fill(ctx, x, y));
   }
   return Napi::Boolean::New(env, false);
 }

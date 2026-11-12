@@ -607,6 +607,29 @@ describe('Canvas', function () {
     assert.ok(!ctx.isPointInPath(50, 120))
   })
 
+  it('Context2d#isPointInPath() ignores the current transform', function () {
+    const ctx = createCanvas(200, 100).getContext('2d')
+    ctx.translate(100, 0)
+    ctx.rect(0, 0, 50, 50) // x = 100..150 on the canvas
+    assert.ok(ctx.isPointInPath(125, 25))
+    assert.ok(!ctx.isPointInPath(25, 25))
+
+    const ctx2 = createCanvas(100, 100).getContext('2d')
+    ctx2.scale(2, 2)
+    ctx2.rect(10, 10, 10, 10) // 20..40 on the canvas
+    assert.ok(ctx2.isPointInPath(30, 30))
+    assert.ok(!ctx2.isPointInPath(15, 15))
+  })
+
+  it('Context2d#isPointInPath() does not include the stroke', function () {
+    const ctx = createCanvas(100, 100).getContext('2d')
+    ctx.rect(10, 10, 80, 80)
+    ctx.lineWidth = 10
+    assert.ok(ctx.isPointInPath(10, 50))
+    assert.ok(!ctx.isPointInPath(7, 50))
+    assert.ok(!ctx.isPointInPath(50, 90.01))
+  })
+
   it('Context2d#textAlign', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
