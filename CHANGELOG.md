@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * `isPointInPath()` now ignores the current transform and no longer counts points that are only inside the stroke (#2634)
 * Fix off-by-one RGB values from `getImageData` on semi-transparent pixels (#1933)
 * Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
+* `createImageData()`, `getImageData()` and `putImageData()` no longer count Cairo's row padding as pixel size, which gave wrong lengths and row offsets for narrow A8, A1 and RGB16_565 canvases (#2623)
 
 3.2.3
 ==================
