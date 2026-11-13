@@ -168,6 +168,7 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
 
 Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2d>(info), env(info.Env()) {
   InstanceData* data = env.GetInstanceData<InstanceData>();
+  info.This().As<Napi::Object>().TypeTag(&data->tags.Context2d);
 
   if (!info[0].IsObject()) {
     Napi::TypeError::New(env, "Canvas expected").ThrowAsJavaScriptException();
@@ -175,7 +176,7 @@ Context2d::Context2d(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Context2
   }
 
   Napi::Object obj = info[0].As<Napi::Object>();
-  if (!obj.InstanceOf(data->CanvasCtor.Value()).UnwrapOr(false)) {
+  if (!obj.CheckTypeTag(&data->tags.Canvas)) {
     if (!env.IsExceptionPending()) {
       Napi::TypeError::New(env, "Canvas expected").ThrowAsJavaScriptException();
     }
@@ -761,7 +762,7 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   }
   Napi::Object obj = info[0].As<Napi::Object>();
   InstanceData* data = env.GetInstanceData<InstanceData>();
-  if (!obj.InstanceOf(data->ImageDataCtor.Value()).UnwrapOr(false)) {
+  if (!obj.CheckTypeTag(&data->tags.ImageData)) {
     if (!env.IsExceptionPending()) {
       Napi::TypeError::New(env, "ImageData expected").ThrowAsJavaScriptException();
     }
@@ -1258,7 +1259,9 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
   Napi::Object obj = info[0].As<Napi::Object>();
 
   // Image
-  if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->ImageCtor.Value()).UnwrapOr(false)) {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+
+  if (obj.CheckTypeTag(&data->tags.Image)) {
     Image *img = Image::Unwrap(obj);
     if (!img->isComplete()) {
       Napi::Error::New(env, "Image given has not completed loading").ThrowAsJavaScriptException();
@@ -1269,7 +1272,7 @@ Context2d::DrawImage(const Napi::CallbackInfo& info) {
     surface = img->surface.surface();
 
   // Canvas
-  } else if (obj.InstanceOf(env.GetInstanceData<InstanceData>()->CanvasCtor.Value()).UnwrapOr(false)) {
+  } else if (obj.CheckTypeTag(&data->tags.Canvas)) {
     Canvas *canvas = Canvas::Unwrap(obj);
     source_w = sw = canvas->getWidth();
     source_h = sh = canvas->getHeight();
@@ -1902,9 +1905,9 @@ Context2d::SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
-    if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
+    if (obj.CheckTypeTag(&data->tags.Gradient)) {
       state->fillGradient.Reset(obj);
-    } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
+    } else if (obj.CheckTypeTag(&data->tags.Pattern)) {
       state->fillPattern.Reset(obj);
     }
   }
@@ -1939,9 +1942,9 @@ Context2d::SetStrokeStyle(const Napi::CallbackInfo& info, const Napi::Value& val
   } else if (value.IsObject()) {
     InstanceData *data = env.GetInstanceData<InstanceData>();
     Napi::Object obj = value.As<Napi::Object>();
-    if (obj.InstanceOf(data->CanvasGradientCtor.Value()).UnwrapOr(false)) {
+    if (obj.CheckTypeTag(&data->tags.Gradient)) {
       state->strokeGradient.Reset(obj);
-    } else if (obj.InstanceOf(data->CanvasPatternCtor.Value()).UnwrapOr(false)) {
+    } else if (obj.CheckTypeTag(&data->tags.Pattern)) {
       state->strokePattern.Reset(obj);
     }
   }
@@ -2075,7 +2078,9 @@ Context2d::IsPointInPath(const Napi::CallbackInfo& info) {
     cairo_t *ctx = context();
     double x = info[0].As<Napi::Number>(), y = info[1].As<Napi::Number>();
     setFillRule(info[2]);
-    return Napi::Boolean::New(env, cairo_in_fill(ctx, x, y) || cairo_in_stroke(ctx, x, y));
+    // x and y are in canvas coordinates, not affected by the transform
+    cairo_device_to_user(ctx, &x, &y);
+    return Napi::Boolean::New(env, cairo_in_fill(ctx, x, y));
   }
   return Napi::Boolean::New(env, false);
 }
@@ -2456,35 +2461,16 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
     double fontSize = state->fontProperties.size;
     double toPx = fontSize / 1000;
 
-    FT_Face ftface;
-    FT_Error newFaceResult = FT_New_Memory_Face(
-      data->ft,
-      reinterpret_cast<const FT_Byte *>(run.face->data.get()),
-      run.face->data_len,
-      run.face->index,
-      &ftface
-    );
-
-    if (newFaceResult != 0) continue;
-
-    cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(ftface, 0);
-
-    static const cairo_user_data_key_t key{0};
-    cairo_status_t setDataResult = cairo_font_face_set_user_data(
-      crface,
-      &key,
-      ftface,
-      (cairo_destroy_func_t) FT_Done_Face
-    );
-
-    if (setDataResult) {
-      cairo_font_face_destroy(crface);
-      FT_Done_Face (ftface);
-      continue;
-    }
-
+    cairo_font_face_t* crface = cairo_ft_font_face_create_for_ft_face(run.face->ftface.get(), 0);
     cairo_set_font_face(context(), crface);
-    cairo_set_font_size(context(), fontSize);
+
+    // Be shy about cairo_set_font_size. This always recreates a scaled font,
+    // which destroys lots of caching. Scaled fonts are associated with the
+    // font's matrix, which is both for scaling from em to Cairo space and for
+    // fake italics. Just checking xx should therefore be reliable.
+    cairo_matrix_t m;
+    cairo_get_font_matrix(context(), &m);
+    if (m.xx != fontSize) cairo_set_font_size(context(), fontSize);
 
     size_t hbGlyphIndex = 0;
     while (hbGlyphIndex < run.glyphs.size()) {
