@@ -747,6 +747,25 @@ Context2d::SetLanguage(const Napi::CallbackInfo& info, const Napi::Value& value)
 }
 
 /*
+ * Bytes per pixel in ImageData. This can't be derived from the Cairo stride,
+ * which pads each row to 4 bytes (a 1px wide A8 surface has a 4 byte stride).
+ * A1 is bit-packed and isn't supported by get/putImageData.
+ */
+
+static int
+imageDataBytesPerPixel(cairo_format_t format) {
+  switch (format) {
+  case CAIRO_FORMAT_RGB16_565:
+    return 2;
+  case CAIRO_FORMAT_A8:
+  case CAIRO_FORMAT_A1:
+    return 1;
+  default: // ARGB32, RGB24, RGB30
+    return 4;
+  }
+}
+
+/*
  * Put image data.
  *
  *  - imageData, dx, dy
@@ -781,7 +800,7 @@ Context2d::PutImageData(const Napi::CallbackInfo& info) {
   }
 
   int dstStride = canvas()->stride();
-  int Bpp = dstStride / canvas()->getWidth();
+  int Bpp = imageDataBytesPerPixel(canvas()->getFormat());
   int srcStride = Bpp * imageData->width();
 
   int64_t sx = 0
@@ -1024,7 +1043,7 @@ Context2d::GetImageData(const Napi::CallbackInfo& info) {
   }
 
   int srcStride = canvas->stride();
-  int bpp = srcStride / width;
+  int bpp = imageDataBytesPerPixel(canvas->getFormat());
   // Note: barely fits: INT32_MAX * INT32_MAX * 4. Bpp can't be bigger than 4!
   uint64_t size = (uint64_t)sw * sh * bpp;
   int64_t dstStride = sw * bpp;
@@ -1177,17 +1196,19 @@ Context2d::CreateImageData(const Napi::CallbackInfo& info){
     height = info[1].ToNumber().UnwrapOr(zero).Uint32Value();
   }
 
-  int stride = canvas->stride();
-  double Bpp = static_cast<double>(stride) / canvas->getWidth();
-  int64_t nBytes = Bpp * width * height + .5;
+  double pixels = static_cast<double>(width) * height;
+  double size = canvas->getFormat() == CAIRO_FORMAT_A1
+    ? std::ceil(pixels / 8) // bit-packed
+    : pixels * imageDataBytesPerPixel(canvas->getFormat());
 
-  if (nBytes > INT32_MAX) {
+  if (size > INT32_MAX) {
     // INT32_MAX is what Firefox limits the buffer to
     std::string msg = "buffer exceeds " + std::to_string(INT32_MAX) + " bytes";
     Napi::Error::New(env, msg).ThrowAsJavaScriptException();
     return env.Undefined();
   }
 
+  int64_t nBytes = static_cast<int64_t>(size);
   Napi::ArrayBuffer ab = Napi::ArrayBuffer::New(env, nBytes);
   Napi::Value arr;
 
