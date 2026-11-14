@@ -1039,6 +1039,23 @@ describe('Canvas', function () {
       assert.equal(data.width, 2)
       assert.equal(data.height, 2)
     })
+
+    it('does not count row padding as pixel size on narrow canvases (#2623)', function () {
+      // Cairo pads rows to 4 bytes, so a 1px wide canvas has a 4 byte stride
+      const a8 = createCanvas(1, 1).getContext('2d', { pixelFormat: 'A8' })
+      assert.equal(a8.createImageData(1, 2).data.length, 2)
+      assert.equal(a8.createImageData(3, 2).data.length, 6)
+
+      const rgb16 = createCanvas(1, 1).getContext('2d', { pixelFormat: 'RGB16_565' })
+      assert.equal(rgb16.createImageData(1, 2).data.length, 2)
+      assert.equal(rgb16.createImageData(3, 2).data.length, 6)
+
+      const a1 = createCanvas(1, 1).getContext('2d', { pixelFormat: 'A1' })
+      assert.equal(a1.createImageData(2, 6).data.length, Math.ceil(2 * 6 / 8))
+
+      const argb = createCanvas(1, 1).getContext('2d')
+      assert.equal(argb.createImageData(1, 2).data.length, 1 * 2 * 4)
+    })
   })
 
   describe('ImageData', function () {
@@ -1313,6 +1330,30 @@ describe('Canvas', function () {
       assert.equal(63, imageData.data[3])
       assert.equal(127, imageData.data[4])
       assert.equal(191, imageData.data[5])
+    })
+
+    it('uses a tight row length on narrow canvases (#2623)', function () {
+      const canvas = createCanvas(1, 3)
+      const ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'
+      ctx.fillRect(0, 0, 1, 1)
+      ctx.fillStyle = 'rgba(0,0,0,0.5)'
+      ctx.fillRect(0, 1, 1, 1)
+      ctx.fillStyle = 'rgba(0,0,0,0.75)'
+      ctx.fillRect(0, 2, 1, 1)
+
+      const imageData = ctx.getImageData(0, 0, 1, 3)
+      assert.equal(imageData.data.length, 3)
+      assert.deepEqual(Array.from(imageData.data), [63, 127, 191])
+
+      const rgb16 = createCanvas(1, 2).getContext('2d', { pixelFormat: 'RGB16_565' })
+      rgb16.fillStyle = '#f00'
+      rgb16.fillRect(0, 0, 1, 1)
+      rgb16.fillStyle = '#00f'
+      rgb16.fillRect(0, 1, 1, 1)
+      const rgbData = rgb16.getImageData(0, 0, 1, 2)
+      assert.equal(rgbData.data.length, 2)
+      assert.deepEqual(Array.from(rgbData.data), [0b11111 << 11, 0b11111])
     })
 
     it('works, full width, A1')
@@ -2227,6 +2268,26 @@ describe('Canvas', function () {
 
       assert.equal(pixel.data[0], 65535)
       assert.equal(pixel.data[1], 65500)
+    })
+
+    it('reads tight ImageData rows on narrow canvases (#2623)', function () {
+      const canvas = createCanvas(1, 3)
+      const ctx = canvas.getContext('2d', { pixelFormat: 'A8' })
+
+      const imgData = ctx.createImageData(1, 3)
+      imgData.data.set([10, 20, 30])
+      ctx.putImageData(imgData, 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 3).data), [10, 20, 30])
+
+      const wide = createImageData(new Uint8ClampedArray([1, 2, 3, 4, 5, 6]), 2, 3)
+      ctx.putImageData(wide, 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 3).data), [1, 3, 5])
+
+      const rgb16 = createCanvas(1, 2).getContext('2d', { pixelFormat: 'RGB16_565' })
+      const rgbData = rgb16.createImageData(1, 2)
+      rgbData.data.set([65535, 65500])
+      rgb16.putImageData(rgbData, 0, 0)
+      assert.deepEqual(Array.from(rgb16.getImageData(0, 0, 1, 2).data), [65535, 65500])
     })
 
     it('safely handles integer overflow in sx + sw and sy + sh', function () {
