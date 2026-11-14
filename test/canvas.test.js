@@ -689,6 +689,26 @@ describe('Canvas', function () {
       assert.equal('PNG', buf.slice(1, 4).toString())
     })
 
+    it('Canvas#toBuffer("image/png") with RGB30 pixel format', async function () {
+      const canvas = createCanvas(3, 2)
+      const ctx = canvas.getContext('2d', { pixelFormat: 'RGB30' })
+      ctx.fillStyle = 'rgb(255, 128, 0)'
+      ctx.fillRect(0, 0, 3, 1)
+      ctx.fillStyle = 'rgb(0, 64, 255)'
+      ctx.fillRect(0, 1, 3, 1)
+
+      const buf = canvas.toBuffer('image/png')
+      assert.equal('IHDR', buf.slice(12, 16).toString())
+      assert.equal(buf[24], 16) // bit depth
+      assert.equal(buf[25], 2) // color type: truecolor
+
+      const img = await loadImage(buf)
+      const out = createCanvas(3, 2).getContext('2d')
+      out.drawImage(img, 0, 0)
+      assert.deepEqual(Array.from(out.getImageData(2, 0, 1, 1).data), [255, 128, 0, 255])
+      assert.deepEqual(Array.from(out.getImageData(2, 1, 1, 1).data), [0, 64, 255, 255])
+    })
+
     it('Canvas#toBuffer("image/jpeg")', function () {
       const buf = createCanvas(200, 200).toBuffer('image/jpeg')
       assert.equal(buf[0], 0xff)
