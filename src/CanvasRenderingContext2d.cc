@@ -3315,9 +3315,6 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
 
   cairo_t *ctx = context();
 
-  canonicalizeAngle(startAngle, endAngle);
-  endAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
-
   // See https://www.cairographics.org/cookbook/ellipses/
   double xRatio = radiusX / radiusY;
 
@@ -3327,7 +3324,7 @@ Context2d::Ellipse(const Napi::CallbackInfo& info) {
   cairo_rotate(ctx, rotation);
   cairo_scale(ctx, xRatio, 1.0);
   cairo_translate(ctx, -x, -y);
-  if (anticlockwise) {
+  if (anticlockwise && M_PI * 2 != args[4]) {
     cairo_arc_negative(ctx,
       x,
       y,

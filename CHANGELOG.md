@@ -11,7 +11,6 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Add `ctx.isPointInStroke()` (#1770)
 ### Fixed
-* Normalize ellipse angles according to the Canvas specification
 * Load images from Node.js object URLs (#2525)
 
 3.2.3
