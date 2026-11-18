@@ -13,7 +13,7 @@ const os = require('os')
 const { Blob } = require('node:buffer')
 const { URL } = require('node:url')
 
-const { createCanvas, loadImage, rsvgVersion, Image } = require('../')
+const { createCanvas, loadImage, Image } = require('../')
 
 
 const pngCheckers = path.join(__dirname, '/fixtures/checkers.png')

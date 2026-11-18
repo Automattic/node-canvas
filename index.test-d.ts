@@ -61,3 +61,5 @@ expectType<Canvas.ImageData>(id2)
 ctx.putImageData(id2, 0, 0)
 
 ctx.drawImage(canv, 0, 0)
+
+expectType<string>(Canvas.lunasvgVersion)
