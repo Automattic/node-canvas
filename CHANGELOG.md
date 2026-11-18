@@ -8,7 +8,9 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Remove the `rsvgVersion` and `pangoVersion` exports. Version 4 uses neither library, so they were always `undefined`.
 ### Added
+* Export `lunasvgVersion`, the version of the bundled lunasvg library used to render SVG images.
 ### Fixed
 * Check a type tag before unwrapping a native object, so a forged prototype chain can no longer crash the process (#2628)
 * Load images from Node.js object URLs (#2525)
