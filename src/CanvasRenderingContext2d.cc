@@ -2703,7 +2703,6 @@ Context2d::MeasureText(const Napi::CallbackInfo& info) {
   double actualBoundingBoxRight = 0;
   double actualBoundingBoxAscent = 0;
   double actualBoundingBoxDescent = 0;
-  bool first = true;
 
   // first calculate this bounding box, with no anchor:
   // - ascent and descent increasing means going away from baseline
