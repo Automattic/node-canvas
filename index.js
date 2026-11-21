@@ -67,7 +67,5 @@ exports.jpegVersion = bindings.jpegVersion
 exports.gifVersion = bindings.gifVersion ? bindings.gifVersion.replace(/[^.\d]/g, '') : undefined
 /** freetype version. */
 exports.freetypeVersion = bindings.freetypeVersion
-/** rsvg version. */
-exports.rsvgVersion = bindings.rsvgVersion
-/** pango version. */
-exports.pangoVersion = bindings.pangoVersion
+/** lunasvg version. */
+exports.lunasvgVersion = bindings.lunasvgVersion
