@@ -18,6 +18,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
 * `actualBoundingBox*` from `measureText()` no longer always include the text origin, so `actualBoundingBoxLeft` can be negative when the ink starts right of the origin (#2620)
 * Fix bug with parsing for alpha and percentages.
+* PNG export of `RGB30` canvases now writes a valid 16-bit RGB image instead of an empty file (#2625)
 
 3.2.3
 ==================
