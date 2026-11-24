@@ -8,6 +8,8 @@
 
 #include <hb.h>
 #include <hb-ot.h>
+#include <freetype/freetype.h>
+#include <type_traits>
 
 enum class FontStyle {
   Normal,
@@ -42,6 +44,14 @@ struct HbFontDeleter {
   }
 };
 
+struct FT_FaceDeleter {
+  void operator()(FT_Face face) {
+    FT_Done_Face(face);
+  }
+};
+
+using FT_Face_Type = std::remove_pointer<FT_Face>::type;
+
 // Descriptors describe real fonts on the OS
 struct FontDescriptor : FontBase {
   std::unique_ptr<char[]> family;
@@ -53,6 +63,7 @@ struct FontDescriptor : FontBase {
   std::unique_ptr<file_char[]> url = nullptr;
   std::unique_ptr<uint8_t[]> data = nullptr;
   std::unique_ptr<hb_font_t, HbFontDeleter> hbfont = nullptr;
+  std::unique_ptr<FT_Face_Type, FT_FaceDeleter> ftface = nullptr;
   size_t data_len = 0;
   size_t index = 0;
   FontStatus status = FontStatus::Unloaded;
@@ -95,6 +106,22 @@ struct FontDescriptor : FontBase {
     hb_font_set_scale(hbfont.get(), 1000, 1000);
   }
 
+  void loadFtFont(FT_Library ft) {
+    FT_Face ftface;
+    FT_Error newFaceResult = FT_New_Memory_Face(
+      ft,
+      reinterpret_cast<const FT_Byte *>(data.get()),
+      data_len,
+      index,
+      &ftface
+    );
+    if (newFaceResult) {
+      status = FontStatus::Error;
+    } else {
+      this->ftface = std::unique_ptr<FT_Face_Type, FT_FaceDeleter>(ftface);
+    }
+  }
+
   void loadData() {
     FILE* file = nullptr;
     long file_size = 0;
@@ -134,9 +161,12 @@ bail:
     if (file) fclose(file);
   }
 
-  void load() {
+  void load(FT_Library ft) {
     if (status == FontStatus::Unloaded) loadData();
-    if (status == FontStatus::Loaded && hbfont == nullptr) loadHbFont();
+    if (status == FontStatus::Loaded && hbfont == nullptr) {
+      loadHbFont();
+      loadFtFont(ft);
+    }
   }
 };
 

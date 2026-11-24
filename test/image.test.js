@@ -13,7 +13,7 @@ const os = require('os')
 const { Blob } = require('node:buffer')
 const { URL } = require('node:url')
 
-const { createCanvas, loadImage, rsvgVersion, Image } = require('../')
+const { createCanvas, loadImage, Image } = require('../')
 
 
 const pngCheckers = path.join(__dirname, '/fixtures/checkers.png')
@@ -120,7 +120,6 @@ describe('Image', function () {
   })
 
   it('detects invalid PNG', function (done) {
-    if (process.platform === 'win32') this.skip() // TODO
     const img = new Image()
     img.onerror = () => {
       assert.strictEqual(img.complete, true)

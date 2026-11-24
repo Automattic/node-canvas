@@ -269,6 +269,27 @@ describe('Canvas', function () {
 
     ctx.fillStyle = 'rgb( 255, 300.09, 90, 40%)'
     assert.equal('rgba(255, 255, 90, 0.40)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 100%, 50%, 60%)'
+    assert.equal('rgba(255, 255, 128, 0.60)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 255, 20%, 90, 70%)'
+    assert.equal('rgba(255, 51, 90, 0.70)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 100%, 300%, 90, 50%)'
+    assert.equal('rgba(255, 255, 90, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 100%, 300.09, 90%, 0)'
+    assert.equal('rgba(255, 255, 230, 0.00)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 100%, 99%, 80%     50%)'
+    assert.equal('rgba(255, 253, 204, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 100%, 99.99%, 40% / 50%)'
+    assert.equal('rgba(255, 255, 102, 0.50)', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb( 100%, 33.33%, 66.66%, 2%)'
+    assert.equal('rgba(255, 85, 170, 0.02)', ctx.fillStyle)
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
@@ -605,6 +626,29 @@ describe('Canvas', function () {
     assert.ok(ctx.isPointInPath(60, 110))
     assert.ok(!ctx.isPointInPath(70, 110))
     assert.ok(!ctx.isPointInPath(50, 120))
+  })
+
+  it('Context2d#isPointInPath() ignores the current transform', function () {
+    const ctx = createCanvas(200, 100).getContext('2d')
+    ctx.translate(100, 0)
+    ctx.rect(0, 0, 50, 50) // x = 100..150 on the canvas
+    assert.ok(ctx.isPointInPath(125, 25))
+    assert.ok(!ctx.isPointInPath(25, 25))
+
+    const ctx2 = createCanvas(100, 100).getContext('2d')
+    ctx2.scale(2, 2)
+    ctx2.rect(10, 10, 10, 10) // 20..40 on the canvas
+    assert.ok(ctx2.isPointInPath(30, 30))
+    assert.ok(!ctx2.isPointInPath(15, 15))
+  })
+
+  it('Context2d#isPointInPath() does not include the stroke', function () {
+    const ctx = createCanvas(100, 100).getContext('2d')
+    ctx.rect(10, 10, 80, 80)
+    ctx.lineWidth = 10
+    assert.ok(ctx.isPointInPath(10, 50))
+    assert.ok(!ctx.isPointInPath(7, 50))
+    assert.ok(!ctx.isPointInPath(50, 90.01))
   })
 
   it('Context2d#textAlign', function () {
@@ -1100,6 +1144,28 @@ describe('Canvas', function () {
       const rm = ctx.measureText('aaaa')
       assertApprox(rm.actualBoundingBoxLeft, 19, 6)
       assertApprox(rm.actualBoundingBoxRight, 1, 6)
+    })
+
+    it('actualBoundingBox does not include the origin when the ink is away from it (#2620)', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+      ctx.font = '20px Arimo'
+
+      // the ink of '-' starts right of the pen and sits above the baseline
+      let metrics = ctx.measureText('-')
+      assertApprox(metrics.actualBoundingBoxLeft, -0.88, 0.1)
+      assertApprox(metrics.actualBoundingBoxRight, 5.78, 0.1)
+      assertApprox(metrics.actualBoundingBoxAscent, 6.1, 0.1)
+      assertApprox(metrics.actualBoundingBoxDescent, -4.54, 0.1)
+
+      // the leading space has no ink
+      metrics = ctx.measureText(' -')
+      assertApprox(metrics.actualBoundingBoxLeft, -6.44, 0.1)
+      assertApprox(metrics.actualBoundingBoxRight, 11.34, 0.1)
+
+      // the ink of 'j' overhangs left of the pen
+      metrics = ctx.measureText('j')
+      assertApprox(metrics.actualBoundingBoxLeft, 0.48, 0.1)
     })
 
     it('resolves text alignment wrt Context2d#direction #2508', function () {
@@ -2223,6 +2289,15 @@ describe('Canvas', function () {
       const result = ctx.getImageData(0, 0, 256, 256)
       assert.equal(result.data[255], 255) // not black or junk data
       assert.equal(result.data[255 * 256], 255) // not black or junk data
+    })
+
+    it('round-trips semi-transparent pixels through getImageData (#1933)', function () {
+      const canvas = createCanvas(1, 1)
+      const ctx = canvas.getContext('2d')
+      ctx.putImageData(createImageData(new Uint8ClampedArray([252, 252, 252, 252]), 1), 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [252, 252, 252, 252])
+      ctx.putImageData(createImageData(new Uint8ClampedArray([255, 128, 1, 2]), 1), 0, 0)
+      assert.deepEqual(Array.from(ctx.getImageData(0, 0, 1, 1).data), [255, 128, 0, 2])
     })
   })
 

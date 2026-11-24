@@ -14,6 +14,9 @@ FontFace::FontFace(const Napi::CallbackInfo& info) :
   id(++lastId),
   env(info.Env())
 {
+  InstanceData* data = env.GetInstanceData<InstanceData>();
+  info.This().As<Napi::Object>().TypeTag(&data->tags.FontFace);
+
   if (info.Length() < 2) {
     Napi::TypeError::New(env, "Family and source arguments are required").ThrowAsJavaScriptException();
     return;

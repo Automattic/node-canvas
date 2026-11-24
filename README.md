@@ -568,7 +568,7 @@ fs.writeFileSync('out.svg', canvas.toBuffer())
 
 ## SVG Image Support
 
-If librsvg is available when node-canvas is installed, node-canvas can render SVG images to your canvas context. This currently works by rasterizing the SVG image (i.e. drawing an SVG image to an SVG canvas will not preserve the SVG data).
+node-canvas can render SVG images to your canvas context, using the bundled [lunasvg](https://github.com/sammycage/lunasvg) library. This currently works by rasterizing the SVG image (i.e. drawing an SVG image to an SVG canvas will not preserve the SVG data).
 
 ```js
 const img = new Image()

@@ -16,10 +16,6 @@ struct closure_destination_mgr {
   int bufsize;
 };
 
-static void jpeg_stream_buffer_free(Napi::Env, char* data) {
-  free(data);
-}
-
 void
 init_closure_destination(j_compress_ptr cinfo){
   // we really don't have to do anything here
@@ -32,15 +28,14 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Napi::HandleScope scope(env);
   Napi::AsyncContext async(env, "canvas:empty_closure_output_buffer");
 
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize, jpeg_stream_buffer_free);
+  Napi::Object buf = Napi::Buffer<char>::Copy(env, (char *)dest->buffer, dest->bufsize);
 
   // emit "data"
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
-  dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
-  return true;
+  return TRUE;
 }
 
 void
@@ -51,7 +46,8 @@ term_closure_destination(j_compress_ptr cinfo){
   Napi::AsyncContext async(env, "canvas:term_closure_destination");
 
   /* emit remaining data */
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer, jpeg_stream_buffer_free);
+  Napi::Object buf = Napi::Buffer<char>::Copy(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer);
+  free(dest->buffer);
 
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
@@ -97,7 +93,7 @@ void encode_jpeg(jpeg_compress_struct cinfo, cairo_surface_t *surface, int quali
   jpeg_set_defaults(&cinfo);
   if (progressive)
     jpeg_simple_progression(&cinfo);
-  jpeg_set_quality(&cinfo, quality, (quality < 25) ? 0 : 1);
+  jpeg_set_quality(&cinfo, quality, quality < 25 ? FALSE : TRUE);
   cinfo.comp_info[0].h_samp_factor = chromaHSampFactor;
   cinfo.comp_info[0].v_samp_factor = chromaVSampFactor;
 

@@ -1,0 +1,1 @@
+Please disclose vulnerabilities via the *Security and quality* tab in GitHub. See https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately for guidance. If needed, the maintainers ([@chearon](https://github.com/chearon) and [@zbjornson](https://github.com/zbjornson)) can be reached using the emails listed in their profiles.

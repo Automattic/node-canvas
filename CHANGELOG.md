@@ -9,9 +9,15 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+* Add support for percentage in rgb and rgba parsing.
 ### Fixed
-* Free buffers emitted by JPEG streams (#2624)
+* Check a type tag before unwrapping a native object, so a forged prototype chain can no longer crash the process (#2628)
 * Load images from Node.js object URLs (#2525)
+* `isPointInPath()` now ignores the current transform and no longer counts points that are only inside the stroke (#2634)
+* Fix off-by-one RGB values from `getImageData` on semi-transparent pixels (#1933)
+* Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
+* `actualBoundingBox*` from `measureText()` no longer always include the text origin, so `actualBoundingBoxLeft` can be negative when the ink starts right of the origin (#2620)
+* Fix bug with parsing for alpha and percentages.
 
 3.2.3
 ==================
