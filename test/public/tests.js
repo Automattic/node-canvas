@@ -1026,16 +1026,14 @@ tests['fillText() maxWidth argument'] = function (ctx) {
   ctx.fillText('Drawing text can be fun!', 0, 20 * 7)
 }
 
-tests['maxWidth bug first usage path'] = function (ctx, done) {
-  ctx.textDrawingMode = 'path'
-  ctx.fillText('Drawing text can be fun!', 0, 20, 50)
-  ctx.fillText('Drawing text can be fun!', 0, 40, 50)
-  ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)
+tests['maxWidth bug first usage stroke'] = function (ctx, done) {
+  ctx.strokeText('Drawing text can be fun!', 0, 20, 50)
+  ctx.strokeText('Drawing text can be fun!', 0, 40, 50)
+  ctx.strokeText('Drawing text can be fun changing text bug!', 0, 60, 50)
   done()
 }
 
-tests['maxWidth bug first usage glyph'] = function (ctx, done) {
-  ctx.textDrawingMode = 'glyph'
+tests['maxWidth bug first usage fill'] = function (ctx, done) {
   ctx.fillText('Drawing text can be fun!', 0, 20, 50)
   ctx.fillText('Drawing text can be fun!', 0, 40, 50)
   ctx.fillText('Drawing text can be fun changing text bug!', 0, 60, 50)

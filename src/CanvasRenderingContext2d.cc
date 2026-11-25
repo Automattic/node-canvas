@@ -146,7 +146,6 @@ Context2d::Initialize(Napi::Env& env, Napi::Object& exports) {
     InstanceAccessor<&Context2d::GetShadowOffsetY, &Context2d::SetShadowOffsetY>("shadowOffsetY", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetShadowBlur, &Context2d::SetShadowBlur>("shadowBlur", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetAntiAlias, &Context2d::SetAntiAlias>("antialias", napi_default_jsproperty),
-    InstanceAccessor<&Context2d::GetTextDrawingMode, &Context2d::SetTextDrawingMode>("textDrawingMode", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetQuality, &Context2d::SetQuality>("quality", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetCurrentTransform, &Context2d::SetCurrentTransform>("currentTransform", napi_default_jsproperty),
     InstanceAccessor<&Context2d::GetFillStyle, &Context2d::SetFillStyle>("fillStyle", napi_default_jsproperty),
@@ -334,8 +333,8 @@ Context2d::setFillRule(Napi::Value value) {
   cairo_set_fill_rule(_context, rule);
 }
 
-void
-Context2d::fill(bool preserve) {
+bool
+Context2d::setFillSource() {
   cairo_pattern_t *new_pattern;
   bool needsRestore = false;
   if (Napi::Object jsPattern; (jsPattern = state->fillPattern.Value())) {
@@ -344,7 +343,7 @@ Context2d::fill(bool preserve) {
     if (new_pattern == nullptr) {
       Napi::Error::New(env, "Failed to initialize context").ThrowAsJavaScriptException();
       // failed to allocate
-      return;
+      return needsRestore;
     }
     cairo_set_source(_context, new_pattern);
     repeat_type_t repeat = pattern->repeat();
@@ -387,7 +386,7 @@ Context2d::fill(bool preserve) {
       if (new_pattern == NULL) {
         Napi::Error::New(env, "Unexpected gradient type").ThrowAsJavaScriptException();
         // failed to recognize gradient
-        return;
+        return needsRestore;
       }
       cairo_pattern_set_filter(new_pattern, state->patternQuality);
       cairo_set_source(_context, new_pattern);
@@ -399,6 +398,12 @@ Context2d::fill(bool preserve) {
   } else {
     setSourceRGBA(state->fill);
   }
+  return needsRestore;
+}
+
+void
+Context2d::fill(bool preserve) {
+  bool needsRestore = setFillSource();
   if (preserve) {
     if (hasShadow()) shadow(cairo_fill_preserve);
     cairo_fill_preserve(_context);
@@ -1723,40 +1728,6 @@ Context2d::SetAntiAlias(const Napi::CallbackInfo& info, const Napi::Value& value
 }
 
 /*
- * Get text drawing mode.
- */
-
-Napi::Value
-Context2d::GetTextDrawingMode(const Napi::CallbackInfo& info) {
-  const char *mode;
-  if (state->textDrawingMode == TEXT_DRAW_PATHS) {
-    mode = "path";
-  } else if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    mode = "glyph";
-  } else {
-    mode = "unknown";
-  }
-  return Napi::String::New(env, mode);
-}
-
-/*
- * Set text drawing mode.
- */
-
-void
-Context2d::SetTextDrawingMode(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  Napi::String stringValue;
-  if (value.ToString().UnwrapTo(&stringValue)) {
-    std::string str = stringValue.Utf8Value();
-    if (str == "path") {
-      state->textDrawingMode = TEXT_DRAW_PATHS;
-    } else if (str == "glyph") {
-      state->textDrawingMode = TEXT_DRAW_GLYPHS;
-    }
-  }
-}
-
-/*
  * Get filter.
  */
 
@@ -2415,6 +2386,34 @@ get_text_scale(TextLayout& layout, double maxWidth) {
   }
 }
 
+inline void
+Context2d::paintGlyphs(
+  cairo_glyph_t* glyphs,
+  size_t numGlyphs,
+  bool stroke
+) {
+  if (stroke) {
+    savePath();
+    cairo_glyph_path(context(), glyphs, numGlyphs);
+    this->stroke();
+    restorePath();
+  } else if (hasShadow()) {
+    savePath();
+    cairo_glyph_path(context(), glyphs, numGlyphs);
+    bool needsRestore = setFillSource();
+    shadow(cairo_fill);
+    // TODO: use cairo_show_text_glyphs!
+    cairo_show_glyphs(context(), glyphs, numGlyphs);
+    if (needsRestore) cairo_restore(context());
+    restorePath();
+  } else {
+    bool needsRestore = setFillSource();
+    // TODO: use cairo_show_text_glyphs!
+    cairo_show_glyphs(context(), glyphs, numGlyphs);
+    if (needsRestore) cairo_restore(context());
+  }
+}
+
 void
 Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
   int argsNum = info.Length() >= 4 ? 3 : 2;
@@ -2478,15 +2477,7 @@ Context2d::paintText(const Napi::CallbackInfo& info, bool stroke) {
         crGlyphIndex += 1;
       }
 
-      savePath();
-      if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-        if (stroke) { this->stroke(); } else { this->fill(); }
-        setTextPath(glyphs, crGlyphIndex);
-      } else if (state->textDrawingMode == TEXT_DRAW_PATHS) {
-        setTextPath(glyphs, crGlyphIndex);
-        if (stroke) { this->stroke(); } else { this->fill(); }
-      }
-      restorePath();
+      paintGlyphs(glyphs, crGlyphIndex, stroke);
     }
 
     cairo_set_font_face(context(), nullptr);
@@ -2514,16 +2505,6 @@ Context2d::FillText(const Napi::CallbackInfo& info) {
 void
 Context2d::StrokeText(const Napi::CallbackInfo& info) {
   paintText(info, true);
-}
-
-void
-Context2d::setTextPath(cairo_glyph_t* glyphs, size_t numGlyphs) {
-  if (state->textDrawingMode == TEXT_DRAW_GLYPHS) {
-    // TODO: use cairo_show_text_glyphs !
-    cairo_show_glyphs(context(), glyphs, numGlyphs);
-  } else {
-    cairo_glyph_path(context(), glyphs, numGlyphs);
-  }
 }
 
 /*

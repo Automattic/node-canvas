@@ -2727,7 +2727,6 @@ describe('Canvas', function () {
       // Non-standard properties:
       ['patternQuality', 'best'],
       // ['quality', 'best'], // doesn't do anything, TODO remove
-      ['textDrawingMode', 'glyph'],
       ['antialias', 'gray'],
       ['lang', 'eu'],
       ['direction', 'rtl']

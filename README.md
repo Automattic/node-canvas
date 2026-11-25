@@ -84,7 +84,6 @@ This project is an implementation of the Web Canvas API and implements that API 
 * [Canvas#toDataURL()](#canvastodataurl)
 * [CanvasRenderingContext2D#patternQuality](#canvasrenderingcontext2dpatternquality)
 * [CanvasRenderingContext2D#quality](#canvasrenderingcontext2dquality)
-* [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
 * [CanvasRenderingContext2D#globalCompositeOperation = 'saturate'](#canvasrenderingcontext2dglobalcompositeoperation--saturate)
 * [CanvasRenderingContext2D#antialias](#canvasrenderingcontext2dantialias)
 
@@ -459,24 +458,6 @@ Defaults to `'good'`. Affects pattern (gradient, image, etc.) rendering quality.
 
 Defaults to `'good'`. Like `patternQuality`, but applies to transformations affecting more than just patterns.
 
-### CanvasRenderingContext2D#textDrawingMode
-
-> ```ts
-> context.textDrawingMode: 'path'|'glyph'
-> ```
-
-Defaults to `'path'`. The effect depends on the canvas type:
-
-* **Standard (image)** `glyph` and `path` both result in rasterized text. Glyph mode is faster than `path`, but may result in lower-quality text, especially when rotated or translated.
-
-* **PDF** `glyph` will embed text instead of paths into the PDF. This is faster to encode, faster to open with PDF viewers, yields a smaller file size and makes the text selectable. The subset of the font needed to render the glyphs will be embedded in the PDF. This is usually the mode you want to use with PDF canvases.
-
-* **SVG** `glyph` does *not* cause `<text>` elements to be produced as one might expect ([cairo bug](https://gitlab.freedesktop.org/cairo/cairo/issues/253)). Rather, `glyph` will create a `<defs>` section with a `<symbol>` for each glyph, then those glyphs be reused via `<use>` elements. `path` mode creates a `<path>` element for each text string. `glyph` mode is faster and yields a smaller file size.
-
-In `glyph` mode, `ctx.strokeText()` and `ctx.fillText()` behave the same (aside from using the stroke and fill style, respectively).
-
-This property is tracked as part of the canvas state in save/restore.
-
 ### CanvasRenderingContext2D#globalCompositeOperation = 'saturate'
 
 In addition to all of the standard global composite operations defined by the Canvas specification, the ['saturate'](https://www.cairographics.org/operators/#saturate) operation is also available.
@@ -553,8 +534,6 @@ See also:
 
 * [Image#dataMode](#imagedatamode) for embedding JPEGs in PDFs
 * [Canvas#createPDFStream()](#canvascreatepdfstream) for creating PDF streams
-* [CanvasRenderingContext2D#textDrawingMode](#canvasrenderingcontext2dtextdrawingmode)
-  for embedding text instead of paths
 
 ## SVG Output Support
 

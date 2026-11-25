@@ -254,30 +254,6 @@ export class CanvasRenderingContext2D {
 	/** _Non-standard_. Sets the antialiasing mode. */
 	antialias: 'default' | 'gray' | 'none' | 'subpixel'
 	/**
-	 * Defaults to 'path'. The effect depends on the canvas type:
-	 *
-	 * * **Standard (image)** `'glyph'` and `'path'` both result in rasterized
-	 *   text. Glyph mode is faster than path, but may result in lower-quality
-	 *   text, especially when rotated or translated.
-	 *
-	 * * **PDF** `'glyph'` will embed text instead of paths into the PDF. This
-	 *   is faster to encode, faster to open with PDF viewers, yields a smaller
-	 *   file size and makes the text selectable. The subset of the font needed
-	 *   to render the glyphs will be embedded in the PDF. This is usually the
-	 *   mode you want to use with PDF canvases.
-	 *
-	 * * **SVG** glyph does not cause `<text>` elements to be produced as one
-	 *   might expect ([cairo bug](https://gitlab.freedesktop.org/cairo/cairo/issues/253)).
-	 *   Rather, glyph will create a `<defs>` section with a `<symbol>` for each
-	 *   glyph, then those glyphs be reused via `<use>` elements. `'path'` mode
-	 *   creates a `<path>` element for each text string. glyph mode is faster
-	 *   and yields a smaller file size.
-	 *
-	 * In glyph mode, `ctx.strokeText()` and `ctx.fillText()` behave the same
-	 * (aside from using the stroke and fill style, respectively).
-	 */
-	textDrawingMode: 'path' | 'glyph'
-	/**
 	 * _Non-standard_. Defaults to 'good'. Like `patternQuality`, but applies to
 	 * transformations affecting more than just patterns.
 	 */
