@@ -35,7 +35,6 @@ struct canvas_state_t {
   int shadowBlur = 0;
   text_align_t textAlignment = TEXT_ALIGNMENT_START;
   text_baseline_t textBaseline = TEXT_BASELINE_ALPHABETIC;
-  canvas_draw_mode_t textDrawingMode = TEXT_DRAW_PATHS;
   bool imageSmoothingEnabled = true;
   std::string direction = "ltr";
   std::string lang = "";
@@ -57,7 +56,6 @@ struct canvas_state_t {
     shadowBlur = other.shadowBlur;
     shadowOffsetX = other.shadowOffsetX;
     shadowOffsetY = other.shadowOffsetY;
-    textDrawingMode = other.textDrawingMode;
     fontProperties = other.fontProperties;
     font = other.font;
     imageSmoothingEnabled = other.imageSmoothingEnabled;
@@ -141,7 +139,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value GetShadowOffsetY(const Napi::CallbackInfo& info);
     Napi::Value GetShadowBlur(const Napi::CallbackInfo& info);
     Napi::Value GetAntiAlias(const Napi::CallbackInfo& info);
-    Napi::Value GetTextDrawingMode(const Napi::CallbackInfo& info);
     Napi::Value GetQuality(const Napi::CallbackInfo& info);
     Napi::Value GetCurrentTransform(const Napi::CallbackInfo& info);
     Napi::Value GetFillStyle(const Napi::CallbackInfo& info);
@@ -164,7 +161,6 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     void SetShadowOffsetY(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetShadowBlur(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetAntiAlias(const Napi::CallbackInfo& info, const Napi::Value& value);
-    void SetTextDrawingMode(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetQuality(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetCurrentTransform(const Napi::CallbackInfo& info, const Napi::Value& value);
     void SetFillStyle(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -183,12 +179,12 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(cairo_glyph_t* glyphs, size_t numGlyphs);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void savePath();
     void restorePath();
     void inline setFillRule(Napi::Value value);
+    bool setFillSource();
     void fill(bool preserve = false);
     void stroke(bool preserve = false);
     void save();
@@ -203,6 +199,7 @@ class Context2d : public Napi::ObjectWrap<Context2d> {
     Napi::Value get_current_transform();
     void _setFillColor(Napi::Value arg);
     void _setStrokeColor(Napi::Value arg);
+    inline void paintGlyphs(cairo_glyph_t* glyphs, size_t numGlyphs, bool stroke);
     void paintText(const Napi::CallbackInfo&, bool);
     text_align_t resolveTextAlignment();
     Canvas *_canvas;
