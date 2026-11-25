@@ -180,18 +180,28 @@ parse_clipped_percentage(const char** pStr, float *pFraction) {
 
 static bool
 parse_rgb_channel(const char** pStr, uint8_t *pChannel) {
-  float f_channel;
+  float value;
   bool percentage = check_percentage(*pStr);
-  if(percentage && parse_clipped_percentage(pStr, &f_channel)) {
-    int channel = (int) ceil(255 * f_channel);
-    *pChannel = channel;
-    return true;
-  } else if (parse_css_number(pStr, &f_channel)) {
-    int channel = (int) ceil(f_channel);
-    *pChannel = clip(channel, 0, 255);
-    return true;
+  if (!parse_css_number(pStr, &value))
+    return false;
+
+  double channel;
+  if (percentage) {
+    const char*& str = *pStr;
+    if (*str != '%')
+      return false;
+    ++str;
+    // Scale from the percentage directly rather than via a float fraction,
+    // so that e.g. 90% is exactly 229.5 and rounds to 230.
+    channel = clip((double) value, 0.0, 100.0) * 255.0 / 100.0;
+  } else {
+    channel = clip((double) value, 0.0, 255.0);
   }
-  return false;
+
+  // Round to the nearest integer, with halfway values going toward +infinity,
+  // as browsers do: https://drafts.csswg.org/css-values-4/#combine-integers
+  *pChannel = (uint8_t) floor(channel + 0.5);
+  return true;
 }
 
 /*

@@ -262,10 +262,10 @@ describe('Canvas', function () {
     assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
 
     ctx.fillStyle = 'rgb( 255, 200.09, 90, 40%)'
-    assert.equal('rgba(255, 201, 90, 0.40)', ctx.fillStyle)
+    assert.equal('rgba(255, 200, 90, 0.40)', ctx.fillStyle)
 
     ctx.fillStyle = 'rgb( 255.00, 199.03, 90, 50 %)'
-    assert.equal('rgba(255, 200, 90, 0.50)', ctx.fillStyle)
+    assert.equal('rgba(255, 199, 90, 0.50)', ctx.fillStyle)
 
     ctx.fillStyle = 'rgb( 255, 300.09, 90, 40%)'
     assert.equal('rgba(255, 255, 90, 0.40)', ctx.fillStyle)
@@ -283,13 +283,29 @@ describe('Canvas', function () {
     assert.equal('rgba(255, 255, 230, 0.00)', ctx.fillStyle)
 
     ctx.fillStyle = 'rgb( 100%, 99%, 80%     50%)'
-    assert.equal('rgba(255, 253, 204, 0.50)', ctx.fillStyle)
+    assert.equal('rgba(255, 252, 204, 0.50)', ctx.fillStyle)
 
     ctx.fillStyle = 'rgb( 100%, 99.99%, 40% / 50%)'
     assert.equal('rgba(255, 255, 102, 0.50)', ctx.fillStyle)
 
     ctx.fillStyle = 'rgb( 100%, 33.33%, 66.66%, 2%)'
     assert.equal('rgba(255, 85, 170, 0.02)', ctx.fillStyle)
+
+    // non-integer channels round to the nearest integer, like browsers do (#2339)
+    ctx.fillStyle = 'rgb(127,127.0,255)'
+    assert.equal('#7f7fff', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(127.4, 0, 0)'
+    assert.equal('#7f0000', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(127.5, 0, 0)'
+    assert.equal('#800000', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(0.2, 0, 0)'
+    assert.equal('#000000', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgb(99% 0% 0%)'
+    assert.equal('#fc0000', ctx.fillStyle)
     // hsl / hsla tests
 
     ctx.fillStyle = 'hsl(0, 0%, 0%)'
