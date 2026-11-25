@@ -488,11 +488,7 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
   if (state->shadowBlur) {
     // find out extent of path
     double x1, y1, x2, y2;
-    if (fn == cairo_fill || fn == cairo_fill_preserve) {
-      cairo_fill_extents(_context, &x1, &y1, &x2, &y2);
-    } else {
-      cairo_stroke_extents(_context, &x1, &y1, &x2, &y2);
-    }
+    cairo_path_extents(_context, &x1, &y1, &x2, &y2);
 
     // create new image surface that size + padding for blurring
     double dx = x2-x1, dy = y2-y1;
