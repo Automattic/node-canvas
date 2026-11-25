@@ -400,13 +400,11 @@ Context2d::fill(bool preserve) {
     setSourceRGBA(state->fill);
   }
   if (preserve) {
-    hasShadow()
-      ? shadow(cairo_fill_preserve)
-      : cairo_fill_preserve(_context);
+    if (hasShadow()) shadow(cairo_fill_preserve);
+    cairo_fill_preserve(_context);
   } else {
-    hasShadow()
-      ? shadow(cairo_fill)
-      : cairo_fill(_context);
+    if (hasShadow()) shadow(cairo_fill);
+    cairo_fill(_context);
   }
   if (needsRestore) {
     cairo_restore(_context);
@@ -457,13 +455,11 @@ Context2d::stroke(bool preserve) {
   }
 
   if (preserve) {
-    hasShadow()
-      ? shadow(cairo_stroke_preserve)
-      : cairo_stroke_preserve(_context);
+    if (hasShadow()) shadow(cairo_stroke_preserve);
+    cairo_stroke_preserve(_context);
   } else {
-    hasShadow()
-      ? shadow(cairo_stroke)
-      : cairo_stroke(_context);
+    if (hasShadow()) shadow(cairo_stroke);
+    cairo_stroke(_context);
   }
 }
 
@@ -553,7 +549,6 @@ Context2d::shadow(void (fn)(cairo_t *cr)) {
   cairo_restore(_context);
   cairo_new_path(_context);
   cairo_append_path(_context, path);
-  fn(_context);
 
   cairo_path_destroy(path);
 }
