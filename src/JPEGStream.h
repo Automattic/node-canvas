@@ -28,12 +28,11 @@ empty_closure_output_buffer(j_compress_ptr cinfo){
   Napi::HandleScope scope(env);
   Napi::AsyncContext async(env, "canvas:empty_closure_output_buffer");
 
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize);
+  Napi::Object buf = Napi::Buffer<char>::Copy(env, (char *)dest->buffer, dest->bufsize);
 
   // emit "data"
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
-  dest->buffer = (JOCTET *)malloc(dest->bufsize);
   cinfo->dest->next_output_byte = dest->buffer;
   cinfo->dest->free_in_buffer = dest->bufsize;
   return TRUE;
@@ -47,7 +46,8 @@ term_closure_destination(j_compress_ptr cinfo){
   Napi::AsyncContext async(env, "canvas:term_closure_destination");
 
   /* emit remaining data */
-  Napi::Object buf = Napi::Buffer<char>::New(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer);
+  Napi::Object buf = Napi::Buffer<char>::Copy(env, (char *)dest->buffer, dest->bufsize - dest->pub.free_in_buffer);
+  free(dest->buffer);
 
   dest->closure->cb.MakeCallback(env.Global(), {env.Null(), buf}, async);
 
