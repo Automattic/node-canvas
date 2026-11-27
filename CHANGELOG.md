@@ -18,6 +18,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Fix compilation on platforms that use ijg-libjpeg instead of libjpeg-turbo (#2563)
 * `actualBoundingBox*` from `measureText()` no longer always include the text origin, so `actualBoundingBoxLeft` can be negative when the ink starts right of the origin (#2620)
 * Fix bug with parsing for alpha and percentages.
+* `createImageData()`, `getImageData()` and `putImageData()` no longer count Cairo's row padding as pixel size, which gave wrong lengths and row offsets for narrow A8, A1 and RGB16_565 canvases (#2623)
 
 3.2.3
 ==================
