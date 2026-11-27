@@ -52,6 +52,28 @@ static void canvas_unpremultiply_data(png_structp png, png_row_infop row_info, p
     }
 }
 
+/* Converts a native endian x2R10G10B10 row to a big-endian 16-bit RGB row.
+ * PNG truecolor only allows 8- or 16-bit samples, so RGB30 is widened to 16. */
+static void canvas_convert_rgb30_to_rgb48(const uint8_t *src, uint8_t *dst, unsigned int width) {
+  for (unsigned int col = 0; col < width; col++) {
+    uint32_t pixel;
+    memcpy(&pixel, src + col * sizeof(uint32_t), sizeof(uint32_t));
+
+    const uint16_t channels[3] = {
+      static_cast<uint16_t>((pixel >> 20) & 0x3ff),
+      static_cast<uint16_t>((pixel >> 10) & 0x3ff),
+      static_cast<uint16_t>(pixel & 0x3ff)
+    };
+
+    for (int c = 0; c < 3; c++) {
+      // Rescale 10 bits to the full 16-bit range by repeating the top bits.
+      const uint16_t v = (channels[c] << 6) | (channels[c] >> 4);
+      dst[col * 6 + c * 2] = v >> 8;
+      dst[col * 6 + c * 2 + 1] = v & 0xff;
+    }
+  }
+}
+
 /* Converts RGB16_565 format data to RGBA32 */
 static void canvas_convert_565_to_888(png_structp png, png_row_infop row_info, png_bytep data) {
   // Loop in reverse to unpack in-place.
@@ -90,6 +112,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     png_structp png;
     png_infop info;
     png_bytep *volatile rows = NULL;
+    uint8_t *volatile rgb48 = NULL;
     png_color_16 white;
     int png_color_type;
     int bpc;
@@ -139,6 +162,7 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
     if (setjmp_wrapper(png)) {
         png_destroy_write_struct(&png, &info);
         free(rows);
+        free(rgb48);
         return status;
     }
 
@@ -158,8 +182,15 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
         break;
     case CAIRO_FORMAT_RGB30:
-        bpc = 10;
+        bpc = 16;
         png_color_type = PNG_COLOR_TYPE_RGB;
+        rgb48 = (uint8_t *) malloc((size_t) width * 6);
+        if (rgb48 == NULL) [[unlikely]] {
+            status = CAIRO_STATUS_NO_MEMORY;
+            png_destroy_write_struct(&png, &info);
+            free(rows);
+            return status;
+        }
         break;
     case CAIRO_FORMAT_RGB24:
         bpc = 8;
@@ -232,16 +263,26 @@ static cairo_status_t canvas_write_png(cairo_surface_t *surface, png_rw_ptr writ
         png_set_write_user_transform_fn(png, canvas_unpremultiply_data);
     } else if (format == CAIRO_FORMAT_RGB16_565) {
         png_set_write_user_transform_fn(png, canvas_convert_565_to_888);
+    } else if (format == CAIRO_FORMAT_RGB30) {
+        // converted row by row below
     } else if (png_color_type == PNG_COLOR_TYPE_RGB) {
         png_set_write_user_transform_fn(png, canvas_convert_data_to_bytes);
         png_set_filler(png, 0, PNG_FILLER_AFTER);
     }
 
-    png_write_image(png, rows);
+    if (format == CAIRO_FORMAT_RGB30) {
+        for (i = 0; i < height; i++) {
+            canvas_convert_rgb30_to_rgb48(rows[i], rgb48, width);
+            png_write_row(png, rgb48);
+        }
+    } else {
+        png_write_image(png, rows);
+    }
     png_write_end(png, info);
 
     png_destroy_write_struct(&png, &info);
     free(rows);
+    free(rgb48);
     return status;
 }
 
